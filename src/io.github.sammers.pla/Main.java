@@ -7,6 +7,6 @@ public class Main {
     public static void main(String[] args) {
         Vertx vertx = Vertx.vertx();
         WebClient webClient = WebClient.create(vertx);
-        new Ladder(vertx, webClient).xd();
+        new Ladder(vertx, webClient).threeVthree();
     }
 }
