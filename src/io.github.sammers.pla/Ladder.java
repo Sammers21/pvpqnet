@@ -220,6 +220,7 @@ public class Ladder {
                 .flatMapSingle(tick -> twoVTwo())
                 .flatMapSingle(tick -> battlegrounds())
                 .flatMapSingle(tick -> shuffle())
+                .flatMapSingle(tick -> shuffle())
             ).subscribe();
     }
 
@@ -233,11 +234,15 @@ public class Ladder {
         }).flatMapCompletable(characters -> {
             refByBracket(bracket + "_older_older").set(characters);
             log.info("Data for bracket {} has been loaded from DB", bracket);
-            SnapshotDiff snapshotDiff = Calculator.calculateDiff(refByBracket(bracket + "_older_older").get(), refByBracket(bracket).get());
-            diffsByBracket(bracket).set(snapshotDiff);
-            log.info("Diffs has been calculated for bracket {}, diffs:{}", bracket, snapshotDiff.chars().size());
+            calcDiffs(bracket);
             return Completable.complete();
         });
+    }
+
+    public void calcDiffs(String bracket) {
+        SnapshotDiff snapshotDiff = Calculator.calculateDiff(refByBracket(bracket + "_older_older").get(), refByBracket(bracket).get());
+        diffsByBracket(bracket).set(snapshotDiff);
+        log.info("Diffs has been calculated for bracket {}, diffs:{}", bracket, snapshotDiff.chars().size());
     }
 
     public AtomicReference<Snapshot> refByBracket(String bracket) {
@@ -257,6 +262,7 @@ public class Ladder {
             older.set(current.get());
             current.set(newCharacters);
             log.info("Data for bracket {} is different performing update", bracket);
+            calcDiffs(bracket);
             return db.insertOnlyIfDifferent(bracket, newCharacters);
         } else {
             log.info("Data for bracket {} are equal, not updating", bracket);
