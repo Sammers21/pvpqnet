@@ -45,6 +45,16 @@ function markNumber(number) {
     }
 }
 
+function rankNumber(number) {
+    if (number < 0) {
+        return mark('green', number);
+    } else if (number > 0) {
+        return mark('red', '+' + number);
+    } else {
+        return mark('white', '+' + number);
+    }
+}
+
 async function loadIntoTable(table) {
     var url = window.location.origin + '/api/activity/shuffle';
     if (window.location.pathname === '/activity/2v2') {
@@ -61,7 +71,7 @@ async function loadIntoTable(table) {
     console.log(data)
     data.characters.forEach((item) => {
         const row = table.insertRow();
-        const posChange = markNumber(item.diff.rank_diff);
+        const posChange = rankNumber(item.diff.rank_diff);
         const ratingChange = markNumber(item.diff.rating_diff);
         const won = item.diff.won > 0 ? mark('green', item.diff.won) : mark('white', item.diff.won);
         const lost = item.diff.lost > 0 ? mark('red', item.diff.lost) : mark('white', item.diff.lost);
