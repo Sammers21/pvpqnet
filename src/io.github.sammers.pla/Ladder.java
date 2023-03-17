@@ -15,6 +15,8 @@ import org.jsoup.select.Elements;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -23,6 +25,12 @@ public class Ladder {
 
     private final Vertx vertx;
     private final WebClient web;
+
+    public static String TWO_V_TWO = "2v2";
+    public static String THREE_V_THREE = "3v3";
+    public static String RBG = "battlegrounds";
+    public static String SHUFFLE = "shuffle";
+
 
     private final List<String> shuffleSpecs = new ArrayList<>() {{
         add("shuffle/deathknight/blood");
@@ -65,10 +73,8 @@ public class Ladder {
         add("shuffle/warrior/protection");
     }};
 
-    public final AtomicReference<Snapshot> twoVTwoladder = new AtomicReference<>();
-    public final AtomicReference<Snapshot> threeVThreeLadder = new AtomicReference<>();
-    public final AtomicReference<Snapshot> shuffleLadder = new AtomicReference<>();
-    public final AtomicReference<Snapshot> bgLadder = new AtomicReference<>();
+    private final Map<String, AtomicReference<Snapshot>> refs = new ConcurrentHashMap<>();
+
     private final DB db;
 
     public Ladder(Vertx vertx, WebClient web, DB db) {
@@ -79,27 +85,21 @@ public class Ladder {
 
     public Single<Snapshot> threeVThree() {
         String bracket = "3v3";
-        return fetchLadder(bracket)
-                .doOnSuccess(threeVThreeLadder::set)
-                .flatMap(chars -> db.insertOnlyIfDifferent(bracket, chars).andThen(Single.just(chars)));
+        return fetchLadder(bracket);
     }
 
     public Single<Snapshot> twoVTwo() {
         String bracket = "2v2";
-        return fetchLadder(bracket)
-                .doOnSuccess(twoVTwoladder::set)
-                .flatMap(chars -> db.insertOnlyIfDifferent(bracket, chars).andThen(Single.just(chars)));
+        return fetchLadder(bracket);
     }
 
     public Single<Snapshot> battlegrounds() {
         String bracket = "battlegrounds";
-        return fetchLadder(bracket)
-                .doOnSuccess(bgLadder::set)
-                .flatMap(chars -> db.insertOnlyIfDifferent(bracket, chars).andThen(Single.just(chars)));
+        return fetchLadder(bracket);
     }
 
     public Single<Snapshot> shuffle() {
-        String shuffle = "shuffle";
+        String bracket = "shuffle";
         Single<List<Character>> res = Single.just(new ArrayList<>(1000 * shuffleSpecs.size()));
         for (String shuffleSpec : shuffleSpecs) {
             for (int i = 1; i <= 10; i++) {
@@ -115,9 +115,9 @@ public class Ladder {
         return res.map(chars -> {
                     chars.sort(Comparator.comparing(Character::rating).reversed());
                     return chars;
-                }).flatMap(chars -> db.insertOnlyIfDifferent(shuffle, Snapshot.of(chars)).andThen(Single.just(chars)))
+                }).flatMap(chars -> db.insertOnlyIfDifferent(bracket, Snapshot.of(chars)).andThen(Single.just(chars)))
                 .map(Snapshot::of)
-                .doOnSuccess(shuffleLadder::set);
+                .doOnSuccess(refByBracket(bracket)::set);
     }
 
     public Single<Snapshot> fetchLadder(String bracket) {
@@ -131,7 +131,9 @@ public class Ladder {
                     })
             );
         }
-        return res.map(Snapshot::of);
+        return res.map(Snapshot::of)
+                .doOnSuccess(refByBracket(bracket)::set)
+                .flatMap(chars -> db.insertOnlyIfDifferent(bracket, chars).andThen(Single.just(chars)));
     }
 
     public Single<List<Character>> ladderShuffle(String bracket, Integer page) {
@@ -205,10 +207,10 @@ public class Ladder {
     }
 
     public void start() {
-        loadLast("2v2", twoVTwoladder)
-                .andThen(loadLast("3v3", threeVThreeLadder))
-                .andThen(loadLast("battlegrounds", bgLadder))
-                .andThen(loadLast("shuffle", shuffleLadder))
+        loadLast(TWO_V_TWO, refByBracket(TWO_V_TWO))
+                .andThen(loadLast(THREE_V_THREE, refByBracket(THREE_V_THREE)))
+                .andThen(loadLast(RBG, refByBracket(RBG)))
+                .andThen(loadLast(SHUFFLE, refByBracket(SHUFFLE)))
                 .andThen(Observable.interval(0, 60, TimeUnit.MINUTES)
                         .flatMapSingle(tick -> threeVThree())
                         .flatMapSingle(tick -> twoVTwo())
@@ -222,5 +224,16 @@ public class Ladder {
             ref.set(characters);
             return Completable.complete();
         });
+    }
+
+    public AtomicReference<Snapshot> refByBracket(String bracket) {
+        return refs.computeIfAbsent(bracket, k -> new AtomicReference<>());
+    }
+
+    public void newDataOnBracket(String bracket, List<Character> newCharacters) {
+        AtomicReference<Snapshot> current = refByBracket(bracket);
+        AtomicReference<Snapshot> older = refByBracket(bracket + "_older");
+        AtomicReference<Snapshot> olderOlder = refByBracket(bracket + "_older_older");
+
     }
 }
