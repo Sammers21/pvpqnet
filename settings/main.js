@@ -14,7 +14,7 @@ function classNameColored(wowClass, name) {
         return mark('yellow', name);
     } else if(wowClass === 'PRIEST') {
         return mark('white', name);
-    } else if(wowClass === 'DEATHKNIGHT') {
+    } else if(wowClass === 'DEATH KNIGHT') {
         return mark('dk-red', name);
     } else if(wowClass === 'SHAMAN') {
         return mark('blue', name);
