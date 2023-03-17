@@ -2,6 +2,7 @@ package io.github.sammers.pla;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -14,14 +15,16 @@ public class Calculator {
             Character oldChar = oldMap.get(newChar.fullName());
             CharAndDiff e;
             if (oldChar == null) {
-                e = new CharAndDiff(newChar, new Diff(newChar.wins(), newChar.losses(), newChar.rating(), 0L));
+                e = new CharAndDiff(newChar, new Diff(newChar.wins(), newChar.losses(), newChar.rating(), 0L, newChars.timestamp()));
             } else {
                 e = new CharAndDiff(newChar,
                     new Diff(
                         newChar.wins() - oldChar.wins(),
                         newChar.losses() - oldChar.losses(),
                         newChar.rating() - oldChar.rating(),
-                        newChar.pos() - oldChar.pos())
+                        newChar.pos() - oldChar.pos(),
+                        newChars.timestamp()
+                    )
                 );
             }
             if (e.diff().lost() == 0 && e.diff().won() == 0) {
@@ -32,5 +35,14 @@ public class Calculator {
         }
         res.sort(Comparator.comparing((CharAndDiff o) -> o.character().rating()).reversed());
         return new SnapshotDiff(res, newChars.timestamp());
+    }
+
+    public static SnapshotDiff combine(SnapshotDiff older, SnapshotDiff newver) {
+        Map<String, CharAndDiff> res = newver.chars().stream().collect(Collectors.toMap(c -> c.character().fullName(), c -> c));
+        for (CharAndDiff oldChar : older.chars()) {
+            res.putIfAbsent(oldChar.character().fullName(), oldChar);
+        }
+        List<CharAndDiff> resList = res.values().stream().sorted(Comparator.comparing((CharAndDiff o) -> o.character().rating()).reversed()).collect(Collectors.toList());
+        return new SnapshotDiff(new ArrayList<>(resList), newver.timestamp());
     }
 }

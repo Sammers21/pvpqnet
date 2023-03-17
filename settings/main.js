@@ -88,7 +88,7 @@ async function loadIntoTable(table) {
                          <td>${realm}</td>
                          <td>${won} / ${lost}</td>
                          <td>${item.character.rating} ${ratingChange}</td>
-                         <td>${data.last_seen}</td>`
+                         <td>${item.diff.last_seen}</td>`
     });
 }
 

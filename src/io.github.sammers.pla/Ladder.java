@@ -1,6 +1,7 @@
 package io.github.sammers.pla;
 
 import io.reactivex.Completable;
+import io.reactivex.Maybe;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.vertx.core.json.JsonObject;
@@ -233,12 +234,16 @@ public class Ladder {
     }
 
     public Completable calcDiffs(String bracket) {
-        return db.getMinsAgo(bracket, 60 * 5).flatMapCompletable(characters -> {
-            SnapshotDiff snapshotDiff = Calculator.calculateDiff(characters, refByBracket(bracket).get());
-            diffsByBracket(bracket).set(snapshotDiff);
-            log.info("Diffs has been calculated for bracket {}, diffs:{}", bracket, snapshotDiff.chars().size());
-            return Completable.complete();
-        });
+        Maybe<Snapshot> sixHrsAgo = db.getMinsAgo(bracket, 60 * 5);
+        Maybe<Snapshot> threeHrsAgo = db.getMinsAgo(bracket, 60 * 3);
+        return sixHrsAgo.zipWith(threeHrsAgo, (six, three) -> {
+            SnapshotDiff threeNow = Calculator.calculateDiff(three, refByBracket(bracket).get());
+            SnapshotDiff sixThree = Calculator.calculateDiff(six, three);
+            SnapshotDiff res = Calculator.combine(sixThree, threeNow);
+            diffsByBracket(bracket).set(res);
+            log.info("Diffs has been calculated for bracket {}, diffs:{}", bracket, res.chars().size());
+            return Maybe.just(res);
+        }).ignoreElement();
     }
 
     public AtomicReference<Snapshot> refByBracket(String bracket) {
