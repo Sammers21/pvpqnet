@@ -16,5 +16,5 @@ async function loadIntoTable(url, table) {
     });
 }
 
-loadIntoTable('http://localhost:9000/api/activity/shuffle', document.querySelector('table'))
+loadIntoTable('http://pvpq.net:9000/api/activity/shuffle', document.querySelector('table'))
     .then(r => console.log(r));
