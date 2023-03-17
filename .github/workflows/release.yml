@@ -30,4 +30,4 @@ jobs:
             docker pull sammers/wow-pla:latest
             docker stop wow-pla
             docker rm -f wow-pla
-            docker run -e DB_PWD="${{ secrets.DB_PWD }}" --name wow-pla -d -p9000:9000 sammers/wow-pla:latest
+            docker run -e DB_URI="${{ secrets.DB_URI }}" --name wow-pla -d -p9000:9000 sammers/wow-pla:latest

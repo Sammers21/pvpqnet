@@ -11,6 +11,8 @@ import io.vertx.reactivex.ext.web.client.WebClient;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.*;
 import org.jsoup.select.Elements;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -23,6 +25,7 @@ import java.util.stream.Collectors;
 
 public class Ladder {
 
+    private static final Logger log = LoggerFactory.getLogger(Ladder.class);
     private final Vertx vertx;
     private final WebClient web;
 
@@ -105,19 +108,19 @@ public class Ladder {
             for (int i = 1; i <= 10; i++) {
                 int finalI = i;
                 res = res.flatMap(characters ->
-                        ladderShuffle(shuffleSpec, finalI).map(c -> {
-                            characters.addAll(c);
-                            return characters;
-                        })
+                    ladderShuffle(shuffleSpec, finalI).map(c -> {
+                        characters.addAll(c);
+                        return characters;
+                    })
                 );
             }
         }
         return res.map(chars -> {
-                    chars.sort(Comparator.comparing(Character::rating).reversed());
-                    return chars;
-                }).flatMap(chars -> db.insertOnlyIfDifferent(bracket, Snapshot.of(chars)).andThen(Single.just(chars)))
-                .map(Snapshot::of)
-                .doOnSuccess(refByBracket(bracket)::set);
+                chars.sort(Comparator.comparing(Character::rating).reversed());
+                return chars;
+            }).flatMap(chars -> db.insertOnlyIfDifferent(bracket, Snapshot.of(chars)).andThen(Single.just(chars)))
+            .map(Snapshot::of)
+            .doOnSuccess(refByBracket(bracket)::set);
     }
 
     public Single<Snapshot> fetchLadder(String bracket) {
@@ -125,98 +128,98 @@ public class Ladder {
         for (int i = 1; i <= 10; i++) {
             int finalI = i;
             res = res.flatMap(characters ->
-                    ladderTraditional(bracket, finalI).map(c -> {
-                        characters.addAll(c);
-                        return characters;
-                    })
+                ladderTraditional(bracket, finalI).map(c -> {
+                    characters.addAll(c);
+                    return characters;
+                })
             );
         }
         return res.map(Snapshot::of)
-                .doOnSuccess(refByBracket(bracket)::set)
-                .flatMap(chars -> db.insertOnlyIfDifferent(bracket, chars).andThen(Single.just(chars)));
+            .doOnSuccess(refByBracket(bracket)::set)
+            .flatMap(chars -> db.insertOnlyIfDifferent(bracket, chars).andThen(Single.just(chars)));
     }
 
     public Single<List<Character>> ladderShuffle(String bracket, Integer page) {
         String url = String.format("https://worldofwarcraft.blizzard.com/en-gb/game/pvp/leaderboards/%s", bracket);
         return web.getAbs(url).addQueryParam("page", page.toString()).rxSend().map(ok -> {
-                    String ers = ok.bodyAsString();
-                    Document parse = Jsoup.parse(ers);
-                    Elements select = parse.select("#main > div.Pane.Pane--dirtBlue.bordered > div.Pane-content > div.Paginator > div.Paginator-pages > div:nth-child(1) > div > div.SortTable-body");
-                    if (select.size() == 0) {
-                        return new ArrayList<Character>();
-                    } else {
-                        Element element = select.get(0);
-                        List<Node> nodes = element.childNodes();
-                        List<Character> characters = nodes.stream().map(Node::childNodes).map(nodeList -> {
-                            Node nameNode = nodeList.get(2);
-                            Long pos = Long.parseLong(nodeList.get(0).attr("data-value"));
-                            Long rating = Long.parseLong(((Element) nodeList.get(1).childNode(0).childNode(0).childNode(0).childNode(1)).text());
-                            String name = nameNode.attr("data-value");
-                            String[] splitted = bracket.split("/");
-                            String clazz = nodeList.get(3).attr("data-value");
-                            String specName = splitted[2].substring(0, 1).toUpperCase() + splitted[2].substring(1);
-                            String fullSpec = specName + " " + clazz;
-                            String fraction = nodeList.get(5).attr("data-value");
-                            String realm = nodeList.get(6).attr("data-value");
-                            Long wins = Long.parseLong(nodeList.get(7).attr("data-value"));
-                            Long losses = Long.parseLong(nodeList.get(8).attr("data-value"));
-                            return new Character(pos, rating, name, clazz, fullSpec, fraction, realm, wins, losses);
-                        }).toList();
-                        return characters;
-                    }
-                })
-                .doOnSuccess(ok -> System.out.println(String.format("OK %s %s", bracket, page)))
-                .doOnError(err -> System.out.println(String.format("ERR %s %s", bracket, page)));
+                String ers = ok.bodyAsString();
+                Document parse = Jsoup.parse(ers);
+                Elements select = parse.select("#main > div.Pane.Pane--dirtBlue.bordered > div.Pane-content > div.Paginator > div.Paginator-pages > div:nth-child(1) > div > div.SortTable-body");
+                if (select.size() == 0) {
+                    return new ArrayList<Character>();
+                } else {
+                    Element element = select.get(0);
+                    List<Node> nodes = element.childNodes();
+                    List<Character> characters = nodes.stream().map(Node::childNodes).map(nodeList -> {
+                        Node nameNode = nodeList.get(2);
+                        Long pos = Long.parseLong(nodeList.get(0).attr("data-value"));
+                        Long rating = Long.parseLong(((Element) nodeList.get(1).childNode(0).childNode(0).childNode(0).childNode(1)).text());
+                        String name = nameNode.attr("data-value");
+                        String[] splitted = bracket.split("/");
+                        String clazz = nodeList.get(3).attr("data-value");
+                        String specName = splitted[2].substring(0, 1).toUpperCase() + splitted[2].substring(1);
+                        String fullSpec = specName + " " + clazz;
+                        String fraction = nodeList.get(5).attr("data-value");
+                        String realm = nodeList.get(6).attr("data-value");
+                        Long wins = Long.parseLong(nodeList.get(7).attr("data-value"));
+                        Long losses = Long.parseLong(nodeList.get(8).attr("data-value"));
+                        return new Character(pos, rating, name, clazz, fullSpec, fraction, realm, wins, losses);
+                    }).toList();
+                    return characters;
+                }
+            })
+            .doOnSuccess(ok -> log.info(String.format("OK %s %s", bracket, page)))
+            .doOnError(err -> log.info(String.format("ERR %s %s", bracket, page)));
     }
 
     public Single<List<Character>> ladderTraditional(String bracket, Integer page) {
         String url = String.format("https://worldofwarcraft.blizzard.com/en-gb/game/pvp/leaderboards/%s", bracket);
         return web.getAbs(url).addQueryParam("page", page.toString()).rxSend().map(ok -> {
-                    int code = ok.statusCode();
-                    if (code != 200) {
-                        System.out.println("NON 200 code " + code);
-                        return new ArrayList<Character>();
+                int code = ok.statusCode();
+                if (code != 200) {
+                    log.info("NON 200 code " + code);
+                    return new ArrayList<Character>();
+                }
+                String ers = ok.bodyAsString();
+                Document parse = Jsoup.parse(ers);
+                Elements select = parse.select("#main > div.Pane.Pane--dirtBlue.bordered > div.Pane-content > div.Paginator > div.Paginator-pages > div:nth-child(1) > div > div.SortTable-body");
+                Element element = select.get(0);
+                List<Node> nodes = element.childNodes();
+                List<Character> characters = nodes.stream().map(Node::childNodes).map(nodeList -> {
+                    Node nameNode = nodeList.get(2);
+                    String fullSpec = "UNKNOWN";
+                    try {
+                        Node specNode = nameNode.childNode(0).childNode(0).childNode(0).childNode(2).childNode(2);
+                        fullSpec = ((Element) specNode).text().substring(2);
+                    } catch (Exception e) {
                     }
-                    String ers = ok.bodyAsString();
-                    Document parse = Jsoup.parse(ers);
-                    Elements select = parse.select("#main > div.Pane.Pane--dirtBlue.bordered > div.Pane-content > div.Paginator > div.Paginator-pages > div:nth-child(1) > div > div.SortTable-body");
-                    Element element = select.get(0);
-                    List<Node> nodes = element.childNodes();
-                    List<Character> characters = nodes.stream().map(Node::childNodes).map(nodeList -> {
-                        Node nameNode = nodeList.get(2);
-                        String fullSpec = "UNKNOWN";
-                        try {
-                            Node specNode = nameNode.childNode(0).childNode(0).childNode(0).childNode(2).childNode(2);
-                            fullSpec = ((Element) specNode).text().substring(2);
-                        } catch (Exception e) {
-                        }
-                        Long pos = Long.parseLong(nodeList.get(0).attr("data-value"));
-                        Long rating = Long.parseLong(((Element) nodeList.get(1).childNode(0).childNode(0).childNode(0).childNode(1)).text());
-                        String name = nameNode.attr("data-value");
-                        String clazz = nodeList.get(3).attr("data-value");
-                        String fraction = nodeList.get(4).attr("data-value");
-                        String realm = nodeList.get(5).attr("data-value");
-                        Long wins = Long.parseLong(nodeList.get(6).attr("data-value"));
-                        Long losses = Long.parseLong(nodeList.get(7).attr("data-value"));
-                        return new Character(pos, rating, name, clazz, fullSpec, fraction, realm, wins, losses);
-                    }).toList();
-                    return characters;
-                })
-                .doOnSuccess(ok -> System.out.println(String.format("OK %s %s", bracket, page)))
-                .doOnError(err -> System.out.println(String.format("ERR %s %s", bracket, page)));
+                    Long pos = Long.parseLong(nodeList.get(0).attr("data-value"));
+                    Long rating = Long.parseLong(((Element) nodeList.get(1).childNode(0).childNode(0).childNode(0).childNode(1)).text());
+                    String name = nameNode.attr("data-value");
+                    String clazz = nodeList.get(3).attr("data-value");
+                    String fraction = nodeList.get(4).attr("data-value");
+                    String realm = nodeList.get(5).attr("data-value");
+                    Long wins = Long.parseLong(nodeList.get(6).attr("data-value"));
+                    Long losses = Long.parseLong(nodeList.get(7).attr("data-value"));
+                    return new Character(pos, rating, name, clazz, fullSpec, fraction, realm, wins, losses);
+                }).toList();
+                return characters;
+            })
+            .doOnSuccess(ok -> log.info(String.format("OK %s %s", bracket, page)))
+            .doOnError(err -> log.info(String.format("ERR %s %s", bracket, page)));
     }
 
     public void start() {
         loadLast(TWO_V_TWO, refByBracket(TWO_V_TWO))
-                .andThen(loadLast(THREE_V_THREE, refByBracket(THREE_V_THREE)))
-                .andThen(loadLast(RBG, refByBracket(RBG)))
-                .andThen(loadLast(SHUFFLE, refByBracket(SHUFFLE)))
-                .andThen(Observable.interval(0, 60, TimeUnit.MINUTES)
-                        .flatMapSingle(tick -> threeVThree())
-                        .flatMapSingle(tick -> twoVTwo())
-                        .flatMapSingle(tick -> battlegrounds())
-                        .flatMapSingle(tick -> shuffle())
-                ).subscribe();
+            .andThen(loadLast(THREE_V_THREE, refByBracket(THREE_V_THREE)))
+            .andThen(loadLast(RBG, refByBracket(RBG)))
+            .andThen(loadLast(SHUFFLE, refByBracket(SHUFFLE)))
+            .andThen(Observable.interval(0, 60, TimeUnit.MINUTES)
+                .flatMapSingle(tick -> threeVThree())
+                .flatMapSingle(tick -> twoVTwo())
+                .flatMapSingle(tick -> battlegrounds())
+                .flatMapSingle(tick -> shuffle())
+            ).subscribe();
     }
 
     private Completable loadLast(String bracket, AtomicReference<Snapshot> ref) {
