@@ -37,7 +37,7 @@ jar {
 }
 
 shadowJar {
-    archiveBaseName.set('clip-maker-v2')
+    archiveBaseName.set('wow-pla')
     archiveClassifier.set('')
     archiveVersion.set('')
     manifest {
