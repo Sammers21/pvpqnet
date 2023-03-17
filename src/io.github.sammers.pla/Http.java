@@ -6,6 +6,7 @@ import io.vertx.reactivex.ext.mongo.MongoClient;
 import io.vertx.reactivex.ext.web.Router;
 import io.vertx.reactivex.ext.web.RoutingContext;
 
+import java.util.List;
 import java.util.Optional;
 
 public class Http {
@@ -49,7 +50,7 @@ public class Http {
                 .flatMap(l -> l.stream().findFirst())
                 .map(Long::parseLong).orElse(1L);
         if (snapshot == null) {
-            ctx.response().end(new JsonObject().encode());
+            ctx.response().end(new Snapshot(List.of(), System.currentTimeMillis()).toJson(page).encode());
         } else {
             ctx.response().end(snapshot.toJson(page).encode());
         }

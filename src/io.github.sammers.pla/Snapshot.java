@@ -4,6 +4,7 @@ package io.github.sammers.pla;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
+import java.util.Date;
 import java.util.List;
 
 public record Snapshot(List<Character> characters, Long timestamp) implements JsonPaged {
@@ -21,7 +22,8 @@ public record Snapshot(List<Character> characters, Long timestamp) implements Js
             .put("characters", new JsonArray(chars))
             .put("timestamp", timestamp)
             .put("page", page)
-            .put("total_pages", characters.size() / 100);
+            .put("total_pages", characters.size() / 100)
+            .put("last_seen", Main.PRETTY_TIME.format(new Date(timestamp)));
         return put;
     }
 
@@ -29,7 +31,8 @@ public record Snapshot(List<Character> characters, Long timestamp) implements Js
         List<JsonObject> chars = characters.stream().map(JsonConvertable::toJson).toList();
         return new JsonObject()
             .put("characters", new JsonArray(chars))
-            .put("timestamp", timestamp);
+            .put("timestamp", timestamp)
+            .put("last_seen", Main.PRETTY_TIME.format(new Date(timestamp)));
     }
 
     public static Snapshot fromJson(JsonObject entries) {

@@ -4,8 +4,14 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.ext.mongo.MongoClient;
 import io.vertx.reactivex.ext.web.client.WebClient;
+import org.ocpsoft.prettytime.PrettyTime;
+
+import java.util.Date;
+import java.util.Locale;
 
 public class Main {
+    public static PrettyTime PRETTY_TIME = new PrettyTime(new Locale("en"));
+
     public static void main(String[] args) {
         Vertx vertx = Vertx.vertx();
         WebClient webClient = WebClient.create(vertx);

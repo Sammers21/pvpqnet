@@ -2,7 +2,9 @@ package io.github.sammers.pla;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.ocpsoft.prettytime.PrettyTime;
 
+import java.util.Date;
 import java.util.List;
 
 public record SnapshotDiff(List<CharAndDiff> chars, Long timestamp) implements JsonPaged {
@@ -10,7 +12,8 @@ public record SnapshotDiff(List<CharAndDiff> chars, Long timestamp) implements J
     public JsonObject toJson() {
         return new JsonObject()
             .put("characters", new JsonArray(chars.stream().map(JsonConvertable::toJson).toList()))
-            .put("timestamp", timestamp);
+            .put("timestamp", timestamp)
+            .put("last_seen", Main.PRETTY_TIME.format(new Date(timestamp)));
     }
 
     @Override
@@ -20,7 +23,8 @@ public record SnapshotDiff(List<CharAndDiff> chars, Long timestamp) implements J
             .put("characters", new JsonArray(chars))
             .put("timestamp", timestamp)
             .put("page", page)
-            .put("total_pages", chars.size() / 100);
+            .put("total_pages", chars.size() / 100)
+            .put("last_seen", Main.PRETTY_TIME.format(new Date(timestamp)));
         return put;
     }
 }
