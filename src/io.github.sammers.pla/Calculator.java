@@ -15,7 +15,7 @@ public class Calculator {
             Character oldChar = oldMap.get(newChar.fullName());
             CharAndDiff e;
             if (oldChar == null) {
-                e = new CharAndDiff(newChar, new Diff(newChar.wins(), newChar.losses(), newChar.rating(), 0L, newChars.timestamp()));
+                e = new CharAndDiff(newChar, new Diff(0L, 0L, 0L, 0L, newChars.timestamp()));
             } else {
                 e = new CharAndDiff(newChar,
                     new Diff(
@@ -38,7 +38,7 @@ public class Calculator {
     }
 
     public static SnapshotDiff combine(SnapshotDiff older, SnapshotDiff newver) {
-        Map<String, CharAndDiff> res = newver.chars().stream().collect(Collectors.toMap(c -> c.character().fullName(), c -> c));
+        Map<String, CharAndDiff> res = newver.chars().stream().collect(Collectors.toMap(c -> c.character().fullName(), c -> c, (a, b) -> a));
         for (CharAndDiff oldChar : older.chars()) {
             res.putIfAbsent(oldChar.character().fullName(), oldChar);
         }

@@ -6,7 +6,7 @@ import io.vertx.core.json.JsonObject;
 public record Character(Long pos, Long rating, String name, String clazz, String fullSpec, String fraction,
                         String realm, Long wins, Long losses) implements JsonConvertable {
     public String fullName() {
-        return name + " " + realm + " " + fullSpec;
+        return name + " " + realm + " " + clazz;
     }
 
     public JsonObject toJson() {

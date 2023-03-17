@@ -237,7 +237,8 @@ public class Ladder {
         Maybe<Snapshot> sixHrsAgo = db.getMinsAgo(bracket, 60 * 5);
         Maybe<Snapshot> threeHrsAgo = db.getMinsAgo(bracket, 60 * 3);
         return sixHrsAgo.zipWith(threeHrsAgo, (six, three) -> {
-            SnapshotDiff threeNow = Calculator.calculateDiff(three, refByBracket(bracket).get());
+            Snapshot now = refByBracket(bracket).get();
+            SnapshotDiff threeNow = Calculator.calculateDiff(three, now);
             SnapshotDiff sixThree = Calculator.calculateDiff(six, three);
             SnapshotDiff res = Calculator.combine(sixThree, threeNow);
             diffsByBracket(bracket).set(res);
