@@ -233,7 +233,7 @@ public class Ladder {
         }).flatMapCompletable(characters -> {
             refByBracket(bracket + "_older_older").set(characters);
             log.info("Data for bracket {} has been loaded from DB", bracket);
-            SnapshotDiff snapshotDiff = Calculator.calculateDiff(refByBracket(bracket).get(), refByBracket(bracket + "_older_older").get());
+            SnapshotDiff snapshotDiff = Calculator.calculateDiff(refByBracket(bracket + "_older_older").get(), refByBracket(bracket).get());
             diffsByBracket(bracket).set(snapshotDiff);
             log.info("Diffs has been calculated for bracket {}, diffs:{}", bracket, snapshotDiff.chars().size());
             return Completable.complete();

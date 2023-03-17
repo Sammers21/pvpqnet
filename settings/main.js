@@ -12,7 +12,7 @@ async function loadIntoTable(url, table) {
                          <td>${item.character.realm}</td>
                          <td>${item.diff.won}/${item.diff.lost}</td>
                          <td>${item.character.rating} ${ratingChange}</td>
-                         <td>${data.timestamp}</td>`
+                         <td>${data.last_seen}</td>`
     });
 }
 

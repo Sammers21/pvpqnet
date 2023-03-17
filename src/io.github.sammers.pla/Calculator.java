@@ -1,7 +1,7 @@
 package io.github.sammers.pla;
 
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Comparator;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -16,14 +16,21 @@ public class Calculator {
             if (oldChar == null) {
                 e = new CharAndDiff(newChar, new Diff(newChar.wins(), newChar.losses(), newChar.rating(), 0L));
             } else {
-                e = new CharAndDiff(newChar, new Diff(newChar.wins() - oldChar.wins(), newChar.losses() - oldChar.losses(), newChar.rating() - oldChar.rating(), newChar.pos() - oldChar.pos()));
+                e = new CharAndDiff(newChar,
+                    new Diff(
+                        newChar.wins() - oldChar.wins(),
+                        newChar.losses() - oldChar.losses(),
+                        newChar.rating() - oldChar.rating(),
+                        newChar.pos() - oldChar.pos())
+                );
             }
-            if(e.diff().lost() == 0 && e.diff().won() == 0 && e.diff().ratingDiff() == 0) {
+            if (e.diff().lost() == 0 && e.diff().won() == 0) {
                 continue;
             } else {
                 res.add(e);
             }
         }
+        res.sort(Comparator.comparing((CharAndDiff o) -> o.character().rating()).reversed());
         return new SnapshotDiff(res, newChars.timestamp());
     }
 }
