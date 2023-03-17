@@ -5,3 +5,16 @@ html {
     -o-background-size: cover;
     background-size: cover;
 }
+
+table {
+    border: 1px solid black;
+    background-color: rgba(0,0,0,0.9);
+    opacity: 0.90;
+    width: 80%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+td, th {
+    color: white;
+}
