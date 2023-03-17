@@ -55,3 +55,78 @@ th {
 .bracket-buttons button:hover {
     background-color: rgb(21, 128, 61);
 }
+
+mark.red {
+    color:#ff0000;
+    background: none;
+}
+
+mark.green {
+    color: green;
+    background: none;
+}
+
+mark.blue {
+    color:#0070DD;
+    background: none;
+}
+
+mark.white {
+    color: #FFFFFF;
+    background: none;
+}
+
+mark.dk-red {
+    color: #C41E3A;
+    background: none;
+}
+
+mark.dark-magenta {
+    color: #A330C9;
+    background: none;
+}
+
+mark.orange {
+    color: #FF7C0A;
+    background: none;
+}
+
+mark.dark-emerald {
+    color: #33937F;
+    background: none;
+}
+
+mark.pistachio {
+    color: #8EBA43;
+    background: none;
+}
+
+mark.light-blue {
+    color: #3FC7EB;
+    background: none;
+}
+
+mark.spring-green {
+    color: #00FF98;
+    background: none;
+}
+
+mark.pink {
+    color: #F48CBA;
+    background: none;
+}
+
+mark.yellow {
+    color: #FFF468;
+    background: none;
+}
+
+mark.purple {
+    color: #8788EE;
+    background: none;
+}
+
+mark.tan {
+    color: #C69B6D;
+    background: none;
+}
