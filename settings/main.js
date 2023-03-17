@@ -26,7 +26,7 @@ function classNameColored(wowClass, name) {
         return mark('spring-green ', name);
     } else if(wowClass === 'DRUID') {
         return mark('orange', name);
-    } else if(wowClass === 'DEMONHUNTER') {
+    } else if(wowClass === 'DEMON HUNTER') {
         return mark('dark-magenta ', name);
     } else if(wowClass === 'EVOKER') {
         return mark('dark-emerald ', name);
