@@ -1,8 +1,12 @@
 package io.github.sammers.pla;
 
+import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
+import io.vertx.core.json.JsonObject;
+import io.vertx.ext.mongo.FindOptions;
 import io.vertx.reactivex.core.Vertx;
+import io.vertx.reactivex.ext.mongo.MongoClient;
 import io.vertx.reactivex.ext.web.client.WebClient;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.*;
@@ -13,6 +17,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 public class Ladder {
 
@@ -64,28 +69,37 @@ public class Ladder {
     public final AtomicReference<List<Character>> threeVThreeLadder = new AtomicReference<>();
     public final AtomicReference<List<Character>> shuffleLadder = new AtomicReference<>();
     public final AtomicReference<List<Character>> bgLadder = new AtomicReference<>();
+    private final MongoClient mongoClient;
 
-    public Ladder(Vertx vertx, WebClient web) {
+    public Ladder(Vertx vertx, WebClient web, MongoClient mongoClient) {
         this.vertx = vertx;
         this.web = web;
+        this.mongoClient = mongoClient;
     }
 
     public Single<List<Character>> threeVThree() {
         String bracket = "3v3";
-        return fetchLadder(bracket).doOnSuccess(threeVThreeLadder::set);
+        return fetchLadder(bracket)
+                .doOnSuccess(threeVThreeLadder::set)
+                .flatMap(chars -> saveToMongo(bracket, Snapshot.of(chars)).andThen(Single.just(chars)));
     }
 
     public Single<List<Character>> twoVTwo() {
         String bracket = "2v2";
-        return fetchLadder(bracket).doOnSuccess(twoVTwoladder::set);
+        return fetchLadder(bracket)
+                .doOnSuccess(twoVTwoladder::set)
+                .flatMap(chars -> saveToMongo(bracket, Snapshot.of(chars)).andThen(Single.just(chars)));
     }
 
     public Single<List<Character>> battlegrounds() {
         String bracket = "battlegrounds";
-        return fetchLadder(bracket).doOnSuccess(bgLadder::set);
+        return fetchLadder(bracket)
+                .doOnSuccess(bgLadder::set)
+                .flatMap(chars -> saveToMongo(bracket, Snapshot.of(chars)).andThen(Single.just(chars)));
     }
 
     public Single<List<Character>> shuffle() {
+        String shuffle = "shuffle";
         Single<List<Character>> res = Single.just(new ArrayList<>(1000 * shuffleSpecs.size()));
         for (String shuffleSpec : shuffleSpecs) {
             for (int i = 1; i <= 10; i++) {
@@ -99,9 +113,10 @@ public class Ladder {
             }
         }
         return res.map(chars -> {
-            chars.sort(Comparator.comparing(Character::rating));
-            return chars;
-        }).doOnSuccess(shuffleLadder::set);
+                    chars.sort(Comparator.comparing(Character::rating).reversed());
+                    return chars;
+                }).flatMap(chars -> saveToMongo(shuffle, Snapshot.of(chars)).andThen(Single.just(chars)))
+                .doOnSuccess(shuffleLadder::set);
     }
 
     public Single<List<Character>> fetchLadder(String bracket) {
@@ -116,6 +131,10 @@ public class Ladder {
             );
         }
         return res;
+    }
+
+    public Completable saveToMongo(String bracket, Snapshot snapshot) {
+        return mongoClient.rxSave(bracket, snapshot.toJson()).ignoreElement();
     }
 
     public Single<List<Character>> ladderShuffle(String bracket, Integer page) {
@@ -189,11 +208,28 @@ public class Ladder {
     }
 
     public void start() {
-        Observable.interval(0, 60, TimeUnit.MINUTES)
-                .flatMapSingle(tick -> threeVThree())
-                .flatMapSingle(tick -> twoVTwo())
-                .flatMapSingle(tick -> battlegrounds())
-                .flatMapSingle(tick -> shuffle())
-                .subscribe();
+        loadLast("2v2", twoVTwoladder)
+                .andThen(loadLast("3v3", threeVThreeLadder))
+                .andThen(loadLast("battlegrounds", bgLadder))
+                .andThen(loadLast("shuffle", shuffleLadder))
+                .andThen(Observable.interval(0, 60, TimeUnit.MINUTES)
+                        .flatMapSingle(tick -> threeVThree())
+                        .flatMapSingle(tick -> twoVTwo())
+                        .flatMapSingle(tick -> battlegrounds())
+                        .flatMapSingle(tick -> shuffle())
+                ).subscribe();
+    }
+
+    private Completable loadLast(String bracket, AtomicReference<List<Character>> ref) {
+        FindOptions fopts = new FindOptions().setSort(new JsonObject().put("timestamp", -1)).setLimit(10);
+        JsonObject opts = new JsonObject();
+        return mongoClient.rxFindWithOptions(bracket, opts, fopts).flatMapCompletable(res -> {
+            List<Snapshot> snapshots = res.stream().map(Snapshot::fromJson).toList();
+            if (snapshots.size() > 0) {
+                System.out.println(bracket + " bracket data has been loaded from mongo");
+                ref.set(snapshots.get(0).characters().stream().map(c -> (Character) c).toList());
+            }
+            return Completable.complete();
+        });
     }
 }

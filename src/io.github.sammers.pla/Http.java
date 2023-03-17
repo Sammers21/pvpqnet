@@ -1,6 +1,7 @@
 package io.github.sammers.pla;
 
 import io.vertx.reactivex.core.Vertx;
+import io.vertx.reactivex.ext.mongo.MongoClient;
 import io.vertx.reactivex.ext.web.Router;
 import io.vertx.reactivex.ext.web.RoutingContext;
 
@@ -41,14 +42,4 @@ public class Http {
         }
     }
 
-    private void activity(RoutingContext ctx, Snapshot snapshot) {
-        Long page = Optional.of(ctx.queryParam("page"))
-                .flatMap(l -> l.stream().findFirst())
-                .map(Long::parseLong).orElse(1L);
-        if (snapshot == null) {
-            ctx.response().end("No data");
-        } else {
-            ctx.response().end(snapshot.toJson(page).encode());
-        }
-    }
 }

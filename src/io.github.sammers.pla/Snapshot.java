@@ -9,7 +9,10 @@ import java.util.List;
 public record Snapshot(List<JsonConvertable> characters, Long timestamp) {
 
     public static Snapshot of(List<Character> characters) {
-        return new Snapshot(characters.stream().map(x -> (JsonConvertable) x).toList(), System.nanoTime() / 1000000);
+        if (characters == null || characters.isEmpty()) {
+            return new Snapshot(List.of(), System.currentTimeMillis());
+        }
+        return new Snapshot(characters.stream().map(x -> (JsonConvertable) x).toList(), System.currentTimeMillis());
     }
 
     public JsonObject toJson(Long page) {
@@ -20,5 +23,16 @@ public record Snapshot(List<JsonConvertable> characters, Long timestamp) {
                 .put("page", page)
                 .put("total_pages", characters.size() / 100);
         return put;
+    }
+
+    public JsonObject toJson() {
+        List<JsonObject> chars = characters.stream().map(JsonConvertable::toJson).toList();
+        return new JsonObject()
+                .put("characters", new JsonArray(chars))
+                .put("timestamp", timestamp);
+    }
+
+    public static Snapshot fromJson(JsonObject entries) {
+        return new Snapshot(entries.getJsonArray("characters").stream().map(x -> (JsonObject) x).map(Character::fromJson).map(x -> (JsonConvertable) x).toList(), entries.getLong("timestamp"));
     }
 }
