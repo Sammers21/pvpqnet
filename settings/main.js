@@ -19,7 +19,7 @@ function classNameColored(wowClass, name) {
     } else if(wowClass === 'SHAMAN') {
         return mark('blue', name);
     } else if(wowClass === 'MAGE') {
-        return mark('lightblue', name);
+        return mark('light-blue', name);
     } else if(wowClass === 'WARLOCK') {
         return mark('purple', name);
     } else if(wowClass === 'MONK') {
