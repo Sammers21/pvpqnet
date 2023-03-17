@@ -24,22 +24,21 @@ public class Http {
         router.get("/ladder/3v3").handler(ctx -> ladder(ctx, ladder.refByBracket(Ladder.THREE_V_THREE).get()));
         router.get("/ladder/shuffle").handler(ctx -> ladder(ctx, ladder.refByBracket(Ladder.SHUFFLE).get()));
         router.get("/ladder/rbg").handler(ctx -> ladder(ctx, ladder.refByBracket(Ladder.RBG).get()));
-        router.get("/activity/2v2").handler(ctx -> ctx.response().end("Hello from Vert.x!"));
-        router.get("/activity/3v3").handler(ctx -> ctx.response().end("Hello from Vert.x!"));
-        router.get("/activity/shuffle").handler(ctx -> ctx.response().end("Hello from Vert.x!"));
-        router.get("/activity/rbg").handler(ctx -> ctx.response().end("Hello from Vert.x!"));
+        router.get("/activity/2v2").handler(ctx -> ladder(ctx, ladder.diffsByBracket(Ladder.TWO_V_TWO).get()));
+        router.get("/activity/3v3").handler(ctx -> ladder(ctx, ladder.diffsByBracket(Ladder.THREE_V_THREE).get()));
+        router.get("/activity/shuffle").handler(ctx -> ladder(ctx, ladder.diffsByBracket(Ladder.SHUFFLE).get()));
+        router.get("/activity/rbg").handler(ctx -> ladder(ctx, ladder.diffsByBracket(Ladder.RBG).get()));
         vertx.createHttpServer().requestHandler(router).listen(9000);
     }
 
-    private void ladder(RoutingContext ctx, Snapshot snapshot) {
+    private void ladder(RoutingContext ctx, JsonPaged snapshot) {
         Long page = Optional.of(ctx.queryParam("page"))
-                .flatMap(l -> l.stream().findFirst())
-                .map(Long::parseLong).orElse(1L);
+            .flatMap(l -> l.stream().findFirst())
+            .map(Long::parseLong).orElse(1L);
         if (snapshot == null) {
             ctx.response().end("No data");
         } else {
             ctx.response().end(snapshot.toJson(page).encode());
         }
     }
-
 }

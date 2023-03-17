@@ -7,10 +7,10 @@ import java.util.stream.Collectors;
 
 public class Calculator {
 
-    public static List<CharAndDiff> calculateDiff(List<Character> oldChars, List<Character> newChars) {
-        ArrayList<CharAndDiff> res = new ArrayList<>(newChars.size());
-        Map<String, Character> oldMap = oldChars.stream().collect(Collectors.toMap(Character::fullName, c -> c));
-        for (Character newChar : newChars) {
+    public static SnapshotDiff calculateDiff(Snapshot oldChars, Snapshot newChars) {
+        ArrayList<CharAndDiff> res = new ArrayList<>(newChars.characters().size());
+        Map<String, Character> oldMap = oldChars.characters().stream().collect(Collectors.toMap(Character::fullName, c -> c));
+        for (Character newChar : newChars.characters()) {
             Character oldChar = oldMap.get(newChar.fullName());
             CharAndDiff e;
             if (oldChar == null) {
@@ -24,6 +24,6 @@ public class Calculator {
                 res.add(e);
             }
         }
-        return res;
+        return new SnapshotDiff(res, newChars.timestamp());
     }
 }

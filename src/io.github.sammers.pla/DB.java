@@ -21,7 +21,11 @@ public class DB {
     }
 
     public Maybe<Snapshot> getLast(String bracket) {
-        FindOptions fopts = new FindOptions().setSort(new JsonObject().put("timestamp", -1)).setLimit(10);
+        return getLast(bracket, 0);
+    }
+
+    public Maybe<Snapshot> getLast(String bracket, int skip) {
+        FindOptions fopts = new FindOptions().setSort(new JsonObject().put("timestamp", -1)).setLimit(1).setSkip(skip);
         JsonObject opts = new JsonObject();
         return mongoClient.rxFindWithOptions(bracket, opts, fopts).flatMapMaybe(res -> {
             List<Snapshot> snapshots = res.stream().map(Snapshot::fromJson).toList();

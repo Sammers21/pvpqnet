@@ -8,6 +8,7 @@ import io.vertx.ext.mongo.FindOptions;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.ext.mongo.MongoClient;
 import io.vertx.reactivex.ext.web.client.WebClient;
+import org.apache.commons.collections4.CollectionUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.*;
 import org.jsoup.select.Elements;
@@ -77,6 +78,7 @@ public class Ladder {
     }};
 
     private final Map<String, AtomicReference<Snapshot>> refs = new ConcurrentHashMap<>();
+    private final Map<String, AtomicReference<SnapshotDiff>> refDiffs = new ConcurrentHashMap<>();
 
     private final DB db;
 
@@ -118,9 +120,9 @@ public class Ladder {
         return res.map(chars -> {
                 chars.sort(Comparator.comparing(Character::rating).reversed());
                 return chars;
-            }).flatMap(chars -> db.insertOnlyIfDifferent(bracket, Snapshot.of(chars)).andThen(Single.just(chars)))
+            })
             .map(Snapshot::of)
-            .doOnSuccess(refByBracket(bracket)::set);
+            .flatMap(d -> newDataOnBracket(bracket, d).andThen(Single.just(d)));
     }
 
     public Single<Snapshot> fetchLadder(String bracket) {
@@ -135,8 +137,7 @@ public class Ladder {
             );
         }
         return res.map(Snapshot::of)
-            .doOnSuccess(refByBracket(bracket)::set)
-            .flatMap(chars -> db.insertOnlyIfDifferent(bracket, chars).andThen(Single.just(chars)));
+            .flatMap(d -> newDataOnBracket(bracket, d).andThen(Single.just(d)));
     }
 
     public Single<List<Character>> ladderShuffle(String bracket, Integer page) {
@@ -205,15 +206,15 @@ public class Ladder {
                 }).toList();
                 return characters;
             })
-            .doOnSuccess(ok -> log.info(String.format("OK %s %s", bracket, page)))
+            .doOnSuccess(ok -> log.info(String.format("%s ladder has been fetched page=%s", bracket, page)))
             .doOnError(err -> log.info(String.format("ERR %s %s", bracket, page)));
     }
 
     public void start() {
-        loadLast(TWO_V_TWO, refByBracket(TWO_V_TWO))
-            .andThen(loadLast(THREE_V_THREE, refByBracket(THREE_V_THREE)))
-            .andThen(loadLast(RBG, refByBracket(RBG)))
-            .andThen(loadLast(SHUFFLE, refByBracket(SHUFFLE)))
+        loadLast(TWO_V_TWO)
+            .andThen(loadLast(THREE_V_THREE))
+            .andThen(loadLast(RBG))
+            .andThen(loadLast(SHUFFLE))
             .andThen(Observable.interval(0, 60, TimeUnit.MINUTES)
                 .flatMapSingle(tick -> threeVThree())
                 .flatMapSingle(tick -> twoVTwo())
@@ -222,9 +223,19 @@ public class Ladder {
             ).subscribe();
     }
 
-    private Completable loadLast(String bracket, AtomicReference<Snapshot> ref) {
-        return db.getLast(bracket).flatMapCompletable(characters -> {
-            ref.set(characters);
+    private Completable loadLast(String bracket) {
+        return db.getLast(bracket).flatMap(characters -> {
+            refByBracket(bracket).set(characters);
+            return db.getLast(bracket, 1);
+        }).flatMap(characters -> {
+            refByBracket(bracket + "_older").set(characters);
+            return db.getLast(bracket, 2);
+        }).flatMapCompletable(characters -> {
+            refByBracket(bracket + "_older_older").set(characters);
+            log.info("Data for bracket {} has been loaded from DB", bracket);
+            SnapshotDiff snapshotDiff = Calculator.calculateDiff(refByBracket(bracket).get(), refByBracket(bracket + "_older_older").get());
+            diffsByBracket(bracket).set(snapshotDiff);
+            log.info("Diffs has been calculated for bracket {}, diffs:{}", bracket, snapshotDiff.chars().size());
             return Completable.complete();
         });
     }
@@ -233,10 +244,23 @@ public class Ladder {
         return refs.computeIfAbsent(bracket, k -> new AtomicReference<>());
     }
 
-    public void newDataOnBracket(String bracket, List<Character> newCharacters) {
+    public AtomicReference<SnapshotDiff> diffsByBracket(String bracket) {
+        return refDiffs.computeIfAbsent(bracket, k -> new AtomicReference<>());
+    }
+
+    public Completable newDataOnBracket(String bracket, Snapshot newCharacters) {
         AtomicReference<Snapshot> current = refByBracket(bracket);
         AtomicReference<Snapshot> older = refByBracket(bracket + "_older");
         AtomicReference<Snapshot> olderOlder = refByBracket(bracket + "_older_older");
-
+        if (!CollectionUtils.isEqualCollection(newCharacters.characters(), current.get().characters())) {
+            olderOlder.set(older.get());
+            older.set(current.get());
+            current.set(newCharacters);
+            log.info("Data for bracket {} is different performing update", bracket);
+            return db.insertOnlyIfDifferent(bracket, newCharacters);
+        } else {
+            log.info("Data for bracket {} are equal, not updating", bracket);
+            return Completable.complete();
+        }
     }
 }
