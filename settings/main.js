@@ -1,4 +1,14 @@
-async function loadIntoTable(url, table) {
+async function loadIntoTable(table) {
+    var url = window.location.origin + '/api/activity/shuffle';
+    if(window.location.pathname === '/activity/2v2') {
+        url = window.location.origin + '/api/activity/2v2';
+    } else if (window.location.pathname === '/activity/3v3') {
+        url = window.location.origin + '/api/activity/3v3';
+    } else if (window.location.pathname === '/activity/rbg') {
+        url = window.location.origin + '/api/activity/rbg';
+    } else if (window.location.pathname === '/activity/shuffle') {
+        url = window.location.origin + '/api/activity/shuffle';
+    }
     const response = await fetch(url);
     const data = await response.json();
     console.log(data)
@@ -16,5 +26,5 @@ async function loadIntoTable(url, table) {
     });
 }
 
-loadIntoTable('/api/activity/shuffle', document.querySelector('table'))
+loadIntoTable(document.querySelector('table'))
     .then(r => console.log(r));
