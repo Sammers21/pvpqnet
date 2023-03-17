@@ -6,13 +6,13 @@ import io.vertx.core.json.JsonObject;
 
 import java.util.List;
 
-public record Snapshot(List<JsonConvertable> characters, Long timestamp) {
+public record Snapshot(List<Character> characters, Long timestamp) {
 
     public static Snapshot of(List<Character> characters) {
         if (characters == null || characters.isEmpty()) {
             return new Snapshot(List.of(), System.currentTimeMillis());
         }
-        return new Snapshot(characters.stream().map(x -> (JsonConvertable) x).toList(), System.currentTimeMillis());
+        return new Snapshot(characters, System.currentTimeMillis());
     }
 
     public JsonObject toJson(Long page) {
@@ -33,6 +33,6 @@ public record Snapshot(List<JsonConvertable> characters, Long timestamp) {
     }
 
     public static Snapshot fromJson(JsonObject entries) {
-        return new Snapshot(entries.getJsonArray("characters").stream().map(x -> (JsonObject) x).map(Character::fromJson).map(x -> (JsonConvertable) x).toList(), entries.getLong("timestamp"));
+        return new Snapshot(entries.getJsonArray("characters").stream().map(x -> (JsonObject) x).map(Character::fromJson).toList(), entries.getLong("timestamp"));
     }
 }

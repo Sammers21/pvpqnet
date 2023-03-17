@@ -20,10 +20,10 @@ public class Http {
     public void start() {
         Vertx vertx = Vertx.vertx();
         Router router = Router.router(vertx);
-        router.get("/ladder/2v2").handler(ctx -> ladder(ctx, Snapshot.of(ladder.twoVTwoladder.get())));
-        router.get("/ladder/3v3").handler(ctx -> ladder(ctx, Snapshot.of(ladder.threeVThreeLadder.get())));
-        router.get("/ladder/shuffle").handler(ctx -> ladder(ctx, Snapshot.of(ladder.shuffleLadder.get())));
-        router.get("/ladder/rbg").handler(ctx -> ladder(ctx, Snapshot.of(ladder.shuffleLadder.get())));
+        router.get("/ladder/2v2").handler(ctx -> ladder(ctx, ladder.twoVTwoladder.get()));
+        router.get("/ladder/3v3").handler(ctx -> ladder(ctx, ladder.threeVThreeLadder.get()));
+        router.get("/ladder/shuffle").handler(ctx -> ladder(ctx, ladder.shuffleLadder.get()));
+        router.get("/ladder/rbg").handler(ctx -> ladder(ctx, ladder.shuffleLadder.get()));
         router.get("/activity/2v2").handler(ctx -> ctx.response().end("Hello from Vert.x!"));
         router.get("/activity/3v3").handler(ctx -> ctx.response().end("Hello from Vert.x!"));
         router.get("/activity/shuffle").handler(ctx -> ctx.response().end("Hello from Vert.x!"));

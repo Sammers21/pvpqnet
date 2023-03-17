@@ -13,7 +13,7 @@ public class Main {
                 .put("db_name", "pvpq")
                 .put("connection_string", String.format("mongodb://root:%s@161.35.72.39:27017", args[0]))
         );
-        Ladder ladder = new Ladder(vertx, webClient, mongoClient);
+        Ladder ladder = new Ladder(vertx, webClient, new DB(mongoClient));
         ladder.start();
         new Http(vertx, ladder).start();
     }

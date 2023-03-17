@@ -65,40 +65,40 @@ public class Ladder {
         add("shuffle/warrior/protection");
     }};
 
-    public final AtomicReference<List<Character>> twoVTwoladder = new AtomicReference<>();
-    public final AtomicReference<List<Character>> threeVThreeLadder = new AtomicReference<>();
-    public final AtomicReference<List<Character>> shuffleLadder = new AtomicReference<>();
-    public final AtomicReference<List<Character>> bgLadder = new AtomicReference<>();
-    private final MongoClient mongoClient;
+    public final AtomicReference<Snapshot> twoVTwoladder = new AtomicReference<>();
+    public final AtomicReference<Snapshot> threeVThreeLadder = new AtomicReference<>();
+    public final AtomicReference<Snapshot> shuffleLadder = new AtomicReference<>();
+    public final AtomicReference<Snapshot> bgLadder = new AtomicReference<>();
+    private final DB db;
 
-    public Ladder(Vertx vertx, WebClient web, MongoClient mongoClient) {
+    public Ladder(Vertx vertx, WebClient web, DB db) {
         this.vertx = vertx;
         this.web = web;
-        this.mongoClient = mongoClient;
+        this.db = db;
     }
 
-    public Single<List<Character>> threeVThree() {
+    public Single<Snapshot> threeVThree() {
         String bracket = "3v3";
         return fetchLadder(bracket)
                 .doOnSuccess(threeVThreeLadder::set)
-                .flatMap(chars -> saveToMongo(bracket, Snapshot.of(chars)).andThen(Single.just(chars)));
+                .flatMap(chars -> db.insertOnlyIfDifferent(bracket, chars).andThen(Single.just(chars)));
     }
 
-    public Single<List<Character>> twoVTwo() {
+    public Single<Snapshot> twoVTwo() {
         String bracket = "2v2";
         return fetchLadder(bracket)
                 .doOnSuccess(twoVTwoladder::set)
-                .flatMap(chars -> saveToMongo(bracket, Snapshot.of(chars)).andThen(Single.just(chars)));
+                .flatMap(chars -> db.insertOnlyIfDifferent(bracket, chars).andThen(Single.just(chars)));
     }
 
-    public Single<List<Character>> battlegrounds() {
+    public Single<Snapshot> battlegrounds() {
         String bracket = "battlegrounds";
         return fetchLadder(bracket)
                 .doOnSuccess(bgLadder::set)
-                .flatMap(chars -> saveToMongo(bracket, Snapshot.of(chars)).andThen(Single.just(chars)));
+                .flatMap(chars -> db.insertOnlyIfDifferent(bracket, chars).andThen(Single.just(chars)));
     }
 
-    public Single<List<Character>> shuffle() {
+    public Single<Snapshot> shuffle() {
         String shuffle = "shuffle";
         Single<List<Character>> res = Single.just(new ArrayList<>(1000 * shuffleSpecs.size()));
         for (String shuffleSpec : shuffleSpecs) {
@@ -115,11 +115,12 @@ public class Ladder {
         return res.map(chars -> {
                     chars.sort(Comparator.comparing(Character::rating).reversed());
                     return chars;
-                }).flatMap(chars -> saveToMongo(shuffle, Snapshot.of(chars)).andThen(Single.just(chars)))
+                }).flatMap(chars -> db.insertOnlyIfDifferent(shuffle, Snapshot.of(chars)).andThen(Single.just(chars)))
+                .map(Snapshot::of)
                 .doOnSuccess(shuffleLadder::set);
     }
 
-    public Single<List<Character>> fetchLadder(String bracket) {
+    public Single<Snapshot> fetchLadder(String bracket) {
         Single<List<Character>> res = Single.just(new ArrayList<>(1000));
         for (int i = 1; i <= 10; i++) {
             int finalI = i;
@@ -130,11 +131,7 @@ public class Ladder {
                     })
             );
         }
-        return res;
-    }
-
-    public Completable saveToMongo(String bracket, Snapshot snapshot) {
-        return mongoClient.rxSave(bracket, snapshot.toJson()).ignoreElement();
+        return res.map(Snapshot::of);
     }
 
     public Single<List<Character>> ladderShuffle(String bracket, Integer page) {
@@ -220,15 +217,9 @@ public class Ladder {
                 ).subscribe();
     }
 
-    private Completable loadLast(String bracket, AtomicReference<List<Character>> ref) {
-        FindOptions fopts = new FindOptions().setSort(new JsonObject().put("timestamp", -1)).setLimit(10);
-        JsonObject opts = new JsonObject();
-        return mongoClient.rxFindWithOptions(bracket, opts, fopts).flatMapCompletable(res -> {
-            List<Snapshot> snapshots = res.stream().map(Snapshot::fromJson).toList();
-            if (snapshots.size() > 0) {
-                System.out.println(bracket + " bracket data has been loaded from mongo");
-                ref.set(snapshots.get(0).characters().stream().map(c -> (Character) c).toList());
-            }
+    private Completable loadLast(String bracket, AtomicReference<Snapshot> ref) {
+        return db.getLast(bracket).flatMapCompletable(characters -> {
+            ref.set(characters);
             return Completable.complete();
         });
     }

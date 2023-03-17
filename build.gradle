@@ -27,6 +27,7 @@ dependencies {
     implementation group: 'io.vertx', name: 'vertx-mongo-client', version: vertxVersion
     implementation group: 'io.vertx', name: 'vertx-web', version: vertxVersion
     implementation group: 'io.vertx', name: 'vertx-rx-java2', version: vertxVersion
+    implementation group: 'org.apache.commons', name: 'commons-collections4', version: '4.4'
 }
 
 jar {
