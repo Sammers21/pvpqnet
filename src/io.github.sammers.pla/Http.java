@@ -1,5 +1,6 @@
 package io.github.sammers.pla;
 
+import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.ext.mongo.MongoClient;
 import io.vertx.reactivex.ext.web.Router;
@@ -48,7 +49,7 @@ public class Http {
                 .flatMap(l -> l.stream().findFirst())
                 .map(Long::parseLong).orElse(1L);
         if (snapshot == null) {
-            ctx.response().end("No data");
+            ctx.response().end(new JsonObject().encode());
         } else {
             ctx.response().end(snapshot.toJson(page).encode());
         }

@@ -9,7 +9,7 @@ public record SnapshotDiff(List<CharAndDiff> chars, Long timestamp) implements J
     @Override
     public JsonObject toJson() {
         return new JsonObject()
-            .put("diffs", new JsonArray(chars.stream().map(JsonConvertable::toJson).toList()))
+            .put("characters", new JsonArray(chars.stream().map(JsonConvertable::toJson).toList()))
             .put("timestamp", timestamp);
     }
 
@@ -17,7 +17,7 @@ public record SnapshotDiff(List<CharAndDiff> chars, Long timestamp) implements J
     public JsonObject toJson(Long page) {
         List<JsonObject> chars = chars().stream().skip((page - 1) * 100L).limit(100).map(JsonConvertable::toJson).toList();
         JsonObject put = new JsonObject()
-            .put("diffs", new JsonArray(chars))
+            .put("characters", new JsonArray(chars))
             .put("timestamp", timestamp)
             .put("page", page)
             .put("total_pages", chars.size() / 100);

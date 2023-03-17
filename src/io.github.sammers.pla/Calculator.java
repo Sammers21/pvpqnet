@@ -14,9 +14,9 @@ public class Calculator {
             Character oldChar = oldMap.get(newChar.fullName());
             CharAndDiff e;
             if (oldChar == null) {
-                e = new CharAndDiff(newChar, new Diff(newChar.wins(), newChar.losses(), newChar.rating()));
+                e = new CharAndDiff(newChar, new Diff(newChar.wins(), newChar.losses(), newChar.rating(), 0L));
             } else {
-                e = new CharAndDiff(newChar, new Diff(newChar.wins() - oldChar.wins(), newChar.losses() - oldChar.losses(), newChar.rating() - oldChar.rating()));
+                e = new CharAndDiff(newChar, new Diff(newChar.wins() - oldChar.wins(), newChar.losses() - oldChar.losses(), newChar.rating() - oldChar.rating(), newChar.pos() - oldChar.pos()));
             }
             if(e.diff().lost() == 0 && e.diff().won() == 0 && e.diff().ratingDiff() == 0) {
                 continue;
