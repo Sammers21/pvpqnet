@@ -20,6 +20,15 @@ public class Http {
     public void start() {
         Vertx vertx = Vertx.vertx();
         Router router = Router.router(vertx);
+        router.route().handler(ctx -> {
+            ctx.response()
+                    .putHeader("Access-Control-Allow-Origin", "*")
+                    .putHeader("Access-Control-Allow-Credentials", "true")
+                    .putHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+                    .putHeader("Access-Control-Max-Age", "86400")
+                    .putHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+            ctx.next();
+        });
         router.get("/api/ladder/2v2").handler(ctx -> ladder(ctx, ladder.refByBracket(Ladder.TWO_V_TWO).get()));
         router.get("/api/ladder/3v3").handler(ctx -> ladder(ctx, ladder.refByBracket(Ladder.THREE_V_THREE).get()));
         router.get("/api/ladder/shuffle").handler(ctx -> ladder(ctx, ladder.refByBracket(Ladder.SHUFFLE).get()));
@@ -28,13 +37,16 @@ public class Http {
         router.get("/api/activity/3v3").handler(ctx -> ladder(ctx, ladder.diffsByBracket(Ladder.THREE_V_THREE).get()));
         router.get("/api/activity/shuffle").handler(ctx -> ladder(ctx, ladder.diffsByBracket(Ladder.SHUFFLE).get()));
         router.get("/api/activity/rbg").handler(ctx -> ladder(ctx, ladder.diffsByBracket(Ladder.RBG).get()));
+        router.get("/main.js").handler(ctx -> ctx.response().sendFile("main.js"));
+        router.get("/main.css").handler(ctx -> ctx.response().sendFile("main.css"));
+        router.get("/").handler(ctx -> ctx.response().sendFile("index.html"));
         vertx.createHttpServer().requestHandler(router).listen(9000);
     }
 
     private void ladder(RoutingContext ctx, JsonPaged snapshot) {
         Long page = Optional.of(ctx.queryParam("page"))
-            .flatMap(l -> l.stream().findFirst())
-            .map(Long::parseLong).orElse(1L);
+                .flatMap(l -> l.stream().findFirst())
+                .map(Long::parseLong).orElse(1L);
         if (snapshot == null) {
             ctx.response().end("No data");
         } else {

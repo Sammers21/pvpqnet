@@ -9,7 +9,7 @@ public class Calculator {
 
     public static SnapshotDiff calculateDiff(Snapshot oldChars, Snapshot newChars) {
         ArrayList<CharAndDiff> res = new ArrayList<>(newChars.characters().size());
-        Map<String, Character> oldMap = oldChars.characters().stream().collect(Collectors.toMap(Character::fullName, c -> c));
+        Map<String, Character> oldMap = oldChars.characters().stream().collect(Collectors.toMap(Character::fullName, c -> c, (a, b) -> a));
         for (Character newChar : newChars.characters()) {
             Character oldChar = oldMap.get(newChar.fullName());
             CharAndDiff e;
