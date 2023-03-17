@@ -4,7 +4,7 @@ async function loadIntoTable(url, table) {
     console.log(data)
     data.characters.forEach((item) => {
         const row = table.insertRow();
-        const posChange = item.diff.rank_diff > 0 ? `+${item.diff.rank_diff}` : item.diff.rank_diff;
+        const posChange = item.diff.rank_diff >= 0 ? `+${item.diff.rank_diff}` : item.diff.rank_diff;
         const ratingChange = item.diff.rating_diff > 0 ? `+${item.diff.rating_diff}` : item.diff.rating_diff;
         row.innerHTML = `<td>${item.character.pos} ${posChange}</td>
                          <td>${item.character.full_spec}</td>
