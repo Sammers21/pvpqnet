@@ -225,24 +225,20 @@ public class Ladder {
     }
 
     private Completable loadLast(String bracket) {
-        return db.getLast(bracket).flatMap(characters -> {
+        return db.getLast(bracket).flatMapCompletable(characters -> {
             refByBracket(bracket).set(characters);
-            return db.getLast(bracket, 1);
-        }).flatMap(characters -> {
-            refByBracket(bracket + "_older").set(characters);
-            return db.getLast(bracket, 2);
-        }).flatMapCompletable(characters -> {
-            refByBracket(bracket + "_older_older").set(characters);
             log.info("Data for bracket {} has been loaded from DB", bracket);
-            calcDiffs(bracket);
-            return Completable.complete();
+            return calcDiffs(bracket);
         });
     }
 
-    public void calcDiffs(String bracket) {
-        SnapshotDiff snapshotDiff = Calculator.calculateDiff(refByBracket(bracket + "_older_older").get(), refByBracket(bracket).get());
-        diffsByBracket(bracket).set(snapshotDiff);
-        log.info("Diffs has been calculated for bracket {}, diffs:{}", bracket, snapshotDiff.chars().size());
+    public Completable calcDiffs(String bracket) {
+        return db.getMinsAgo(bracket, 60 * 5).flatMapCompletable(characters -> {
+            SnapshotDiff snapshotDiff = Calculator.calculateDiff(characters, refByBracket(bracket).get());
+            diffsByBracket(bracket).set(snapshotDiff);
+            log.info("Diffs has been calculated for bracket {}, diffs:{}", bracket, snapshotDiff.chars().size());
+            return Completable.complete();
+        });
     }
 
     public AtomicReference<Snapshot> refByBracket(String bracket) {
@@ -262,8 +258,7 @@ public class Ladder {
             older.set(current.get());
             current.set(newCharacters);
             log.info("Data for bracket {} is different performing update", bracket);
-            calcDiffs(bracket);
-            return db.insertOnlyIfDifferent(bracket, newCharacters);
+            return db.insertOnlyIfDifferent(bracket, newCharacters).andThen(calcDiffs(bracket));
         } else {
             log.info("Data for bracket {} are equal, not updating", bracket);
             return Completable.complete();

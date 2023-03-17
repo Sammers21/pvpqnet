@@ -37,6 +37,22 @@ public class DB {
         });
     }
 
+    public Maybe<Snapshot> getMinsAgo(String bracket, int mins) {
+        long now = System.currentTimeMillis();
+        long minsAgo = now - mins * 60 * 1000;
+        FindOptions fopts = new FindOptions().setSort(new JsonObject().put("timestamp", 1)).setLimit(1);
+        JsonObject opts = new JsonObject()
+            .put("timestamp", new JsonObject().put("$lt", now).put("$gt", minsAgo));
+        return mongoClient.rxFindWithOptions(bracket, opts, fopts).flatMapMaybe(res -> {
+            List<Snapshot> snapshots = res.stream().map(Snapshot::fromJson).toList();
+            if (snapshots.size() > 0) {
+                return Maybe.just(snapshots.get(0));
+            } else {
+                return Maybe.empty();
+            }
+        });
+    }
+
     public Completable insertOnlyIfDifferent(String bracket, Snapshot snapshot) {
         return getLast(bracket).flatMapCompletable(last -> {
             if (CollectionUtils.isEqualCollection(last.characters(), snapshot.characters())) {
