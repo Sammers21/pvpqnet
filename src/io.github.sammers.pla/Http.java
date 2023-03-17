@@ -41,6 +41,7 @@ public class Http {
         router.get("/api/activity/rbg").handler(ctx -> ladder(ctx, ladder.diffsByBracket(Ladder.RBG).get()));
         router.get("/main.js").handler(ctx -> ctx.response().sendFile("main.js"));
         router.get("/main.css").handler(ctx -> ctx.response().sendFile("main.css"));
+        router.get("/df.img").handler(ctx -> ctx.response().sendFile("df.img"));
         router.get("/").handler(ctx -> ctx.response().sendFile("index.html"));
         vertx.createHttpServer().requestHandler(router).listen(9000);
     }
