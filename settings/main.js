@@ -4,39 +4,39 @@ function mark(markColor, text) {
 
 function classNameColored(wowClass, name) {
     wowClass = wowClass.toUpperCase();
-    if(wowClass === 'WARRIOR') {
+    if (wowClass === 'WARRIOR') {
         return mark('tan', name);
     } else if (wowClass === 'PALADIN') {
         return mark('pink', name);
     } else if (wowClass === 'HUNTER') {
         return mark('pistachio', name);
-    } else if(wowClass === 'ROGUE') {
+    } else if (wowClass === 'ROGUE') {
         return mark('yellow', name);
-    } else if(wowClass === 'PRIEST') {
+    } else if (wowClass === 'PRIEST') {
         return mark('white', name);
-    } else if(wowClass === 'DEATH KNIGHT') {
+    } else if (wowClass === 'DEATH KNIGHT') {
         return mark('dk-red', name);
-    } else if(wowClass === 'SHAMAN') {
+    } else if (wowClass === 'SHAMAN') {
         return mark('blue', name);
-    } else if(wowClass === 'MAGE') {
+    } else if (wowClass === 'MAGE') {
         return mark('light-blue', name);
-    } else if(wowClass === 'WARLOCK') {
+    } else if (wowClass === 'WARLOCK') {
         return mark('purple', name);
-    } else if(wowClass === 'MONK') {
+    } else if (wowClass === 'MONK') {
         return mark('spring-green ', name);
-    } else if(wowClass === 'DRUID') {
+    } else if (wowClass === 'DRUID') {
         return mark('orange', name);
-    } else if(wowClass === 'DEMON HUNTER') {
+    } else if (wowClass === 'DEMON HUNTER') {
         return mark('dark-magenta ', name);
-    } else if(wowClass === 'EVOKER') {
+    } else if (wowClass === 'EVOKER') {
         return mark('dark-emerald ', name);
     } else {
         return mark('white', name);
     }
 }
 
-function specNameFromFullSpec(full_spec){
-    return full_spec.trim().replaceAll(" ","").toLowerCase()
+function specNameFromFullSpec(full_spec) {
+    return full_spec.trim().replaceAll(" ", "").toLowerCase()
 }
 
 function markNumber(number) {
@@ -56,6 +56,13 @@ function rankNumber(number) {
         return mark('red', '+' + number);
     } else {
         return mark('white', '+' + number);
+    }
+}
+
+function addClassToEvenRows(table) {
+    var rows = table.rows;
+    for (var i = 2, iLen = rows.length; i < iLen; i++) {
+        rows[i].className = i % 2 ? '' : 'even';
     }
 }
 
@@ -80,7 +87,7 @@ async function loadIntoTable(table) {
         const won = item.diff.won > 0 ? mark('green', item.diff.won) : mark('white', item.diff.won);
         const lost = item.diff.lost > 0 ? mark('red', item.diff.lost) : mark('white', item.diff.lost);
         var realm;
-        if(item.character.fraction === 'ALLIANCE') {
+        if (item.character.fraction === 'ALLIANCE') {
             realm = mark('light-blue', item.character.realm);
         } else {
             realm = mark('red', item.character.realm);
@@ -99,6 +106,7 @@ async function loadIntoTable(table) {
                          <td>${item.character.rating} ${ratingChange}</td>
                          <td>${item.diff.last_seen}</td>`
     });
+    addClassToEvenRows(table)
 }
 
 loadIntoTable(document.querySelector('table'))

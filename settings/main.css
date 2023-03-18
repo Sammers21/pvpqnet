@@ -62,6 +62,10 @@ img.h-8.w-8 {
     width: 1.5rem;
 }
 
+tr.even {
+    background: #0e1216;
+}
+
 mark.red {
     color: #ff0000;
     background: none;
