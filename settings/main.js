@@ -90,7 +90,7 @@ async function loadIntoTable(table) {
         const classImg = `<img class="h-8 w-8" src="${classImgSrc}"/>`;
         const specImgSrc = window.location.origin + "/specicons/" + specNameFromFullSpec(item.character.full_spec) + ".png"
         const specImg = `<img class="h-8 w-8" src="${specImgSrc}"/>`;
-        const details = `${classImg}${specImg}${item.character.full_spec}`;
+        const details = `${classImg}${specImg}`;
         row.innerHTML = `<td>#${item.character.pos} ${posChange}</td>
                          <td>${details}</td>
                          <td>${name}</td>
