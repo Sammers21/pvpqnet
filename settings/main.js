@@ -82,8 +82,10 @@ async function loadIntoTable(table) {
             realm = mark('red', item.character.realm);
         }
         const name = classNameColored(item.character.class, item.character.name);
+        const classImgSrc = window.location.origin + "/classicons/" + item.character.class.replaceAll(" ", "") + ".png"
+        const details = `<img class="h-8 w-8" src="${classImgSrc}"/>${item.character.full_spec}`;
         row.innerHTML = `<td>#${item.character.pos} ${posChange}</td>
-                         <td>${item.character.full_spec}</td>
+                         <td>${details}</td>
                          <td>${name}</td>
                          <td>${realm}</td>
                          <td>${won} / ${lost}</td>

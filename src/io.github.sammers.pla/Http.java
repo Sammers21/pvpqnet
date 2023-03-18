@@ -44,6 +44,7 @@ public class Http {
         router.routeWithRegex(".*main.js").handler(ctx -> ctx.response().sendFile("main.js"));
         router.routeWithRegex(".*main.css").handler(ctx -> ctx.response().sendFile("main.css"));
         router.routeWithRegex(".*df.img").handler(ctx -> ctx.response().sendFile("df.img"));
+        router.routeWithRegex(("\\/classicons\\/(?<classicon>[^\\/]+.png)")).handler(ctx -> ctx.response().sendFile("classicons/" + ctx.pathParam("classicon")));
         router.get("/").handler(ctx -> ctx.response().sendFile("index.html"));
         router.get("/activity/2v2").handler(ctx -> ctx.response().sendFile("index.html"));
         router.get("/activity/3v3").handler(ctx -> ctx.response().sendFile("index.html"));

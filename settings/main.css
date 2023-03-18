@@ -56,8 +56,13 @@ th {
     background-color: rgb(21, 128, 61);
 }
 
+img.h-8.w-8 {
+    height: 1.5rem;
+    width: 1.5rem;
+}
+
 mark.red {
-    color:#ff0000;
+    color: #ff0000;
     background: none;
 }
 
@@ -67,7 +72,7 @@ mark.green {
 }
 
 mark.blue {
-    color:#0070DD;
+    color: #0070DD;
     background: none;
 }
 
