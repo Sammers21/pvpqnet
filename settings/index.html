@@ -2,6 +2,8 @@
 <html lang="en" xmlns="http://www.w3.org/1999/html">
 <head>
     <meta charset="UTF-8">
+    <title>Ladder Activity</title>
+    <link rel="stylesheet" href="main.css">
     <title>Activity</title>
     <!-- Yandex.Metrika counter -->
     <script type="text/javascript" >
@@ -21,20 +23,28 @@
     <!-- /Yandex.Metrika counter -->
 </head>
 <body>
-<table class="table">
-    <thead>
-    <tr>
-        <th>RANK</th>
-        <th>DETAILS</th>
-        <th>NAME</th>
-        <th>REALM</th>
-        <th>WON/LOST</th>
-        <th>RATING</th>
-        <th>LAST SEEN</th>
-    </tr>
-    </thead>
-    <tbody></tbody>
-</table>
+<div class="table-and-buttons">
+    <div class="bracket-buttons">
+        <button onclick="window.location.href=window.location.origin+'/activity/shuffle';">Shuffle</button>
+        <button onclick="window.location.href=window.location.origin+'/activity/2v2';">2v2</button>
+        <button onclick="window.location.href=window.location.origin+'/activity/3v3';">3v3</button>
+        <button onclick="window.location.href=window.location.origin+'/activity/rbg';">RBG</button>
+    </div>
+    <table class="table">
+        <thead>
+        <tr>
+            <th>RANK</th>
+            <th>DETAILS</th>
+            <th>NAME</th>
+            <th>REALM</th>
+            <th>WON/LOST</th>
+            <th>RATING</th>
+            <th>LAST SEEN</th>
+        </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
 <script src="main.js"></script>
 </body>
 </html>

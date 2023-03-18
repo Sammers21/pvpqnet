@@ -1,6 +1,7 @@
 package io.github.sammers.pla;
 
 import io.reactivex.Completable;
+import io.reactivex.Maybe;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.vertx.core.json.JsonObject;
@@ -220,24 +221,30 @@ public class Ladder {
                 .flatMapSingle(tick -> twoVTwo())
                 .flatMapSingle(tick -> battlegrounds())
                 .flatMapSingle(tick -> shuffle())
+                .flatMapSingle(tick -> shuffle())
             ).subscribe();
     }
 
     private Completable loadLast(String bracket) {
-        return db.getLast(bracket).flatMap(characters -> {
+        return db.getLast(bracket).flatMapCompletable(characters -> {
             refByBracket(bracket).set(characters);
-            return db.getLast(bracket, 1);
-        }).flatMap(characters -> {
-            refByBracket(bracket + "_older").set(characters);
-            return db.getLast(bracket, 2);
-        }).flatMapCompletable(characters -> {
-            refByBracket(bracket + "_older_older").set(characters);
             log.info("Data for bracket {} has been loaded from DB", bracket);
-            SnapshotDiff snapshotDiff = Calculator.calculateDiff(refByBracket(bracket + "_older_older").get(), refByBracket(bracket).get());
-            diffsByBracket(bracket).set(snapshotDiff);
-            log.info("Diffs has been calculated for bracket {}, diffs:{}", bracket, snapshotDiff.chars().size());
-            return Completable.complete();
+            return calcDiffs(bracket);
         });
+    }
+
+    public Completable calcDiffs(String bracket) {
+        Maybe<Snapshot> sixHrsAgo = db.getMinsAgo(bracket, 60 * 5);
+        Maybe<Snapshot> threeHrsAgo = db.getMinsAgo(bracket, 60 * 3);
+        return sixHrsAgo.zipWith(threeHrsAgo, (six, three) -> {
+            Snapshot now = refByBracket(bracket).get();
+            SnapshotDiff threeNow = Calculator.calculateDiff(three, now, bracket);
+            SnapshotDiff sixThree = Calculator.calculateDiff(six, three, bracket);
+            SnapshotDiff res = Calculator.combine(sixThree, threeNow, bracket);
+            diffsByBracket(bracket).set(res);
+            log.info("Diffs has been calculated for bracket {}, diffs:{}", bracket, res.chars().size());
+            return Maybe.just(res);
+        }).ignoreElement();
     }
 
     public AtomicReference<Snapshot> refByBracket(String bracket) {
@@ -257,7 +264,7 @@ public class Ladder {
             older.set(current.get());
             current.set(newCharacters);
             log.info("Data for bracket {} is different performing update", bracket);
-            return db.insertOnlyIfDifferent(bracket, newCharacters);
+            return db.insertOnlyIfDifferent(bracket, newCharacters).andThen(calcDiffs(bracket));
         } else {
             log.info("Data for bracket {} are equal, not updating", bracket);
             return Completable.complete();

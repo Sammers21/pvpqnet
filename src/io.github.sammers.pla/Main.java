@@ -1,5 +1,6 @@
 package io.github.sammers.pla;
 
+import io.reactivex.Maybe;
 import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.ext.mongo.MongoClient;
@@ -20,7 +21,8 @@ public class Main {
                 .put("db_name", "pvpq")
                 .put("connection_string", dbUri)
         );
-        Ladder ladder = new Ladder(vertx, webClient, new DB(mongoClient));
+        DB db = new DB(mongoClient);
+        Ladder ladder = new Ladder(vertx, webClient, db);
         ladder.start();
         new Http(vertx, ladder).start();
     }
