@@ -8,7 +8,7 @@ html {
 
 table {
     border: 1px solid black;
-    background-color: rgba(47, 56, 77, 0.9);
+    background-color: rgb(8, 10, 11);
     opacity: 0.90;
     width: 80%;
     margin-left: auto;
@@ -31,7 +31,8 @@ th {
 }
 
 .bracket-buttons button {
-    background-color: rgba(47, 56, 77, 0.9); /* background */
+    background-color: rgb(8, 10, 11); /* background */
+    opacity: 0.90;
     border: 1px rgba(0, 73, 255, 0.9); /* Green border */
     color: white; /* White text */
     padding: 10px 24px; /* Some padding */
