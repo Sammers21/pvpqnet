@@ -35,6 +35,10 @@ function classNameColored(wowClass, name) {
     }
 }
 
+function specNameFromFullSpec(full_spec){
+    return full_spec.trim().replaceAll(" ","").toLowerCase()
+}
+
 function markNumber(number) {
     if (number > 0) {
         return mark('green', '+' + number);
@@ -83,7 +87,10 @@ async function loadIntoTable(table) {
         }
         const name = classNameColored(item.character.class, item.character.name);
         const classImgSrc = window.location.origin + "/classicons/" + item.character.class.replaceAll(" ", "") + ".png"
-        const details = `<img class="h-8 w-8" src="${classImgSrc}"/>${item.character.full_spec}`;
+        const classImg = `<img class="h-8 w-8" src="${classImgSrc}"/>`;
+        const specImgSrc = window.location.origin + "/specicons/" + specNameFromFullSpec(item.character.full_spec) + ".png"
+        const specImg = `<img class="h-8 w-8" src="${specImgSrc}"/>`;
+        const details = `${classImg}${specImg}${item.character.full_spec}`;
         row.innerHTML = `<td>#${item.character.pos} ${posChange}</td>
                          <td>${details}</td>
                          <td>${name}</td>
