@@ -86,7 +86,7 @@ async function loadIntoTable(table) {
             realm = mark('red', item.character.realm);
         }
         const name = classNameColored(item.character.class, item.character.name);
-        const classImgSrc = window.location.origin + "/classicons/" + item.character.class.replaceAll(" ", "") + ".png"
+        const classImgSrc = window.location.origin + "/classicons/" + item.character.class.replaceAll(" ", "").toLowerCase() + ".png"
         const classImg = `<img class="h-8 w-8" src="${classImgSrc}"/>`;
         const specImgSrc = window.location.origin + "/specicons/" + specNameFromFullSpec(item.character.full_spec) + ".png"
         const specImg = `<img class="h-8 w-8" src="${specImgSrc}"/>`;
