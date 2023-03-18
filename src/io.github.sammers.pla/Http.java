@@ -28,7 +28,7 @@ public class Http {
                 .putHeader("Access-Control-Allow-Credentials", "true")
                 .putHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
                 .putHeader("Access-Control-Max-Age", "86400");
-            if (!ctx.request().path().contains("df.img")) {
+            if (!(ctx.request().path().contains("df.img") || ctx.request().path().contains(".png"))) {
                 ctx.response().putHeader("Cache-Control", "no-cache, no-store, must-revalidate");
             }
             ctx.next();
