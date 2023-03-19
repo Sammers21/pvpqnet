@@ -1,3 +1,21 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+*, :before, :after {
+    border-width: 0;
+    border-style: solid;
+    border-color: #e5e7eb;
+}
+
+.xunaborder {
+    border-width: 1px;
+    border-style: solid;
+    border-color: #2f384de6;
+}
+
 html {
     background: url(df.img) no-repeat center center fixed;
     -webkit-background-size: cover;
@@ -6,11 +24,86 @@ html {
     background-size: cover;
 }
 
+footer {
+    background-color: #141415;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: 0.6s;
+    padding: 5px 100px;
+    z-index: 100000;
+    border-right: 0;
+    border-left: 0;
+}
+
+header {
+    background-color: #141415;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: 0.6s;
+    padding: 5px 100px;
+    z-index: 100000;
+    border-right: 0;
+    border-left: 0;
+}
+
+footer a {
+    position: relative;
+    margin: 0 15px;
+    text-decoration: none;
+    color: #fff;
+    letter-spacing: 2px;
+    font-weight: 500;
+    transition: 0.6s;
+}
+
+header .logo {
+    position: relative;
+    font-weight: 700;
+    color: #fff;
+    text-decoration: none;
+    font-size: 1.5em;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    transition: 0.6s;
+}
+
+header ul {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+header ul li {
+    position: relative;
+    list-style: none;
+}
+
+header ul li a {
+    position: relative;
+    margin: 0 15px;
+    text-decoration: none;
+    color: #fff;
+    letter-spacing: 2px;
+    font-weight: 500;
+    transition: 0.6s;
+}
+
 table {
     border: 1px solid black;
     background-color: rgb(8, 10, 11);
     opacity: 0.90;
-    width: 80%;
+    width: 100%;
     margin-left: auto;
     margin-right: auto;
 }
@@ -24,25 +117,45 @@ th {
     text-align: left;
 }
 
-.table-and-buttons {
+
+.whole-ui {
+    margin-top: 100px;
+    width: 80%;
+    margin-left: auto;
+    margin-right: auto;
     display: flex;
     flex-direction: column;
     align-items: center;
 }
 
+.bracket-buttons {
+    display: flex;
+    justify-content: space-around;
+    width: 100%;
+}
+
 .bracket-buttons button {
-    background-color: rgb(8, 10, 11); /* background */
+    flex-grow: 1;
+    background-color: rgb(13, 18, 21); /* background */
     opacity: 0.90;
-    border: 1px rgba(0, 73, 255, 0.9); /* Green border */
+    border-right-width: 1px;
     color: white; /* White text */
     padding: 10px 24px; /* Some padding */
     width: 100px; /* Set a specific width */
     cursor: pointer; /* Pointer/hand icon */
-    float: left; /* Float the buttons side by side */
+    /*float: left; !* Float the buttons side by side *!*/
+    text-align: center;
+}
+
+.regionbtn {
+    -webkit-appearance: button;
+    background-color: transparent;
+    background-image: none;
+    border: none;
 }
 
 .bracket-buttons button:not(:last-child) {
-    border-right: none; /* Prevent double borders */
+    /*border-right: none; !* Prevent double borders *!*/
 }
 
 /* Clear floats (clearfix hack) */
@@ -54,7 +167,23 @@ th {
 
 /* Add a background color on hover */
 .bracket-buttons button:hover {
-    background-color: rgb(21, 128, 61);
+    background-color: rgb(10, 38, 21);
+}
+
+.h-4 {
+    height: 1rem;
+}
+
+.grayscale {
+    filter: grayscale(100%);
+}
+
+.ml-1 {
+    margin-left: 0.25rem;
+}
+
+.mr-2 {
+    margin-right: 0.5rem;
 }
 
 img.h-8.w-8 {

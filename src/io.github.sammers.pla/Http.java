@@ -46,6 +46,7 @@ public class Http {
         router.routeWithRegex(".*df.img").handler(ctx -> ctx.response().sendFile("df.img"));
         router.routeWithRegex(("\\/classicons\\/(?<classicon>[^\\/]+.png)")).handler(ctx -> ctx.response().sendFile("classicons/" + ctx.pathParam("classicon")));
         router.routeWithRegex(("\\/specicons\\/(?<specicon>[^\\/]+.png)")).handler(ctx -> ctx.response().sendFile("specicons/" + ctx.pathParam("specicon")));
+        router.routeWithRegex(("\\/regionicons\\/(?<regionicon>[^\\/]+.svg)")).handler(ctx -> ctx.response().sendFile("regionicons/" + ctx.pathParam("regionicon")));
         router.get("/").handler(ctx -> ctx.response().sendFile("index.html"));
         router.get("/activity/2v2").handler(ctx -> ctx.response().sendFile("index.html"));
         router.get("/activity/3v3").handler(ctx -> ctx.response().sendFile("index.html"));
