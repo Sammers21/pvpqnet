@@ -141,6 +141,8 @@ async function loadIntoTable(table) {
         url = window.location.origin + `/api/${aolRegion[1]}/${aolRegion[2]}/${aolRegion[3]}`;
     } else if (aol) {
         url = window.location.origin + `/api/${region}/${aol[1]}/${aol[2]}`;
+    } else {
+        url = window.location.origin + `/api/${region}/activity/shuffle`;
     }
     console.log("API URL: " + url)
     const response = await fetch(url);
