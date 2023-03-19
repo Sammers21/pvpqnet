@@ -116,6 +116,8 @@ function goToBracket(bracket) {
         window.location.href = window.location.origin + `/${aolRegion[1]}/${aolRegion[2]}/${bracket}`;
     } else if (aol) {
         window.location.href = window.location.origin + `/${aol[1]}/${bracket}`;
+    } else {
+        window.location.href = window.location.origin + `/activity/${bracket}`;
     }
 }
 
