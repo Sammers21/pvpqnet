@@ -216,12 +216,12 @@ public class Ladder {
             .andThen(loadLast(THREE_V_THREE))
             .andThen(loadLast(RBG))
             .andThen(loadLast(SHUFFLE))
-            .andThen(Observable.interval(0, 60, TimeUnit.MINUTES)
-                .flatMapSingle(tick -> threeVThree())
-                .flatMapSingle(tick -> twoVTwo())
-                .flatMapSingle(tick -> battlegrounds())
-                .flatMapSingle(tick -> shuffle())
-            )
+//            .andThen(Observable.interval(0, 60, TimeUnit.MINUTES)
+//                .flatMapSingle(tick -> threeVThree())
+//                .flatMapSingle(tick -> twoVTwo())
+//                .flatMapSingle(tick -> battlegrounds())
+//                .flatMapSingle(tick -> shuffle())
+//            )
             .subscribe();
     }
 

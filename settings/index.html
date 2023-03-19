@@ -6,24 +6,47 @@
     <link rel="stylesheet" href="main.css">
     <title>Activity</title>
     <!-- Yandex.Metrika counter -->
-    <script type="text/javascript" >
-        (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
-            m[i].l=1*new Date();
-            for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
-            k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
+    <script type="text/javascript">
+        (function (m, e, t, r, i, k, a) {
+            m[i] = m[i] || function () {
+                (m[i].a = m[i].a || []).push(arguments)
+            };
+            m[i].l = 1 * new Date();
+            for (var j = 0; j < document.scripts.length; j++) {
+                if (document.scripts[j].src === r) {
+                    return;
+                }
+            }
+            k = e.createElement(t), a = e.getElementsByTagName(t)[0], k.async = 1, k.src = r, a.parentNode.insertBefore(k, a)
+        })
         (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
 
         ym(92858570, "init", {
-            clickmap:true,
-            trackLinks:true,
-            accurateTrackBounce:true
+            clickmap: true,
+            trackLinks: true,
+            accurateTrackBounce: true
         });
     </script>
-    <noscript><div><img src="https://mc.yandex.ru/watch/92858570" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+    <noscript>
+        <div><img src="https://mc.yandex.ru/watch/92858570" style="position:absolute; left:-9999px;" alt=""/></div>
+    </noscript>
     <!-- /Yandex.Metrika counter -->
 </head>
 <body>
-<div class="table-and-buttons">
+<div class="whole-ui">
+    <header>
+        <a href="#" class="logo">PVPQ.NET</a>
+        <ul>
+            <li><a href="#">Activity</a></li>
+            <li><a href="#">Ladder</a></li>
+        </ul>
+        <!--        <button class="ml-1 mr-2 regionbtn">-->
+        <!--            <img src="/regionicons/eu.svg" class="h-4" alt="eu">-->
+        <!--        </button>-->
+        <!--        <button class="ml-1 mr-2 regionbtn grayscale">-->
+        <!--            <img src="/regionicons/us.svg" class="h-4" alt="us">-->
+        <!--        </button>-->
+    </header>
     <div class="bracket-buttons">
         <button onclick="window.location.href=window.location.origin+'/activity/shuffle';">Shuffle</button>
         <button onclick="window.location.href=window.location.origin+'/activity/2v2';">2v2</button>
@@ -44,7 +67,14 @@
         </thead>
         <tbody></tbody>
     </table>
+
 </div>
+<!--<footer class="page-footer">-->
+<!--    <ul>-->
+<!--        <li>Made by sammers#4388</li>-->
+<!--        <li>Ladder</li>-->
+<!--    </ul>-->
+<!--</footer>-->
 <script src="main.js"></script>
 </body>
 </html>

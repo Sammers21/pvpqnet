@@ -109,5 +109,13 @@ async function loadIntoTable(table) {
     addClassToEvenRows(table)
 }
 
+function moveAbleHeader(){
+    window.addEventListener('scroll', function(e) {
+        var header = document.querySelector('thead');
+        header.classList.toggle('sticky', window.scrollY > 0);
+    });
+}
+
+moveAbleHeader();
 loadIntoTable(document.querySelector('table'))
     .then(r => console.log(r));
