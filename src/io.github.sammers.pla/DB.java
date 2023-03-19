@@ -5,14 +5,19 @@ import io.reactivex.Maybe;
 import io.reactivex.Single;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.FindOptions;
+import io.vertx.ext.mongo.MongoClientDeleteResult;
 import io.vertx.reactivex.ext.mongo.MongoClient;
 import org.apache.commons.collections4.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 public class DB {
+    private static final Logger log = LoggerFactory.getLogger(DB.class);
 
     private final MongoClient mongoClient;
 
@@ -35,6 +40,12 @@ public class DB {
                 return Maybe.empty();
             }
         });
+    }
+
+    public Maybe<MongoClientDeleteResult> deleteOlderThan24Hours(String bracket) {
+        return mongoClient.rxRemoveDocuments(bracket,
+            new JsonObject().put("timestamp", new JsonObject().put("$lt", new Date().getTime() - 24 * 60 * 60 * 1000))
+        ).doOnSuccess(res -> log.info("Deleted " + res.getRemovedCount() + " records " + bracket + " snapshots"));
     }
 
     public Maybe<Snapshot> getMinsAgo(String bracket, int mins) {

@@ -221,8 +221,8 @@ public class Ladder {
                 .flatMapSingle(tick -> twoVTwo())
                 .flatMapSingle(tick -> battlegrounds())
                 .flatMapSingle(tick -> shuffle())
-                .flatMapSingle(tick -> shuffle())
-            ).subscribe();
+            )
+            .subscribe();
     }
 
     private Completable loadLast(String bracket) {
@@ -264,7 +264,10 @@ public class Ladder {
             older.set(current.get());
             current.set(newCharacters);
             log.info("Data for bracket {} is different performing update", bracket);
-            return db.insertOnlyIfDifferent(bracket, newCharacters).andThen(calcDiffs(bracket));
+            return db.insertOnlyIfDifferent(bracket, newCharacters)
+                .andThen(db.deleteOlderThan24Hours(bracket)
+                .ignoreElement()
+                .andThen(calcDiffs(bracket)));
         } else {
             log.info("Data for bracket {} are equal, not updating", bracket);
             return Completable.complete();

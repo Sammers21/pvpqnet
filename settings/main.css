@@ -58,8 +58,9 @@ th {
 }
 
 img.h-8.w-8 {
-    height: 1.5rem;
-    width: 1.5rem;
+    box-sizing: border-box;
+    height: 1rem;
+    width: 1rem;
 }
 
 tr.even {

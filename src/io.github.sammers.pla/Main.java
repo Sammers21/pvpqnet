@@ -1,7 +1,9 @@
 package io.github.sammers.pla;
 
+import io.reactivex.Completable;
 import io.reactivex.Maybe;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.mongo.MongoClientDeleteResult;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.ext.mongo.MongoClient;
 import io.vertx.reactivex.ext.web.client.WebClient;
