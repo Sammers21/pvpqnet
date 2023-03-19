@@ -165,7 +165,10 @@ function makeGrayNonChosenRegion(){
             regions.splice(index, 1);
         }
     } else {
-        regions.remove('eu')
+        var index = regions.indexOf('eu');
+        if (index !== -1) {
+            regions.splice(index, 1);
+        }
     }
     let regionToMakeGray = regions[0];
     document.querySelector(`.${regionToMakeGray}btn`).classList.add('grayscale');
