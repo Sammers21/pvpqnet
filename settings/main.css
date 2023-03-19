@@ -115,6 +115,33 @@ header ul li a {
     width: 100%;
 }
 
+.pagination-buttons {
+    display: flex;
+    align-items: center;
+    margin-left: auto;
+}
+
+.pagination-buttons button {
+    background: none;
+    appearance: none;
+    -webkit-appearance: none;
+    -ms-appearance: none;
+    -moz-appearance: none;
+    border: none;
+    cursor: pointer;
+}
+
+.page-btn {
+    color: #fff;
+    background: #ddd;
+    height: 35px;
+    border-radius: 2px;
+    padding: 0 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    transition: background 0.3s ease;
+    margin: 0 2px
+}
 
 table {
     border: 1px solid black;

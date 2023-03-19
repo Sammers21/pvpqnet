@@ -27,7 +27,7 @@ public record Snapshot(List<Character> characters, Long timestamp, String region
             .put("timestamp", timestamp)
             .put("region", region)
             .put("page", page)
-            .put("total_pages", characters.size() / 100)
+            .put("total_pages", Calculator.totalPages(characters().size(), 100))
             .put("last_seen", Main.PRETTY_TIME.format(new Date(timestamp)));
         return put;
     }

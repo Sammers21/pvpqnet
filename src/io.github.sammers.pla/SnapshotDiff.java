@@ -18,12 +18,12 @@ public record SnapshotDiff(List<CharAndDiff> chars, Long timestamp) implements J
 
     @Override
     public JsonObject toJson(Long page) {
-        List<JsonObject> chars = chars().stream().skip((page - 1) * 100L).limit(100).map(JsonConvertable::toJson).toList();
+        List<JsonObject> diffs = chars().stream().skip((page - 1) * 100L).limit(100).map(JsonConvertable::toJson).toList();
         JsonObject put = new JsonObject()
-            .put("characters", new JsonArray(chars))
+            .put("characters", new JsonArray(diffs))
             .put("timestamp", timestamp)
             .put("page", page)
-            .put("total_pages", chars.size() / 100)
+            .put("total_pages", Calculator.totalPages(chars().size(), 100))
             .put("last_seen", Main.PRETTY_TIME.format(new Date(timestamp)));
         return put;
     }

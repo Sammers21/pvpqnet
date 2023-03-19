@@ -58,4 +58,14 @@ public class Calculator {
         List<CharAndDiff> resList = res.values().stream().sorted(Comparator.comparing((CharAndDiff o) -> o.character().rating()).reversed()).collect(Collectors.toList());
         return new SnapshotDiff(new ArrayList<>(resList), newver.timestamp());
     }
+
+    public static Long totalPages(long itemsTotal, long pageSize) {
+        long result;
+        if (itemsTotal % pageSize == 0) {
+            result = itemsTotal / pageSize;
+        } else {
+            result = itemsTotal / pageSize + 1;
+        }
+        return result;
+    }
 }

@@ -67,6 +67,9 @@ function addClassToEvenRows(table) {
 }
 
 function fillWithDiff(data, table) {
+    for(var i = 1;i<table.rows.length;){
+        table.deleteRow(i);
+    }
     data.characters.forEach((item) => {
         const row = table.insertRow();
         const posChange = rankNumber(item.diff.rank_diff);
@@ -121,17 +124,18 @@ function goToBracket(bracket) {
     }
 }
 
-async function loadIntoTable(table) {
+async function loadIntoTable(page) {
+    var table = document.querySelector('table')
     var region;
     if (window.location.pathname.includes('us')) {
         region = 'en-us';
     } else {
         region = 'en-gb';
     }
-    var url = window.location.origin + `/api/${region}/activity/shuffle`;
     var path = window.location.pathname;
     let aolRegion = path.match("/(?<region>eu|us)/(?<aol>ladder|activity)/(?<bracket>2v2|3v3|rbg|shuffle)");
     let aol = path.match("/(?<aol>ladder|activity)/(?<bracket>2v2|3v3|rbg|shuffle)");
+    var url;
     if (aolRegion) {
         if (aolRegion[1] === 'eu') {
             aolRegion[1] = 'en-gb';
@@ -144,12 +148,28 @@ async function loadIntoTable(table) {
     } else {
         url = window.location.origin + `/api/${region}/activity/shuffle`;
     }
+    if (page >= 0) {
+        url = url + `?page=${page}`;
+    }
     console.log("API URL: " + url)
     const response = await fetch(url);
     const data = await response.json();
     console.log(data)
     fillWithDiff(data, table);
-    addClassToEvenRows(table)
+    addClassToEvenRows(table);
+    const btns = new Map()
+    for (let i = 1; i <= data.total_pages; i++) {
+        if (i === data.page || i === data.page - 1 || i === data.page + 1 || i === 1 || i === data.total_pages) {
+            btns.set(i, `<button type="button" class="page-btn" onclick="loadIntoTable(${i})">${i}</button>`);
+        }
+        if ((i === data.page - 2 || i === data.page + 2) && i !== 1 && i !== data.total_pages) {
+            btns.set(i, `<button type="button" class="page-btn" onclick="loadIntoTable(${i})">...</button>`);
+        }
+    }
+    let elements = document.querySelectorAll('.pagination-buttons');
+    for (const pagBtns of elements) {
+        pagBtns.innerHTML = Array.from(btns.values()).join(' ');
+    }
 }
 
 function moveAbleHeader() {
@@ -159,7 +179,7 @@ function moveAbleHeader() {
     });
 }
 
-function makeGrayNonChosenRegion(){
+function makeGrayNonChosenRegion() {
     let aolRegion = window.location.pathname
         .match("/(?<region>eu|us)/(?<aol>ladder|activity)/(?<bracket>2v2|3v3|rbg|shuffle)");
     let regions = ['eu', 'us']
@@ -178,7 +198,18 @@ function makeGrayNonChosenRegion(){
     document.querySelector(`.${regionToMakeGray}btn`).classList.add('grayscale');
 }
 
+function loadTableWPage() {
+    const params = new Proxy(new URLSearchParams(window.location.search), {
+        get: (searchParams, prop) => searchParams.get(prop),
+    });
+    var page = 1;
+    let pageParam = params.page;
+    if (pageParam) {
+        page = pageParam;
+    }
+    loadIntoTable(page).then(r => console.log(r));
+}
+
 moveAbleHeader();
 makeGrayNonChosenRegion();
-loadIntoTable(document.querySelector('table'))
-    .then(r => console.log(r));
+loadTableWPage();
