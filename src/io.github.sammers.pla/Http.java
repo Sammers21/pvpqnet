@@ -9,8 +9,7 @@ import io.vertx.reactivex.ext.web.RoutingContext;
 import java.util.List;
 import java.util.Optional;
 
-import static io.github.sammers.pla.Ladder.RBG;
-import static io.github.sammers.pla.Ladder.US;
+import static io.github.sammers.pla.Ladder.*;
 
 public class Http {
 
@@ -72,7 +71,7 @@ public class Http {
             .flatMap(l -> l.stream().findFirst())
             .map(Long::parseLong).orElse(1L);
         if (snapshot == null) {
-            ctx.response().end(new Snapshot(List.of(), System.currentTimeMillis(), Ladder.EU).toJson(page).encode());
+            ctx.response().end(Snapshot.empty(EU).toJson(page).encode());
         } else {
             ctx.response().end(snapshot.toJson(page).encode());
         }

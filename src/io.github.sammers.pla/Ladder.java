@@ -263,17 +263,17 @@ public class Ladder {
             SnapshotDiff sixThree = Calculator.calculateDiff(six, three, bracket);
             SnapshotDiff res = Calculator.combine(sixThree, threeNow, bracket);
             diffsByBracket(bracket, region).set(res);
-            log.info("Diffs has been calculated for bracket {}, diffs:{}", bracket, res.chars().size());
+            log.info("Diffs has been calculated for bracket {}-{}, diffs:{}", region, bracket, res.chars().size());
             return Maybe.just(res);
         }).ignoreElement();
     }
 
     public AtomicReference<Snapshot> refByBracket(String bracket, String region) {
-        return refs.computeIfAbsent(bracket, k -> new AtomicReference<>());
+        return refs.computeIfAbsent(bracket + "_" + region, k -> new AtomicReference<>());
     }
 
     public AtomicReference<SnapshotDiff> diffsByBracket(String bracket, String region) {
-        return refDiffs.computeIfAbsent(bracket + "_region", k -> new AtomicReference<>());
+        return refDiffs.computeIfAbsent(bracket + "_" + region, k -> new AtomicReference<>());
     }
 
     public Completable newDataOnBracket(String bracket, String region, Snapshot newCharacters) {
