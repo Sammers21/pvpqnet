@@ -10,12 +10,34 @@
     border-color: #e5e7eb;
 }
 
+.xunaborder {
+    border-width: 1px;
+    border-style: solid;
+    border-color: #2f384de6;
+}
+
 html {
     background: url(df.img) no-repeat center center fixed;
     -webkit-background-size: cover;
     -moz-background-size: cover;
     -o-background-size: cover;
     background-size: cover;
+}
+
+footer {
+    background-color: #141415;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: 0.6s;
+    padding: 5px 100px;
+    z-index: 100000;
+    border-right: 0;
+    border-left: 0;
 }
 
 header {
@@ -30,6 +52,18 @@ header {
     transition: 0.6s;
     padding: 5px 100px;
     z-index: 100000;
+    border-right: 0;
+    border-left: 0;
+}
+
+footer a {
+    position: relative;
+    margin: 0 15px;
+    text-decoration: none;
+    color: #fff;
+    letter-spacing: 2px;
+    font-weight: 500;
+    transition: 0.6s;
 }
 
 header .logo {
@@ -83,11 +117,6 @@ th {
     text-align: left;
 }
 
-.xunaborder {
-    border-width: 1px;
-    border-style: solid;
-    border-color: #2f384de6;
-}
 
 .whole-ui {
     margin-top: 100px;
