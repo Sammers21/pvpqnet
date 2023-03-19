@@ -95,6 +95,19 @@ function fillWithDiff(data, table) {
     });
 }
 
+function goToRegion(region) {
+    var path = window.location.pathname;
+    let aolRegion = path.match("/(?<region>eu|us)/(?<aol>ladder|activity)/(?<bracket>2v2|3v3|rbg|shuffle)");
+    let aol = path.match("/(?<aol>ladder|activity)/(?<bracket>2v2|3v3|rbg|shuffle)");
+    if (aolRegion) {
+        window.location.href = window.location.origin + `/${region}/${aolRegion[2]}/${aolRegion[3]}`;
+    } else if (aol) {
+        window.location.href = window.location.origin + `/${region}/${aol[1]}/${aol[2]}`;
+    } else if (path === '/') {
+        window.location.href = window.location.origin + `/${region}/activity/shuffle`;
+    }
+}
+
 function goToBracket(bracket) {
     var path = window.location.pathname;
     let aolRegion = path.match("/(?<region>eu|us)/(?<aol>ladder|activity)/(?<bracket>2v2|3v3|rbg|shuffle)");
