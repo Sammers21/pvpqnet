@@ -9,6 +9,10 @@ import java.util.List;
 
 public record Snapshot(List<Character> characters, Long timestamp, String region) implements JsonPaged {
 
+    public static Snapshot empty(String region) {
+        return new Snapshot(List.of(), System.currentTimeMillis(), region);
+    }
+
     public static Snapshot of(List<Character> characters, String region) {
         if (characters == null || characters.isEmpty()) {
             return new Snapshot(List.of(), System.currentTimeMillis(), region);

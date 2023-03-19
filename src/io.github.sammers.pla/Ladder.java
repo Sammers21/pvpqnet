@@ -221,18 +221,29 @@ public class Ladder {
     }
 
     public void start() {
-        String region = EU;
-        loadLast(TWO_V_TWO, region)
-            .andThen(loadLast(THREE_V_THREE, region))
-            .andThen(loadLast(RBG, region))
-            .andThen(loadLast(SHUFFLE, region))
-            .andThen(Observable.interval(0, 60, TimeUnit.MINUTES)
-                .flatMapSingle(tick -> threeVThree(region))
-                .flatMapSingle(tick -> twoVTwo(region))
-                .flatMapSingle(tick -> battlegrounds(region))
-                .flatMapSingle(tick -> shuffle(region))
+        loadRegionData(EU)
+            .andThen(loadRegionData(US))
+            .andThen(
+                runDataUpdater(US,
+                    runDataUpdater(EU, Observable.interval(0, 60, TimeUnit.MINUTES))
+                )
             )
             .subscribe();
+    }
+
+    private <R> Observable<Snapshot> runDataUpdater(String region, Observable<R> tickObservable) {
+        return tickObservable
+            .flatMapSingle(tick -> threeVThree(region))
+            .flatMapSingle(tick -> twoVTwo(region))
+            .flatMapSingle(tick -> battlegrounds(region))
+            .flatMapSingle(tick -> shuffle(region));
+    }
+
+    private Completable loadRegionData(String region) {
+        return loadLast(TWO_V_TWO, region)
+            .andThen(loadLast(THREE_V_THREE, region))
+            .andThen(loadLast(RBG, region))
+            .andThen(loadLast(SHUFFLE, region));
     }
 
     private Completable loadLast(String bracket, String region) {
@@ -269,7 +280,7 @@ public class Ladder {
         AtomicReference<Snapshot> current = refByBracket(bracket, region);
         AtomicReference<Snapshot> older = refByBracket(bracket + "_older", region);
         AtomicReference<Snapshot> olderOlder = refByBracket(bracket + "_older_older", region);
-        if (!CollectionUtils.isEqualCollection(newCharacters.characters(), current.get().characters())) {
+        if (current.get() == null || !CollectionUtils.isEqualCollection(newCharacters.characters(), current.get().characters())) {
             olderOlder.set(older.get());
             older.set(current.get());
             current.set(newCharacters);

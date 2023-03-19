@@ -9,6 +9,9 @@ import io.vertx.reactivex.ext.web.RoutingContext;
 import java.util.List;
 import java.util.Optional;
 
+import static io.github.sammers.pla.Ladder.RBG;
+import static io.github.sammers.pla.Ladder.US;
+
 public class Http {
 
     private final Vertx vertx;
@@ -33,25 +36,34 @@ public class Http {
             }
             ctx.next();
         });
-        router.get("/api/ladder/2v2").handler(ctx -> ladder(ctx, ladder.refByBracket(Ladder.TWO_V_TWO, Ladder.EU).get()));
-        router.get("/api/ladder/3v3").handler(ctx -> ladder(ctx, ladder.refByBracket(Ladder.THREE_V_THREE, Ladder.EU).get()));
-        router.get("/api/ladder/shuffle").handler(ctx -> ladder(ctx, ladder.refByBracket(Ladder.SHUFFLE, Ladder.EU).get()));
-        router.get("/api/ladder/rbg").handler(ctx -> ladder(ctx, ladder.refByBracket(Ladder.RBG, Ladder.EU).get()));
-        router.get("/api/activity/2v2").handler(ctx -> ladder(ctx, ladder.diffsByBracket(Ladder.TWO_V_TWO, Ladder.EU).get()));
-        router.get("/api/activity/3v3").handler(ctx -> ladder(ctx, ladder.diffsByBracket(Ladder.THREE_V_THREE, Ladder.EU).get()));
-        router.get("/api/activity/shuffle").handler(ctx -> ladder(ctx, ladder.diffsByBracket(Ladder.SHUFFLE, Ladder.EU).get()));
-        router.get("/api/activity/rbg").handler(ctx -> ladder(ctx, ladder.diffsByBracket(Ladder.RBG, Ladder.EU).get()));
         router.routeWithRegex(".*main.js").handler(ctx -> ctx.response().sendFile("main.js"));
         router.routeWithRegex(".*main.css").handler(ctx -> ctx.response().sendFile("main.css"));
         router.routeWithRegex(".*df.img").handler(ctx -> ctx.response().sendFile("df.img"));
         router.routeWithRegex(("\\/classicons\\/(?<classicon>[^\\/]+.png)")).handler(ctx -> ctx.response().sendFile("classicons/" + ctx.pathParam("classicon")));
         router.routeWithRegex(("\\/specicons\\/(?<specicon>[^\\/]+.png)")).handler(ctx -> ctx.response().sendFile("specicons/" + ctx.pathParam("specicon")));
         router.routeWithRegex(("\\/regionicons\\/(?<regionicon>[^\\/]+.svg)")).handler(ctx -> ctx.response().sendFile("regionicons/" + ctx.pathParam("regionicon")));
+        router.get("/api/:region/ladder/:bracket").handler(ctx -> {
+            String region = ctx.pathParam("region");
+            String bracket = ctx.pathParam("bracket");
+            if (bracket.equals("rbg")) {
+                bracket = RBG;
+            }
+            ladder(ctx, ladder.refByBracket(bracket, region).get());
+        });
+        router.get("/api/:region/activity/:bracket").handler(ctx -> {
+            String region = ctx.pathParam("region");
+            String bracket = ctx.pathParam("bracket");
+            if (bracket.equals("rbg")) {
+                bracket = RBG;
+            }
+            ladder(ctx, ladder.diffsByBracket(bracket, region).get());
+        });
+        router.get("/:region/ladder/:bracket").handler(ctx -> ctx.response().sendFile("index.html"));
+        router.get("/:region/ladder/:bracket").handler(ctx -> ctx.response().sendFile("index.html"));
+        router.get("/:region/activity/:bracket").handler(ctx -> ctx.response().sendFile("index.html"));
+        router.get("/ladder/:bracket").handler(ctx -> ctx.response().sendFile("index.html"));
+        router.get("/activity/:bracket").handler(ctx -> ctx.response().sendFile("index.html"));
         router.get("/").handler(ctx -> ctx.response().sendFile("index.html"));
-        router.get("/activity/2v2").handler(ctx -> ctx.response().sendFile("index.html"));
-        router.get("/activity/3v3").handler(ctx -> ctx.response().sendFile("index.html"));
-        router.get("/activity/shuffle").handler(ctx -> ctx.response().sendFile("index.html"));
-        router.get("/activity/rbg").handler(ctx -> ctx.response().sendFile("index.html"));
         vertx.createHttpServer().requestHandler(router).listen(9000);
     }
 

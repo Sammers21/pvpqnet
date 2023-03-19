@@ -66,11 +66,13 @@ public class DB {
     }
 
     public Completable insertOnlyIfDifferent(String bracket, String region, Snapshot snapshot) {
-        return getLast(bracket, region).flatMapCompletable(last -> {
+        return getLast(bracket, region).defaultIfEmpty(Snapshot.empty(region)).flatMapCompletable(last -> {
             if (CollectionUtils.isEqualCollection(last.characters(), snapshot.characters())) {
                 return Completable.complete();
             } else {
-                return mongoClient.rxSave(bracket, snapshot.toJson()).ignoreElement();
+                return mongoClient.rxSave(bracket, snapshot.toJson())
+                    .doOnSuccess(ok -> log.info("Inserted data for {}-{}", region, bracket))
+                    .ignoreElement();
             }
         });
     }

@@ -66,16 +66,16 @@ function addClassToEvenRows(table) {
     }
 }
 
-async function loadIntoTable(table) {
-    var url = window.location.origin + '/api/activity/shuffle';
+async function loadIntoTable(table, region) {
+    var url = window.location.origin + `/api/${region}/activity/shuffle`;
     if (window.location.pathname === '/activity/2v2') {
-        url = window.location.origin + '/api/activity/2v2';
+        url = window.location.origin + `/api/${region}/activity/2v2`;
     } else if (window.location.pathname === '/activity/3v3') {
-        url = window.location.origin + '/api/activity/3v3';
+        url = window.location.origin + `/api/${region}/activity/3v3`;
     } else if (window.location.pathname === '/activity/rbg') {
-        url = window.location.origin + '/api/activity/rbg';
+        url = window.location.origin + `/api/${region}/activity/rbg`;
     } else if (window.location.pathname === '/activity/shuffle') {
-        url = window.location.origin + '/api/activity/shuffle';
+        url = window.location.origin + `/api/${region}/activity/shuffle`;
     }
     const response = await fetch(url);
     const data = await response.json();
@@ -117,5 +117,5 @@ function moveAbleHeader(){
 }
 
 moveAbleHeader();
-loadIntoTable(document.querySelector('table'))
+loadIntoTable(document.querySelector('table'), 'en-gb')
     .then(r => console.log(r));
