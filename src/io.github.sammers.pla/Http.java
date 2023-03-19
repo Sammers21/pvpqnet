@@ -58,7 +58,6 @@ public class Http {
             ladder(ctx, ladder.diffsByBracket(bracket, region).get());
         });
         router.get("/:region/ladder/:bracket").handler(ctx -> ctx.response().sendFile("index.html"));
-        router.get("/:region/ladder/:bracket").handler(ctx -> ctx.response().sendFile("index.html"));
         router.get("/:region/activity/:bracket").handler(ctx -> ctx.response().sendFile("index.html"));
         router.get("/ladder/:bracket").handler(ctx -> ctx.response().sendFile("index.html"));
         router.get("/activity/:bracket").handler(ctx -> ctx.response().sendFile("index.html"));

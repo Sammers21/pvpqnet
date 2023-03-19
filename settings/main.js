@@ -66,20 +66,7 @@ function addClassToEvenRows(table) {
     }
 }
 
-async function loadIntoTable(table, region) {
-    var url = window.location.origin + `/api/${region}/activity/shuffle`;
-    if (window.location.pathname === '/activity/2v2') {
-        url = window.location.origin + `/api/${region}/activity/2v2`;
-    } else if (window.location.pathname === '/activity/3v3') {
-        url = window.location.origin + `/api/${region}/activity/3v3`;
-    } else if (window.location.pathname === '/activity/rbg') {
-        url = window.location.origin + `/api/${region}/activity/rbg`;
-    } else if (window.location.pathname === '/activity/shuffle') {
-        url = window.location.origin + `/api/${region}/activity/shuffle`;
-    }
-    const response = await fetch(url);
-    const data = await response.json();
-    console.log(data)
+function fillWithDiff(data, table) {
     data.characters.forEach((item) => {
         const row = table.insertRow();
         const posChange = rankNumber(item.diff.rank_diff);
@@ -106,16 +93,55 @@ async function loadIntoTable(table, region) {
                          <td>${item.character.rating} ${ratingChange}</td>
                          <td>${item.diff.last_seen}</td>`
     });
+}
+
+function goToBracket(bracket) {
+    var path = window.location.pathname;
+    let aolRegion = path.match("/(?<region>eu|us)/(?<aol>ladder|activity)/(?<bracket>2v2|3v3|rbg|shuffle)");
+    let aol = path.match("/(?<aol>ladder|activity)/(?<bracket>2v2|3v3|rbg|shuffle)");
+    if (aolRegion) {
+        window.location.href = window.location.origin + `/${aolRegion[1]}/${aolRegion[2]}/${bracket}`;
+    } else if (aol) {
+        window.location.href = window.location.origin + `/${aol[1]}/${bracket}`;
+    }
+}
+
+async function loadIntoTable(table) {
+    var region;
+    if (window.location.pathname.includes('us')) {
+        region = 'en-us';
+    } else {
+        region = 'en-gb';
+    }
+    var url = window.location.origin + `/api/${region}/activity/shuffle`;
+    var path = window.location.pathname;
+    let aolRegion = path.match("/(?<region>eu|us)/(?<aol>ladder|activity)/(?<bracket>2v2|3v3|rbg|shuffle)");
+    let aol = path.match("/(?<aol>ladder|activity)/(?<bracket>2v2|3v3|rbg|shuffle)");
+    if (aolRegion) {
+        if (aolRegion[1] === 'eu') {
+            aolRegion[1] = 'en-gb';
+        } else {
+            aolRegion[1] = 'en-us';
+        }
+        url = window.location.origin + `/api/${aolRegion[1]}/${aolRegion[2]}/${aolRegion[3]}`;
+    } else if (aol) {
+        url = window.location.origin + `/api/${region}/${aol[1]}/${aol[2]}`;
+    }
+    console.log("API URL: " + url)
+    const response = await fetch(url);
+    const data = await response.json();
+    console.log(data)
+    fillWithDiff(data, table);
     addClassToEvenRows(table)
 }
 
-function moveAbleHeader(){
-    window.addEventListener('scroll', function(e) {
+function moveAbleHeader() {
+    window.addEventListener('scroll', function (e) {
         var header = document.querySelector('thead');
         header.classList.toggle('sticky', window.scrollY > 0);
     });
 }
 
 moveAbleHeader();
-loadIntoTable(document.querySelector('table'), 'en-gb')
+loadIntoTable(document.querySelector('table'))
     .then(r => console.log(r));
