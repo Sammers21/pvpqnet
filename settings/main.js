@@ -155,6 +155,23 @@ function moveAbleHeader() {
     });
 }
 
+function makeGrayNonChosenRegion(){
+    let aolRegion = window.location.pathname
+        .match("/(?<region>eu|us)/(?<aol>ladder|activity)/(?<bracket>2v2|3v3|rbg|shuffle)");
+    let regions = ['eu', 'us']
+    if (aolRegion) {
+        var index = regions.indexOf(aolRegion[1]);
+        if (index !== -1) {
+            regions.splice(index, 1);
+        }
+    } else {
+        regions.remove('eu')
+    }
+    let regionToMakeGray = regions[0];
+    document.querySelector(`.${regionToMakeGray}btn`).classList.add('grayscale');
+}
+
 moveAbleHeader();
+makeGrayNonChosenRegion();
 loadIntoTable(document.querySelector('table'))
     .then(r => console.log(r));
