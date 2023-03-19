@@ -7,7 +7,9 @@ import io.reactivex.Single;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.FindOptions;
 import io.vertx.reactivex.core.Vertx;
+import io.vertx.reactivex.core.buffer.Buffer;
 import io.vertx.reactivex.ext.mongo.MongoClient;
+import io.vertx.reactivex.ext.web.client.HttpRequest;
 import io.vertx.reactivex.ext.web.client.WebClient;
 import org.apache.commons.collections4.CollectionUtils;
 import org.jsoup.Jsoup;
@@ -31,6 +33,8 @@ public class Ladder {
     private final Vertx vertx;
     private final WebClient web;
 
+    public static String EU = "en-gb";
+    public static String US = "en-us";
     public static String TWO_V_TWO = "2v2";
     public static String THREE_V_THREE = "3v3";
     public static String RBG = "battlegrounds";
@@ -89,29 +93,29 @@ public class Ladder {
         this.db = db;
     }
 
-    public Single<Snapshot> threeVThree() {
+    public Single<Snapshot> threeVThree(String region) {
         String bracket = "3v3";
-        return fetchLadder(bracket);
+        return fetchLadder(bracket, region);
     }
 
-    public Single<Snapshot> twoVTwo() {
+    public Single<Snapshot> twoVTwo(String region) {
         String bracket = "2v2";
-        return fetchLadder(bracket);
+        return fetchLadder(bracket, region);
     }
 
-    public Single<Snapshot> battlegrounds() {
+    public Single<Snapshot> battlegrounds(String region) {
         String bracket = "battlegrounds";
-        return fetchLadder(bracket);
+        return fetchLadder(bracket, region);
     }
 
-    public Single<Snapshot> shuffle() {
+    public Single<Snapshot> shuffle(String region) {
         String bracket = "shuffle";
         Single<List<Character>> res = Single.just(new ArrayList<>(1000 * shuffleSpecs.size()));
         for (String shuffleSpec : shuffleSpecs) {
             for (int i = 1; i <= 10; i++) {
                 int finalI = i;
                 res = res.flatMap(characters ->
-                    ladderShuffle(shuffleSpec, finalI).map(c -> {
+                    ladderShuffle(shuffleSpec, finalI, region).map(c -> {
                         characters.addAll(c);
                         return characters;
                     })
@@ -122,28 +126,34 @@ public class Ladder {
                 chars.sort(Comparator.comparing(Character::rating).reversed());
                 return chars;
             })
-            .map(Snapshot::of)
-            .flatMap(d -> newDataOnBracket(bracket, d).andThen(Single.just(d)));
+            .map(chars -> Snapshot.of(chars, region))
+            .flatMap(d -> newDataOnBracket(bracket, region, d).andThen(Single.just(d)));
     }
 
-    public Single<Snapshot> fetchLadder(String bracket) {
+    public Single<Snapshot> fetchLadder(String bracket, String region) {
         Single<List<Character>> res = Single.just(new ArrayList<>(1000));
         for (int i = 1; i <= 10; i++) {
             int finalI = i;
             res = res.flatMap(characters ->
-                ladderTraditional(bracket, finalI).map(c -> {
+                ladderTraditional(bracket, finalI, region).map(c -> {
                     characters.addAll(c);
                     return characters;
                 })
             );
         }
-        return res.map(Snapshot::of)
-            .flatMap(d -> newDataOnBracket(bracket, d).andThen(Single.just(d)));
+        return res
+            .map(chars -> Snapshot.of(chars, region))
+            .flatMap(d -> newDataOnBracket(bracket, region, d).andThen(Single.just(d)));
     }
 
-    public Single<List<Character>> ladderShuffle(String bracket, Integer page) {
-        String url = String.format("https://worldofwarcraft.blizzard.com/en-gb/game/pvp/leaderboards/%s", bracket);
-        return web.getAbs(url).addQueryParam("page", page.toString()).rxSend().map(ok -> {
+    private HttpRequest<Buffer> ladderReuqest(String bracket, Integer page, String region) {
+        String url = String.format("https://worldofwarcraft.blizzard.com/%s/game/pvp/leaderboards/%s", region, bracket);
+        HttpRequest<Buffer> request = web.getAbs(url).addQueryParam("page", page.toString());
+        return request;
+    }
+
+    public Single<List<Character>> ladderShuffle(String bracket, Integer page, String region) {
+        return ladderReuqest(bracket, page, region).rxSend().map(ok -> {
                 String ers = ok.bodyAsString();
                 Document parse = Jsoup.parse(ers);
                 Elements select = parse.select("#main > div.Pane.Pane--dirtBlue.bordered > div.Pane-content > div.Paginator > div.Paginator-pages > div:nth-child(1) > div > div.SortTable-body");
@@ -170,13 +180,12 @@ public class Ladder {
                     return characters;
                 }
             })
-            .doOnSuccess(ok -> log.info(String.format("OK %s %s", bracket, page)))
-            .doOnError(err -> log.info(String.format("ERR %s %s", bracket, page)));
+            .doOnSuccess(ok -> log.info(String.format("%s-%s ladder has been fetched page=%s", region, bracket, page)))
+            .doOnError(err -> log.info(String.format("ERR %s %s %s", region, bracket, page)));
     }
 
-    public Single<List<Character>> ladderTraditional(String bracket, Integer page) {
-        String url = String.format("https://worldofwarcraft.blizzard.com/en-gb/game/pvp/leaderboards/%s", bracket);
-        return web.getAbs(url).addQueryParam("page", page.toString()).rxSend().map(ok -> {
+    public Single<List<Character>> ladderTraditional(String bracket, Integer page, String region) {
+        return ladderReuqest(bracket, page, region).rxSend().map(ok -> {
                 int code = ok.statusCode();
                 if (code != 200) {
                     log.info("NON 200 code " + code);
@@ -207,67 +216,68 @@ public class Ladder {
                 }).toList();
                 return characters;
             })
-            .doOnSuccess(ok -> log.info(String.format("%s ladder has been fetched page=%s", bracket, page)))
-            .doOnError(err -> log.info(String.format("ERR %s %s", bracket, page)));
+            .doOnSuccess(ok -> log.info(String.format("%s-%s ladder has been fetched page=%s", region, bracket, page)))
+            .doOnError(err -> log.info(String.format("ERR %s %s %s", region, bracket, page)));
     }
 
     public void start() {
-        loadLast(TWO_V_TWO)
-            .andThen(loadLast(THREE_V_THREE))
-            .andThen(loadLast(RBG))
-            .andThen(loadLast(SHUFFLE))
+        String region = EU;
+        loadLast(TWO_V_TWO, region)
+            .andThen(loadLast(THREE_V_THREE, region))
+            .andThen(loadLast(RBG, region))
+            .andThen(loadLast(SHUFFLE, region))
             .andThen(Observable.interval(0, 60, TimeUnit.MINUTES)
-                .flatMapSingle(tick -> threeVThree())
-                .flatMapSingle(tick -> twoVTwo())
-                .flatMapSingle(tick -> battlegrounds())
-                .flatMapSingle(tick -> shuffle())
+                .flatMapSingle(tick -> threeVThree(region))
+                .flatMapSingle(tick -> twoVTwo(region))
+                .flatMapSingle(tick -> battlegrounds(region))
+                .flatMapSingle(tick -> shuffle(region))
             )
             .subscribe();
     }
 
-    private Completable loadLast(String bracket) {
-        return db.getLast(bracket).flatMapCompletable(characters -> {
-            refByBracket(bracket).set(characters);
-            log.info("Data for bracket {} has been loaded from DB", bracket);
-            return calcDiffs(bracket);
+    private Completable loadLast(String bracket, String region) {
+        return db.getLast(bracket, region).flatMapCompletable(characters -> {
+            refByBracket(bracket, region).set(characters);
+            log.info("Data for bracket {}-{} has been loaded from DB", region, bracket);
+            return calcDiffs(bracket, region);
         });
     }
 
-    public Completable calcDiffs(String bracket) {
-        Maybe<Snapshot> sixHrsAgo = db.getMinsAgo(bracket, 60 * 5);
-        Maybe<Snapshot> threeHrsAgo = db.getMinsAgo(bracket, 60 * 3);
+    public Completable calcDiffs(String bracket, String region) {
+        Maybe<Snapshot> sixHrsAgo = db.getMinsAgo(bracket, region, 60 * 5);
+        Maybe<Snapshot> threeHrsAgo = db.getMinsAgo(bracket, region, 60 * 3);
         return sixHrsAgo.zipWith(threeHrsAgo, (six, three) -> {
-            Snapshot now = refByBracket(bracket).get();
+            Snapshot now = refByBracket(bracket, region).get();
             SnapshotDiff threeNow = Calculator.calculateDiff(three, now, bracket);
             SnapshotDiff sixThree = Calculator.calculateDiff(six, three, bracket);
             SnapshotDiff res = Calculator.combine(sixThree, threeNow, bracket);
-            diffsByBracket(bracket).set(res);
+            diffsByBracket(bracket, region).set(res);
             log.info("Diffs has been calculated for bracket {}, diffs:{}", bracket, res.chars().size());
             return Maybe.just(res);
         }).ignoreElement();
     }
 
-    public AtomicReference<Snapshot> refByBracket(String bracket) {
+    public AtomicReference<Snapshot> refByBracket(String bracket, String region) {
         return refs.computeIfAbsent(bracket, k -> new AtomicReference<>());
     }
 
-    public AtomicReference<SnapshotDiff> diffsByBracket(String bracket) {
-        return refDiffs.computeIfAbsent(bracket, k -> new AtomicReference<>());
+    public AtomicReference<SnapshotDiff> diffsByBracket(String bracket, String region) {
+        return refDiffs.computeIfAbsent(bracket + "_region", k -> new AtomicReference<>());
     }
 
-    public Completable newDataOnBracket(String bracket, Snapshot newCharacters) {
-        AtomicReference<Snapshot> current = refByBracket(bracket);
-        AtomicReference<Snapshot> older = refByBracket(bracket + "_older");
-        AtomicReference<Snapshot> olderOlder = refByBracket(bracket + "_older_older");
+    public Completable newDataOnBracket(String bracket, String region, Snapshot newCharacters) {
+        AtomicReference<Snapshot> current = refByBracket(bracket, region);
+        AtomicReference<Snapshot> older = refByBracket(bracket + "_older", region);
+        AtomicReference<Snapshot> olderOlder = refByBracket(bracket + "_older_older", region);
         if (!CollectionUtils.isEqualCollection(newCharacters.characters(), current.get().characters())) {
             olderOlder.set(older.get());
             older.set(current.get());
             current.set(newCharacters);
             log.info("Data for bracket {} is different performing update", bracket);
-            return db.insertOnlyIfDifferent(bracket, newCharacters)
+            return db.insertOnlyIfDifferent(bracket, region, newCharacters)
                 .andThen(db.deleteOlderThan24Hours(bracket)
-                .ignoreElement()
-                .andThen(calcDiffs(bracket)));
+                    .ignoreElement()
+                    .andThen(calcDiffs(bracket, region)));
         } else {
             log.info("Data for bracket {} are equal, not updating", bracket);
             return Completable.complete();

@@ -25,21 +25,17 @@ public class DB {
         this.mongoClient = mongoClient;
     }
 
-    public Maybe<Snapshot> getLast(String bracket) {
-        return getLast(bracket, 0);
+    public Maybe<Snapshot> getLast(String bracket, String region) {
+        return getLast(bracket, region, 0);
     }
 
-    public Maybe<Snapshot> getLast(String bracket, int skip) {
-        FindOptions fopts = new FindOptions().setSort(new JsonObject().put("timestamp", -1)).setLimit(1).setSkip(skip);
-        JsonObject opts = new JsonObject();
-        return mongoClient.rxFindWithOptions(bracket, opts, fopts).flatMapMaybe(res -> {
-            List<Snapshot> snapshots = res.stream().map(Snapshot::fromJson).toList();
-            if (snapshots.size() > 0) {
-                return Maybe.just(snapshots.get(0));
-            } else {
-                return Maybe.empty();
-            }
-        });
+    public Maybe<Snapshot> getLast(String bracket, String region, int skip) {
+        FindOptions fopts = new FindOptions()
+            .setSort(new JsonObject().put("timestamp", -1))
+            .setLimit(1).setSkip(skip);
+        JsonObject opts = new JsonObject()
+            .put("region", new JsonObject().put("$eq", region));
+        return find(bracket, fopts, opts);
     }
 
     public Maybe<MongoClientDeleteResult> deleteOlderThan24Hours(String bracket) {
@@ -48,12 +44,17 @@ public class DB {
         ).doOnSuccess(res -> log.info("Deleted " + res.getRemovedCount() + " records " + bracket + " snapshots"));
     }
 
-    public Maybe<Snapshot> getMinsAgo(String bracket, int mins) {
+    public Maybe<Snapshot> getMinsAgo(String bracket, String region, int mins) {
         long now = System.currentTimeMillis();
-        long minsAgo = now - mins * 60 * 1000;
+        long minsAgo = now - mins * 60 * 1000L;
         FindOptions fopts = new FindOptions().setSort(new JsonObject().put("timestamp", 1)).setLimit(1);
         JsonObject opts = new JsonObject()
-            .put("timestamp", new JsonObject().put("$lt", now).put("$gt", minsAgo));
+            .put("timestamp", new JsonObject().put("$lt", now).put("$gt", minsAgo))
+            .put("region", new JsonObject().put("$eq", region));
+        return find(bracket, fopts, opts);
+    }
+
+    private Maybe<Snapshot> find(String bracket, FindOptions fopts, JsonObject opts) {
         return mongoClient.rxFindWithOptions(bracket, opts, fopts).flatMapMaybe(res -> {
             List<Snapshot> snapshots = res.stream().map(Snapshot::fromJson).toList();
             if (snapshots.size() > 0) {
@@ -64,8 +65,8 @@ public class DB {
         });
     }
 
-    public Completable insertOnlyIfDifferent(String bracket, Snapshot snapshot) {
-        return getLast(bracket).flatMapCompletable(last -> {
+    public Completable insertOnlyIfDifferent(String bracket, String region, Snapshot snapshot) {
+        return getLast(bracket, region).flatMapCompletable(last -> {
             if (CollectionUtils.isEqualCollection(last.characters(), snapshot.characters())) {
                 return Completable.complete();
             } else {

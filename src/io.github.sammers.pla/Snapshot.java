@@ -7,13 +7,13 @@ import io.vertx.core.json.JsonObject;
 import java.util.Date;
 import java.util.List;
 
-public record Snapshot(List<Character> characters, Long timestamp) implements JsonPaged {
+public record Snapshot(List<Character> characters, Long timestamp, String region) implements JsonPaged {
 
-    public static Snapshot of(List<Character> characters) {
+    public static Snapshot of(List<Character> characters, String region) {
         if (characters == null || characters.isEmpty()) {
-            return new Snapshot(List.of(), System.currentTimeMillis());
+            return new Snapshot(List.of(), System.currentTimeMillis(), region);
         }
-        return new Snapshot(characters, System.currentTimeMillis());
+        return new Snapshot(characters, System.currentTimeMillis(), region);
     }
 
     public JsonObject toJson(Long page) {
@@ -21,6 +21,7 @@ public record Snapshot(List<Character> characters, Long timestamp) implements Js
         JsonObject put = new JsonObject()
             .put("characters", new JsonArray(chars))
             .put("timestamp", timestamp)
+            .put("region", region)
             .put("page", page)
             .put("total_pages", characters.size() / 100)
             .put("last_seen", Main.PRETTY_TIME.format(new Date(timestamp)));
@@ -32,10 +33,11 @@ public record Snapshot(List<Character> characters, Long timestamp) implements Js
         return new JsonObject()
             .put("characters", new JsonArray(chars))
             .put("timestamp", timestamp)
+            .put("region", region)
             .put("last_seen", Main.PRETTY_TIME.format(new Date(timestamp)));
     }
 
     public static Snapshot fromJson(JsonObject entries) {
-        return new Snapshot(entries.getJsonArray("characters").stream().map(x -> (JsonObject) x).map(Character::fromJson).toList(), entries.getLong("timestamp"));
+        return new Snapshot(entries.getJsonArray("characters").stream().map(x -> (JsonObject) x).map(Character::fromJson).toList(), entries.getLong("timestamp"), entries.getString("region"));
     }
 }

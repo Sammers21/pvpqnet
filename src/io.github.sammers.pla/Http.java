@@ -33,14 +33,14 @@ public class Http {
             }
             ctx.next();
         });
-        router.get("/api/ladder/2v2").handler(ctx -> ladder(ctx, ladder.refByBracket(Ladder.TWO_V_TWO).get()));
-        router.get("/api/ladder/3v3").handler(ctx -> ladder(ctx, ladder.refByBracket(Ladder.THREE_V_THREE).get()));
-        router.get("/api/ladder/shuffle").handler(ctx -> ladder(ctx, ladder.refByBracket(Ladder.SHUFFLE).get()));
-        router.get("/api/ladder/rbg").handler(ctx -> ladder(ctx, ladder.refByBracket(Ladder.RBG).get()));
-        router.get("/api/activity/2v2").handler(ctx -> ladder(ctx, ladder.diffsByBracket(Ladder.TWO_V_TWO).get()));
-        router.get("/api/activity/3v3").handler(ctx -> ladder(ctx, ladder.diffsByBracket(Ladder.THREE_V_THREE).get()));
-        router.get("/api/activity/shuffle").handler(ctx -> ladder(ctx, ladder.diffsByBracket(Ladder.SHUFFLE).get()));
-        router.get("/api/activity/rbg").handler(ctx -> ladder(ctx, ladder.diffsByBracket(Ladder.RBG).get()));
+        router.get("/api/ladder/2v2").handler(ctx -> ladder(ctx, ladder.refByBracket(Ladder.TWO_V_TWO, Ladder.EU).get()));
+        router.get("/api/ladder/3v3").handler(ctx -> ladder(ctx, ladder.refByBracket(Ladder.THREE_V_THREE, Ladder.EU).get()));
+        router.get("/api/ladder/shuffle").handler(ctx -> ladder(ctx, ladder.refByBracket(Ladder.SHUFFLE, Ladder.EU).get()));
+        router.get("/api/ladder/rbg").handler(ctx -> ladder(ctx, ladder.refByBracket(Ladder.RBG, Ladder.EU).get()));
+        router.get("/api/activity/2v2").handler(ctx -> ladder(ctx, ladder.diffsByBracket(Ladder.TWO_V_TWO, Ladder.EU).get()));
+        router.get("/api/activity/3v3").handler(ctx -> ladder(ctx, ladder.diffsByBracket(Ladder.THREE_V_THREE, Ladder.EU).get()));
+        router.get("/api/activity/shuffle").handler(ctx -> ladder(ctx, ladder.diffsByBracket(Ladder.SHUFFLE, Ladder.EU).get()));
+        router.get("/api/activity/rbg").handler(ctx -> ladder(ctx, ladder.diffsByBracket(Ladder.RBG, Ladder.EU).get()));
         router.routeWithRegex(".*main.js").handler(ctx -> ctx.response().sendFile("main.js"));
         router.routeWithRegex(".*main.css").handler(ctx -> ctx.response().sendFile("main.css"));
         router.routeWithRegex(".*df.img").handler(ctx -> ctx.response().sendFile("df.img"));
@@ -60,7 +60,7 @@ public class Http {
             .flatMap(l -> l.stream().findFirst())
             .map(Long::parseLong).orElse(1L);
         if (snapshot == null) {
-            ctx.response().end(new Snapshot(List.of(), System.currentTimeMillis()).toJson(page).encode());
+            ctx.response().end(new Snapshot(List.of(), System.currentTimeMillis(), Ladder.EU).toJson(page).encode());
         } else {
             ctx.response().end(snapshot.toJson(page).encode());
         }
