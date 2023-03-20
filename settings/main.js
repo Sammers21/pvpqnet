@@ -66,35 +66,66 @@ function addClassToEvenRows(table) {
     }
 }
 
-function fillWithDiff(data, table) {
-    for(var i = 1;i<table.rows.length;){
+function fillWithData(data, table) {
+    for (var i = 1; i < table.rows.length;) {
         table.deleteRow(i);
     }
     data.characters.forEach((item) => {
         const row = table.insertRow();
-        const posChange = rankNumber(item.diff.rank_diff);
-        const ratingChange = markNumber(item.diff.rating_diff);
-        const won = item.diff.won > 0 ? mark('green', item.diff.won) : mark('white', item.diff.won);
-        const lost = item.diff.lost > 0 ? mark('red', item.diff.lost) : mark('white', item.diff.lost);
+        var rank;
+        var details;
+        var name;
         var realm;
-        if (item.character.fraction === 'ALLIANCE') {
-            realm = mark('light-blue', item.character.realm);
+        var wonlost;
+        var rating;
+        var lastSeen;
+        if (item.diff) {
+            const posChange = rankNumber(item.diff.rank_diff);
+            const ratingChange = markNumber(item.diff.rating_diff);
+            const won = item.diff.won > 0 ? mark('green', item.diff.won) : mark('white', item.diff.won);
+            const lost = item.diff.lost > 0 ? mark('red', item.diff.lost) : mark('white', item.diff.lost);
+            const classImgSrc = window.location.origin + "/classicons/" + item.character.class.replaceAll(" ", "").toLowerCase() + ".png"
+            const classImg = `<img class="h-8 w-8" src="${classImgSrc}"/>`;
+            const specImgSrc = window.location.origin + "/specicons/" + specNameFromFullSpec(item.character.full_spec) + ".png"
+            const specImg = `<img class="h-8 w-8" src="${specImgSrc}"/>`;
+            rank = `#${item.character.pos} ${posChange}`
+            wonlost = `${won} / ${lost}`;
+            rating = `${item.character.rating} ${ratingChange}`;
+            lastSeen = item.diff.last_seen;
+            details = `${classImg}${specImg}`;
+            name = classNameColored(item.character.class, item.character.name);
+            if (item.character.fraction === 'ALLIANCE') {
+                realm = mark('light-blue', item.character.realm);
+            } else {
+                realm = mark('red', item.character.realm);
+            }
         } else {
-            realm = mark('red', item.character.realm);
+            const classImgSrc = window.location.origin + "/classicons/" + item.class.replaceAll(" ", "").toLowerCase() + ".png"
+            const classImg = `<img class="h-8 w-8" src="${classImgSrc}"/>`;
+            const specImgSrc = window.location.origin + "/specicons/" + specNameFromFullSpec(item.full_spec) + ".png"
+            const specImg = `<img class="h-8 w-8" src="${specImgSrc}"/>`;
+            const won = item.wins > 0 ? mark('green', item.wins) : mark('white', item.wins);
+            const lost = item.losses > 0 ? mark('red', item.losses) : mark('white', item.losses);
+            const winrate = mark('grey', (item.wins * 100 / (item.wins + item.losses)).toFixed(2) + `%`);
+            rank = `${item.pos}`;
+            wonlost = `${won} / ${lost} ${winrate}`;
+            rating = `${item.rating}`;
+            lastSeen = data.last_seen;
+            details = `${classImg}${specImg}`;
+            name = classNameColored(item.class, item.name);
+            if (item.fraction === 'ALLIANCE') {
+                realm = mark('light-blue', item.realm);
+            } else {
+                realm = mark('red', item.realm);
+            }
         }
-        const name = classNameColored(item.character.class, item.character.name);
-        const classImgSrc = window.location.origin + "/classicons/" + item.character.class.replaceAll(" ", "").toLowerCase() + ".png"
-        const classImg = `<img class="h-8 w-8" src="${classImgSrc}"/>`;
-        const specImgSrc = window.location.origin + "/specicons/" + specNameFromFullSpec(item.character.full_spec) + ".png"
-        const specImg = `<img class="h-8 w-8" src="${specImgSrc}"/>`;
-        const details = `${classImg}${specImg}`;
-        row.innerHTML = `<td>#${item.character.pos} ${posChange}</td>
+        row.innerHTML = `<td>${rank}</td>
                          <td>${details}</td>
                          <td>${name}</td>
                          <td>${realm}</td>
-                         <td>${won} / ${lost}</td>
-                         <td>${item.character.rating} ${ratingChange}</td>
-                         <td>${item.diff.last_seen}</td>`
+                         <td>${wonlost}</td>
+                         <td>${rating}</td>
+                         <td>${lastSeen}</td>`
     });
 }
 
@@ -111,17 +142,26 @@ function goToRegion(region) {
     }
 }
 
-function goToBracket(bracket) {
+function goToBracket(bracket, aolParam) {
     var path = window.location.pathname;
     let aolRegion = path.match("/(?<region>eu|us)/(?<aol>ladder|activity)/(?<bracket>2v2|3v3|rbg|shuffle)");
-    let aol = path.match("/(?<aol>ladder|activity)/(?<bracket>2v2|3v3|rbg|shuffle)");
+    let aolNoRegion = path.match("/(?<aol>ladder|activity)/(?<bracket>2v2|3v3|rbg|shuffle)");
+    var region;
+    var aol;
     if (aolRegion) {
-        window.location.href = window.location.origin + `/${aolRegion[1]}/${aolRegion[2]}/${bracket}`;
-    } else if (aol) {
-        window.location.href = window.location.origin + `/${aol[1]}/${bracket}`;
+        region = aolRegion[1];
+        aol = aolRegion[2];
+    } else if (aolNoRegion) {
+        region = 'eu';
+        aol = aolNoRegion[1];
     } else {
-        window.location.href = window.location.origin + `/activity/${bracket}`;
+        region = 'eu';
+        aol = 'activity';
     }
+    if (aolParam !== undefined) {
+        aol = aolParam;
+    }
+    window.location.href = window.location.origin + `/${region}/${aol}/${bracket}`;
 }
 
 async function loadIntoTable(page) {
@@ -155,7 +195,7 @@ async function loadIntoTable(page) {
     const response = await fetch(url);
     const data = await response.json();
     console.log(data)
-    fillWithDiff(data, table);
+    fillWithData(data, table);
     addClassToEvenRows(table);
     const btns = new Map()
     for (let i = 1; i <= data.total_pages; i++) {
@@ -213,3 +253,23 @@ function loadTableWPage() {
 moveAbleHeader();
 makeGrayNonChosenRegion();
 loadTableWPage();
+
+/* When the user clicks on the button,
+toggle between hiding and showing the dropdown content */
+function showDropDown(elName) {
+    document.getElementById(elName).classList.toggle("show");
+}
+
+// Close the dropdown menu if the user clicks outside of it
+window.onclick = function (event) {
+    if (!event.target.matches('.dropbtn')) {
+        var dropdowns = document.getElementsByClassName("dropdown-content");
+        var i;
+        for (i = 0; i < dropdowns.length; i++) {
+            var openDropdown = dropdowns[i];
+            if (openDropdown.classList.contains('show')) {
+                openDropdown.classList.remove('show');
+            }
+        }
+    }
+}

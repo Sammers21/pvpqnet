@@ -82,6 +82,7 @@ header ul {
     display: flex;
     justify-content: center;
     align-items: center;
+    gap: 20px;
 }
 
 header ul li {
@@ -190,6 +191,51 @@ th {
     /*float: left; !* Float the buttons side by side *!*/
     text-align: center;
 }
+
+/* Dropdown Button */
+.dropbtn {
+    background-color: transparent;
+    color: white;
+    font-size: 16px;
+    border: none;
+    cursor: pointer;
+}
+
+/* Dropdown button on hover & focus */
+.dropbtn:hover, .dropbtn:focus {
+    background-color: transparent;
+    color: #3FC7EB;
+}
+
+/* The container <div> - needed to position the dropdown content */
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+/* Dropdown Content (Hidden by Default) */
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: rgb(8, 10, 11);
+    min-width: 160px;
+    box-shadow: #3FC7EB;
+    z-index: 1;
+}
+
+/* Links inside the dropdown */
+.dropdown-content a {
+    color: #fff;;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+}
+
+/* Change color of dropdown links on hover */
+.dropdown-content a:hover {background-color: #3FC7EB;}
+
+/* Show the dropdown menu (use JS to add this class to the .dropdown-content container when the user clicks on the dropdown button) */
+.show {display:block;}
 
 .regionbtn {
     -webkit-appearance: button;
@@ -312,5 +358,11 @@ mark.purple {
 
 mark.tan {
     color: #C69B6D;
+    background: none;
+}
+
+mark.grey {
+    color: rgb(75 85 99 );
+    opacity: .75;
     background: none;
 }
