@@ -13,8 +13,15 @@ public class Calculator {
         ArrayList<CharAndDiff> res = new ArrayList<>(newChars.characters().size());
         Function<Character, String> idF = getIdFunction(bracket);
         Map<String, Character> oldMap = oldChars.characters().stream().collect(Collectors.toMap(idF, c -> c, (a, b) -> a));
-        for (Character newChar : newChars.characters()) {
-            Character oldChar = oldMap.get(idF.apply(newChar));
+        for (Character newCharx : newChars.characters()) {
+            Character newChar;
+            Character oldChar = oldMap.get(idF.apply(newCharx));
+            if(newCharx.wins() + newCharx.losses() < oldChar.wins() + oldChar.losses()){
+                newChar = oldChar;
+                oldChar = newCharx;
+            } else {
+                newChar = newCharx;
+            }
             CharAndDiff e;
             if (oldChar == null) {
                 e = new CharAndDiff(newChar, new Diff(0L, 0L, 0L, 0L, newChars.timestamp()));
