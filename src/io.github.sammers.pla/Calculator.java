@@ -39,7 +39,7 @@ public class Calculator {
         return new SnapshotDiff(res, newChars.timestamp());
     }
 
-    private static Function<Character, String> getIdFunction(String bracket) {
+    public static Function<Character, String> getIdFunction(String bracket) {
         Function<Character, String> idF;
         if(bracket.equals("shuffle")) {
             idF = Character::fullNameWSpec;

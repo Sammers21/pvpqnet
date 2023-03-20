@@ -1,9 +1,7 @@
 package io.github.sammers.pla;
 
-import io.reactivex.Completable;
-import io.reactivex.Maybe;
+import io.reactivex.*;
 import io.reactivex.Observable;
-import io.reactivex.Single;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.FindOptions;
 import io.vertx.reactivex.core.Vertx;
@@ -18,10 +16,7 @@ import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -254,18 +249,39 @@ public class Ladder {
         });
     }
 
+
     public Completable calcDiffs(String bracket, String region) {
-        Maybe<Snapshot> sixHrsAgo = db.getMinsAgo(bracket, region, 60 * 5);
+        Maybe<Snapshot> sixHrsAgo = db.getMinsAgo(bracket, region, 60 * 6);
+        Maybe<Snapshot> fiveHrsAgo = db.getMinsAgo(bracket, region, 60 * 5);
+        Maybe<Snapshot> fourHrsAgo = db.getMinsAgo(bracket, region, 60 * 4);
         Maybe<Snapshot> threeHrsAgo = db.getMinsAgo(bracket, region, 60 * 3);
-        return sixHrsAgo.zipWith(threeHrsAgo, (six, three) -> {
-            Snapshot now = refByBracket(bracket, region).get();
-            SnapshotDiff threeNow = Calculator.calculateDiff(three, now, bracket);
-            SnapshotDiff sixThree = Calculator.calculateDiff(six, three, bracket);
-            SnapshotDiff res = Calculator.combine(sixThree, threeNow, bracket);
-            diffsByBracket(bracket, region).set(res);
-            log.info("Diffs has been calculated for bracket {}-{}, diffs:{}", region, bracket, res.chars().size());
-            return Maybe.just(res);
-        }).ignoreElement();
+        Maybe<Snapshot> twoHrsAgo = db.getMinsAgo(bracket, region, 60 * 2);
+        Maybe<Snapshot> oneHrAgo = db.getMinsAgo(bracket, region, 60);
+        List<Maybe<Snapshot>> maybes = List.of(sixHrsAgo, fiveHrsAgo, fourHrsAgo, threeHrsAgo, twoHrsAgo, oneHrAgo, Maybe.just(refByBracket(bracket, region).get()));
+        return calcDiffAndCombine(bracket, maybes)
+            .flatMapCompletable(res -> {
+                diffsByBracket(bracket, region).set(res);
+                log.info("Diffs has been calculated for bracket {}-{}, diffs:{}", region, bracket, res.chars().size());
+                return Completable.complete();
+            });
+
+    }
+
+    public final Single<SnapshotDiff> calcDiffAndCombine(String bracket, List<Maybe<Snapshot>> snaps) {
+        return Maybe.merge(snaps).toList()
+            .map(snapshots -> {
+                List<SnapshotDiff> diffs = new ArrayList<>();
+                for (int i = 1; i < snapshots.size(); i++) {
+                    Snapshot old = snapshots.get(i - 1);
+                    Snapshot current = snapshots.get(i);
+                    diffs.add(Calculator.calculateDiff(old, current, bracket));
+                }
+                SnapshotDiff res = diffs.get(diffs.size() - 1);
+                for (int i = diffs.size() - 1; i > 0; i--) {
+                    res = Calculator.combine(diffs.get(i - 1), res, bracket);
+                }
+                return res;
+            });
     }
 
     public AtomicReference<Snapshot> refByBracket(String bracket, String region) {

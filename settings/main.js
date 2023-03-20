@@ -107,7 +107,7 @@ function fillWithData(data, table) {
             const won = item.wins > 0 ? mark('green', item.wins) : mark('white', item.wins);
             const lost = item.losses > 0 ? mark('red', item.losses) : mark('white', item.losses);
             const winrate = mark('grey', (item.wins * 100 / (item.wins + item.losses)).toFixed(2) + `%`);
-            rank = `${item.pos}`;
+            rank = `#${item.pos}`;
             wonlost = `${won} / ${lost} ${winrate}`;
             rating = `${item.rating}`;
             lastSeen = data.last_seen;
