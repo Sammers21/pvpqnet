@@ -10,14 +10,14 @@ import java.util.List;
 public record Snapshot(List<Character> characters, Long timestamp, String region) implements JsonPaged {
 
     public static Snapshot empty(String region) {
-        return new Snapshot(List.of(), System.currentTimeMillis(), region);
+        return new Snapshot(List.of(), -1L, region);
     }
 
-    public static Snapshot of(List<Character> characters, String region) {
+    public static Snapshot of(List<Character> characters, String region, Long timestamp) {
         if (characters == null || characters.isEmpty()) {
-            return new Snapshot(List.of(), System.currentTimeMillis(), region);
+            return new Snapshot(List.of(), timestamp, region);
         }
-        return new Snapshot(characters, System.currentTimeMillis(), region);
+        return new Snapshot(characters, timestamp, region);
     }
 
     public JsonObject toJson(Long page) {

@@ -104,6 +104,7 @@ public class Ladder {
     }
 
     public Single<Snapshot> shuffle(String region) {
+        long currentTimeMillis = System.currentTimeMillis();
         String bracket = "shuffle";
         Single<List<Character>> res = Single.just(new ArrayList<>(1000 * shuffleSpecs.size()));
         for (String shuffleSpec : shuffleSpecs) {
@@ -121,11 +122,12 @@ public class Ladder {
                 chars.sort(Comparator.comparing(Character::rating).reversed());
                 return chars;
             })
-            .map(chars -> Snapshot.of(chars, region))
+            .map(chars -> Snapshot.of(chars, region, currentTimeMillis))
             .flatMap(d -> newDataOnBracket(bracket, region, d).andThen(Single.just(d)));
     }
 
     public Single<Snapshot> fetchLadder(String bracket, String region) {
+        long currentTimeMillis = System.currentTimeMillis();
         Single<List<Character>> res = Single.just(new ArrayList<>(1000));
         for (int i = 1; i <= 10; i++) {
             int finalI = i;
@@ -137,7 +139,7 @@ public class Ladder {
             );
         }
         return res
-            .map(chars -> Snapshot.of(chars, region))
+            .map(chars -> Snapshot.of(chars, region, currentTimeMillis))
             .flatMap(d -> newDataOnBracket(bracket, region, d).andThen(Single.just(d)));
     }
 
