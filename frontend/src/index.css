@@ -1,0 +1,57 @@
+html {
+  background: url(./assets/df.png) no-repeat center center fixed;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
+}
+
+body {
+  margin: 0;
+  font-family: 'Nunito', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+}
+
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-button {
+  display: none;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #ff7900;
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #949494;
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: #949494;
+}
+
+::-webkit-scrollbar-track {
+  background: #f7f7f7;
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+input:-internal-autofill-selected {
+  box-shadow: 0 0 0px 1000px #fafafa inset;
+  -webkit-box-shadow: 0 0 0px 1000px #fafafa inset;
+}
+
+body {
+  scrollbar-width: thin;
+}
