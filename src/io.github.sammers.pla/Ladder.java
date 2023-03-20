@@ -269,12 +269,16 @@ public class Ladder {
 
     public final Single<SnapshotDiff> calcDiffAndCombine(String bracket, List<Maybe<Snapshot>> snaps) {
         return Maybe.merge(snaps).toList()
+            .map(snapshots -> snapshots.stream().distinct().sorted(Comparator.comparing(Snapshot::timestamp)).toList())
             .map(snapshots -> {
                 List<SnapshotDiff> diffs = new ArrayList<>();
                 for (int i = 1; i < snapshots.size(); i++) {
                     Snapshot old = snapshots.get(i - 1);
                     Snapshot current = snapshots.get(i);
-                    diffs.add(Calculator.calculateDiff(old, current, bracket));
+                    SnapshotDiff e = Calculator.calculateDiff(old, current, bracket);
+                    if(e.chars().size() != 0){
+                        diffs.add(e);
+                    }
                 }
                 SnapshotDiff res = diffs.get(diffs.size() - 1);
                 for (int i = diffs.size() - 1; i > 0; i--) {

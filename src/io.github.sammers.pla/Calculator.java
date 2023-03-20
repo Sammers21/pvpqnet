@@ -28,6 +28,9 @@ public class Calculator {
                         newChars.timestamp()
                     )
                 );
+                if (e.diff().won() < 0 || e.diff().lost() < 0) {
+                    System.out.println("Negative diff: " + e);
+                }
             }
             if (e.diff().lost() == 0 && e.diff().won() == 0) {
                 continue;
@@ -55,7 +58,7 @@ public class Calculator {
         for (CharAndDiff oldChar : older.chars()) {
             res.putIfAbsent(idF.apply(oldChar), oldChar);
         }
-        List<CharAndDiff> resList = res.values().stream().sorted(Comparator.comparing((CharAndDiff o) -> o.character().rating()).reversed()).collect(Collectors.toList());
+        List<CharAndDiff> resList = res.values().stream().sorted(Comparator.comparing((CharAndDiff o) -> o.character().rating()).reversed()).toList();
         return new SnapshotDiff(new ArrayList<>(resList), newver.timestamp());
     }
 
