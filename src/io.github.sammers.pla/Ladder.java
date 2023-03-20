@@ -267,24 +267,35 @@ public class Ladder {
 
     }
 
-    public final Single<SnapshotDiff> calcDiffAndCombine(String bracket, List<Maybe<Snapshot>> snaps) {
+    public final Maybe<SnapshotDiff> calcDiffAndCombine(String bracket, List<Maybe<Snapshot>> snaps) {
         return Maybe.merge(snaps).toList()
             .map(snapshots -> snapshots.stream().distinct().sorted(Comparator.comparing(Snapshot::timestamp)).toList())
-            .map(snapshots -> {
-                List<SnapshotDiff> diffs = new ArrayList<>();
-                for (int i = 1; i < snapshots.size(); i++) {
-                    Snapshot old = snapshots.get(i - 1);
-                    Snapshot current = snapshots.get(i);
-                    SnapshotDiff e = Calculator.calculateDiff(old, current, bracket);
-                    if(e.chars().size() != 0){
-                        diffs.add(e);
+            .flatMapMaybe(snapshots -> {
+                try {
+                    List<SnapshotDiff> diffs = new ArrayList<>();
+                    for (int i = 1; i < snapshots.size(); i++) {
+                        Snapshot old = snapshots.get(i - 1);
+                        Snapshot current = snapshots.get(i);
+                        SnapshotDiff e = Calculator.calculateDiff(old, current, bracket);
+                        if (e.chars().size() != 0) {
+                            diffs.add(e);
+                        }
                     }
+                    SnapshotDiff res = null;
+                    for (int i = diffs.size() - 1; i > 0; i--) {
+                        if (i == diffs.size() - 1) {
+                            res = diffs.get(i - 1);
+                        }
+                        res = Calculator.combine(diffs.get(i - 1), res, bracket);
+                    }
+                    if (res == null) {
+                        return Maybe.empty();
+                    }
+                    return Maybe.just(res);
+                } catch (Exception e) {
+                    log.error("Error while calculating diff for bracket {}", bracket, e);
+                    return Maybe.error(e);
                 }
-                SnapshotDiff res = diffs.get(diffs.size() - 1);
-                for (int i = diffs.size() - 1; i > 0; i--) {
-                    res = Calculator.combine(diffs.get(i - 1), res, bracket);
-                }
-                return res;
             });
     }
 
