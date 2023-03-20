@@ -1,18 +1,17 @@
-import { Grid } from '@mui/material';
 import Routes from './routes';
-import { styled } from '@mui/system';
+import { ThemeProvider } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
 
-const AppContainer = styled(Grid)({
-  position: 'relative',
-  width: '100vw',
-  height: '100vh',
-});
+import AppBar from './components/AppBar';
+import appTheme from './theme';
 
 function App() {
   return (
-    // <AppContainer>
-    <Routes />
-    // </AppContainer>
+    <ThemeProvider theme={appTheme}>
+      <CssBaseline />
+      <AppBar />
+      <Routes />
+    </ThemeProvider>
   );
 }
 
