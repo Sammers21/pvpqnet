@@ -164,6 +164,10 @@ function goToBracket(bracket, aolParam) {
     window.location.href = window.location.origin + `/${region}/${aol}/${bracket}`;
 }
 
+function capitalizeFirstLetter(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
 async function loadIntoTable(page) {
     var table = document.querySelector('table')
     var region;
@@ -177,6 +181,7 @@ async function loadIntoTable(page) {
     let aol = path.match("/(?<aol>ladder|activity)/(?<bracket>2v2|3v3|rbg|shuffle)");
     var url;
     if (aolRegion) {
+        document.title = `${capitalizeFirstLetter(aolRegion[3])} ${capitalizeFirstLetter(aolRegion[2])} on ${aolRegion[1].toUpperCase()}`;
         if (aolRegion[1] === 'eu') {
             aolRegion[1] = 'en-gb';
         } else {
@@ -184,8 +189,10 @@ async function loadIntoTable(page) {
         }
         url = window.location.origin + `/api/${aolRegion[1]}/${aolRegion[2]}/${aolRegion[3]}`;
     } else if (aol) {
+        document.title = `${capitalizeFirstLetter(aol[2])} ${capitalizeFirstLetter(aol[1])} on ${region.toUpperCase()}`;
         url = window.location.origin + `/api/${region}/${aol[1]}/${aol[2]}`;
     } else {
+        document.title = "Shuffle Activity on EU";
         url = window.location.origin + `/api/${region}/activity/shuffle`;
     }
     if (page >= 0) {

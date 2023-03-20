@@ -258,33 +258,53 @@ public class Ladder {
         Maybe<Snapshot> twoHrsAgo = db.getMinsAgo(bracket, region, 60 * 2);
         Maybe<Snapshot> oneHrAgo = db.getMinsAgo(bracket, region, 60);
         List<Maybe<Snapshot>> maybes = List.of(sixHrsAgo, fiveHrsAgo, fourHrsAgo, threeHrsAgo, twoHrsAgo, oneHrAgo, Maybe.just(refByBracket(bracket, region).get()));
-        return calcDiffAndCombine(bracket, maybes)
+        return calcDiffAndCombine(bracket, region, maybes)
             .flatMapCompletable(res -> {
                 diffsByBracket(bracket, region).set(res);
-                log.info("Diffs has been calculated for bracket {}-{}, diffs:{}", region, bracket, res.chars().size());
                 return Completable.complete();
             });
 
     }
 
-    public final Single<SnapshotDiff> calcDiffAndCombine(String bracket, List<Maybe<Snapshot>> snaps) {
+    public final Maybe<SnapshotDiff> calcDiffAndCombine(String bracket, String region, List<Maybe<Snapshot>> snaps) {
         return Maybe.merge(snaps).toList()
             .map(snapshots -> snapshots.stream().distinct().sorted(Comparator.comparing(Snapshot::timestamp)).toList())
-            .map(snapshots -> {
-                List<SnapshotDiff> diffs = new ArrayList<>();
-                for (int i = 1; i < snapshots.size(); i++) {
-                    Snapshot old = snapshots.get(i - 1);
-                    Snapshot current = snapshots.get(i);
-                    SnapshotDiff e = Calculator.calculateDiff(old, current, bracket);
-                    if(e.chars().size() != 0){
-                        diffs.add(e);
+            .flatMapMaybe(snapshots -> {
+                try {
+                    List<SnapshotDiff> diffs = new ArrayList<>();
+                    for (int i = 1; i < snapshots.size(); i++) {
+                        Snapshot old = snapshots.get(i - 1);
+                        Snapshot current = snapshots.get(i);
+                        SnapshotDiff e = Calculator.calculateDiff(old, current, bracket);
+                        if (e.chars().size() != 0) {
+                            diffs.add(e);
+                        }
                     }
+                    SnapshotDiff res = null;
+                    for (int i = diffs.size() - 1; i > 0; i--) {
+                        if (i == diffs.size() - 1) {
+                            res = diffs.get(i - 1);
+                        }
+                        res = Calculator.combine(diffs.get(i - 1), res, bracket);
+                    }
+                    SnapshotDiff resSnap;
+                    if (res == null) {
+                        resSnap = SnapshotDiff.empty();
+                    } else {
+                        resSnap = res;
+                    }
+                    log.info("Diffs has been calculated for bracket {}-{}, snaps:{}, uniqSnaps={}, diffs:{}",
+                        region,
+                        bracket,
+                        snaps.size(),
+                        snapshots.size(),
+                        resSnap.chars().size()
+                    );
+                    return Maybe.just(resSnap);
+                } catch (Exception e) {
+                    log.error("Error while calculating diff for bracket {}", bracket, e);
+                    return Maybe.error(e);
                 }
-                SnapshotDiff res = diffs.get(diffs.size() - 1);
-                for (int i = diffs.size() - 1; i > 0; i--) {
-                    res = Calculator.combine(diffs.get(i - 1), res, bracket);
-                }
-                return res;
             });
     }
 

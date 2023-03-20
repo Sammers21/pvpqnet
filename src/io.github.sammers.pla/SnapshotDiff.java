@@ -8,6 +8,10 @@ import java.util.Date;
 import java.util.List;
 
 public record SnapshotDiff(List<CharAndDiff> chars, Long timestamp) implements JsonPaged {
+    public static SnapshotDiff empty() {
+        return new SnapshotDiff(List.of(), System.currentTimeMillis());
+    }
+
     @Override
     public JsonObject toJson() {
         return new JsonObject()
