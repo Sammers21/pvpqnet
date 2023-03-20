@@ -220,7 +220,7 @@ public class Ladder {
             .andThen(loadRegionData(US))
             .andThen(
                 runDataUpdater(US,
-                    runDataUpdater(EU, Observable.interval(0, 60, TimeUnit.MINUTES))
+                    runDataUpdater(EU, Observable.interval(0, 30, TimeUnit.MINUTES))
                 )
             )
             .subscribe();
