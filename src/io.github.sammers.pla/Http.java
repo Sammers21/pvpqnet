@@ -38,6 +38,7 @@ public class Http {
         router.routeWithRegex(".*main.js").handler(ctx -> ctx.response().sendFile("main.js"));
         router.routeWithRegex(".*main.css").handler(ctx -> ctx.response().sendFile("main.css"));
         router.routeWithRegex(".*df.img").handler(ctx -> ctx.response().sendFile("df.img"));
+        router.routeWithRegex(".*gladicon.webp").handler(ctx -> ctx.response().sendFile("gladicon.webp"));
         router.routeWithRegex(("\\/classicons\\/(?<classicon>[^\\/]+.png)")).handler(ctx -> ctx.response().sendFile("classicons/" + ctx.pathParam("classicon")));
         router.routeWithRegex(("\\/specicons\\/(?<specicon>[^\\/]+.png)")).handler(ctx -> ctx.response().sendFile("specicons/" + ctx.pathParam("specicon")));
         router.routeWithRegex(("\\/regionicons\\/(?<regionicon>[^\\/]+.svg)")).handler(ctx -> ctx.response().sendFile("regionicons/" + ctx.pathParam("regionicon")));
