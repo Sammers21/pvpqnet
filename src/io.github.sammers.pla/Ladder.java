@@ -283,7 +283,7 @@ public class Ladder {
                     SnapshotDiff res = null;
                     for (int i = diffs.size() - 1; i > 0; i--) {
                         if (i == diffs.size() - 1) {
-                            res = diffs.get(i - 1);
+                            res = diffs.get(i);
                         }
                         res = Calculator.combine(diffs.get(i - 1), res, bracket);
                     }
