@@ -6,7 +6,7 @@ import Loading from '../components/Loading';
 
 import { publicUrls } from '../config';
 
-const { base, statistic } = publicUrls;
+const { page } = publicUrls;
 
 const ActivityPage = loadable(() => import('../containers/Activity'), {
   fallback: Loading({
@@ -20,7 +20,7 @@ function Routes() {
   return (
     <BrowserRouter>
       <ReactRouterDomRoutes>
-        <Route path={`${base}/${statistic}`} element={<ActivityPage />} />
+        <Route path={page} element={<ActivityPage />} />
         <Route path="*" element={<ActivityPage />} />
       </ReactRouterDomRoutes>
     </BrowserRouter>

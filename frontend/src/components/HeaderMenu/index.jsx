@@ -34,7 +34,7 @@ const StyledButton = styled(Button)({
   },
 });
 
-export default function HeaderMenu({ label, options }) {
+export default function HeaderMenu({ label, options, handleOpenPage }) {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
 
@@ -42,8 +42,9 @@ export default function HeaderMenu({ label, options }) {
     setAnchorEl(event.currentTarget);
   };
 
-  const handleCloseMenu = () => {
+  const handleCloseMenu = (urlOptions) => {
     setAnchorEl(null);
+    handleOpenPage(urlOptions);
   };
 
   return (
@@ -67,8 +68,8 @@ export default function HeaderMenu({ label, options }) {
       </StyledButton>
 
       <StyledMenu anchorEl={anchorEl} open={open} onClose={handleCloseMenu}>
-        {options.map(({ label, url }) => (
-          <MenuItem key={label} onClick={handleCloseMenu} disableRipple>
+        {options.map(({ label, urlOptions }) => (
+          <MenuItem key={label} onClick={() => handleCloseMenu(urlOptions)} disableRipple>
             {label}
           </MenuItem>
         ))}

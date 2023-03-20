@@ -8,8 +8,9 @@ module.exports = {
   },
 
   publicUrls: {
-    base: '/:lang',
-    statistic: '/:activity/:name',
+    page: '/:region/:activity/:name',
+    // base: '/:region',
+    // statistic: '/:activity/:name',
   },
 
   baseUrl,

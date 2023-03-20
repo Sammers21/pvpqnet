@@ -1,11 +1,18 @@
 import * as React from 'react';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { generatePath } from 'react-router';
 
 import { AppBar, Box, Toolbar, Typography, Container, Grid, IconButton } from '@mui/material';
-import { borderColor, containerBg } from '../../theme';
-import { TABS_MENU, TABS } from '../../constants/header';
-import HeaderMenu from '../HeaderMenu';
-import { EuIcon, UsIcon } from '../icons';
 import { styled } from '@mui/system';
+
+import { borderColor, containerBg } from '../../theme';
+import { EuIcon, UsIcon } from '../icons';
+import HeaderMenu from '../HeaderMenu';
+import { publicUrls } from '../../config';
+
+import { TABS_MENU, TABS } from '../../constants/header';
+import { REGIONS } from '../../constants/region';
+import { getRegion } from '../../utils/getRegion';
 
 const pages = Object.values(TABS);
 
@@ -21,6 +28,20 @@ const StyledToolbar = styled(Toolbar)({
 });
 
 const PageHeader = () => {
+  let navigate = useNavigate();
+  const { region: regionFromUrl, activity, name } = useParams();
+  const region = getRegion(regionFromUrl);
+
+  const handleSetRegion = (region) => {
+    const newPath = generatePath(publicUrls.page, { region, activity, name });
+    navigate(newPath);
+  };
+
+  const handleOpenPage = ({ activity, name }) => {
+    const newPath = generatePath(publicUrls.page, { region, activity, name });
+    navigate(newPath);
+  };
+
   return (
     <StyledAppBar position="static">
       <Container maxWidth="xl">
@@ -65,15 +86,30 @@ const PageHeader = () => {
 
           <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
             {pages.map((page) => (
-              <HeaderMenu key={page} label={page} options={TABS_MENU[page]} />
+              <HeaderMenu
+                key={page}
+                label={page}
+                options={TABS_MENU[page]}
+                handleOpenPage={handleOpenPage}
+              />
             ))}
           </Box>
 
           <Grid>
-            <IconButton aria-label="us" color="secondary">
-              <UsIcon />
+            <IconButton
+              aria-label="us"
+              sx={region !== REGIONS.us ? { filter: 'grayscale(100%)' } : {}}
+              disableRipple
+              onClick={() => handleSetRegion(REGIONS.us)}
+            >
+              <UsIcon color="red" />
             </IconButton>
-            <IconButton aria-label="eu" color="secondary">
+            <IconButton
+              aria-label="eu"
+              sx={region !== REGIONS.eu ? { filter: 'grayscale(100%)' } : {}}
+              disableRipple
+              onClick={() => handleSetRegion(REGIONS.eu)}
+            >
               <EuIcon />
             </IconButton>
           </Grid>
