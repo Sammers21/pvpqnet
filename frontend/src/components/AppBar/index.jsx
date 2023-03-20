@@ -97,20 +97,20 @@ const PageHeader = () => {
 
           <Grid>
             <IconButton
-              aria-label="us"
-              sx={region !== REGIONS.us ? { filter: 'grayscale(100%)' } : {}}
-              disableRipple
-              onClick={() => handleSetRegion(REGIONS.us)}
-            >
-              <UsIcon color="red" />
-            </IconButton>
-            <IconButton
               aria-label="eu"
               sx={region !== REGIONS.eu ? { filter: 'grayscale(100%)' } : {}}
               disableRipple
               onClick={() => handleSetRegion(REGIONS.eu)}
             >
               <EuIcon />
+            </IconButton>
+            <IconButton
+              aria-label="us"
+              sx={region !== REGIONS.us ? { filter: 'grayscale(100%)' } : {}}
+              disableRipple
+              onClick={() => handleSetRegion(REGIONS.us)}
+            >
+              <UsIcon color="red" />
             </IconButton>
           </Grid>
         </StyledToolbar>

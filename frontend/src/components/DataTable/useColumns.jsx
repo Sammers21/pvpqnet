@@ -12,7 +12,24 @@ const TABLE_FIELDS = {
   lastSeen: 'lastSeen',
 };
 
-function getClassNameColor(wowClass) {
+const getRealmColor = (fraction) => {
+  return fraction === 'ALLIANCE' ? '#3FC7EB' : '#ff0000';
+};
+
+const specNameFromFullSpec = (wowSpec) => {
+  return wowSpec.trim().replaceAll(' ', '').toLowerCase();
+};
+
+const getDetails = (wowClass, wowSpec) => {
+  const classSrc = require('../../assets/classicons/' +
+    wowClass.replaceAll(' ', '').toLowerCase() +
+    '.png');
+  const specSrc = require('../../assets/specicons/' + specNameFromFullSpec(wowSpec) + '.png');
+
+  return { classSrc, specSrc };
+};
+
+const getClassNameColor = (wowClass) => {
   wowClass = wowClass.toUpperCase();
 
   if (wowClass === 'WARRIOR') {
@@ -44,7 +61,7 @@ function getClassNameColor(wowClass) {
   } else {
     return '#FFFFFF';
   }
-}
+};
 
 const getDiffColor = (diff) => {
   if (diff === 0) return 'white';
@@ -52,7 +69,7 @@ const getDiffColor = (diff) => {
 };
 
 const getDiffCell = (diff) => {
-  return diff > 0 ? `+${diff}` : diff;
+  return diff >= 0 ? `+${diff}` : diff;
 };
 
 const useColumns = () => {
@@ -76,9 +93,32 @@ const useColumns = () => {
       field: TABLE_FIELDS.details,
       label: 'DETAILS',
       render: ({ record }) => {
-        return <Typography>{`#${record.character.pos}`}</Typography>;
+        const details = getDetails(record.character.class, record.character.full_spec);
+
+        return (
+          <Box sx={{ display: 'flex' }}>
+            <img
+              style={{
+                border: '1px #37415180 solid',
+                borderRadius: '4px',
+                height: '20px',
+                width: '20px',
+              }}
+              src={details.classSrc}
+            />
+            <img
+              style={{
+                border: '1px #37415180 solid',
+                borderRadius: '4px',
+                marginLeft: '5px',
+                height: '20px',
+                width: '20px',
+              }}
+              src={details.specSrc}
+            />
+          </Box>
+        );
       },
-      flex: 1,
     },
     {
       field: TABLE_FIELDS.name,
@@ -95,28 +135,55 @@ const useColumns = () => {
       field: TABLE_FIELDS.realm,
       label: 'REALM',
       render: ({ record }) => {
-        return <Typography>{record.character.pos}</Typography>;
+        return (
+          <Typography color={getRealmColor(record.character.fraction)}>
+            {record.character.realm}
+          </Typography>
+        );
       },
     },
     {
       field: TABLE_FIELDS.stats,
       label: 'WIN / LOST',
       render: ({ record }) => {
-        return <Typography>{record.character.pos}</Typography>;
+        const wonColor = record.diff.won > 0 ? 'green' : 'white';
+        const lostColor = record.diff.lost > 0 ? '#ff0000' : 'white';
+
+        return (
+          <Box sx={{ display: 'flex' }}>
+            <Typography sx={{ fontWeight: 300, marginRight: '4px' }} color={wonColor}>
+              {`${record.diff.won} `}
+            </Typography>
+            <Typography sx={{ fontWeight: 300 }}>{` / `}</Typography>
+            <Typography color={lostColor} sx={{ marginLeft: '4px', fontWeight: 300 }}>
+              {record.diff.lost}
+            </Typography>
+          </Box>
+        );
       },
     },
     {
       field: TABLE_FIELDS.rating,
       label: 'RATING',
       render: ({ record }) => {
-        return <Typography>{record.character.pos}</Typography>;
+        const color = getDiffColor(record.diff.rating_diff);
+        return (
+          <Box sx={{ display: 'flex' }}>
+            <Typography sx={{ fontWeight: 300, marginRight: '4px' }}>
+              {record.character.rating}
+            </Typography>
+            <Typography color={color} sx={{ marginLeft: '4px', fontWeight: 300 }}>
+              {getDiffCell(record.diff.rating_diff)}
+            </Typography>
+          </Box>
+        );
       },
     },
     {
       field: TABLE_FIELDS.lastSeen,
       label: 'LAST SEEN',
       render: ({ record }) => {
-        return <Typography>{record.character.pos}</Typography>;
+        return <Typography>{record.diff.last_seen}</Typography>;
       },
     },
   ];
