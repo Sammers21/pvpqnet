@@ -258,16 +258,15 @@ public class Ladder {
         Maybe<Snapshot> twoHrsAgo = db.getMinsAgo(bracket, region, 60 * 2);
         Maybe<Snapshot> oneHrAgo = db.getMinsAgo(bracket, region, 60);
         List<Maybe<Snapshot>> maybes = List.of(sixHrsAgo, fiveHrsAgo, fourHrsAgo, threeHrsAgo, twoHrsAgo, oneHrAgo, Maybe.just(refByBracket(bracket, region).get()));
-        return calcDiffAndCombine(bracket, maybes)
+        return calcDiffAndCombine(bracket, region, maybes)
             .flatMapCompletable(res -> {
                 diffsByBracket(bracket, region).set(res);
-                log.info("Diffs has been calculated for bracket {}-{}, diffs:{}", region, bracket, res.chars().size());
                 return Completable.complete();
             });
 
     }
 
-    public final Maybe<SnapshotDiff> calcDiffAndCombine(String bracket, List<Maybe<Snapshot>> snaps) {
+    public final Maybe<SnapshotDiff> calcDiffAndCombine(String bracket, String region, List<Maybe<Snapshot>> snaps) {
         return Maybe.merge(snaps).toList()
             .map(snapshots -> snapshots.stream().distinct().sorted(Comparator.comparing(Snapshot::timestamp)).toList())
             .flatMapMaybe(snapshots -> {
@@ -288,10 +287,20 @@ public class Ladder {
                         }
                         res = Calculator.combine(diffs.get(i - 1), res, bracket);
                     }
+                    SnapshotDiff resSnap;
                     if (res == null) {
-                        return Maybe.empty();
+                        resSnap = SnapshotDiff.empty();
+                    } else {
+                        resSnap = res;
                     }
-                    return Maybe.just(res);
+                    log.info("Diffs has been calculated for bracket {}-{}, snaps:{}, uniqSnaps={}, diffs:{}",
+                        region,
+                        bracket,
+                        snaps.size(),
+                        snapshots.size(),
+                        resSnap.chars().size()
+                    );
+                    return Maybe.just(resSnap);
                 } catch (Exception e) {
                     log.error("Error while calculating diff for bracket {}", bracket, e);
                     return Maybe.error(e);
