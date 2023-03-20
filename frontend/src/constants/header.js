@@ -7,37 +7,37 @@ export const TABS_MENU = {
   [TABS.activity]: [
     {
       label: 'SHUFFLE',
-      urlOptions: { name: 'shuffle', activity: 'activity' },
+      urlOptions: { discipline: 'shuffle', activity: 'activity' },
     },
     {
       label: '2v2',
-      urlOptions: { name: '2v2', activity: 'activity' },
+      urlOptions: { discipline: '2v2', activity: 'activity' },
     },
     {
       label: '3v3',
-      urlOptions: { name: '3v3', activity: 'activity' },
+      urlOptions: { discipline: '3v3', activity: 'activity' },
     },
     {
       label: 'RBG',
-      urlOptions: { name: 'rbg', activity: 'activity' },
+      urlOptions: { discipline: 'rbg', activity: 'activity' },
     },
   ],
   [TABS.ladder]: [
     {
       label: 'SHUFFLE',
-      urlOptions: { name: 'shuffle', activity: 'ladder' },
+      urlOptions: { discipline: 'shuffle', activity: 'ladder' },
     },
     {
       label: '2v2',
-      urlOptions: { name: '2v2', activity: 'ladder' },
+      urlOptions: { discipline: '2v2', activity: 'ladder' },
     },
     {
       label: '3v3',
-      urlOptions: { name: '3v3', activity: 'ladder' },
+      urlOptions: { discipline: '3v3', activity: 'ladder' },
     },
     {
       label: 'RBG',
-      urlOptions: { name: 'rbg', activity: 'ladder' },
+      urlOptions: { discipline: 'rbg', activity: 'ladder' },
     },
   ],
 };

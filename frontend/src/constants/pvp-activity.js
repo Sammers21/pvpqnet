@@ -1,4 +1,4 @@
-export const ACTIVITY_NAMES = {
+export const DISCIPLINES = {
   shuffle: 'shuffle',
   rbg: 'rbg',
   '3v3': '3v3',

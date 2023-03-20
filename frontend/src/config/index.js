@@ -8,7 +8,7 @@ module.exports = {
   },
 
   publicUrls: {
-    page: '/:region/:activity/:name',
+    page: '/:region/:activity/:discipline',
     // base: '/:region',
     // statistic: '/:activity/:name',
   },

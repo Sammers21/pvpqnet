@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { generatePath } from 'react-router';
 
 import { AppBar, Box, Toolbar, Typography, Container, Grid, IconButton } from '@mui/material';
@@ -29,16 +29,16 @@ const StyledToolbar = styled(Toolbar)({
 
 const PageHeader = () => {
   let navigate = useNavigate();
-  const { region: regionFromUrl, activity, name } = useParams();
+  const { region: regionFromUrl, activity, discipline } = useParams();
   const region = getRegion(regionFromUrl);
 
   const handleSetRegion = (region) => {
-    const newPath = generatePath(publicUrls.page, { region, activity, name });
+    const newPath = generatePath(publicUrls.page, { region, activity, discipline });
     navigate(newPath);
   };
 
-  const handleOpenPage = ({ activity, name }) => {
-    const newPath = generatePath(publicUrls.page, { region, activity, name });
+  const handleOpenPage = ({ activity, discipline }) => {
+    const newPath = generatePath(publicUrls.page, { region, activity, discipline });
     navigate(newPath);
   };
 
