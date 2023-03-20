@@ -16,7 +16,7 @@ public class Calculator {
         for (Character newCharx : newChars.characters()) {
             Character newChar;
             Character oldChar = oldMap.get(idF.apply(newCharx));
-            if(newCharx.wins() + newCharx.losses() < oldChar.wins() + oldChar.losses()){
+            if (oldChar != null && (newCharx.wins() + newCharx.losses() < oldChar.wins() + oldChar.losses())) {
                 newChar = oldChar;
                 oldChar = newCharx;
             } else {
