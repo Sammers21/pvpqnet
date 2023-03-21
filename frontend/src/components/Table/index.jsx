@@ -144,7 +144,7 @@ const Table = ({
       }}
     >
       {renderFooter()}
-      {!loading && <TableContainer {...props}>{renderTable()}</TableContainer>}
+      {<TableContainer {...props}>{renderTable()}</TableContainer>}
       {renderLoading()}
     </Grid>
   );
