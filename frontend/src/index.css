@@ -1,0 +1,134 @@
+html {
+  background: url(./assets/df.png) no-repeat center center fixed;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
+}
+
+body {
+  margin: 0;
+  font-family: 'Nunito', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: transparent !important;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+}
+
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-button {
+  display: none;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #141415;
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #949494;
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: #949494;
+}
+
+::-webkit-scrollbar-track {
+  background: #f7f7f7;
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+input:-internal-autofill-selected {
+  box-shadow: 0 0 0px 1000px #fafafa inset;
+  -webkit-box-shadow: 0 0 0px 1000px #fafafa inset;
+}
+
+body {
+  scrollbar-width: thin;
+}
+
+@keyframes rotate-one {
+  0% {
+    transform: rotateX(35deg) rotateY(-45deg) rotate(0);
+  }
+
+  100% {
+    transform: rotateX(35deg) rotateY(-45deg) rotate(360deg);
+  }
+}
+
+@keyframes rotate-two {
+  0% {
+    transform: rotateX(50deg) rotateY(10deg) rotate(0);
+  }
+
+  100% {
+    transform: rotateX(50deg) rotateY(10deg) rotate(360deg);
+  }
+}
+
+@keyframes rotate-three {
+  0% {
+    transform: rotateX(35deg) rotateY(55deg) rotate(0);
+  }
+
+  100% {
+    transform: rotateX(35deg) rotateY(55deg) rotate(360deg);
+  }
+}
+
+.loader-container {
+  position: absolute;
+
+  top: calc(50% - 32px);
+  left: calc(50% - 32px);
+}
+
+.loader {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  perspective: 800px;
+}
+
+.blizzard-loader {
+  color: rgb(255, 255, 255);
+
+  position: absolute;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+}
+
+.blizzard-loader.one {
+  left: 0%;
+  top: 0%;
+  animation: rotate-one 1s linear infinite;
+  border-bottom: 3px solid #efeffa;
+}
+
+.blizzard-loader.two {
+  right: 0%;
+  top: 0%;
+  animation: rotate-two 1s linear infinite;
+  border-right: 3px solid #efeffa;
+}
+
+.blizzard-loader.three {
+  right: 0%;
+  bottom: 0%;
+  animation: rotate-three 1s linear infinite;
+  border-top: 3px solid #efeffa;
+}
