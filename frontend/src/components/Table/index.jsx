@@ -11,7 +11,7 @@ import {
 import { styled } from '@mui/system';
 
 import HeaderCell from './HeaderCell';
-import Loading from '../Loading';
+import BlizzardLoader from '../BlizzardLoader';
 import Pagination from './Pagination';
 import Row from './Row';
 
@@ -116,7 +116,7 @@ const Table = ({
   };
 
   const renderLoading = () => {
-    return loading && <Loading withBackdrop />;
+    return loading && <BlizzardLoader withBackdrop />;
   };
 
   const renderTable = () => (
@@ -135,9 +135,16 @@ const Table = ({
   );
 
   return (
-    <Grid sx={{ backgroundColor: containerBg, padding: '12px 32px 32px 32px' }}>
-      {renderFooter()}
-      <TableContainer {...props}>{renderTable()}</TableContainer>
+    <Grid
+      sx={{
+        position: 'relative',
+        backgroundColor: containerBg,
+        padding: '12px 32px 32px 32px',
+        minHeight: '200px',
+      }}
+    >
+      {!loading && renderFooter()}
+      {!loading && <TableContainer {...props}>{renderTable()}</TableContainer>}
       {renderLoading()}
     </Grid>
   );
