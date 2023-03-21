@@ -5,35 +5,35 @@ import Table from '../Table';
 import useColumns from './useColumns';
 import { getStatistic } from '../../services/stats.service';
 
-const ContractorsList = () => {
-  const [contractors, setContractors] = useState([]);
-  const [totalCount, setTotalCount] = useState(0);
+const DataList = () => {
+  const [contractors, setData] = useState([]);
+  const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
 
-  const handlePageChange = (page) => {
-    setPage(page);
+  const handlePageChange = (event, value) => {
+    setPage(value);
   };
 
-  const getContractorsFilter = useCallback(() => {
-    const pagination = { page, pageSize: 10 };
+  const getDataFilter = useCallback(() => {
+    const pagination = { page, pageSize: 100 };
 
     return { pagination };
   }, [page]);
 
-  const getContractors = async () => {
+  const getData = async () => {
     setLoading(true);
 
-    const filter = getContractorsFilter();
-    const result = await getStatistic(filter);
+    const filter = getDataFilter();
+    const { records, totalPages } = await getStatistic(filter);
 
-    setContractors(result);
-    setTotalCount(1001);
+    setData(records);
+    setTotalPages(totalPages);
     setLoading(false);
   };
 
   useEffect(() => {
-    getContractors();
+    getData();
   }, [page]);
 
   const columns = useColumns();
@@ -41,7 +41,7 @@ const ContractorsList = () => {
   return (
     <Table
       loading={loading}
-      itemsCount={totalCount}
+      totalPages={totalPages}
       columns={columns}
       records={contractors}
       pagination
@@ -51,4 +51,4 @@ const ContractorsList = () => {
   );
 };
 
-export default ContractorsList;
+export default DataList;

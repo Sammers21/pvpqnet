@@ -10,7 +10,7 @@ function Activity() {
     <>
       <PageHeader />
 
-      <Box sx={{ width: '85%', margin: '60px auto 0 auto' }}>
+      <Box sx={{ width: '85%', margin: '45px auto 45px auto' }}>
         <ActivityTabs />
         <DataTable />
       </Box>

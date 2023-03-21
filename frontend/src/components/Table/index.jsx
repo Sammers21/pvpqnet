@@ -12,7 +12,7 @@ import { styled } from '@mui/system';
 
 import HeaderCell from './HeaderCell';
 import Loading from '../Loading';
-import Footer from './Footer';
+import Pagination from './Pagination';
 import Row from './Row';
 
 import { containerBg } from '../../theme';
@@ -22,8 +22,8 @@ const StyledTable = styled(TableMui)({
     backgroundColor: '#0e1216',
   },
 
-  '& tr th': {
-    border: 'none',
+  '& tr td,th': {
+    borderBottom: 'none',
   },
 });
 
@@ -32,7 +32,7 @@ const Table = ({
   columns,
   records = [],
   headerRecords,
-  itemsCount,
+  totalPages,
   pagination = false,
   pageSize = 10,
   startPageNumber = 1,
@@ -64,10 +64,10 @@ const Table = ({
 
   const renderFooter = () => {
     return (
-      <Footer
+      <Pagination
         page={page}
         pageSize={pageSize}
-        itemsCount={itemsCount}
+        totalPages={totalPages}
         isFirstPage={isFirstPage}
         pagination={pagination}
         onPageChange={onPageChange}
@@ -134,10 +134,10 @@ const Table = ({
   );
 
   return (
-    <Grid sx={{ backgroundColor: containerBg, padding: '32px' }}>
+    <Grid sx={{ backgroundColor: containerBg, padding: '12px 32px 32px 32px' }}>
+      {renderFooter()}
       <TableContainer {...props}>{renderTable()}</TableContainer>
       {renderLoading()}
-      {renderFooter()}
     </Grid>
   );
 };

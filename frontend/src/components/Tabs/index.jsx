@@ -18,6 +18,7 @@ const TabButton = styled(Button)(({ isActive }) => ({
   borderColor: borderColor,
   borderRightWidth: 1,
   borderStyle: 'solid',
+  textTransform: 'none',
 
   '&:hover': {
     backgroundColor: isActive && 'rgb(21, 128, 61, 0.25)',
