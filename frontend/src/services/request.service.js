@@ -1,6 +1,7 @@
 import 'whatwg-fetch';
 
 import merge from 'lodash/merge';
+import { baseUrl } from '../config';
 
 const fetchJSON = (url, options = {}, stringify) => {
   let jsonOptions = options;
@@ -15,7 +16,7 @@ const fetchJSON = (url, options = {}, stringify) => {
     );
   }
 
-  return fetch(url, jsonOptions)
+  return fetch(baseUrl + url, jsonOptions)
     .then((response) => {
       return getResponseBody(response).then((body) => ({
         response,

@@ -27,7 +27,7 @@ const TabButton = styled(Button)(({ isActive }) => ({
 
 export default function ActivityTabs() {
   let navigate = useNavigate();
-  const { region, activity, discipline: disciplineFromParams } = useParams();
+  const { region = 'us', activity, discipline: disciplineFromParams } = useParams();
   const discipline = getDiscipline(disciplineFromParams);
 
   const handleChangeDiscipline = (discipline) => {

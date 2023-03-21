@@ -38,6 +38,7 @@ const PageHeader = () => {
   };
 
   const handleOpenPage = ({ activity, discipline }) => {
+    console.log('activity, discipline', activity, discipline);
     const newPath = generatePath(publicUrls.page, { region, activity, discipline });
     navigate(newPath);
   };

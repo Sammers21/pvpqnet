@@ -42,8 +42,12 @@ export default function HeaderMenu({ label, options, handleOpenPage }) {
     setAnchorEl(event.currentTarget);
   };
 
-  const handleCloseMenu = (urlOptions) => {
+  const handleCloseMenu = () => {
     setAnchorEl(null);
+  };
+
+  const selectOption = (urlOptions) => {
+    handleCloseMenu();
     handleOpenPage(urlOptions);
   };
 
@@ -69,7 +73,7 @@ export default function HeaderMenu({ label, options, handleOpenPage }) {
 
       <StyledMenu anchorEl={anchorEl} open={open} onClose={handleCloseMenu}>
         {options.map(({ label, urlOptions }) => (
-          <MenuItem key={label} onClick={() => handleCloseMenu(urlOptions)} disableRipple>
+          <MenuItem key={label} onClick={() => selectOption(urlOptions)} disableRipple>
             {label}
           </MenuItem>
         ))}

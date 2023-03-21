@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useParams } from 'react-router-dom';
 
 import Table from '../Table';
 
@@ -6,6 +7,8 @@ import useColumns from './useColumns';
 import { getStatistic } from '../../services/stats.service';
 
 const DataList = () => {
+  const { region, activity, discipline } = useParams();
+
   const [contractors, setData] = useState([]);
   const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -16,10 +19,8 @@ const DataList = () => {
   };
 
   const getDataFilter = useCallback(() => {
-    const pagination = { page, pageSize: 100 };
-
-    return { pagination };
-  }, [page]);
+    return { page, region, activity, discipline };
+  }, [page, region, activity, discipline]);
 
   const getData = async () => {
     setLoading(true);
@@ -34,7 +35,7 @@ const DataList = () => {
 
   useEffect(() => {
     getData();
-  }, [page]);
+  }, [page, region, activity, discipline]);
 
   const columns = useColumns();
 
