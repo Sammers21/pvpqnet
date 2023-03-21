@@ -143,7 +143,7 @@ const Table = ({
         minHeight: '200px',
       }}
     >
-      {!loading && renderFooter()}
+      {renderFooter()}
       {!loading && <TableContainer {...props}>{renderTable()}</TableContainer>}
       {renderLoading()}
     </Grid>
