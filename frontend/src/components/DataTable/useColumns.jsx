@@ -152,8 +152,10 @@ const useColumns = () => {
     },
     {
       field: TABLE_FIELDS.stats,
-      label: 'WIN / LOST',
+      label: 'WON / LOST',
       render: ({ record }) => {
+        const winRate =
+          record?.wins && ((record.wins * 100) / (record.wins + record.losses)).toFixed(2) + `%`;
         const won = record?.diff?.won ?? record?.wins;
         const loss = record?.diff?.lost ?? record?.losses;
 
@@ -169,6 +171,21 @@ const useColumns = () => {
             <Typography color={lostColor} sx={{ marginLeft: '4px', fontWeight: 300 }}>
               {loss}
             </Typography>
+
+            {winRate && (
+              <Typography
+                color="rgb(75, 85, 99)"
+                sx={{
+                  marginLeft: '6px',
+                  marginTop: '2px',
+                  fontWeight: 300,
+                  fontSize: 14,
+                  marginRight: '4px',
+                }}
+              >
+                {winRate}
+              </Typography>
+            )}
           </Box>
         );
       },

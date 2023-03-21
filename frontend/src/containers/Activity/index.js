@@ -6,6 +6,7 @@ import { Box } from '@mui/material';
 import PageHeader from '../../components/AppBar';
 import ActivityTabs from '../../components/Tabs';
 import DataTable from '../../components/DataTable';
+import Footer from '../../components/Footer';
 
 import { REGIONS } from '../../constants/region';
 import { DISCIPLINES } from '../../constants/pvp-activity';
@@ -22,7 +23,6 @@ function Activity() {
   } = useParams();
 
   useEffect(() => {
-    console.log('change');
     const title = `${capitalizeFirstLetter(discipline)} ${capitalizeFirstLetter(
       activity
     )} on ${region.toUpperCase()}`;
@@ -38,6 +38,8 @@ function Activity() {
         <ActivityTabs />
         <DataTable />
       </Box>
+
+      <Footer />
     </>
   );
 }

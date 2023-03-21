@@ -40,6 +40,10 @@ const DataList = () => {
   };
 
   useEffect(() => {
+    setPage(1);
+  }, [region, activity, discipline]);
+
+  useEffect(() => {
     getData();
   }, [page, region, activity, discipline]);
 
