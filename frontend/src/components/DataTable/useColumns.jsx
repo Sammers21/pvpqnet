@@ -69,6 +69,7 @@ const getDiffColor = (diff) => {
 };
 
 const getDiffCell = (diff) => {
+  console.log('diff :>> ', diff === 0);
   return diff >= 0 ? `+${diff}` : diff;
 };
 
@@ -83,7 +84,7 @@ const useColumns = () => {
         return (
           <Box sx={{ display: 'flex' }}>
             <Typography sx={{ fontWeight: 300 }}>{`#${pos}`}</Typography>
-            {record?.diff?.rank_diff && (
+            {Number.isInteger(record?.diff?.rank_diff) && (
               <Typography
                 color={getDiffColor(record.diff.rank_diff)}
                 sx={{ marginLeft: '4px', fontWeight: 300 }}
@@ -181,7 +182,7 @@ const useColumns = () => {
         return (
           <Box sx={{ display: 'flex' }}>
             <Typography sx={{ fontWeight: 300, marginRight: '4px' }}>{rating}</Typography>
-            {record?.diff?.rating_diff && (
+            {Number.isInteger(record?.diff?.rating_diff) && (
               <Typography
                 color={getDiffColor(record.diff.rating_diff)}
                 sx={{ marginLeft: '4px', fontWeight: 300 }}
