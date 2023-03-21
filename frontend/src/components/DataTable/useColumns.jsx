@@ -78,13 +78,19 @@ const useColumns = () => {
       field: TABLE_FIELDS.rank,
       label: 'RANK',
       render: ({ record }) => {
-        const color = getDiffColor(record.diff.rank_diff);
+        const pos = record?.character?.pos || record?.pos;
+
         return (
           <Box sx={{ display: 'flex' }}>
-            <Typography sx={{ fontWeight: 300 }}>{`#${record.character.pos}`}</Typography>
-            <Typography color={color} sx={{ marginLeft: '4px', fontWeight: 300 }}>
-              {getDiffCell(record.diff.rank_diff)}
-            </Typography>
+            <Typography sx={{ fontWeight: 300 }}>{`#${pos}`}</Typography>
+            {record?.diff?.rank_diff && (
+              <Typography
+                color={getDiffColor(record.diff.rank_diff)}
+                sx={{ marginLeft: '4px', fontWeight: 300 }}
+              >
+                {getDiffCell(record.diff.rank_diff)}
+              </Typography>
+            )}
           </Box>
         );
       },
@@ -93,7 +99,10 @@ const useColumns = () => {
       field: TABLE_FIELDS.details,
       label: 'DETAILS',
       render: ({ record }) => {
-        const details = getDetails(record.character.class, record.character.full_spec);
+        const wowClass = record?.character?.class || record?.class;
+        const wowSpec = record?.character?.full_spec || record?.full_spec;
+
+        const details = getDetails(wowClass, wowSpec);
 
         return (
           <Box sx={{ display: 'flex' }}>
@@ -124,39 +133,40 @@ const useColumns = () => {
       field: TABLE_FIELDS.name,
       label: 'NAME',
       render: ({ record }) => {
-        return (
-          <Typography color={getClassNameColor(record.character.class)}>
-            {record.character.name}
-          </Typography>
-        );
+        const wowClass = record?.character?.class || record?.class;
+        const name = record?.character?.name || record?.name;
+
+        return <Typography color={getClassNameColor(wowClass)}>{name}</Typography>;
       },
     },
     {
       field: TABLE_FIELDS.realm,
       label: 'REALM',
       render: ({ record }) => {
-        return (
-          <Typography color={getRealmColor(record.character.fraction)}>
-            {record.character.realm}
-          </Typography>
-        );
+        const fraction = record?.character?.fraction || record?.fraction;
+        const realm = record?.character?.realm || record?.realm;
+
+        return <Typography color={getRealmColor(fraction)}>{realm}</Typography>;
       },
     },
     {
       field: TABLE_FIELDS.stats,
       label: 'WIN / LOST',
       render: ({ record }) => {
-        const wonColor = record.diff.won > 0 ? 'green' : 'white';
-        const lostColor = record.diff.lost > 0 ? '#ff0000' : 'white';
+        const won = record?.diff?.won ?? record?.wins;
+        const loss = record?.diff?.lost ?? record?.losses;
+
+        const wonColor = won > 0 ? 'green' : 'white';
+        const lostColor = loss > 0 ? '#ff0000' : 'white';
 
         return (
           <Box sx={{ display: 'flex' }}>
             <Typography sx={{ fontWeight: 300, marginRight: '4px' }} color={wonColor}>
-              {`${record.diff.won} `}
+              {`${won} `}
             </Typography>
             <Typography sx={{ fontWeight: 300 }}>{` / `}</Typography>
             <Typography color={lostColor} sx={{ marginLeft: '4px', fontWeight: 300 }}>
-              {record.diff.lost}
+              {loss}
             </Typography>
           </Box>
         );
@@ -166,15 +176,19 @@ const useColumns = () => {
       field: TABLE_FIELDS.rating,
       label: 'RATING',
       render: ({ record }) => {
-        const color = getDiffColor(record.diff.rating_diff);
+        const rating = record?.character?.rating ?? record?.rating;
+
         return (
           <Box sx={{ display: 'flex' }}>
-            <Typography sx={{ fontWeight: 300, marginRight: '4px' }}>
-              {record.character.rating}
-            </Typography>
-            <Typography color={color} sx={{ marginLeft: '4px', fontWeight: 300 }}>
-              {getDiffCell(record.diff.rating_diff)}
-            </Typography>
+            <Typography sx={{ fontWeight: 300, marginRight: '4px' }}>{rating}</Typography>
+            {record?.diff?.rating_diff && (
+              <Typography
+                color={getDiffColor(record.diff.rating_diff)}
+                sx={{ marginLeft: '4px', fontWeight: 300 }}
+              >
+                {getDiffCell(record.diff.rating_diff)}
+              </Typography>
+            )}
           </Box>
         );
       },
@@ -183,7 +197,7 @@ const useColumns = () => {
       field: TABLE_FIELDS.lastSeen,
       label: 'LAST SEEN',
       render: ({ record }) => {
-        return <Typography>{record.diff.last_seen}</Typography>;
+        return <Typography>{record?.diff?.last_seen}</Typography>;
       },
     },
   ];

@@ -9,6 +9,7 @@ import { getDiscipline } from '../../utils/getDiscipline';
 import { publicUrls } from '../../config';
 import { DISCIPLINES } from '../../constants/pvp-activity';
 import { borderColor, containerBg } from '../../theme';
+import { REGIONS } from '../../constants/region';
 
 const TabButton = styled(Button)(({ isActive }) => ({
   color: 'white',
@@ -27,7 +28,11 @@ const TabButton = styled(Button)(({ isActive }) => ({
 
 export default function ActivityTabs() {
   let navigate = useNavigate();
-  const { region = 'us', activity, discipline: disciplineFromParams } = useParams();
+  const {
+    region = REGIONS.eu,
+    activity = 'activity',
+    discipline: disciplineFromParams,
+  } = useParams();
   const discipline = getDiscipline(disciplineFromParams);
 
   const handleChangeDiscipline = (discipline) => {

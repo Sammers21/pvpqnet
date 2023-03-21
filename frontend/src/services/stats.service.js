@@ -1,4 +1,5 @@
 import { urls } from '../config';
+import { DISCIPLINES } from '../constants/pvp-activity';
 import { REGIONS } from '../constants/region';
 import request from './request.service';
 
@@ -9,9 +10,9 @@ const statsMap = {
 
 export const getStatistic = async ({
   page = 1,
-  region = 'us',
+  region = REGIONS.eu,
   activity = 'activity',
-  discipline = 'shuffle',
+  discipline = DISCIPLINES.shuffle,
 }) => {
   try {
     const url = urls.getData(page, statsMap[region], activity, discipline);

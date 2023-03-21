@@ -13,6 +13,7 @@ import { publicUrls } from '../../config';
 import { TABS_MENU, TABS } from '../../constants/header';
 import { REGIONS } from '../../constants/region';
 import { getRegion } from '../../utils/getRegion';
+import { DISCIPLINES } from '../../constants/pvp-activity';
 
 const pages = Object.values(TABS);
 
@@ -29,7 +30,11 @@ const StyledToolbar = styled(Toolbar)({
 
 const PageHeader = () => {
   let navigate = useNavigate();
-  const { region: regionFromUrl, activity, discipline } = useParams();
+  const {
+    region: regionFromUrl,
+    activity = 'activity',
+    discipline = DISCIPLINES.shuffle,
+  } = useParams();
   const region = getRegion(regionFromUrl);
 
   const handleSetRegion = (region) => {

@@ -18,6 +18,9 @@ import Row from './Row';
 import { containerBg } from '../../theme';
 
 const StyledTable = styled(TableMui)({
+  position: 'relative',
+  minHeight: '200px',
+
   '& tr:nth-child(even)': {
     backgroundColor: '#0e1216',
   },
@@ -39,8 +42,7 @@ const Table = ({
   page,
   sort,
   onPageChange,
-  noDataIcon,
-  noDataText = 'COMMON_NO-DATA',
+  noDataText = 'No Data',
   className = '',
   tableProps,
   ...props
@@ -54,9 +56,8 @@ const Table = ({
   const renderNoRowsOverlay = useCallback(() => {
     return (
       !loading && (
-        <Grid>
-          {noDataIcon && <Grid>{noDataIcon}</Grid>}
-          <Typography variant="h6">{noDataText}</Typography>
+        <Grid sx={{ position: 'absolute', left: '45%', top: '50%' }}>
+          <Typography variant="h5">{noDataText}</Typography>
         </Grid>
       )
     );

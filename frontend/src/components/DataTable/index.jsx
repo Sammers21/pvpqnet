@@ -5,9 +5,15 @@ import Table from '../Table';
 
 import useColumns from './useColumns';
 import { getStatistic } from '../../services/stats.service';
+import { REGIONS } from '../../constants/region';
+import { DISCIPLINES } from '../../constants/pvp-activity';
 
 const DataList = () => {
-  const { region, activity, discipline } = useParams();
+  const {
+    region = REGIONS.eu,
+    activity = 'activity',
+    discipline = DISCIPLINES.shuffle,
+  } = useParams();
 
   const [contractors, setData] = useState([]);
   const [totalPages, setTotalPages] = useState(0);
