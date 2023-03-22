@@ -6,8 +6,10 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Use Node.js 19.x
-        working-directory: frontend
         uses: actions/setup-node@v3
         with:
           node-version: 19.x
-        run: npm install && npm run build
+      - run: npm install
+        working-directory: ./frontend
+      - run: npm run build
+        working-directory: ./frontend
