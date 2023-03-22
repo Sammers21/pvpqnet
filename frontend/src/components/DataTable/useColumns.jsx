@@ -68,8 +68,12 @@ const getDiffColor = (diff) => {
   return diff > 0 ? 'green' : '#ff0000';
 };
 
+const getRankDiffColor = (diff) => {
+  if (diff === 0) return 'white';
+  return diff < 0 ? 'green' : '#ff0000';
+};
+
 const getDiffCell = (diff) => {
-  console.log('diff :>> ', diff === 0);
   return diff >= 0 ? `+${diff}` : diff;
 };
 
@@ -86,7 +90,7 @@ const useColumns = () => {
             <Typography sx={{ fontWeight: 300 }}>{`#${pos}`}</Typography>
             {Number.isInteger(record?.diff?.rank_diff) && (
               <Typography
-                color={getDiffColor(record.diff.rank_diff)}
+                color={getRankDiffColor(record.diff.rank_diff)}
                 sx={{ marginLeft: '4px', fontWeight: 300 }}
               >
                 {getDiffCell(record.diff.rank_diff)}
@@ -102,9 +106,7 @@ const useColumns = () => {
       render: ({ record }) => {
         const wowClass = record?.character?.class || record?.class;
         const wowSpec = record?.character?.full_spec || record?.full_spec;
-
         const details = getDetails(wowClass, wowSpec);
-
         return (
           <Box sx={{ display: 'flex' }}>
             <img
@@ -136,7 +138,6 @@ const useColumns = () => {
       render: ({ record }) => {
         const wowClass = record?.character?.class || record?.class;
         const name = record?.character?.name || record?.name;
-
         return <Typography color={getClassNameColor(wowClass)}>{name}</Typography>;
       },
     },
@@ -146,7 +147,6 @@ const useColumns = () => {
       render: ({ record }) => {
         const fraction = record?.character?.fraction || record?.fraction;
         const realm = record?.character?.realm || record?.realm;
-
         return <Typography color={getRealmColor(fraction)}>{realm}</Typography>;
       },
     },
@@ -158,10 +158,8 @@ const useColumns = () => {
           record?.wins && ((record.wins * 100) / (record.wins + record.losses)).toFixed(2) + `%`;
         const won = record?.diff?.won ?? record?.wins;
         const loss = record?.diff?.lost ?? record?.losses;
-
         const wonColor = won > 0 ? 'green' : 'white';
         const lostColor = loss > 0 ? '#ff0000' : 'white';
-
         return (
           <Box sx={{ display: 'flex' }}>
             <Typography sx={{ fontWeight: 300, marginRight: '4px' }} color={wonColor}>
@@ -171,7 +169,6 @@ const useColumns = () => {
             <Typography color={lostColor} sx={{ marginLeft: '4px', fontWeight: 300 }}>
               {loss}
             </Typography>
-
             {winRate && (
               <Typography
                 color="rgb(75, 85, 99)"
@@ -195,7 +192,6 @@ const useColumns = () => {
       label: 'RATING',
       render: ({ record }) => {
         const rating = record?.character?.rating ?? record?.rating;
-
         return (
           <Box sx={{ display: 'flex' }}>
             <Typography sx={{ fontWeight: 300, marginRight: '4px' }}>{rating}</Typography>
