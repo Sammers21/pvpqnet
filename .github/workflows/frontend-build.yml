@@ -5,8 +5,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Use Node.js 15.x
+      - name: Use Node.js 19.x
+        working-directory: frontend
         uses: actions/setup-node@v3
         with:
           node-version: 19.x
-      - run: cd frontend && npm run build --if-present
+        run: npm install && npm run build
