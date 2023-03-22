@@ -3,6 +3,8 @@ name: Frontend build
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      CI: false
     steps:
       - uses: actions/checkout@v3
       - name: Use Node.js 19.x
