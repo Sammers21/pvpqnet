@@ -34,7 +34,7 @@ function Activity() {
     <>
       <PageHeader />
 
-      <Box sx={{ width: '85%', margin: '45px auto 45px auto' }}>
+      <Box sx={{ width: '85%', margin: '95px auto 45px auto' }}>
         <ActivityTabs />
         <DataTable />
       </Box>

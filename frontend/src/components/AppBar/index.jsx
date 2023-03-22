@@ -49,45 +49,25 @@ const PageHeader = () => {
   };
 
   return (
-    <StyledAppBar position="static">
+    <StyledAppBar position="fixed">
       <Container maxWidth="xl">
         <StyledToolbar disableGutters>
           <Typography
-            variant="h6"
+            variant="h5"
             noWrap
             component="a"
             href="/"
             sx={{
               mr: 2,
               display: { xs: 'none', md: 'flex' },
-              fontFamily: 'monospace',
               fontWeight: 700,
-              letterSpacing: '.3rem',
+              letterSpacing: '.05rem',
               color: 'inherit',
               textDecoration: 'none',
               marginRight: '40px',
             }}
           >
             PVPQ.NET
-          </Typography>
-
-          <Typography
-            variant="h5"
-            noWrap
-            component="a"
-            href=""
-            sx={{
-              mr: 2,
-              display: { xs: 'flex', md: 'none' },
-              flexGrow: 1,
-              fontFamily: 'monospace',
-              fontWeight: 700,
-              letterSpacing: '.3rem',
-              color: 'inherit',
-              textDecoration: 'none',
-            }}
-          >
-            LOGO
           </Typography>
 
           <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
