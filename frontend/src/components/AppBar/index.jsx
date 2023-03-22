@@ -47,7 +47,7 @@ const PageHeader = () => {
     const newPath = generatePath(publicUrls.page, { region, activity, discipline });
     navigate(newPath);
   };
-
+  const host = window.location.host.toUpperCase();
   return (
     <StyledAppBar position="fixed">
       <Container maxWidth="xl">
@@ -67,7 +67,7 @@ const PageHeader = () => {
               marginRight: '40px',
             }}
           >
-            PVPQ.NET
+            {host}
           </Typography>
 
           <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
