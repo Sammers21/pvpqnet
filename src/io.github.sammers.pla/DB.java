@@ -46,7 +46,8 @@ public class DB {
 
     public Maybe<Snapshot> getMinsAgo(String bracket, String region, int mins) {
         long now = System.currentTimeMillis();
-        long minsAgo = now - mins * 60 * 1000L;
+        long diff = mins * 60 * 1000L;
+        long minsAgo = now - diff;
         FindOptions fopts = new FindOptions().setSort(new JsonObject().put("timestamp", 1)).setLimit(1);
         JsonObject opts = new JsonObject()
             .put("timestamp", new JsonObject().put("$lt", now).put("$gt", minsAgo))
@@ -66,15 +67,8 @@ public class DB {
     }
 
     public Completable insertOnlyIfDifferent(String bracket, String region, Snapshot snapshot) {
-        return getLast(bracket, region).defaultIfEmpty(Snapshot.empty(region)).flatMapCompletable(last -> {
-            if (CollectionUtils.isEqualCollection(last.characters(), snapshot.characters())) {
-                return Completable.complete();
-            } else {
-                return mongoClient.rxSave(bracket, snapshot.toJson())
-                    .doOnSuccess(ok -> log.info("Inserted data for {}-{}", region, bracket))
-                    .ignoreElement();
-            }
-        });
+        return getLast(bracket, region).defaultIfEmpty(Snapshot.empty(region)).flatMapCompletable(last -> mongoClient.rxSave(bracket, snapshot.toJson())
+            .doOnSuccess(ok -> log.info("Inserted data for {}-{}", region, bracket))
+            .ignoreElement());
     }
-
 }

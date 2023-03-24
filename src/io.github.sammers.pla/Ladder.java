@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -269,8 +270,12 @@ public class Ladder {
     }
 
     public final Maybe<SnapshotDiff> calcDiffAndCombine(String bracket, String region, List<Maybe<Snapshot>> snaps) {
+        AtomicInteger snapsCnt = new AtomicInteger();
         return Maybe.merge(snaps).toList()
-            .map(snapshots -> snapshots.stream().distinct().sorted(Comparator.comparing(Snapshot::timestamp)).toList())
+            .map(snapshots -> {
+                snapsCnt.set(snapshots.size());
+                return snapshots.stream().distinct().sorted(Comparator.comparing(Snapshot::timestamp)).toList();
+            })
             .flatMapMaybe(snapshots -> {
                 try {
                     List<SnapshotDiff> diffs = new ArrayList<>();
@@ -298,7 +303,7 @@ public class Ladder {
                     log.info("Diffs has been calculated for bracket {}-{}, snaps:{}, uniqSnaps={}, diffs:{}",
                         region,
                         bracket,
-                        snaps.size(),
+                        snapsCnt.get(),
                         snapshots.size(),
                         resSnap.chars().size()
                     );
@@ -320,11 +325,7 @@ public class Ladder {
 
     public Completable newDataOnBracket(String bracket, String region, Snapshot newCharacters) {
         AtomicReference<Snapshot> current = refByBracket(bracket, region);
-        AtomicReference<Snapshot> older = refByBracket(bracket + "_older", region);
-        AtomicReference<Snapshot> olderOlder = refByBracket(bracket + "_older_older", region);
         if (current.get() == null || !CollectionUtils.isEqualCollection(newCharacters.characters(), current.get().characters())) {
-            olderOlder.set(older.get());
-            older.set(current.get());
             current.set(newCharacters);
             log.info("Data for bracket {} is different performing update", bracket);
             return db.insertOnlyIfDifferent(bracket, region, newCharacters)
