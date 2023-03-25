@@ -4,20 +4,27 @@ package io.github.sammers.pla;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
+import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
 
-public record Snapshot(List<Character> characters, Long timestamp, String region) implements JsonPaged {
+import static java.time.ZoneOffset.UTC;
+
+public record Snapshot(List<Character> characters, Long timestamp, String region, String dateTime) implements JsonPaged {
 
     public static Snapshot empty(String region) {
-        return new Snapshot(List.of(), -1L, region);
+        return new Snapshot(List.of(), -1L, region, "");
     }
 
     public static Snapshot of(List<Character> characters, String region, Long timestamp) {
+        Instant instant = Instant.ofEpochMilli(timestamp);
+        ZonedDateTime zonedDateTime = instant.atZone(UTC);
+        String format = Main.DATA_TIME.format(zonedDateTime);
         if (characters == null || characters.isEmpty()) {
-            return new Snapshot(List.of(), timestamp, region);
+            return new Snapshot(List.of(), timestamp, region, format);
         }
-        return new Snapshot(characters, timestamp, region);
+        return new Snapshot(characters, timestamp, region, format);
     }
 
     public JsonObject toJson(Long page) {
@@ -25,6 +32,7 @@ public record Snapshot(List<Character> characters, Long timestamp, String region
         JsonObject put = new JsonObject()
             .put("characters", new JsonArray(chars))
             .put("timestamp", timestamp)
+            .put("date_time", dateTime)
             .put("region", region)
             .put("page", page)
             .put("total_pages", Calculator.totalPages(characters().size(), 100))
@@ -42,6 +50,10 @@ public record Snapshot(List<Character> characters, Long timestamp, String region
     }
 
     public static Snapshot fromJson(JsonObject entries) {
-        return new Snapshot(entries.getJsonArray("characters").stream().map(x -> (JsonObject) x).map(Character::fromJson).toList(), entries.getLong("timestamp"), entries.getString("region"));
+        Long ts = entries.getLong("timestamp");
+        Instant instant = Instant.ofEpochMilli(ts);
+        ZonedDateTime zonedDateTime = instant.atZone(UTC);
+        String format = Main.DATA_TIME.format(zonedDateTime);
+        return new Snapshot(entries.getJsonArray("characters").stream().map(x -> (JsonObject) x).map(Character::fromJson).toList(), ts, entries.getString("region"), format);
     }
 }
