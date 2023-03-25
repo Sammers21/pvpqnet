@@ -1,19 +1,19 @@
 package io.github.sammers.pla;
 
-import io.reactivex.Completable;
-import io.reactivex.Maybe;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.mongo.MongoClientDeleteResult;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.ext.mongo.MongoClient;
 import io.vertx.reactivex.ext.web.client.WebClient;
 import org.ocpsoft.prettytime.PrettyTime;
 
-import java.util.Date;
+import java.time.format.DateTimeFormatter;
 import java.util.Locale;
+
+import static java.time.format.DateTimeFormatter.ISO_DATE_TIME;
 
 public class Main {
     public static PrettyTime PRETTY_TIME = new PrettyTime(new Locale("en"));
+    public static DateTimeFormatter DATA_TIME = ISO_DATE_TIME;
 
     public static void main(String[] args) {
         Vertx vertx = Vertx.vertx();

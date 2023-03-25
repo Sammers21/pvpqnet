@@ -2,17 +2,13 @@ package io.github.sammers.pla;
 
 import io.reactivex.Completable;
 import io.reactivex.Maybe;
-import io.reactivex.Single;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.FindOptions;
 import io.vertx.ext.mongo.MongoClientDeleteResult;
 import io.vertx.reactivex.ext.mongo.MongoClient;
-import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -67,8 +63,8 @@ public class DB {
     }
 
     public Completable insertOnlyIfDifferent(String bracket, String region, Snapshot snapshot) {
-        return getLast(bracket, region).defaultIfEmpty(Snapshot.empty(region)).flatMapCompletable(last -> mongoClient.rxSave(bracket, snapshot.toJson())
+        return mongoClient.rxSave(bracket, snapshot.toJson())
             .doOnSuccess(ok -> log.info("Inserted data for {}-{}", region, bracket))
-            .ignoreElement());
+            .ignoreElement();
     }
 }
