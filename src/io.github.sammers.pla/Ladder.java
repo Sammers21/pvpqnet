@@ -119,15 +119,23 @@ public class Ladder {
         if (bracket.equals(SHUFFLE)) {
             Single<List<Character>> res = Single.just(new ArrayList<>(1000 * shuffleSpecs.size()));
             for (String shuffleSpec : shuffleSpecs) {
+                Single<List<Character>> sh = Single.just(new ArrayList<>(shuffleSpecs.size()));
                 for (int i = 1; i <= 10; i++) {
                     int finalI = i;
-                    res = res.flatMap(characters ->
+                    sh = sh.flatMap(characters ->
                         ladderShuffle(shuffleSpec, finalI, region).map(c -> {
                             characters.addAll(c);
                             return characters;
                         })
                     );
                 }
+                String specForBlizApi = shuffleSpec.replaceAll("/", "-");
+                sh = sh.flatMap(s -> blizzardAPI.pvpLeaderboard(specForBlizApi, region).map(leaderboard -> leaderboard.enrich(s)));
+                Single<List<Character>> finalSh = sh;
+                res = res.flatMap(characters -> finalSh.map(s -> {
+                    characters.addAll(s);
+                    return characters;
+                }));
             }
             resCharList = res.map(chars -> {
                 chars.sort(Comparator.comparing(Character::rating).reversed());
@@ -141,14 +149,13 @@ public class Ladder {
                     ladderTraditional(bracket, finalI, region).map(c -> {
                         characters.addAll(c);
                         return characters;
-                    })
+                    }).flatMap(s -> blizzardAPI.pvpLeaderboard(bracket, region).map(leaderboard -> leaderboard.enrich(s)))
                 );
             }
             resCharList = res;
         }
         return resCharList
             .map(chars -> Snapshot.of(chars, region, currentTimeMillis))
-            .flatMap(s -> blizzardAPI.pvpLeaderboard(bracket, region).map(leaderboard -> leaderboard.enrich(s)))
             .flatMap(d -> newDataOnBracket(bracket, region, d).andThen(Single.just(d)));
     }
 

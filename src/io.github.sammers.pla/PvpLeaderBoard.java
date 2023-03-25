@@ -30,7 +30,7 @@ public record PvpLeaderBoard(
         return new PvpLeaderBoard(links, season, name, bracket, newEntities);
     }
 
-    public Snapshot enrich(Snapshot snapshot) {
+    public List<Character> enrich(List<Character> snapshot) {
         HashMap<String, JsonObject> nameToData = new HashMap<>();
         for (Object entity : entities) {
             JsonObject entityJson = (JsonObject) entity;
@@ -41,8 +41,8 @@ public record PvpLeaderBoard(
             String key = (name + "-" + realm).toLowerCase();
             nameToData.put(key, entityJson);
         }
-        List<Character> characters = new ArrayList<>(snapshot.characters().size());
-        for (Character character : snapshot.characters()) {
+        List<Character> characters = new ArrayList<>(snapshot.size());
+        for (Character character : snapshot) {
             String key = (character.name() + "-" + character.realm().replaceAll("[^A-Za-z]", "")).toLowerCase();
             JsonObject entity = nameToData.get(key);
             if(entity == null) {
@@ -58,7 +58,7 @@ public record PvpLeaderBoard(
                 );
             }
         }
-        return new Snapshot(characters, snapshot.timestamp(), snapshot.region(), snapshot.dateTime());
+        return characters;
     }
 
     public static PvpLeaderBoard fromJson(JsonObject json) {
