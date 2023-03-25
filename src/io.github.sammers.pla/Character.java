@@ -26,6 +26,10 @@ public record Character(Long pos, Long rating, String name, String clazz, String
             .put("losses", losses);
     }
 
+    public static Character withWinsAndLossesAndPosAndRating(Character character, Long wins, Long losses, Long pos, Long rating) {
+        return new Character(pos, rating, character.name(), character.clazz(), character.fullSpec(), character.fraction(),
+            character.realm(), wins, losses);
+    }
     public static Character fromJson(JsonObject entries) {
         return new Character(entries.getLong("pos"), entries.getLong("rating"), entries.getString("name"),
             entries.getString("class"), entries.getString("full_spec"), entries.getString("fraction"),

@@ -16,15 +16,18 @@ public class Main {
     public static DateTimeFormatter DATA_TIME = ISO_DATE_TIME;
 
     public static void main(String[] args) {
-        Vertx vertx = Vertx.vertx();
-        WebClient webClient = WebClient.create(vertx);
+        final Vertx vertx = Vertx.vertx();
+        final WebClient webClient = WebClient.create(vertx);
         final String dbUri = System.getenv("DB_URI");
-        MongoClient mongoClient = MongoClient.createShared(vertx, new JsonObject()
-                .put("db_name", "pvpq")
-                .put("connection_string", dbUri)
+        final String clientId = System.getenv("CLIENT_ID");
+        final String clientSecret = System.getenv("CLIENT_SECRET");
+        final MongoClient mongoClient = MongoClient.createShared(vertx, new JsonObject()
+            .put("db_name", "pvpq")
+            .put("connection_string", dbUri)
         );
+        final BlizzardAPI blizzardAPI = new BlizzardAPI(clientId, clientSecret, webClient);
         DB db = new DB(mongoClient);
-        Ladder ladder = new Ladder(vertx, webClient, db);
+        Ladder ladder = new Ladder(vertx, webClient, db, blizzardAPI);
         ladder.start();
         new Http(vertx, ladder).start();
     }

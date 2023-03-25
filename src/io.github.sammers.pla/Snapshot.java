@@ -45,6 +45,7 @@ public record Snapshot(List<Character> characters, Long timestamp, String region
         return new JsonObject()
             .put("characters", new JsonArray(chars))
             .put("timestamp", timestamp)
+            .put("date_time", dateTime)
             .put("region", region)
             .put("last_seen", Main.PRETTY_TIME.format(new Date(timestamp)));
     }

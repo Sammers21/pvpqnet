@@ -39,7 +39,7 @@ public class Ladder {
     public static String SHUFFLE = "shuffle";
 
 
-    private final List<String> shuffleSpecs = new ArrayList<>() {{
+    public static final List<String> shuffleSpecs = new ArrayList<>() {{
         add("shuffle/deathknight/blood");
         add("shuffle/deathknight/frost");
         add("shuffle/deathknight/unholy");
@@ -84,11 +84,13 @@ public class Ladder {
     private final Map<String, AtomicReference<SnapshotDiff>> refDiffs = new ConcurrentHashMap<>();
 
     private final DB db;
+    private BlizzardAPI blizzardAPI;
 
-    public Ladder(Vertx vertx, WebClient web, DB db) {
+    public Ladder(Vertx vertx, WebClient web, DB db, BlizzardAPI blizzardAPI) {
         this.vertx = vertx;
         this.web = web;
         this.db = db;
+        this.blizzardAPI = blizzardAPI;
     }
 
     public Single<Snapshot> threeVThree(String region) {
@@ -107,43 +109,58 @@ public class Ladder {
     }
 
     public Single<Snapshot> shuffle(String region) {
-        long currentTimeMillis = System.currentTimeMillis();
         String bracket = "shuffle";
-        Single<List<Character>> res = Single.just(new ArrayList<>(1000 * shuffleSpecs.size()));
-        for (String shuffleSpec : shuffleSpecs) {
+        return fetchLadder(bracket, region);
+    }
+
+    public Single<Snapshot> fetchLadder(String bracket, String region) {
+        long currentTimeMillis = System.currentTimeMillis();
+        Single<List<Character>> resCharList;
+        if (bracket.equals(SHUFFLE)) {
+            Single<List<Character>> res = Single.just(new ArrayList<>(1000 * shuffleSpecs.size()));
+            for (String shuffleSpec : shuffleSpecs) {
+                for (int i = 1; i <= 10; i++) {
+                    int finalI = i;
+                    res = res.flatMap(characters ->
+                        ladderShuffle(shuffleSpec, finalI, region).map(c -> {
+                            characters.addAll(c);
+                            return characters;
+                        })
+                    );
+                }
+            }
+            resCharList = res.map(chars -> {
+                chars.sort(Comparator.comparing(Character::rating).reversed());
+                return chars;
+            });
+        } else {
+            Single<List<Character>> res = Single.just(new ArrayList<>(1000));
             for (int i = 1; i <= 10; i++) {
                 int finalI = i;
                 res = res.flatMap(characters ->
-                    ladderShuffle(shuffleSpec, finalI, region).map(c -> {
+                    ladderTraditional(bracket, finalI, region).map(c -> {
                         characters.addAll(c);
                         return characters;
                     })
                 );
             }
+            resCharList = res;
         }
-        return res.map(chars -> {
-                chars.sort(Comparator.comparing(Character::rating).reversed());
-                return chars;
-            })
+        return resCharList
             .map(chars -> Snapshot.of(chars, region, currentTimeMillis))
+            .flatMap(s -> blizzardAPI.pvpLeaderboard(bracket, region).map(leaderboard -> leaderboard.enrich(s)))
             .flatMap(d -> newDataOnBracket(bracket, region, d).andThen(Single.just(d)));
     }
 
-    public Single<Snapshot> fetchLadder(String bracket, String region) {
-        long currentTimeMillis = System.currentTimeMillis();
-        Single<List<Character>> res = Single.just(new ArrayList<>(1000));
-        for (int i = 1; i <= 10; i++) {
-            int finalI = i;
-            res = res.flatMap(characters ->
-                ladderTraditional(bracket, finalI, region).map(c -> {
-                    characters.addAll(c);
-                    return characters;
-                })
-            );
-        }
-        return res
-            .map(chars -> Snapshot.of(chars, region, currentTimeMillis))
-            .flatMap(d -> newDataOnBracket(bracket, region, d).andThen(Single.just(d)));
+    public void start() {
+        loadRegionData(EU)
+            .andThen(loadRegionData(US))
+            .andThen(
+                runDataUpdater(US,
+                    runDataUpdater(EU, Observable.interval(0, 30, TimeUnit.MINUTES))
+                )
+            )
+            .subscribe();
     }
 
     private HttpRequest<Buffer> ladderReuqest(String bracket, Integer page, String region) {
@@ -220,17 +237,6 @@ public class Ladder {
             .doOnError(err -> log.info(String.format("ERR %s %s %s", region, bracket, page)));
     }
 
-    public void start() {
-        loadRegionData(EU)
-            .andThen(loadRegionData(US))
-            .andThen(
-                runDataUpdater(US,
-                    runDataUpdater(EU, Observable.interval(0, 30, TimeUnit.MINUTES))
-                )
-            )
-            .subscribe();
-    }
-
     private <R> Observable<Snapshot> runDataUpdater(String region, Observable<R> tickObservable) {
         return tickObservable
             .flatMapSingle(tick -> threeVThree(region))
@@ -276,7 +282,7 @@ public class Ladder {
         return Maybe.merge(snaps).toList()
             .map(snapshots -> {
                 snapsCnt.set(snapshots.size());
-                return snapshots.stream().distinct().sorted(Comparator.comparing(Snapshot::timestamp)).toList();
+                return snapshots.stream().sorted(Comparator.comparing(Snapshot::timestamp)).toList();
             })
             .flatMapMaybe(snapshots -> {
                 try {
@@ -302,11 +308,12 @@ public class Ladder {
                     } else {
                         resSnap = res;
                     }
-                    log.info("Diffs has been calculated for bracket {}-{}, snaps:{}, uniqSnaps={}, diffs:{}",
+                    log.info("Diffs has been calculated for bracket {}-{}, snaps:{}, uniqSnaps={}, snapDiffs={}, diffs:{}",
                         region,
                         bracket,
                         snapsCnt.get(),
                         snapshots.size(),
+                        diffs.stream().map(SnapshotDiff::chars).map(List::size).reduce(0, Integer::sum),
                         resSnap.chars().size()
                     );
                     return Maybe.just(resSnap);
@@ -335,7 +342,7 @@ public class Ladder {
             current.set(newCharacters);
             log.info("Data for bracket {} is different performing update", bracket);
             return db.insertOnlyIfDifferent(bracket, region, newCharacters)
-                .andThen(db.deleteOlderThan24Hours(bracket)
+                    .andThen(db.deleteOlderThan24Hours(bracket)
                     .ignoreElement()
                     .andThen(calcDiffs(bracket, region)));
         } else {
