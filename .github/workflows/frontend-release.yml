@@ -1,0 +1,42 @@
+name: Release frontend
+on:
+  push:
+    branches:
+      - main
+jobs:
+  release:
+    if: "contains(github.event.head_commit.message, 'releasef')"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set env
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
+        run: echo ::set-env name=RELEASE_VERSION::${GITHUB_REF:10}
+      - name: Use Node.js 19.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: 19.x
+      - run: npm install
+        working-directory: ./frontend
+      - run: npm run build
+        working-directory: ./frontend
+      - name: Scp files to server
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.APP_HOST }}
+          username: ${{ secrets.SSH_HOST_USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          source: "./frontend/build/."
+          target: "/home/ubuntu/wow-pla-frontend"
+      - name: Deploy app to production
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.APP_HOST }}
+          username: ${{ secrets.SSH_HOST_USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            docker pull sammers/wow-pla:latest
+            docker stop wow-pla
+            docker rm -f wow-pla
+            docker run -e DB_URI="${{ secrets.DB_URI }}" --name wow-pla -d -p9000:9000 sammers/wow-pla:latest

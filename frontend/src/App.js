@@ -2,7 +2,6 @@ import React from 'react';
 import Routes from './routes';
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
-
 import appTheme from './theme';
 
 function App() {

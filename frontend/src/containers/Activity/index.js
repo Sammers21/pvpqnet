@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-
+import { YMInitializer } from 'react-yandex-metrika';
 import { Box } from '@mui/material';
 
 import PageHeader from '../../components/AppBar';
@@ -29,11 +29,10 @@ function Activity() {
 
     document.title = title;
   }, [region, activity, discipline]);
-
   return (
     <>
       <PageHeader />
-
+      <YMInitializer accounts={[92858570]} />
       <Box sx={{ width: '85%', margin: '95px auto 45px auto' }}>
         <ActivityTabs />
         <DataTable />
