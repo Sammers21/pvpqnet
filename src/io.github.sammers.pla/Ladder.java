@@ -21,6 +21,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -164,13 +165,13 @@ public class Ladder {
             .andThen(loadRegionData(US))
             .andThen(updateChars(EU))
             .andThen(updateChars(US))
-//            .andThen(
-//                runDataUpdater(US,
-//                    runDataUpdater(EU, Observable.interval(0, 30, TimeUnit.MINUTES))
-//                )
-//            )
-//            .flatMapCompletable(d -> updateChars("eu"))
-//            .andThen(updateChars("us"))
+            .andThen(
+                runDataUpdater(US,
+                    runDataUpdater(EU, Observable.interval(0, 30, TimeUnit.MINUTES))
+                )
+            )
+            .flatMapCompletable(d -> updateChars("eu"))
+            .andThen(updateChars("us"))
             .subscribe();
     }
 
