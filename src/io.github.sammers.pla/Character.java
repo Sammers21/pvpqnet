@@ -9,6 +9,11 @@ public record Character(Long pos, Long rating, String name, String clazz, String
         return name + " " + realm + " " + clazz;
     }
 
+    public String fullName() {
+        return name() + "-" + realm().replaceAll(" ", "-")
+            .replaceAll("'", "");
+    }
+
     public String fullNameWSpec() {
         return name + " " + realm + " " + fullSpec;
     }

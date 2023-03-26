@@ -2,9 +2,12 @@ package io.github.sammers.pla;
 
 import io.reactivex.Completable;
 import io.reactivex.Maybe;
+import io.reactivex.Single;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.FindOptions;
 import io.vertx.ext.mongo.MongoClientDeleteResult;
+import io.vertx.ext.mongo.MongoClientUpdateResult;
+import io.vertx.ext.mongo.UpdateOptions;
 import io.vertx.reactivex.ext.mongo.MongoClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,5 +69,18 @@ public class DB {
         return mongoClient.rxSave(bracket, snapshot.toJson())
             .doOnSuccess(ok -> log.info("Inserted data for {}-{}", region, bracket))
             .ignoreElement();
+    }
+
+    public Maybe<MongoClientUpdateResult> upsertCharacter(WowAPICharacter character) {
+        return mongoClient.rxUpdateCollectionWithOptions("profile",
+            new JsonObject().put("id", character.id()),
+            new JsonObject().put("$set", character.toJson()),
+            new UpdateOptions().setUpsert(true)
+        );
+    }
+
+    public Single<List<WowAPICharacter>> fetchChars(String region) {
+        return mongoClient.rxFind("profile", new JsonObject().put("region", region))
+            .map(res -> res.stream().map(WowAPICharacter::fromJson).toList());
     }
 }

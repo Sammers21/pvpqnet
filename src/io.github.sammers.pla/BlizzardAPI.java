@@ -1,5 +1,6 @@
 package io.github.sammers.pla;
 
+import io.reactivex.Maybe;
 import io.reactivex.Single;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -18,6 +19,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class BlizzardAPI {
 
     public static final String AUTH_URL = "https://oauth.battle.net/token";
+    public static String LOCALE = "en_US";
     private static final String CURRENT_PVP_SEASON_ID = "34";
     private static final Logger log = LoggerFactory.getLogger(BlizzardAPI.class);
     private final String clientSecret;
@@ -51,8 +53,40 @@ public class BlizzardAPI {
         return pvpLeaderboard(region, CURRENT_PVP_SEASON_ID, bracket, "dynamic-" + region);
     }
 
+    public Maybe<WowAPICharacter> character(String region, String realm, String name) {
+        String realRegion;
+        String realNamespace;
+        if (region.equals("en-gb")) {
+            realRegion = "eu";
+        } else if (region.equals("en-us")) {
+            realRegion = "us";
+        } else {
+            realRegion = region;
+        }
+        realNamespace = "profile-" + realRegion;
+        String absoluteURI = "https://" + realRegion + ".api.blizzard.com/profile/wow/character/" + realm + "/" + name;
+        return token().flatMapMaybe(blizzardAuthToken ->
+            webClient.getAbs(absoluteURI)
+                .addQueryParam("namespace", realNamespace)
+                .addQueryParam("locale", LOCALE)
+                .bearerTokenAuthentication(blizzardAuthToken.accessToken())
+                .rxSend()
+                .map(HttpResponse::bodyAsJsonObject)
+                .flatMapMaybe(json -> {
+                    Maybe<WowAPICharacter> res;
+                    if (json.getInteger("code") != null && json.getInteger("code") == 404) {
+                        log.info("Character not found: " + name + " on " + realm + " in " + realRegion);
+                        res = Maybe.empty();
+                    } else {
+                        log.info("Found Character:  " + name + " on " + realm + " in " + realRegion);
+                        res = Maybe.just(WowAPICharacter.parse(json, realRegion));
+                    }
+                    return res;
+                })
+        );
+    }
+
     public Single<PvpLeaderBoard> pvpLeaderboard(String region, String pvpSeasonId, String pvpBracket, String namespace) {
-        String locale = "en_US";
         String realRegion;
         String realNamespace;
         String realPvpBracket;
@@ -86,7 +120,7 @@ public class BlizzardAPI {
                 blizzardAuthToken ->
                     webClient.getAbs("https://" + realRegion + ".api.blizzard.com/data/wow/pvp-season/" + pvpSeasonId + "/pvp-leaderboard/" + realPvpBracket)
                         .addQueryParam("namespace", realNamespace)
-                        .addQueryParam("locale", locale)
+                        .addQueryParam("locale", LOCALE)
                         .bearerTokenAuthentication(blizzardAuthToken.accessToken())
                         .rxSend()
                         .map(HttpResponse::bodyAsJsonObject)

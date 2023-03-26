@@ -23,6 +23,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Ladder {
 
@@ -37,7 +39,7 @@ public class Ladder {
     public static String RBG = "battlegrounds";
     public static String SHUFFLE = "shuffle";
 
-
+    public static List<String> brackets = List.of(TWO_V_TWO, THREE_V_THREE, RBG, SHUFFLE);
     public static final List<String> shuffleSpecs = new ArrayList<>() {{
         add("shuffle/deathknight/blood");
         add("shuffle/deathknight/frost");
@@ -81,7 +83,7 @@ public class Ladder {
 
     private final Map<String, AtomicReference<Snapshot>> refs = new ConcurrentHashMap<>();
     private final Map<String, AtomicReference<SnapshotDiff>> refDiffs = new ConcurrentHashMap<>();
-
+    private final Map<String, WowAPICharacter> characterCache = new ConcurrentHashMap<>();
     private final DB db;
     private BlizzardAPI blizzardAPI;
 
@@ -161,22 +163,57 @@ public class Ladder {
     public void start() {
         loadRegionData(EU)
             .andThen(loadRegionData(US))
+            .andThen(updateChars(EU))
+            .andThen(updateChars(US))
             .andThen(
                 runDataUpdater(US,
                     runDataUpdater(EU, Observable.interval(0, 30, TimeUnit.MINUTES))
                 )
             )
+            .flatMapCompletable(d -> updateChars("eu"))
+            .andThen(updateChars("us"))
             .subscribe();
     }
 
-    private HttpRequest<Buffer> ladderReuqest(String bracket, Integer page, String region) {
+    private Completable updateChars(String region) {
+        return Completable.defer(() -> {
+            List<Completable> completables = brackets.stream().flatMap(bracket -> {
+                    AtomicReference<Snapshot> snapshotAtomicReference = refByBracket(bracket, region);
+                    Snapshot snapshot = snapshotAtomicReference.get();
+                    if (snapshot == null) {
+                        return Stream.of();
+                    }
+                    return snapshot.characters().stream().flatMap(c -> {
+                        WowAPICharacter wowAPICharacter = characterCache.get(c.name());
+                        if (wowAPICharacter == null) {
+                            return Stream.of(c);
+                        } else {
+                            return Stream.of();
+                        }
+                    });
+                }).map(Character::fullName).collect(Collectors.toSet()).stream()
+                .map(fullName -> {
+                    String[] split = fullName.split("-");
+                    String realm = split[1].toLowerCase();
+                    String characterName = split[0].toLowerCase();
+                    return blizzardAPI.character(region, realm, characterName).flatMap(c -> {
+                            characterCache.put(fullName, c);
+                            return db.upsertCharacter(c);
+                        }).doOnSuccess(d -> log.info("Updated character: " + fullName))
+                        .ignoreElement();
+                }).toList();
+            return Completable.concat(completables);
+        }).onErrorComplete();
+    }
+
+    private HttpRequest<Buffer> ladderRequest(String bracket, Integer page, String region) {
         String url = String.format("https://worldofwarcraft.blizzard.com/%s/game/pvp/leaderboards/%s", region, bracket);
         HttpRequest<Buffer> request = web.getAbs(url).addQueryParam("page", page.toString());
         return request;
     }
 
     public Single<List<Character>> ladderShuffle(String bracket, Integer page, String region) {
-        return ladderReuqest(bracket, page, region).rxSend().map(ok -> {
+        return ladderRequest(bracket, page, region).rxSend().map(ok -> {
                 String ers = ok.bodyAsString();
                 Document parse = Jsoup.parse(ers);
                 Elements select = parse.select("#main > div.Pane.Pane--dirtBlue.bordered > div.Pane-content > div.Paginator > div.Paginator-pages > div:nth-child(1) > div > div.SortTable-body");
@@ -208,7 +245,7 @@ public class Ladder {
     }
 
     public Single<List<Character>> ladderTraditional(String bracket, Integer page, String region) {
-        return ladderReuqest(bracket, page, region).rxSend().map(ok -> {
+        return ladderRequest(bracket, page, region).rxSend().map(ok -> {
                 int code = ok.statusCode();
                 if (code != 200) {
                     log.info("NON 200 code " + code);
@@ -252,10 +289,28 @@ public class Ladder {
     }
 
     private Completable loadRegionData(String region) {
-        return loadLast(TWO_V_TWO, region)
+        return loadWowCharApiData(region).onErrorComplete()
+            .andThen(loadLast(TWO_V_TWO, region))
             .andThen(loadLast(THREE_V_THREE, region))
             .andThen(loadLast(RBG, region))
             .andThen(loadLast(SHUFFLE, region));
+    }
+
+    private Completable loadWowCharApiData(String region) {
+        String realRegion;
+        if(region.equals(EU)) {
+            realRegion = "eu";
+        } else {
+            realRegion = "us";
+        }
+        return db.fetchChars(realRegion)
+            .flatMapCompletable(characters -> {
+                log.info("Data size= {} for region {} has been loaded from DB", characters.size(), region);
+                characters.forEach(character -> {
+                    characterCache.put(character.fullName(), character);
+                });
+                return Completable.complete();
+            });
     }
 
     private Completable loadLast(String bracket, String region) {
@@ -265,7 +320,6 @@ public class Ladder {
             return calcDiffs(bracket, region);
         });
     }
-
 
     public Completable calcDiffs(String bracket, String region) {
         Maybe<Snapshot> twHrsAgo = db.getMinsAgo(bracket, region, 60 * 20);
@@ -302,7 +356,7 @@ public class Ladder {
             current.set(newCharacters);
             log.info("Data for bracket {} is different performing update", bracket);
             return db.insertOnlyIfDifferent(bracket, region, newCharacters)
-                    .andThen(db.deleteOlderThan24Hours(bracket)
+                .andThen(db.deleteOlderThan24Hours(bracket)
                     .ignoreElement()
                     .andThen(calcDiffs(bracket, region)));
         } else {
