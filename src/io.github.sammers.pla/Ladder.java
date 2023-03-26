@@ -184,7 +184,7 @@ public class Ladder {
                         return Stream.of();
                     }
                     return snapshot.characters().stream().flatMap(c -> {
-                        WowAPICharacter wowAPICharacter = characterCache.get(c.name());
+                        WowAPICharacter wowAPICharacter = characterCache.get(c.fullName());
                         if (wowAPICharacter == null) {
                             return Stream.of(c);
                         } else {
