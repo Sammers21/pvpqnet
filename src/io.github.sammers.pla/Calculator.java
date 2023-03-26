@@ -1,13 +1,67 @@
 package io.github.sammers.pla;
 
+import io.reactivex.Maybe;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class Calculator {
+
+    private static final Logger log = LoggerFactory.getLogger(Calculator.class);
+
+    public static Maybe<SnapshotDiff> calcDiffAndCombine(String bracket, String region, List<Maybe<Snapshot>> snaps) {
+        AtomicInteger snapsCnt = new AtomicInteger();
+        return Maybe.merge(snaps).toList()
+            .map(snapshots -> {
+                snapsCnt.set(snapshots.size());
+                return snapshots.stream().sorted(Comparator.comparing(Snapshot::timestamp)).toList();
+            })
+            .flatMapMaybe(snapshots -> {
+                try {
+                    List<SnapshotDiff> diffs = new ArrayList<>();
+                    for (int i = 1; i < snapshots.size(); i++) {
+                        Snapshot old = snapshots.get(i - 1);
+                        Snapshot current = snapshots.get(i);
+                        SnapshotDiff e = Calculator.calculateDiff(old, current, bracket);
+                        if (e.chars().size() != 0) {
+                            diffs.add(e);
+                        }
+                    }
+                    SnapshotDiff res = null;
+                    if (diffs.size() > 0) {
+                        res = diffs.get(diffs.size() - 1);
+                    }
+                    for (int i = diffs.size() - 1; i > 0; i--) {
+                        res = Calculator.combine(diffs.get(i - 1), res, bracket);
+                    }
+                    SnapshotDiff resSnap;
+                    if (res == null) {
+                        resSnap = SnapshotDiff.empty();
+                    } else {
+                        resSnap = res;
+                    }
+                    log.info("Diffs has been calculated for bracket {}-{}, snaps:{}, uniqSnaps={}, snapDiffs={}, diffs:{}",
+                        region,
+                        bracket,
+                        snapsCnt.get(),
+                        snapshots.size(),
+                        diffs.stream().map(SnapshotDiff::chars).map(List::size).reduce(0, Integer::sum),
+                        resSnap.chars().size()
+                    );
+                    return Maybe.just(resSnap);
+                } catch (Exception e) {
+                    log.error("Error while calculating diff for bracket {}", bracket, e);
+                    return Maybe.error(e);
+                }
+            });
+    }
 
     public static SnapshotDiff calculateDiff(Snapshot oldChars, Snapshot newChars, String bracket) {
         ArrayList<CharAndDiff> res = new ArrayList<>(newChars.characters().size());

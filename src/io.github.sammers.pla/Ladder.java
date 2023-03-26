@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class Ladder {
@@ -149,10 +148,10 @@ public class Ladder {
                     ladderTraditional(bracket, finalI, region).map(c -> {
                         characters.addAll(c);
                         return characters;
-                    }).flatMap(s -> blizzardAPI.pvpLeaderboard(bracket, region).map(leaderboard -> leaderboard.enrich(s)))
+                    })
                 );
             }
-            resCharList = res;
+            resCharList = res.flatMap(s -> blizzardAPI.pvpLeaderboard(bracket, region).map(leaderboard -> leaderboard.enrich(s)));
         }
         return resCharList
             .map(chars -> Snapshot.of(chars, region, currentTimeMillis))
@@ -276,59 +275,12 @@ public class Ladder {
         Maybe<Snapshot> twoHrsAgo = db.getMinsAgo(bracket, region, 60 * 2);
         Maybe<Snapshot> oneHrAgo = db.getMinsAgo(bracket, region, 60);
         List<Maybe<Snapshot>> maybes = List.of(sixHrsAgo, fiveHrsAgo, fourHrsAgo, threeHrsAgo, twoHrsAgo, oneHrAgo, Maybe.just(refByBracket(bracket, region).get()));
-        return calcDiffAndCombine(bracket, region, maybes)
+        return Calculator.calcDiffAndCombine(bracket, region, maybes)
             .flatMapCompletable(res -> {
                 diffsByBracket(bracket, region).set(res);
                 return Completable.complete();
             });
 
-    }
-
-    public final Maybe<SnapshotDiff> calcDiffAndCombine(String bracket, String region, List<Maybe<Snapshot>> snaps) {
-        AtomicInteger snapsCnt = new AtomicInteger();
-        return Maybe.merge(snaps).toList()
-            .map(snapshots -> {
-                snapsCnt.set(snapshots.size());
-                return snapshots.stream().sorted(Comparator.comparing(Snapshot::timestamp)).toList();
-            })
-            .flatMapMaybe(snapshots -> {
-                try {
-                    List<SnapshotDiff> diffs = new ArrayList<>();
-                    for (int i = 1; i < snapshots.size(); i++) {
-                        Snapshot old = snapshots.get(i - 1);
-                        Snapshot current = snapshots.get(i);
-                        SnapshotDiff e = Calculator.calculateDiff(old, current, bracket);
-                        if (e.chars().size() != 0) {
-                            diffs.add(e);
-                        }
-                    }
-                    SnapshotDiff res = null;
-                    for (int i = diffs.size() - 1; i > 0; i--) {
-                        if (i == diffs.size() - 1) {
-                            res = diffs.get(i);
-                        }
-                        res = Calculator.combine(diffs.get(i - 1), res, bracket);
-                    }
-                    SnapshotDiff resSnap;
-                    if (res == null) {
-                        resSnap = SnapshotDiff.empty();
-                    } else {
-                        resSnap = res;
-                    }
-                    log.info("Diffs has been calculated for bracket {}-{}, snaps:{}, uniqSnaps={}, snapDiffs={}, diffs:{}",
-                        region,
-                        bracket,
-                        snapsCnt.get(),
-                        snapshots.size(),
-                        diffs.stream().map(SnapshotDiff::chars).map(List::size).reduce(0, Integer::sum),
-                        resSnap.chars().size()
-                    );
-                    return Maybe.just(resSnap);
-                } catch (Exception e) {
-                    log.error("Error while calculating diff for bracket {}", bracket, e);
-                    return Maybe.error(e);
-                }
-            });
     }
 
     public AtomicReference<Snapshot> refByBracket(String bracket, String region) {
