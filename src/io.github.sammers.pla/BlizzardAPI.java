@@ -10,6 +10,8 @@ import io.vertx.reactivex.ext.web.client.WebClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -64,7 +66,9 @@ public class BlizzardAPI {
             realRegion = region;
         }
         realNamespace = "profile-" + realRegion;
-        String absoluteURI = "https://" + realRegion + ".api.blizzard.com/profile/wow/character/" + realm + "/" + name;
+        String realmSearch = URLEncoder.encode(realm.replaceAll(" ", "-").replaceAll("'", "").toLowerCase(), StandardCharsets.UTF_8);
+        String nameSearch = URLEncoder.encode(name.toLowerCase(), StandardCharsets.UTF_8);
+        String absoluteURI = "https://" + realRegion + ".api.blizzard.com/profile/wow/character/" + realmSearch + "/" + nameSearch;
         return token().flatMapMaybe(blizzardAuthToken ->
             webClient.getAbs(absoluteURI)
                 .addQueryParam("namespace", realNamespace)

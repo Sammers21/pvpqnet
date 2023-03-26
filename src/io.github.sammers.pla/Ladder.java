@@ -21,7 +21,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -165,13 +164,13 @@ public class Ladder {
             .andThen(loadRegionData(US))
             .andThen(updateChars(EU))
             .andThen(updateChars(US))
-            .andThen(
-                runDataUpdater(US,
-                    runDataUpdater(EU, Observable.interval(0, 30, TimeUnit.MINUTES))
-                )
-            )
-            .flatMapCompletable(d -> updateChars("eu"))
-            .andThen(updateChars("us"))
+//            .andThen(
+//                runDataUpdater(US,
+//                    runDataUpdater(EU, Observable.interval(0, 30, TimeUnit.MINUTES))
+//                )
+//            )
+//            .flatMapCompletable(d -> updateChars("eu"))
+//            .andThen(updateChars("us"))
             .subscribe();
     }
 
@@ -191,17 +190,13 @@ public class Ladder {
                             return Stream.of();
                         }
                     });
-                }).map(Character::fullName).collect(Collectors.toSet()).stream()
-                .map(fullName -> {
-                    String[] split = fullName.split("-");
-                    String realm = split[1].toLowerCase();
-                    String characterName = split[0].toLowerCase();
-                    return blizzardAPI.character(region, realm, characterName).flatMap(c -> {
-                            characterCache.put(fullName, c);
-                            return db.upsertCharacter(c);
-                        }).doOnSuccess(d -> log.info("Updated character: " + fullName))
-                        .ignoreElement();
-                }).toList();
+                }).collect(Collectors.toSet()).stream()
+                .map(wowChar ->
+                    blizzardAPI.character(region, wowChar.realm(), wowChar.name()).flatMap(c -> {
+                        characterCache.put(wowChar.fullName(), c);
+                        return db.upsertCharacter(c);
+                    }).doOnSuccess(d -> log.info("Updated character: " + wowChar))
+                    .ignoreElement()).toList();
             return Completable.concat(completables);
         }).onErrorComplete();
     }
@@ -322,14 +317,13 @@ public class Ladder {
     }
 
     public Completable calcDiffs(String bracket, String region) {
-        Maybe<Snapshot> twHrsAgo = db.getMinsAgo(bracket, region, 60 * 20);
         Maybe<Snapshot> sixHrsAgo = db.getMinsAgo(bracket, region, 60 * 6);
         Maybe<Snapshot> fiveHrsAgo = db.getMinsAgo(bracket, region, 60 * 5);
         Maybe<Snapshot> fourHrsAgo = db.getMinsAgo(bracket, region, 60 * 4);
         Maybe<Snapshot> threeHrsAgo = db.getMinsAgo(bracket, region, 60 * 3);
         Maybe<Snapshot> twoHrsAgo = db.getMinsAgo(bracket, region, 60 * 2);
         Maybe<Snapshot> oneHrAgo = db.getMinsAgo(bracket, region, 60);
-        List<Maybe<Snapshot>> maybes = List.of(twHrsAgo, sixHrsAgo, fiveHrsAgo, fourHrsAgo, threeHrsAgo, twoHrsAgo, oneHrAgo, Maybe.just(refByBracket(bracket, region).get()));
+        List<Maybe<Snapshot>> maybes = List.of(sixHrsAgo, fiveHrsAgo, fourHrsAgo, threeHrsAgo, twoHrsAgo, oneHrAgo, Maybe.just(refByBracket(bracket, region).get()));
         return Calculator.calcDiffAndCombine(bracket, region, maybes)
             .flatMapCompletable(res -> {
                 diffsByBracket(bracket, region).set(res);

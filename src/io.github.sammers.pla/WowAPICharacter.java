@@ -136,8 +136,8 @@ public record WowAPICharacter(long id, String name, String realm, String gender,
     }
 
     public String fullName() {
-        return name() + "-" + realm().replaceAll(" ", "-")
-            .replaceAll("'", "");
+        return (name() + "-" + realm().replaceAll(" ", "-")
+            .replaceAll("'", "")).toLowerCase();
     }
 
     public static WowAPICharacter fromJson(JsonObject entries) {

@@ -10,8 +10,8 @@ public record Character(Long pos, Long rating, String name, String clazz, String
     }
 
     public String fullName() {
-        return name() + "-" + realm().replaceAll(" ", "-")
-            .replaceAll("'", "");
+        return (name() + "-" + realm().replaceAll(" ", "-")
+            .replaceAll("'", "")).toLowerCase();
     }
 
     public String fullNameWSpec() {
