@@ -163,8 +163,6 @@ public class Ladder {
     public void start() {
         loadRegionData(EU)
             .andThen(loadRegionData(US))
-            .andThen(updateChars(EU))
-            .andThen(updateChars(US))
             .andThen(
                 runDataUpdater(US,
                     runDataUpdater(EU, Observable.interval(0, 30, TimeUnit.MINUTES))
