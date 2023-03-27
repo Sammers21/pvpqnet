@@ -51,7 +51,7 @@ public class BlizzardAPI {
         });
     }
 
-    public Single<PvpLeaderBoard> pvpLeaderboard(String bracket, String region) {
+    public Maybe<PvpLeaderBoard> pvpLeaderboard(String bracket, String region) {
         return pvpLeaderboard(region, CURRENT_PVP_SEASON_ID, bracket, "dynamic-" + region);
     }
 
@@ -90,7 +90,7 @@ public class BlizzardAPI {
         );
     }
 
-    public Single<PvpLeaderBoard> pvpLeaderboard(String region, String pvpSeasonId, String pvpBracket, String namespace) {
+    public Maybe<PvpLeaderBoard> pvpLeaderboard(String region, String pvpSeasonId, String pvpBracket, String namespace) {
         String realRegion;
         String realNamespace;
         String realPvpBracket;
@@ -109,17 +109,6 @@ public class BlizzardAPI {
         } else {
             realPvpBracket = pvpBracket;
         }
-        if (pvpBracket.equals("shuffle")) {
-            List<String> shuffleSpecs = Ladder.shuffleSpecs.stream().map(spec -> spec.replaceAll("/", "-")).toList();
-            Single<PvpLeaderBoard> res = Single.just(new PvpLeaderBoard(new JsonObject(), new JsonObject(), "shuffle", new JsonObject(), new JsonArray()));
-            for (String shuffleSpec : shuffleSpecs) {
-                res = res.flatMap(
-                    cur -> pvpLeaderboard(realRegion, pvpSeasonId, shuffleSpec, realNamespace)
-                        .map(cur::combine)
-                );
-            }
-            return res;
-        }
         return Single.defer(() -> token().flatMap(
                 blizzardAuthToken ->
                     webClient.getAbs("https://" + realRegion + ".api.blizzard.com/data/wow/pvp-season/" + pvpSeasonId + "/pvp-leaderboard/" + realPvpBracket)
@@ -130,7 +119,10 @@ public class BlizzardAPI {
                         .map(HttpResponse::bodyAsJsonObject)
             )
             .map(PvpLeaderBoard::fromJson)
-        ).doOnSubscribe(disposable -> log.info("Getting leaderboard for region={} ssn={} bracket={}", realRegion, pvpSeasonId, realPvpBracket));
+        ).doOnSubscribe(disposable -> log.info("Getting leaderboard for region={} ssn={} bracket={}", realRegion, pvpSeasonId, realPvpBracket))
+            .toMaybe()
+            .doOnError(er -> log.error("Error fetching Blizzard PVP leaderboard", er))
+            .onErrorResumeNext(Maybe.empty());
     }
 
     private Single<BlizzardAuthToken> authorize() {

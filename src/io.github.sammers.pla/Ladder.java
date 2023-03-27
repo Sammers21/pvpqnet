@@ -131,7 +131,7 @@ public class Ladder {
                     );
                 }
                 String specForBlizApi = shuffleSpec.replaceAll("/", "-");
-                sh = sh.flatMap(s -> blizzardAPI.pvpLeaderboard(specForBlizApi, region).map(leaderboard -> leaderboard.enrich(s)));
+                sh = sh.flatMap(s -> blizzardAPI.pvpLeaderboard(specForBlizApi, region).map(leaderboard -> leaderboard.enrich(s)).toSingle(s));
                 Single<List<Character>> finalSh = sh;
                 res = res.flatMap(characters -> finalSh.map(s -> {
                     characters.addAll(s);
@@ -153,7 +153,7 @@ public class Ladder {
                     })
                 );
             }
-            resCharList = res.flatMap(s -> blizzardAPI.pvpLeaderboard(bracket, region).map(leaderboard -> leaderboard.enrich(s)));
+            resCharList = res.flatMap(s -> blizzardAPI.pvpLeaderboard(bracket, region).map(leaderboard -> leaderboard.enrich(s)).toSingle(s));
         }
         return resCharList
             .map(chars -> Snapshot.of(chars, region, currentTimeMillis))
@@ -170,8 +170,6 @@ public class Ladder {
                     runDataUpdater(EU, Observable.interval(0, 30, TimeUnit.MINUTES))
                 )
             )
-            .flatMapCompletable(d -> updateChars("eu"))
-            .andThen(updateChars("us"))
             .subscribe();
     }
 
@@ -285,8 +283,7 @@ public class Ladder {
     }
 
     private Completable loadRegionData(String region) {
-        return loadWowCharApiData(region).onErrorComplete()
-            .andThen(loadLast(TWO_V_TWO, region))
+           return loadLast(TWO_V_TWO, region)
             .andThen(loadLast(THREE_V_THREE, region))
             .andThen(loadLast(RBG, region))
             .andThen(loadLast(SHUFFLE, region));
