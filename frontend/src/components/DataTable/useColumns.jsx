@@ -22,11 +22,16 @@ const specNameFromFullSpec = (wowSpec) => {
 
 const getDetails = (wowClass, wowSpec) => {
   const classSrc = require('../../assets/classicons/' +
-    wowClass.replaceAll(' ', '').toLowerCase() +
-    '.png');
-  const specSrc = require('../../assets/specicons/' + specNameFromFullSpec(wowSpec) + '.png');
-
-  return { classSrc, specSrc };
+      wowClass.replaceAll(' ', '').toLowerCase() +
+      '.png');
+  let specSrc;
+  try {
+    specSrc = require('../../assets/specicons/' + specNameFromFullSpec(wowSpec) + '.png');
+  } catch (e) {
+    console.log(`Spec: ${wowSpec} was not found`, e)
+    specSrc = require('../../assets/unknown.png');
+  }
+  return {classSrc, specSrc};
 };
 
 const getClassNameColor = (wowClass) => {
