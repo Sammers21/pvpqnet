@@ -20,7 +20,7 @@ const specNameFromFullSpec = (wowSpec) => {
   return wowSpec.trim().replaceAll(' ', '').toLowerCase();
 };
 
-const getDetails = (wowClass, wowSpec) => {
+const getDetails = (wowClass, wowSpec, wowRace) => {
   const classSrc = require('../../assets/classicons/' +
       wowClass.replaceAll(' ', '').toLowerCase() +
       '.png');
@@ -31,7 +31,15 @@ const getDetails = (wowClass, wowSpec) => {
     console.log(`Spec: ${wowSpec} was not found`, e)
     specSrc = require('../../assets/unknown.png');
   }
-  return {classSrc, specSrc};
+  let raceSrc;
+  try {
+    raceSrc = require('../../assets/raceicons/' + wowRace.toLowerCase() + '.png');
+    } catch (e) {
+    console.log(`Race: ${wowRace} was not found`, e)
+    raceSrc = require('../../assets/unknown.png');
+  }
+
+  return {classSrc, specSrc, raceSrc};
 };
 
 const getClassNameColor = (wowClass) => {
@@ -111,9 +119,20 @@ const useColumns = () => {
       render: ({ record }) => {
         const wowClass = record?.character?.class || record?.class;
         const wowSpec = record?.character?.full_spec || record?.full_spec;
-        const details = getDetails(wowClass, wowSpec);
+        const wowRace = "unknown";
+        const details = getDetails(wowClass, wowSpec, wowRace);
         return (
           <Box sx={{ display: 'flex' }}>
+            <img
+                style={{
+                  border: '1px #37415180 solid',
+                  borderRadius: '4px',
+                  marginLeft: '5px',
+                  height: '20px',
+                  width: '20px',
+                }}
+                src={details.raceSrc}
+            />
             <img
               style={{
                 border: '1px #37415180 solid',
