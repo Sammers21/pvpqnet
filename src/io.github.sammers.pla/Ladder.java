@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -173,26 +174,28 @@ public class Ladder {
 
     private Completable updateChars(String region) {
         return Completable.defer(() -> {
-            List<Completable> completables = brackets.stream().flatMap(bracket -> {
-                    AtomicReference<Snapshot> snapshotAtomicReference = refByBracket(bracket, region);
-                    Snapshot snapshot = snapshotAtomicReference.get();
-                    if (snapshot == null) {
+            Set<Character> uniqChars = brackets.stream().flatMap(bracket -> {
+                AtomicReference<Snapshot> snapshotAtomicReference = refByBracket(bracket, region);
+                Snapshot snapshot = snapshotAtomicReference.get();
+                if (snapshot == null) {
+                    return Stream.of();
+                }
+                return snapshot.characters().stream().flatMap(c -> {
+                    WowAPICharacter wowAPICharacter = characterCache.get(c.fullName());
+                    if (wowAPICharacter == null) {
+                        return Stream.of(c);
+                    } else {
                         return Stream.of();
                     }
-                    return snapshot.characters().stream().flatMap(c -> {
-                        WowAPICharacter wowAPICharacter = characterCache.get(c.fullName());
-                        if (wowAPICharacter == null) {
-                            return Stream.of(c);
-                        } else {
-                            return Stream.of();
-                        }
-                    });
-                }).collect(Collectors.toSet()).stream()
+                });
+            }).collect(Collectors.toSet());
+            log.info("Updating " + uniqChars.size() + " characters");
+            List<Completable> completables = uniqChars.stream()
                 .map(wowChar ->
                     blizzardAPI.character(region, wowChar.realm(), wowChar.name()).flatMap(c -> {
                         characterCache.put(wowChar.fullName(), c);
                         return db.upsertCharacter(c);
-                    }).doOnSuccess(d -> log.info("Updated character: " + wowChar))
+                    }).doOnSuccess(d -> log.debug("Updated character: " + wowChar))
                     .ignoreElement()).toList();
             return Completable.concat(completables);
         }).onErrorComplete();
