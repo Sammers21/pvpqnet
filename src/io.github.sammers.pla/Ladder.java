@@ -277,14 +277,16 @@ public class Ladder {
             .flatMapSingle(tick -> threeVThree(region))
             .flatMapSingle(tick -> twoVTwo(region))
             .flatMapSingle(tick -> battlegrounds(region))
-            .flatMapSingle(tick -> shuffle(region));
+            .flatMapSingle(tick -> shuffle(region))
+            .flatMapSingle(tick -> updateChars(region).andThen(Single.just(tick)));
     }
 
     private Completable loadRegionData(String region) {
-           return loadLast(TWO_V_TWO, region)
+        return loadLast(TWO_V_TWO, region)
             .andThen(loadLast(THREE_V_THREE, region))
             .andThen(loadLast(RBG, region))
-            .andThen(loadLast(SHUFFLE, region));
+            .andThen(loadLast(SHUFFLE, region))
+            .andThen(loadWowCharApiData(region));
     }
 
     private Completable loadWowCharApiData(String region) {
