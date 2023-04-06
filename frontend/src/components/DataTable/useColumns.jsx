@@ -31,7 +31,7 @@ const getDetails = (wowClass, wowSpec, wowRace, wowGender) => {
     specSrc = require('../../assets/unknown.png');
   }
   let raceSrc;
-  let raceIcon = wowGender.toLowerCase().charAt(0) + wowRace.replaceAll(' ', '').toLowerCase() + '.webp';
+  let raceIcon = wowGender.toLowerCase().charAt(0) + wowRace.replaceAll(' ', '').replaceAll("'", '').toLowerCase() + '.webp';
   try {
     raceSrc = require('../../assets/raceicons/' + raceIcon);
   } catch (e) {
