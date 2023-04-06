@@ -55,13 +55,7 @@ public class BlizzardAPI {
     public Maybe<WowAPICharacter> character(String region, String realm, String name) {
         String realRegion;
         String realNamespace;
-        if (region.equals("en-gb")) {
-            realRegion = "eu";
-        } else if (region.equals("en-us")) {
-            realRegion = "us";
-        } else {
-            realRegion = region;
-        }
+        realRegion = realRegion(region);
         realNamespace = "profile-" + realRegion;
         String realmSearch = URLEncoder.encode(realm.replaceAll(" ", "-").replaceAll("'", "").toLowerCase(), StandardCharsets.UTF_8);
         String nameSearch = URLEncoder.encode(name.toLowerCase(), StandardCharsets.UTF_8);
@@ -85,6 +79,18 @@ public class BlizzardAPI {
                     return res;
                 })
         );
+    }
+
+    private static String realRegion(String region) {
+        String realRegion;
+        if (region.equals("en-gb")) {
+            realRegion = "eu";
+        } else if (region.equals("en-us")) {
+            realRegion = "us";
+        } else {
+            realRegion = region;
+        }
+        return realRegion;
     }
 
     public Maybe<PvpLeaderBoard> pvpLeaderboard(String region, String pvpSeasonId, String pvpBracket, String namespace) {
@@ -131,5 +137,22 @@ public class BlizzardAPI {
             .rxSendForm(form)
             .map(response -> BlizzardAuthToken.fromJson(response.bodyAsJsonObject()))
             .doOnSuccess(token -> log.info("Got token: {}", token));
+    }
+
+    public Single<Cutoffs> cutoffs(String region) {
+        return cutoffs(region, CURRENT_PVP_SEASON_ID);
+    }
+
+    public Single<Cutoffs> cutoffs(String region, String pvpSsnId) {
+        String realRegion = realRegion(region);
+        return token().flatMap(blizzardAuthToken ->
+            webClient.getAbs("https://" + realRegion + ".api.blizzard.com/data/wow/pvp-season/" + pvpSsnId + "/pvp-reward/index")
+                .addQueryParam("namespace", "dynamic-" + realRegion)
+                .addQueryParam("locale", LOCALE)
+                .bearerTokenAuthentication(blizzardAuthToken.accessToken())
+                .rxSend()
+                .map(HttpResponse::bodyAsJsonObject)
+                .map(res -> Cutoffs.fromBlizzardJson(realRegion, res))
+        );
     }
 }

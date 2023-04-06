@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -85,6 +86,7 @@ public class Ladder {
     private final Map<String, AtomicReference<Snapshot>> refs = new ConcurrentHashMap<>();
     private final Map<String, AtomicReference<SnapshotDiff>> refDiffs = new ConcurrentHashMap<>();
     private final Map<String, WowAPICharacter> characterCache = new ConcurrentHashMap<>();
+    private final Map<String, Cutoffs> regionCutoff = new ConcurrentHashMap<>();
     private final DB db;
     private BlizzardAPI blizzardAPI;
 
@@ -164,11 +166,11 @@ public class Ladder {
     public void start() {
         loadRegionData(EU)
             .andThen(loadRegionData(US))
-//            .andThen(
-//                runDataUpdater(US,
-//                    runDataUpdater(EU, Observable.interval(0, 30, TimeUnit.MINUTES))
-//                )
-//            )
+            .andThen(
+                runDataUpdater(US,
+                    runDataUpdater(EU, Observable.interval(0, 30, TimeUnit.MINUTES))
+                )
+            )
             .subscribe();
     }
 
@@ -230,7 +232,7 @@ public class Ladder {
                         String realm = nodeList.get(6).attr("data-value");
                         Long wins = Long.parseLong(nodeList.get(7).attr("data-value"));
                         Long losses = Long.parseLong(nodeList.get(8).attr("data-value"));
-                        return mkCharWithCachedGenderData(pos, rating, name, clazz, fullSpec, fraction, realm, wins, losses);
+                        return enrichWithSpecialData(bracket, region, pos, rating, name, clazz, fullSpec, fraction, realm, wins, losses);
                     }).toList();
                     return characters;
                 }
@@ -239,11 +241,23 @@ public class Ladder {
             .doOnError(err -> log.error(String.format("ERR %s %s %s", region, bracket, page)));
     }
 
-    private Character mkCharWithCachedGenderData(Long pos, Long rating, String name, String clazz, String fullSpec, String fraction, String realm, Long wins, Long losses) {
+    private Character enrichWithSpecialData(String bracket, String region, Long pos, Long rating, String name, String clazz, String fullSpec, String fraction, String realm, Long wins, Long losses) {
         Optional<WowAPICharacter> apiCharacter = Optional.ofNullable(characterCache.get(Character.fullNameByRealmAndName(name, realm)));
         String gender = apiCharacter.map(WowAPICharacter::gender).orElse("unknown");
         String race = apiCharacter.map(WowAPICharacter::race).orElse("unknown");
-        return new Character(pos, rating, name, clazz, fullSpec, fraction, gender, race, realm, wins, losses);
+        Cutoffs cutoffs = regionCutoff.get(region);
+        boolean inCutoff = false;
+        if (bracket.equals("3v3")) {
+            Long cutRating = cutoffs.threeVThree();
+            inCutoff = rating >= cutRating;
+        } else if (bracket.equals("rbg")) {
+            Long cutRating = cutoffs.battlegrounds(fraction);
+            inCutoff = rating >= cutRating;
+        } else if (bracket.startsWith("shuffle")) {
+            Long cutRating = cutoffs.shuffle(bracket.split("/")[2]);
+            inCutoff = rating >= cutRating;
+        }
+        return new Character(pos, rating, inCutoff, name, clazz, fullSpec, fraction, gender, race, realm, wins, losses);
     }
 
     public Single<List<Character>> ladderTraditional(String bracket, Integer page, String region) {
@@ -274,7 +288,7 @@ public class Ladder {
                     String realm = nodeList.get(5).attr("data-value");
                     Long wins = Long.parseLong(nodeList.get(6).attr("data-value"));
                     Long losses = Long.parseLong(nodeList.get(7).attr("data-value"));
-                    return mkCharWithCachedGenderData(pos, rating, name, clazz, fullSpec, fraction, realm, wins, losses);
+                    return enrichWithSpecialData(bracket, region, pos, rating, name, clazz, fullSpec, fraction, realm, wins, losses);
                 }).toList();
                 return characters;
             })
@@ -292,11 +306,19 @@ public class Ladder {
     }
 
     private Completable loadRegionData(String region) {
-        return loadLast(TWO_V_TWO, region)
+        return loadCutoffs(region)
+            .andThen(loadLast(TWO_V_TWO, region))
             .andThen(loadLast(THREE_V_THREE, region))
             .andThen(loadLast(RBG, region))
             .andThen(loadLast(SHUFFLE, region))
             .andThen(loadWowCharApiData(region));
+    }
+
+    private Completable loadCutoffs(String region) {
+        return blizzardAPI.cutoffs(region).map(cutoffs -> {
+            regionCutoff.put(region, cutoffs);
+            return cutoffs;
+        }).ignoreElement();
     }
 
     private Completable loadWowCharApiData(String region) {
