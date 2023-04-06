@@ -2,14 +2,16 @@ package io.github.sammers.pla;
 
 import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.core.Vertx;
-import io.vertx.reactivex.ext.mongo.MongoClient;
 import io.vertx.reactivex.ext.web.Router;
 import io.vertx.reactivex.ext.web.RoutingContext;
 
-import java.util.List;
 import java.util.Optional;
 
-import static io.github.sammers.pla.Ladder.*;
+import static io.github.sammers.pla.Ladder.EU;
+import static io.github.sammers.pla.Ladder.RBG;
+import static io.github.sammers.pla.Ladder.SHUFFLE;
+import static io.github.sammers.pla.Ladder.THREE_V_THREE;
+import static io.github.sammers.pla.Ladder.TWO_V_TWO;
 
 public class Http {
 
@@ -49,6 +51,19 @@ public class Http {
                 bracket = RBG;
             }
             ladder(ctx, ladder.refByBracket(bracket, region).get());
+        });
+        router.get("/api/:region/activity/stats").handler(ctx -> {
+            String region = ctx.pathParam("region");
+            Integer twos = Optional.ofNullable(ladder.diffsByBracket(TWO_V_TWO, region).get()).map(diff -> diff.chars().size()).orElse(0);
+            Integer threes = Optional.ofNullable(ladder.diffsByBracket(THREE_V_THREE, region).get()).map(diff -> diff.chars().size()).orElse(0);
+            Integer rbgs = Optional.ofNullable(ladder.diffsByBracket(RBG, region).get()).map(diff -> diff.chars().size()).orElse(0);
+            Integer shuffle = Optional.ofNullable(ladder.diffsByBracket(SHUFFLE, region).get()).map(diff -> diff.chars().size()).orElse(0);
+            ctx.response().end(new JsonObject()
+                .put("2v2", twos)
+                .put("3v3", threes)
+                .put("rbg", rbgs)
+                .put("shuffle", shuffle)
+                .encode());
         });
         router.get("/api/:region/activity/:bracket").handler(ctx -> {
             String region = ctx.pathParam("region");
