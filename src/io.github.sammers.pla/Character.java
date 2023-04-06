@@ -55,7 +55,7 @@ public record Character(Long pos, Long rating, boolean inCutoff, String name, St
             gender = entries.getString("gender");
         }
         if (entries.containsKey("race")) {
-            gender = entries.getString("race");
+            race = entries.getString("race");
         }
         return new Character(entries.getLong("pos"), entries.getLong("rating"), inCutoff, entries.getString("name"),
             entries.getString("class"), entries.getString("full_spec"), entries.getString("fraction"), gender, race,
