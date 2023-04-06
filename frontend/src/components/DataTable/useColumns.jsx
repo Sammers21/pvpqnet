@@ -216,9 +216,10 @@ const useColumns = () => {
       label: 'RATING',
       render: ({ record }) => {
         const rating = record?.character?.rating ?? record?.rating;
+        const ratingColor = record?.character?.in_cutoff ?? record?.in_cutoff ? '#fb7e00' : 'white';
         return (
           <Box sx={{ display: 'flex' }}>
-            <Typography sx={{ fontWeight: 300, marginRight: '4px' }}>{rating}</Typography>
+            <Typography color={ratingColor} sx={{ fontWeight: 300, marginRight: '4px' }}>{rating}</Typography>
             {Number.isInteger(record?.diff?.rating_diff) && (
               <Typography
                 color={getDiffColor(record.diff.rating_diff)}
