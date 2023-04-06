@@ -254,7 +254,8 @@ public class Ladder {
             Long cutRating = cutoffs.battlegrounds(fraction);
             inCutoff = rating >= cutRating;
         } else if (bracket.startsWith("shuffle")) {
-            Long cutRating = cutoffs.shuffle(bracket.split("/")[2]);
+            Long ct = cutoffs.shuffle(bracket.split("/")[2]);
+            Long cutRating = ct == null ? 0 : ct;
             inCutoff = rating >= cutRating;
         }
         return new Character(pos, rating, inCutoff, name, clazz, fullSpec, fraction, gender, race, realm, wins, losses);
