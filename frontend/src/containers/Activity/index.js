@@ -1,15 +1,14 @@
-import React, { useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { YMInitializer } from 'react-yandex-metrika';
-import { Box } from '@mui/material';
+import React, {useEffect} from 'react';
+import {useParams} from 'react-router-dom';
+import {Box} from '@mui/material';
 
 import PageHeader from '../../components/AppBar';
 import ActivityTabs from '../../components/Tabs';
 import DataTable from '../../components/DataTable';
 import Footer from '../../components/Footer';
 
-import { REGIONS } from '../../constants/region';
-import { DISCIPLINES } from '../../constants/pvp-activity';
+import {REGIONS} from '../../constants/region';
+import {DISCIPLINES} from '../../constants/pvp-activity';
 
 const capitalizeFirstLetter = (str) => {
   return str.charAt(0).toUpperCase() + str.slice(1);
@@ -32,7 +31,6 @@ function Activity() {
   return (
     <>
       <PageHeader />
-      <YMInitializer accounts={[92858570]} />
       <Box sx={{ width: '85%', margin: '95px auto 45px auto' }}>
         <ActivityTabs />
         <DataTable />
