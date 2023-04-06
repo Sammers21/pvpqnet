@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Typography, Box } from '@mui/material';
+import {Box, Typography} from '@mui/material';
 
 const TABLE_FIELDS = {
   rank: 'pos',
@@ -20,25 +20,24 @@ const specNameFromFullSpec = (wowSpec) => {
   return wowSpec.trim().replaceAll(' ', '').toLowerCase();
 };
 
-const getDetails = (wowClass, wowSpec, wowRace) => {
-  const classSrc = require('../../assets/classicons/' +
-      wowClass.replaceAll(' ', '').toLowerCase() +
-      '.png');
+const getDetails = (wowClass, wowSpec, wowRace, wowGender) => {
+  const classSrc = require('../../assets/classicons/' + wowClass.replaceAll(' ', '').toLowerCase() + '.png');
   let specSrc;
+  let specIcon = specNameFromFullSpec(wowSpec) + '.png';
   try {
-    specSrc = require('../../assets/specicons/' + specNameFromFullSpec(wowSpec) + '.png');
+    specSrc = require('../../assets/specicons/' + specIcon);
   } catch (e) {
-    console.log(`Spec: ${wowSpec} was not found`, e)
+    console.log(`SpecIcon: ${specIcon} was not found`)
     specSrc = require('../../assets/unknown.png');
   }
   let raceSrc;
+  let raceIcon = wowGender.toLowerCase().charAt(0) + wowRace.replaceAll(' ', '').toLowerCase() + '.webp';
   try {
-    raceSrc = require('../../assets/raceicons/' + wowRace.toLowerCase() + '.png');
-    } catch (e) {
-    console.log(`Race: ${wowRace} was not found`, e)
+    raceSrc = require('../../assets/raceicons/' + raceIcon);
+  } catch (e) {
+    console.log(`RaceIcon: ${raceIcon} was not found`)
     raceSrc = require('../../assets/unknown.png');
   }
-
   return {classSrc, specSrc, raceSrc};
 };
 
@@ -119,8 +118,9 @@ const useColumns = () => {
       render: ({ record }) => {
         const wowClass = record?.character?.class || record?.class;
         const wowSpec = record?.character?.full_spec || record?.full_spec;
-        const wowRace = "unknown";
-        const details = getDetails(wowClass, wowSpec, wowRace);
+        const wowRace = record?.character?.race || record?.race;
+        const wowGender = record?.character?.gender || record?.gender;
+        const details = getDetails(wowClass, wowSpec, wowRace, wowGender);
         return (
           <Box sx={{ display: 'flex' }}>
             <img

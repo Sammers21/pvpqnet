@@ -23,7 +23,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -165,11 +164,11 @@ public class Ladder {
     public void start() {
         loadRegionData(EU)
             .andThen(loadRegionData(US))
-            .andThen(
-                runDataUpdater(US,
-                    runDataUpdater(EU, Observable.interval(0, 30, TimeUnit.MINUTES))
-                )
-            )
+//            .andThen(
+//                runDataUpdater(US,
+//                    runDataUpdater(EU, Observable.interval(0, 30, TimeUnit.MINUTES))
+//                )
+//            )
             .subscribe();
     }
 
@@ -309,7 +308,7 @@ public class Ladder {
         }
         return db.fetchChars(realRegion)
             .flatMapCompletable(characters -> {
-                log.info("Data size= {} for region {} has been loaded from DB", characters.size(), region);
+                log.info("Character data size={} for region={} has been loaded from DB", characters.size(), region);
                 characters.forEach(character -> {
                     characterCache.put(character.fullName(), character);
                 });
