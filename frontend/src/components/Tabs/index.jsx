@@ -1,15 +1,17 @@
 import * as React from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { generatePath } from 'react-router';
+import {useEffect, useState} from 'react';
+import {useNavigate, useParams} from 'react-router-dom';
+import {generatePath} from 'react-router';
 
-import { Box, Button } from '@mui/material';
-import { styled } from '@mui/system';
+import {Box, Button} from '@mui/material';
+import {styled} from '@mui/system';
 
-import { getDiscipline } from '../../utils/getDiscipline';
-import { publicUrls } from '../../config';
-import { DISCIPLINES } from '../../constants/pvp-activity';
-import { borderColor, containerBg } from '../../theme';
-import { REGIONS } from '../../constants/region';
+import {getDiscipline} from '../../utils/getDiscipline';
+import {baseUrl, publicUrls} from '../../config';
+import {DISCIPLINES} from '../../constants/pvp-activity';
+import {borderColor, containerBg} from '../../theme';
+import {getRegion} from "../../utils/getRegion";
+import {statsMap} from "../../services/stats.service"
 
 const TabButton = styled(Button)(({ isActive }) => ({
   color: 'white',
@@ -29,20 +31,38 @@ const TabButton = styled(Button)(({ isActive }) => ({
 export default function ActivityTabs() {
   let navigate = useNavigate();
   const {
-    region = REGIONS.eu,
+    region: regionFromUrl,
     activity = 'activity',
     discipline: disciplineFromParams,
   } = useParams();
   const discipline = getDiscipline(disciplineFromParams);
-
-  const handleChangeDiscipline = (discipline) => {
-    const newPath = generatePath(publicUrls.page, { region, activity, discipline });
+  const region = getRegion(regionFromUrl);
+  const handleBracketChange = (bracket) => {
+    const newPath = generatePath(publicUrls.page, { region, activity, discipline: bracket });
     navigate(newPath);
   };
-
+  const [data, setData] = useState(
+      {
+        "2v2": 0,
+        "3v3": 0,
+        "rbg": 0,
+        "shuffle": 0
+      });
+    // Note: the empty deps array [] means
+    // this useEffect will run once
+    // similar to componentDidMount()
+    useEffect(() => {
+        fetch(baseUrl + "/api/" + statsMap[region] + "/activity/stats")
+            .then(res => res.json())
+            .then(
+                (result) => {
+                    setData(result)
+                },
+                (error) => { }
+            )
+    }, [])
   return (
-    <Box
-      sx={{
+    <Box sx={{
         display: 'flex',
         width: '100%',
         borderTopLeftRadius: 5,
@@ -55,29 +75,29 @@ export default function ActivityTabs() {
     >
       <TabButton
         sx={{ borderTopLeftRadius: 5 }}
-        onClick={() => handleChangeDiscipline(DISCIPLINES.shuffle)}
+        onClick={() => handleBracketChange(DISCIPLINES.shuffle)}
         isActive={discipline === DISCIPLINES.shuffle}
       >
-        Shuffle
+        Shuffle({data.shuffle})
       </TabButton>
       <TabButton
-        onClick={() => handleChangeDiscipline(DISCIPLINES['2v2'])}
+        onClick={() => handleBracketChange(DISCIPLINES['2v2'])}
         isActive={discipline === DISCIPLINES['2v2']}
       >
-        2v2
+        2v2({data["2v2"]})
       </TabButton>
       <TabButton
-        onClick={() => handleChangeDiscipline(DISCIPLINES['3v3'])}
+        onClick={() => handleBracketChange(DISCIPLINES['3v3'])}
         isActive={discipline === DISCIPLINES['3v3']}
       >
-        3v3
+        3v3({data["3v3"]})
       </TabButton>
       <TabButton
         sx={{ borderTopRightRadius: 5 }}
-        onClick={() => handleChangeDiscipline(DISCIPLINES.rbg)}
+        onClick={() => handleBracketChange(DISCIPLINES.rbg)}
         isActive={discipline === DISCIPLINES.rbg}
       >
-        RBG
+        RBG({data.rbg})
       </TabButton>
     </Box>
   );
