@@ -24,6 +24,7 @@ public class Main {
         final MongoClient mongoClient = MongoClient.createShared(vertx, new JsonObject()
             .put("db_name", "pvpq")
             .put("connection_string", dbUri)
+            .put("maxPoolSize", 3)
         );
         final BlizzardAPI blizzardAPI = new BlizzardAPI(clientId, clientSecret, webClient);
         DB db = new DB(mongoClient);
