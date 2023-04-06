@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -230,13 +231,20 @@ public class Ladder {
                         String realm = nodeList.get(6).attr("data-value");
                         Long wins = Long.parseLong(nodeList.get(7).attr("data-value"));
                         Long losses = Long.parseLong(nodeList.get(8).attr("data-value"));
-                        return new Character(pos, rating, name, clazz, fullSpec, fraction, realm, wins, losses);
+                        return mkCharWithCachedGenderData(pos, rating, name, clazz, fullSpec, fraction, realm, wins, losses);
                     }).toList();
                     return characters;
                 }
             })
-            .doOnSuccess(ok -> log.info(String.format("%s-%s ladder has been fetched page=%s", region, bracket, page)))
-            .doOnError(err -> log.info(String.format("ERR %s %s %s", region, bracket, page)));
+            .doOnSuccess(ok -> log.debug(String.format("%s-%s ladder has been fetched page=%s", region, bracket, page)))
+            .doOnError(err -> log.error(String.format("ERR %s %s %s", region, bracket, page)));
+    }
+
+    private Character mkCharWithCachedGenderData(Long pos, Long rating, String name, String clazz, String fullSpec, String fraction, String realm, Long wins, Long losses) {
+        Optional<WowAPICharacter> apiCharacter = Optional.ofNullable(characterCache.get(Character.fullNameByRealmAndName(name, realm)));
+        String gender = apiCharacter.map(WowAPICharacter::gender).orElse("unknown");
+        String race = apiCharacter.map(WowAPICharacter::race).orElse("unknown");
+        return new Character(pos, rating, name, clazz, fullSpec, fraction, gender, race, realm, wins, losses);
     }
 
     public Single<List<Character>> ladderTraditional(String bracket, Integer page, String region) {
@@ -267,12 +275,12 @@ public class Ladder {
                     String realm = nodeList.get(5).attr("data-value");
                     Long wins = Long.parseLong(nodeList.get(6).attr("data-value"));
                     Long losses = Long.parseLong(nodeList.get(7).attr("data-value"));
-                    return new Character(pos, rating, name, clazz, fullSpec, fraction, realm, wins, losses);
+                    return mkCharWithCachedGenderData(pos, rating, name, clazz, fullSpec, fraction, realm, wins, losses);
                 }).toList();
                 return characters;
             })
-            .doOnSuccess(ok -> log.info(String.format("%s-%s ladder has been fetched page=%s", region, bracket, page)))
-            .doOnError(err -> log.info(String.format("ERR %s %s %s", region, bracket, page)));
+            .doOnSuccess(ok -> log.debug(String.format("%s-%s ladder has been fetched page=%s", region, bracket, page)))
+            .doOnError(err -> log.error(String.format("ERR %s %s %s", region, bracket, page)));
     }
 
     private <R> Observable<Snapshot> runDataUpdater(String region, Observable<R> tickObservable) {

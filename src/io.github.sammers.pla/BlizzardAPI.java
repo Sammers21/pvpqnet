@@ -2,8 +2,6 @@ package io.github.sammers.pla;
 
 import io.reactivex.Maybe;
 import io.reactivex.Single;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.core.MultiMap;
 import io.vertx.reactivex.ext.web.client.HttpResponse;
 import io.vertx.reactivex.ext.web.client.WebClient;
@@ -12,7 +10,6 @@ import org.slf4j.LoggerFactory;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -79,10 +76,10 @@ public class BlizzardAPI {
                 .flatMapMaybe(json -> {
                     Maybe<WowAPICharacter> res;
                     if (json.getInteger("code") != null && json.getInteger("code") == 404) {
-                        log.info("Character not found: " + name + " on " + realm + " in " + realRegion);
+                        log.debug("Character not found: " + name + " on " + realm + " in " + realRegion);
                         res = Maybe.empty();
                     } else {
-                        log.info("Found Character:  " + name + " on " + realm + " in " + realRegion);
+                        log.debug("Found Character:  " + name + " on " + realm + " in " + realRegion);
                         res = Maybe.just(WowAPICharacter.parse(json, realRegion));
                     }
                     return res;
