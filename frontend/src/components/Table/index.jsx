@@ -1,21 +1,13 @@
-import React, { useCallback, useMemo } from 'react';
-import {
-  Grid,
-  TableContainer,
-  Typography,
-  Table as TableMui,
-  TableHead,
-  TableRow,
-  TableBody,
-} from '@mui/material';
-import { styled } from '@mui/system';
+import React, {useCallback, useMemo} from 'react';
+import {Grid, Table as TableMui, TableBody, TableContainer, TableHead, TableRow, Typography,} from '@mui/material';
+import {styled} from '@mui/system';
 
 import HeaderCell from './HeaderCell';
 import BlizzardLoader from '../BlizzardLoader';
 import Pagination from './Pagination';
 import Row from './Row';
 
-import { containerBg } from '../../theme';
+import {containerBg} from '../../theme';
 
 const StyledTable = styled(TableMui)({
   position: 'relative',
@@ -146,6 +138,7 @@ const Table = ({
       {renderFooter()}
       {<TableContainer {...props}>{renderTable()}</TableContainer>}
       {renderLoading()}
+      {renderFooter()}
     </Grid>
   );
 };

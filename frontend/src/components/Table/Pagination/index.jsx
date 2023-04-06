@@ -1,6 +1,6 @@
-import React, { useCallback, useMemo } from 'react';
+import React from 'react';
 
-import { Grid, IconButton, Pagination } from '@mui/material';
+import {Grid, Pagination} from '@mui/material';
 
 const TablePagination = ({ page, totalPages, pagination, onPageChange, recordsLength }) => {
   const renderFooter = () => {
@@ -8,7 +8,7 @@ const TablePagination = ({ page, totalPages, pagination, onPageChange, recordsLe
 
     return (
       visible && (
-        <Grid sx={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
+        <Grid sx={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px', marginTop: '16px' }}>
           <Pagination
             count={totalPages}
             page={page}
