@@ -6,11 +6,10 @@ import {generatePath} from 'react-router';
 import {Box, Button} from '@mui/material';
 import {styled} from '@mui/system';
 
-import {getDiscipline} from '../../utils/getDiscipline';
+import {getActivity, getDiscipline, getRegion} from '../../utils/urlparts';
 import {baseUrl, publicUrls} from '../../config';
 import {DISCIPLINES} from '../../constants/pvp-activity';
 import {borderColor, containerBg} from '../../theme';
-import {getRegion} from "../../utils/getRegion";
 import {statsMap} from "../../services/stats.service"
 
 const TabButton = styled(Button)(({ isActive }) => ({
@@ -32,32 +31,43 @@ export default function ActivityTabs() {
   let navigate = useNavigate();
   const {
     region: regionFromUrl,
-    activity = 'activity',
+    activity: activityFromUrl,
     discipline: disciplineFromParams,
   } = useParams();
   const discipline = getDiscipline(disciplineFromParams);
+  const activity = getActivity(activityFromUrl);
   const region = getRegion(regionFromUrl);
+  const isActivity = activity ==="activity";
   const handleBracketChange = (bracket) => {
     const newPath = generatePath(publicUrls.page, { region, activity, discipline: bracket });
     navigate(newPath);
   };
-  const [data, setData] = useState(
-      {
-        "2v2": 0,
-        "3v3": 0,
-        "rbg": 0,
-        "shuffle": 0
-      });
+  const init = {
+    "2v2": "",
+    "3v3": "",
+    "rbg": "",
+    "shuffle": ""
+  }
+  const [data, setData] = useState(init);
     useEffect(() => {
+      if(isActivity) {
         fetch(baseUrl + "/api/" + statsMap[region] + "/activity/stats")
-            .then(res => res.json())
-            .then(
-                (result) => {
-                    setData(result)
-                },
-                (error) => { }
-            )
-    }, [])
+          .then(res => res.json())
+          .then(
+            (result) => {
+              const res = {};
+              Object.keys(result).forEach(function (k) {
+                res[k] = "(" + result[k] + ")";
+              })
+              setData(res)
+            },
+            (error) => {
+            }
+          )
+      } else {
+        setData(init)
+      }
+    })
   return (
     <Box sx={{
         display: 'flex',
@@ -75,26 +85,26 @@ export default function ActivityTabs() {
         onClick={() => handleBracketChange(DISCIPLINES.shuffle)}
         isActive={discipline === DISCIPLINES.shuffle}
       >
-        Shuffle({data.shuffle})
+        Shuffle{data.shuffle}
       </TabButton>
       <TabButton
         onClick={() => handleBracketChange(DISCIPLINES['2v2'])}
         isActive={discipline === DISCIPLINES['2v2']}
       >
-        2v2({data["2v2"]})
+        2v2{data["2v2"]}
       </TabButton>
       <TabButton
         onClick={() => handleBracketChange(DISCIPLINES['3v3'])}
         isActive={discipline === DISCIPLINES['3v3']}
       >
-        3v3({data["3v3"]})
+        3v3{data["3v3"]}
       </TabButton>
       <TabButton
         sx={{ borderTopRightRadius: 5 }}
         onClick={() => handleBracketChange(DISCIPLINES.rbg)}
         isActive={discipline === DISCIPLINES.rbg}
       >
-        RBG({data.rbg})
+        RBG{data.rbg}
       </TabButton>
     </Box>
   );

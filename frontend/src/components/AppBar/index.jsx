@@ -1,19 +1,19 @@
 import * as React from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { generatePath } from 'react-router';
+import {useNavigate, useParams} from 'react-router-dom';
+import {generatePath} from 'react-router';
 
-import { AppBar, Box, Toolbar, Typography, Container, Grid, IconButton } from '@mui/material';
-import { styled } from '@mui/system';
+import {AppBar, Box, Container, Grid, IconButton, Toolbar, Typography} from '@mui/material';
+import {styled} from '@mui/system';
 
-import { borderColor, containerBg } from '../../theme';
-import { EuIcon, UsIcon } from '../icons';
+import {borderColor, containerBg} from '../../theme';
+import {EuIcon, UsIcon} from '../icons';
 import HeaderMenu from '../HeaderMenu';
-import { publicUrls } from '../../config';
+import {publicUrls} from '../../config';
 
-import { TABS_MENU, TABS } from '../../constants/header';
-import { REGIONS } from '../../constants/region';
-import { getRegion } from '../../utils/getRegion';
-import { DISCIPLINES } from '../../constants/pvp-activity';
+import {TABS, TABS_MENU} from '../../constants/header';
+import {REGIONS} from '../../constants/region';
+import {getRegion} from '../../utils/urlparts';
+import {DISCIPLINES} from '../../constants/pvp-activity';
 
 const pages = Object.values(TABS);
 
