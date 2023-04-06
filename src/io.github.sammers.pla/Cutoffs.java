@@ -21,7 +21,7 @@ public record Cutoffs(String region, String season, Map<String, Long> cutoffs,
             } else if (bracket.equals("BATTLEGROUNDS")) {
                 cfs.put(bracket + "/" + reward.getJsonObject("faction").getString("name").toLowerCase(), reward.getLong("rating_cutoff"));
             } else if (bracket.equals("SHUFFLE")) {
-                cfs.put(bracket + "/" + reward.getJsonObject("specialization").getString("name").toLowerCase(), reward.getLong("rating_cutoff"));
+                cfs.put(bracket + "/" + reward.getJsonObject("specialization").getString("name").replaceAll(" ", "").toLowerCase(), reward.getLong("rating_cutoff"));
             } else {
                 System.out.println("Unknown bracket: " + bracket);
             }

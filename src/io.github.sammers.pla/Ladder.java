@@ -250,7 +250,7 @@ public class Ladder {
         if (bracket.equals("3v3")) {
             Long cutRating = cutoffs.threeVThree();
             inCutoff = rating >= cutRating;
-        } else if (bracket.equals("rbg")) {
+        } else if (bracket.equals("battlegrounds")) {
             Long cutRating = cutoffs.battlegrounds(fraction);
             inCutoff = rating >= cutRating;
         } else if (bracket.startsWith("shuffle")) {
