@@ -48,9 +48,6 @@ export default function ActivityTabs() {
         "rbg": 0,
         "shuffle": 0
       });
-    // Note: the empty deps array [] means
-    // this useEffect will run once
-    // similar to componentDidMount()
     useEffect(() => {
         fetch(baseUrl + "/api/" + statsMap[region] + "/activity/stats")
             .then(res => res.json())
