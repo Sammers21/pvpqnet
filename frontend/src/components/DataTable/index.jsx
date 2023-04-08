@@ -1,12 +1,12 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { useParams } from 'react-router-dom';
+import React, {useCallback, useEffect, useState} from 'react';
+import {useParams, useSearchParams} from 'react-router-dom';
 
 import Table from '../Table';
 
 import useColumns from './useColumns';
-import { getStatistic } from '../../services/stats.service';
-import { REGIONS } from '../../constants/region';
-import { DISCIPLINES } from '../../constants/pvp-activity';
+import {getStatistic} from '../../services/stats.service';
+import {REGIONS} from '../../constants/region';
+import {DISCIPLINES} from '../../constants/pvp-activity';
 
 const DataList = () => {
   const {
@@ -15,6 +15,11 @@ const DataList = () => {
     discipline = DISCIPLINES.shuffle,
   } = useParams();
 
+  let [searchParams, setSearchParams] = useSearchParams();
+  var specs = []
+  if (searchParams.get('specs') != null){
+    specs = searchParams.get('specs').split(',');
+  }
   const [contractors, setData] = useState([]);
   const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -25,7 +30,7 @@ const DataList = () => {
   };
 
   const getDataFilter = useCallback(() => {
-    return { page, region, activity, discipline };
+    return {page, region, activity, discipline, specs};
   }, [page, region, activity, discipline]);
 
   const getData = async () => {

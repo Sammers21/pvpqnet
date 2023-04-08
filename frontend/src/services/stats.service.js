@@ -13,9 +13,10 @@ export const getStatistic = async ({
   region = REGIONS.eu,
   activity = 'activity',
   discipline = DISCIPLINES.shuffle,
+  specs = [],
 }) => {
   try {
-    const url = urls.getData(page, statsMap[region], activity, discipline);
+    const url = urls.getData(page, statsMap[region], activity, discipline, specs);
     const response = await request(url, { method: 'GET' });
     const data = JSON.parse(response.body);
     return { records: data?.characters ?? [], totalPages: data?.total_pages ?? 0 };
