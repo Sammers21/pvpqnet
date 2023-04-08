@@ -11,6 +11,7 @@ import {baseUrl, publicUrls} from '../../config';
 import {DISCIPLINES} from '../../constants/pvp-activity';
 import {borderColor, containerBg} from '../../theme';
 import {statsMap} from "../../services/stats.service"
+import _ from 'lodash';
 
 const TabButton = styled(Button)(({ isActive }) => ({
   color: 'white',
@@ -59,7 +60,9 @@ export default function ActivityTabs() {
               Object.keys(result).forEach(function (k) {
                 res[k] = "(" + result[k] + ")";
               })
-              setData(res)
+              if(!_.isEqual(data,res)){
+                setData(res)
+              }
             },
             (error) => {
             }

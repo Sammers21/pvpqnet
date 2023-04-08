@@ -13,7 +13,7 @@ const SpecFilter = ({specs}) => {
   });
   const render = () => {
     return <Grid sx={{display: 'flex', justifyContent: 'flex-end', marginBottom: '16px', marginTop: '16px'}}>
-      {crests}
+      {/*{crests}*/}
       <Button style={{
         backgroundColor: "#1f2937",
         paddingRight: "2rem",
