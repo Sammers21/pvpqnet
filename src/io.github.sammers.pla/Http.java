@@ -5,6 +5,8 @@ import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.ext.web.Router;
 import io.vertx.reactivex.ext.web.RoutingContext;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import static io.github.sammers.pla.Ladder.EU;
@@ -50,7 +52,7 @@ public class Http {
             if (bracket.equals("rbg")) {
                 bracket = RBG;
             }
-            ladder(ctx, ladder.refByBracket(bracket, region).get());
+            ladder(ctx, applySpecFilter(ctx, ladder.refByBracket(bracket, region).get()));
         });
         router.get("/api/:region/activity/stats").handler(ctx -> {
             String region = ctx.pathParam("region");
@@ -71,7 +73,7 @@ public class Http {
             if (bracket.equals("rbg")) {
                 bracket = RBG;
             }
-            ladder(ctx, ladder.diffsByBracket(bracket, region).get());
+            ladder(ctx, applySpecFilter(ctx, ladder.diffsByBracket(bracket, region).get()));
         });
         router.get("/:region/ladder/:bracket").handler(ctx -> ctx.response().sendFile("index.html"));
         router.get("/:region/activity/:bracket").handler(ctx -> ctx.response().sendFile("index.html"));
@@ -89,6 +91,18 @@ public class Http {
             ctx.response().end(Snapshot.empty(EU).toJson(page).encode());
         } else {
             ctx.response().end(snapshot.toJson(page).encode());
+        }
+    }
+
+    private Resp applySpecFilter(RoutingContext ctx, Resp specFiltered) {
+        if (specFiltered == null) {
+            return null;
+        }
+        List<String> specs = ctx.queryParam("specs").stream().flatMap(spcs -> Arrays.stream(spcs.split(","))).toList();
+        if (specs.isEmpty()) {
+            return specFiltered;
+        } else {
+            return (Resp) specFiltered.filter(specs);
         }
     }
 }

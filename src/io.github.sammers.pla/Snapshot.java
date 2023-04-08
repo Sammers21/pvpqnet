@@ -11,7 +11,7 @@ import java.util.List;
 
 import static java.time.ZoneOffset.UTC;
 
-public record Snapshot(List<Character> characters, Long timestamp, String region, String dateTime) implements JsonPaged {
+public record Snapshot(List<Character> characters, Long timestamp, String region, String dateTime) implements Resp {
 
     public static Snapshot empty(String region) {
         return new Snapshot(List.of(), -1L, region, "");
@@ -25,6 +25,18 @@ public record Snapshot(List<Character> characters, Long timestamp, String region
             return new Snapshot(List.of(), timestamp, region, format);
         }
         return new Snapshot(characters, timestamp, region, format);
+    }
+
+    public Snapshot filter(final List<String> specs) {
+        final List<Character> chars = characters.stream().filter(c -> {
+            Boolean res = false;
+            for (String spec : specs) {
+                res = res || c.fullSpec().toLowerCase().replaceAll(" ", "").replaceAll("'", "")
+                    .contains(spec.toLowerCase().replaceAll(" ", "").replaceAll("'", ""));
+            }
+            return res;
+        }).toList();
+        return new Snapshot(chars, timestamp, region, dateTime);
     }
 
     public JsonObject toJson(Long page) {

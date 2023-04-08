@@ -2,14 +2,25 @@ package io.github.sammers.pla;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.ocpsoft.prettytime.PrettyTime;
 
 import java.util.Date;
 import java.util.List;
 
-public record SnapshotDiff(List<CharAndDiff> chars, Long timestamp) implements JsonPaged {
+public record SnapshotDiff(List<CharAndDiff> chars, Long timestamp) implements Resp {
     public static SnapshotDiff empty() {
         return new SnapshotDiff(List.of(), System.currentTimeMillis());
+    }
+
+    public SnapshotDiff filter(final List<String> specs) {
+        final List<CharAndDiff> rchars = chars().stream().filter(c -> {
+            Boolean res = false;
+            for (String spec : specs) {
+                res = res || c.character().fullSpec().toLowerCase().replaceAll(" ", "").replaceAll("'", "")
+                    .contains(spec.toLowerCase().replaceAll(" ", "").replaceAll("'", ""));
+            }
+            return res;
+        }).toList();
+        return new SnapshotDiff(rchars, timestamp);
     }
 
     @Override
