@@ -1,25 +1,36 @@
 import React, {useState} from 'react';
-import {Button, Grid} from "@mui/material";
+import {Box, Button, Grid} from "@mui/material";
 import {CRESTS_AND_SPECS} from "../../constants/filterSchema";
 
 const SpecFilter = ({specs}) => {
 
   const [filtersShown, setFiltersShown] = useState(specs.length > 0);
+  const onClick = () => setFiltersShown(!filtersShown)
   const crests = Object.keys(CRESTS_AND_SPECS).map((crest) => {
-    const crestImg = "../../assets/crests/" + crest + ".png";
-    return <div className="crest">
-      <img src={crestImg} alt={crest} style={{width: '32px', height: '32px'}}/>
-    </div>
+    const internalSpecs = CRESTS_AND_SPECS[crest];
+    const specImgs = internalSpecs.map((spec) => {
+      return <img src={require("../../assets/specicons/" + spec + ".png")} style={{width: '2rem', height: '2rem', filter: 'grayscale(100%)',  opacity: .5}}/>
+    });
+    return (<Box>
+      <img src={require("../../assets/crests/" + crest + ".png")} style={{width: '7rem', height: '7rem', filter: 'grayscale(100%)', opacity: .5}}/>
+      <Box sx={{display: 'flex', justifyContent: 'center' }}>
+        {specImgs}
+      </Box>
+    </Box>);
   });
   const render = () => {
-    return <Grid sx={{display: 'flex', justifyContent: 'flex-end', marginBottom: '16px', marginTop: '16px'}}>
-      {/*{crests}*/}
-      <Button style={{
-        backgroundColor: "#1f2937",
-        paddingRight: "2rem",
-        paddingLeft: "2rem"
-      }}>Filters</Button>
-    </Grid>
+    return <Grid>
+      <Grid sx={{display: 'flex', justifyContent: 'flex-end', marginBottom: '16px', marginTop: '16px'}}>
+        <Button style={{
+          backgroundColor: "#1f2937",
+          paddingRight: "2rem",
+          paddingLeft: "2rem"
+        }} onClick={onClick}>Filters</Button>
+      </Grid>
+      {filtersShown && <Box sx={{display: 'flex', flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: '2rem'}}>
+        {crests}
+      </Box>}
+    </Grid>;
   };
   return render();
 };
