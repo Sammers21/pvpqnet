@@ -16,14 +16,15 @@ const DataList = () => {
   } = useParams();
 
   let [searchParams, setSearchParams] = useSearchParams();
-  var specs = []
+  var initSpecs = []
   if (searchParams.get('specs') != null){
-    specs = searchParams.get('specs').split(',');
+    initSpecs = searchParams.get('specs').split(',');
   }
   const [contractors, setData] = useState([]);
   const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
+  const [specs, setSpecs] = useState(initSpecs);
 
   const handlePageChange = (event, value) => {
     setPage(value);
@@ -31,7 +32,7 @@ const DataList = () => {
 
   const getDataFilter = useCallback(() => {
     return {page, region, activity, discipline, specs};
-  }, [page, region, activity, discipline]);
+  }, [page, region, activity, discipline, specs]);
 
   const getData = async () => {
     setLoading(true);
@@ -50,7 +51,7 @@ const DataList = () => {
 
   useEffect(() => {
     getData();
-  }, [page, region, activity, discipline]);
+  }, [page, region, activity, discipline, specs]);
 
   const columns = useColumns();
 
@@ -63,6 +64,7 @@ const DataList = () => {
       pagination
       page={page}
       onPageChange={handlePageChange}
+      onSpecsChange={setSpecs}
     />
   );
 };

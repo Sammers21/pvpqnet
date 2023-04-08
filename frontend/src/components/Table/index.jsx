@@ -9,6 +9,7 @@ import Row from './Row';
 
 import {containerBg} from '../../theme';
 import SpecFilter from "../SpecFilter";
+import {useSearchParams} from "react-router-dom";
 
 const StyledTable = styled(TableMui)({
   position: 'relative',
@@ -35,11 +36,18 @@ const Table = ({
   page,
   sort,
   onPageChange,
+  onSpecsChange,
   noDataText = 'No Data',
   className = '',
   tableProps,
   ...props
 }) => {
+  let [searchParams, setSearchParams] = useSearchParams();
+  var specs = []
+  if (searchParams.get('specs') != null){
+    specs = searchParams.get('specs').split(',');
+  }
+
   const columnsData = columns;
 
   const isFirstPage = useMemo(() => {
@@ -113,7 +121,7 @@ const Table = ({
   };
 
   const renderSpecFilters = () => {
-    return <SpecFilter specs={[]}/>;
+    return <SpecFilter specs={specs} onSpecsChange={onSpecsChange}/>;
   };
 
   const renderTable = () => (

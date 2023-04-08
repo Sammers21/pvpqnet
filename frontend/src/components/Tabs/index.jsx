@@ -40,7 +40,7 @@ export default function ActivityTabs() {
   const region = getRegion(regionFromUrl);
   const isActivity = activity ==="activity";
   const handleBracketChange = (bracket) => {
-    const newPath = generatePath(publicUrls.page, { region, activity, discipline: bracket });
+    const newPath = generatePath(publicUrls.page, { region, activity, discipline: bracket }) + window.location.search;
     navigate(newPath);
   };
   const init = {
