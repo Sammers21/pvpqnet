@@ -1,0 +1,15 @@
+export const CRESTS_AND_SPECS = {
+  1: ['armswarrior', 'furywarrior', 'protectionwarrior'],
+  2: ['holypaladin', 'protectionpaladin', 'retributionpaladin'],
+  3: ['beastmasteryhunter', 'marksmanshiphunter', 'survivalhunter'],
+  4: ['assassinationrogue', 'outlawrogue', 'subtletyrogue'],
+  5: ['disciplinepriest', 'holypriest', 'shadowpriest'],
+  6: ['blooddeathknight', 'frostdeathknight', 'unholydeathknight'],
+  7: ['elementalshaman', 'enhancementshaman', 'restorationshaman'],
+  8: ['arcanemage', 'firemage', 'frostmage'],
+  9: ['afflictionwarlock', 'demonologywarlock', 'destructionwarlock'],
+  10: ['brewmastermonk', 'windwalkermonk', 'mistweavermonk'],
+  11: ['balancedruid', 'feraldruid', 'guardiandruid', 'restorationdruid'],
+  12: ['havocdemonhunter', 'vengeancedemonhunter'],
+  13: ['devastationevoker', 'preservationevoker'],
+};

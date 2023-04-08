@@ -8,6 +8,7 @@ import Pagination from './Pagination';
 import Row from './Row';
 
 import {containerBg} from '../../theme';
+import SpecFilter from "../SpecFilter";
 
 const StyledTable = styled(TableMui)({
   position: 'relative',
@@ -111,6 +112,10 @@ const Table = ({
     return loading && <BlizzardLoader withBackdrop />;
   };
 
+  const renderSpecFilters = () => {
+    return <SpecFilter specs={[]}/>;
+  };
+
   const renderTable = () => (
     <StyledTable size="small" padding="none" {...tableProps}>
       {renderHeader()}
@@ -135,6 +140,7 @@ const Table = ({
         minHeight: '200px',
       }}
     >
+      {renderSpecFilters()}
       {renderFooter()}
       {<TableContainer {...props}>{renderTable()}</TableContainer>}
       {renderLoading()}
