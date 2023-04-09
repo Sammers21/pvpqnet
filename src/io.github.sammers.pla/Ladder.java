@@ -349,18 +349,14 @@ public class Ladder {
 
     public Completable calcDiffs(String bracket, String region) {
         Maybe<Snapshot> sixHrsAgo = db.getMinsAgo(bracket, region, 60 * 6);
-        Maybe<Snapshot> fiveHrsAgo = db.getMinsAgo(bracket, region, 60 * 5);
-        Maybe<Snapshot> fourHrsAgo = db.getMinsAgo(bracket, region, 60 * 4);
         Maybe<Snapshot> threeHrsAgo = db.getMinsAgo(bracket, region, 60 * 3);
-        Maybe<Snapshot> twoHrsAgo = db.getMinsAgo(bracket, region, 60 * 2);
         Maybe<Snapshot> oneHrAgo = db.getMinsAgo(bracket, region, 60);
-        List<Maybe<Snapshot>> maybes = List.of(sixHrsAgo, fiveHrsAgo, fourHrsAgo, threeHrsAgo, twoHrsAgo, oneHrAgo, Maybe.just(refByBracket(bracket, region).get()));
+        List<Maybe<Snapshot>> maybes = List.of(sixHrsAgo, threeHrsAgo, oneHrAgo, Maybe.just(refByBracket(bracket, region).get()));
         return Calculator.calcDiffAndCombine(bracket, region, maybes)
             .flatMapCompletable(res -> {
                 diffsByBracket(bracket, region).set(res);
                 return Completable.complete();
             });
-
     }
 
     public AtomicReference<Snapshot> refByBracket(String bracket, String region) {
