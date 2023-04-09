@@ -29,5 +29,5 @@ jobs:
           host: ${{ secrets.APP_HOST }}
           username: ${{ secrets.SSH_HOST_USERNAME }}
           key: ${{ secrets.SSH_KEY }}
-          source: "./frontend/build/."
+          source: "./frontend/build/*"
           target: "/var/www/citest"
