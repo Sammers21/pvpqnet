@@ -34,4 +34,4 @@ jobs:
             docker pull sammers/wow-pla:latest
             docker stop wow-pla
             docker rm -f wow-pla
-            docker run --memory="1550m" -e CLIENT_ID="${{ secrets.CLIENT_ID }}" -e CLIENT_SECRET="${{ secrets.CLIENT_SECRET }}" -e DB_URI="${{ secrets.DB_URI }}" --name wow-pla -d -p9000:9000 sammers/wow-pla:latest
+            docker run -e CLIENT_ID="${{ secrets.CLIENT_ID }}" -e CLIENT_SECRET="${{ secrets.CLIENT_SECRET }}" -e DB_URI="${{ secrets.DB_URI }}" --name wow-pla -d -p9000:9000 sammers/wow-pla:latest
