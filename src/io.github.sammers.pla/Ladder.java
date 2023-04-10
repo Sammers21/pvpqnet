@@ -302,8 +302,8 @@ public class Ladder {
             .flatMapSingle(tick -> threeVThree(region))
             .flatMapSingle(tick -> twoVTwo(region))
             .flatMapSingle(tick -> battlegrounds(region))
-            .flatMapSingle(tick -> shuffle(region));
-//            .flatMapSingle(tick -> updateChars(region).andThen(Single.just(tick)));
+            .flatMapSingle(tick -> shuffle(region))
+            .flatMapSingle(tick -> updateChars(region).andThen(Single.just(tick)));
     }
 
     private Completable loadRegionData(String region) {
@@ -311,8 +311,8 @@ public class Ladder {
             .andThen(loadLast(TWO_V_TWO, region))
             .andThen(loadLast(THREE_V_THREE, region))
             .andThen(loadLast(RBG, region))
-            .andThen(loadLast(SHUFFLE, region));
-//            .andThen(loadWowCharApiData(region));
+            .andThen(loadLast(SHUFFLE, region))
+            .andThen(loadWowCharApiData(region));
     }
 
     private Completable loadCutoffs(String region) {
@@ -348,10 +348,13 @@ public class Ladder {
     }
 
     public Completable calcDiffs(String bracket, String region) {
-        Maybe<Snapshot> sixHrsAgo = db.getMinsAgo(bracket, region, 60 * 6);
-        Maybe<Snapshot> threeHrsAgo = db.getMinsAgo(bracket, region, 60 * 3);
-        Maybe<Snapshot> oneHrAgo = db.getMinsAgo(bracket, region, 60);
-        List<Maybe<Snapshot>> maybes = List.of(sixHrsAgo, threeHrsAgo, oneHrAgo, Maybe.just(refByBracket(bracket, region).get()));
+        List<Maybe<Snapshot>> maybes = List.of(
+            db.getMinsAgo(bracket, region, 60 * 7),
+            db.getMinsAgo(bracket, region, 60 * 6),
+            db.getMinsAgo(bracket, region, 60 * 3),
+            db.getMinsAgo(bracket, region, 60 * 2),
+            db.getMinsAgo(bracket, region, 60),
+            Maybe.just(refByBracket(bracket, region).get()));
         return Calculator.calcDiffAndCombine(bracket, region, maybes)
             .flatMapCompletable(res -> {
                 diffsByBracket(bracket, region).set(res);
