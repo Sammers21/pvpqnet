@@ -1,5 +1,6 @@
 package io.github.sammers.pla;
 
+import io.vertx.core.VertxOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.ext.web.Router;
@@ -26,7 +27,7 @@ public class Http {
     }
 
     public void start() {
-        Vertx vertx = Vertx.vertx();
+        Vertx vertx = Vertx.vertx(new VertxOptions().setEventLoopPoolSize(4));
         Router router = Router.router(vertx);
         router.route().handler(ctx -> {
             ctx.response()
