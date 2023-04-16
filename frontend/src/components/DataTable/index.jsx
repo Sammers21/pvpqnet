@@ -6,13 +6,13 @@ import Table from '../Table';
 import useColumns from './useColumns';
 import {getStatistic} from '../../services/stats.service';
 import {REGIONS} from '../../constants/region';
-import {DISCIPLINES} from '../../constants/pvp-activity';
+import {BRACKETS} from '../../constants/pvp-activity';
 
 const DataList = () => {
   const {
     region = REGIONS.eu,
     activity = 'activity',
-    discipline = DISCIPLINES.shuffle,
+    bracket = BRACKETS.shuffle,
   } = useParams();
 
   let [searchParams, setSearchParams] = useSearchParams();
@@ -31,8 +31,8 @@ const DataList = () => {
   };
 
   const getDataFilter = useCallback(() => {
-    return {page, region, activity, discipline, specs};
-  }, [page, region, activity, discipline, specs]);
+    return {page, region, activity, bracket, specs};
+  }, [page, region, activity, bracket, specs]);
 
   const getData = async () => {
     setLoading(true);
@@ -47,11 +47,11 @@ const DataList = () => {
 
   useEffect(() => {
     setPage(1);
-  }, [region, activity, discipline]);
+  }, [region, activity, bracket]);
 
   useEffect(() => {
     getData();
-  }, [page, region, activity, discipline, specs]);
+  }, [page, region, activity, bracket, specs]);
 
   const columns = useColumns();
 

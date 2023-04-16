@@ -13,7 +13,7 @@ import {publicUrls} from '../../config';
 import {TABS, TABS_MENU} from '../../constants/header';
 import {REGIONS} from '../../constants/region';
 import {getRegion} from '../../utils/urlparts';
-import {DISCIPLINES} from '../../constants/pvp-activity';
+import {BRACKETS} from '../../constants/pvp-activity';
 
 const pages = Object.values(TABS);
 
@@ -33,18 +33,18 @@ const PageHeader = () => {
   const {
     region: regionFromUrl,
     activity = 'activity',
-    discipline = DISCIPLINES.shuffle,
+    bracket = BRACKETS.shuffle,
   } = useParams();
   const region = getRegion(regionFromUrl);
 
   const handleSetRegion = (region) => {
-    const newPath = generatePath(publicUrls.page, { region, activity, discipline });
+    const newPath = generatePath(publicUrls.page, { region, activity, bracket });
     navigate(newPath);
   };
 
-  const handleOpenPage = ({ activity, discipline }) => {
-    console.log('activity, discipline', activity, discipline);
-    const newPath = generatePath(publicUrls.page, { region, activity, discipline });
+  const handleOpenPage = ({ activity, bracket }) => {
+    console.log('activity, bracket', activity, bracket);
+    const newPath = generatePath(publicUrls.page, { region, activity, bracket });
     navigate(newPath);
   };
   const host = window.location.host.toUpperCase();

@@ -37,7 +37,7 @@ const Table = ({
   sort,
   onPageChange,
   onSpecsChange,
-  noDataText = 'Blizzard is having some issues with own API updates',
+  noDataText = 'No data currently available',
   className = '',
   tableProps,
   ...props

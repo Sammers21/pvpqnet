@@ -6,9 +6,9 @@ import {generatePath} from 'react-router';
 import {Box, Button} from '@mui/material';
 import {styled} from '@mui/system';
 
-import {getActivity, getDiscipline, getRegion} from '../../utils/urlparts';
+import {getActivity, getBracket, getRegion} from '../../utils/urlparts';
 import {baseUrl, publicUrls} from '../../config';
-import {DISCIPLINES} from '../../constants/pvp-activity';
+import {BRACKETS} from '../../constants/pvp-activity';
 import {borderColor, containerBg} from '../../theme';
 import {statsMap} from "../../services/stats.service"
 import _ from 'lodash';
@@ -33,14 +33,14 @@ export default function ActivityTabs() {
   const {
     region: regionFromUrl,
     activity: activityFromUrl,
-    discipline: disciplineFromParams,
+    bracket: bracketFromParams,
   } = useParams();
-  const discipline = getDiscipline(disciplineFromParams);
+  const bracket = getBracket(bracketFromParams);
   const activity = getActivity(activityFromUrl);
   const region = getRegion(regionFromUrl);
   const isActivity = activity ==="activity";
   const handleBracketChange = (bracket) => {
-    const newPath = generatePath(publicUrls.page, { region, activity, discipline: bracket }) + window.location.search;
+    const newPath = generatePath(publicUrls.page, { region, activity, bracket }) + window.location.search;
     navigate(newPath);
   };
   const init = {
@@ -85,27 +85,27 @@ export default function ActivityTabs() {
     >
       <TabButton
         sx={{ borderTopLeftRadius: 5 }}
-        onClick={() => handleBracketChange(DISCIPLINES.shuffle)}
-        isActive={discipline === DISCIPLINES.shuffle}
+        onClick={() => handleBracketChange(BRACKETS.shuffle)}
+        isActive={bracket === BRACKETS.shuffle}
       >
         Shuffle{data.shuffle}
       </TabButton>
       <TabButton
-        onClick={() => handleBracketChange(DISCIPLINES['2v2'])}
-        isActive={discipline === DISCIPLINES['2v2']}
+        onClick={() => handleBracketChange(BRACKETS['2v2'])}
+        isActive={bracket === BRACKETS['2v2']}
       >
         2v2{data["2v2"]}
       </TabButton>
       <TabButton
-        onClick={() => handleBracketChange(DISCIPLINES['3v3'])}
-        isActive={discipline === DISCIPLINES['3v3']}
+        onClick={() => handleBracketChange(BRACKETS['3v3'])}
+        isActive={bracket === BRACKETS['3v3']}
       >
         3v3{data["3v3"]}
       </TabButton>
       <TabButton
         sx={{ borderTopRightRadius: 5 }}
-        onClick={() => handleBracketChange(DISCIPLINES.rbg)}
-        isActive={discipline === DISCIPLINES.rbg}
+        onClick={() => handleBracketChange(BRACKETS.rbg)}
+        isActive={bracket === BRACKETS.rbg}
       >
         RBG{data.rbg}
       </TabButton>

@@ -8,7 +8,7 @@ import DataTable from '../../components/DataTable';
 import Footer from '../../components/Footer';
 
 import {REGIONS} from '../../constants/region';
-import {DISCIPLINES} from '../../constants/pvp-activity';
+import {BRACKETS} from '../../constants/pvp-activity';
 
 const capitalizeFirstLetter = (str) => {
   return str.charAt(0).toUpperCase() + str.slice(1);
@@ -18,16 +18,16 @@ function Activity() {
   const {
     region = REGIONS.eu,
     activity = 'activity',
-    discipline = DISCIPLINES.shuffle,
+    bracket = BRACKETS.shuffle,
   } = useParams();
 
   useEffect(() => {
-    const title = `${capitalizeFirstLetter(discipline)} ${capitalizeFirstLetter(
+    const title = `${capitalizeFirstLetter(bracket)} ${capitalizeFirstLetter(
       activity
     )} on ${region.toUpperCase()}`;
 
     document.title = title;
-  }, [region, activity, discipline]);
+  }, [region, activity, bracket]);
   return (
     <>
       <PageHeader />

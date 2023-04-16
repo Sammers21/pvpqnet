@@ -1,9 +1,9 @@
-import {DISCIPLINES} from '../constants/pvp-activity';
+import {BRACKETS} from '../constants/pvp-activity';
 import {REGIONS} from '../constants/region';
 
-export const getDiscipline = (discipline) => {
-  const validDiscipline = Object.values(DISCIPLINES).find((r) => discipline === r);
-  return validDiscipline ?? DISCIPLINES.shuffle;
+export const getBracket = (bracket) => {
+  const validBracket = Object.values(BRACKETS).find((r) => bracket === r);
+  return validBracket ?? BRACKETS.shuffle;
 };
 
 export const getRegion = (region) => {
