@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import {useParams} from 'react-router-dom';
 import {Box} from '@mui/material';
 
@@ -21,6 +21,20 @@ function Activity() {
     bracket = BRACKETS.shuffle,
   } = useParams();
 
+  const [width, setWidth] = useState(window.innerWidth);
+
+  function handleWindowSizeChange() {
+    setWidth(window.innerWidth);
+  }
+  useEffect(() => {
+    window.addEventListener('resize', handleWindowSizeChange);
+    return () => {
+      window.removeEventListener('resize', handleWindowSizeChange);
+    }
+  }, []);
+
+  const isMobile = width <= 900;
+
   useEffect(() => {
     const title = `${capitalizeFirstLetter(bracket)} ${capitalizeFirstLetter(
       activity
@@ -28,15 +42,16 @@ function Activity() {
 
     document.title = title;
   }, [region, activity, bracket]);
+  let realw = isMobile ? '100%' : '85%';
+  let margin = isMobile ? '95px auto 45px auto' : '95px auto 45px auto';
   return (
     <>
-      <PageHeader />
-      <Box sx={{ width: '85%', margin: '95px auto 45px auto' }}>
-        <ActivityTabs />
-        <DataTable />
+      <PageHeader/>
+      <Box sx={{width: realw, margin: margin}}>
+        <ActivityTabs/>
+        <DataTable/>
       </Box>
-
-      <Footer />
+      <Footer/>
     </>
   );
 }
