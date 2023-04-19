@@ -16,12 +16,7 @@ import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -303,7 +298,8 @@ public class Ladder {
             .flatMapSingle(tick -> twoVTwo(region))
             .flatMapSingle(tick -> battlegrounds(region))
             .flatMapSingle(tick -> shuffle(region))
-            .flatMapSingle(tick -> updateChars(region).andThen(Single.just(tick)));
+            .flatMapSingle(tick -> updateChars(region).andThen(Single.just(tick)))
+            .flatMapSingle(tick -> loadCutoffs(region).andThen(Single.just(tick)));
     }
 
     private Completable loadRegionData(String region) {
