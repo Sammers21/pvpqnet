@@ -249,7 +249,15 @@ public class Ladder {
             Long cutRating = cutoffs.battlegrounds(fraction);
             inCutoff = rating >= cutRating;
         } else if (bracket.startsWith("shuffle")) {
-            Long ct = cutoffs.shuffle(bracket.split("/")[2]);
+            String[] split = bracket.split("/");
+            String specialization = split[2];
+            String shuffleClass = split[1];
+            if (specialization.equals("frost") && shuffleClass.equals("mage")) {
+                specialization = "frostm";
+            } else if (specialization.equals("frost") && shuffleClass.equals("deathknight")) {
+                specialization = "frostd";
+            }
+            Long ct = cutoffs.shuffle(specialization);
             Long cutRating = ct == null ? 0 : ct;
             inCutoff = rating >= cutRating;
         }

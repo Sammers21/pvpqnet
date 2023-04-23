@@ -43,7 +43,7 @@ function Activity() {
     document.title = title;
   }, [region, activity, bracket]);
   let realw = isMobile ? '100%' : '85%';
-  let margin = isMobile ? '95px auto 45px auto' : '95px auto 45px auto';
+  let margin = '95px auto 45px auto';
   return (
     <>
       <PageHeader/>
