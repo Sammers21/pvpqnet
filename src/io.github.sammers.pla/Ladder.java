@@ -166,6 +166,7 @@ public class Ladder {
                     runDataUpdater(EU, Observable.interval(0, 30, TimeUnit.MINUTES))
                 )
             )
+            .onErrorReturnItem(Snapshot.empty(EU))
             .subscribe();
     }
 
@@ -323,7 +324,7 @@ public class Ladder {
         return blizzardAPI.cutoffs(region).map(cutoffs -> {
             regionCutoff.put(region, cutoffs);
             return cutoffs;
-        }).ignoreElement();
+        }).doAfterSuccess(cutoffs -> log.info("Cutoffs for region={} has been loaded", region)).ignoreElement();
     }
 
     private Completable loadWowCharApiData(String region) {
@@ -353,7 +354,10 @@ public class Ladder {
 
     public Completable calcDiffs(String bracket, String region) {
         List<Maybe<Snapshot>> maybes = List.of(
-            db.getMinsAgo(bracket, region, 60 * 7),
+            db.getMinsAgo(bracket, region, 60 * 24),
+            db.getMinsAgo(bracket, region, 60 * 18),
+            db.getMinsAgo(bracket, region, 60 * 12),
+            db.getMinsAgo(bracket, region, 60 * 8),
             db.getMinsAgo(bracket, region, 60 * 6),
             db.getMinsAgo(bracket, region, 60 * 3),
             db.getMinsAgo(bracket, region, 60 * 2),
@@ -384,7 +388,7 @@ public class Ladder {
             current.set(newCharacters);
             log.info("Data for bracket {} is different performing update", bracket);
             return db.insertOnlyIfDifferent(bracket, region, newCharacters)
-                .andThen(db.deleteOlderThan24Hours(bracket)
+                .andThen(db.deleteOlderThanHours(bracket, 48)
                     .ignoreElement()
                     .andThen(calcDiffs(bracket, region)));
         } else {

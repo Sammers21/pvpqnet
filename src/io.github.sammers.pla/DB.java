@@ -37,9 +37,9 @@ public class DB {
         return find(bracket, fopts, opts);
     }
 
-    public Maybe<MongoClientDeleteResult> deleteOlderThan24Hours(String bracket) {
+    public Maybe<MongoClientDeleteResult> deleteOlderThanHours(String bracket, int hours) {
         return mongoClient.rxRemoveDocuments(bracket,
-            new JsonObject().put("timestamp", new JsonObject().put("$lt", new Date().getTime() - 24 * 60 * 60 * 1000))
+            new JsonObject().put("timestamp", new JsonObject().put("$lt", new Date().getTime() - hours * 60 * 60 * 1000))
         ).doOnSuccess(res -> log.info("Deleted " + res.getRemovedCount() + " records " + bracket + " snapshots"));
     }
 
