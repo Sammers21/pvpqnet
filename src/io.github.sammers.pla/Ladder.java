@@ -354,8 +354,6 @@ public class Ladder {
 
     public Completable calcDiffs(String bracket, String region) {
         List<Maybe<Snapshot>> maybes = List.of(
-            db.getMinsAgo(bracket, region, 60 * 24),
-            db.getMinsAgo(bracket, region, 60 * 18),
             db.getMinsAgo(bracket, region, 60 * 12),
             db.getMinsAgo(bracket, region, 60 * 8),
             db.getMinsAgo(bracket, region, 60 * 6),
