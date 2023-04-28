@@ -14,11 +14,15 @@ import {useSearchParams} from "react-router-dom";
 const StyledTable = styled(TableMui)({
   position: 'relative',
   minHeight: '200px',
-
   '& tr:nth-child(even)': {
     backgroundColor: '#0e1216',
   },
-
+  "& tr:hover": {
+    backgroundColor: "#1f2937",
+  },
+  // "& .same_hovered": {
+  //   backgroundColor: "green"
+  // },
   '& tr td,th': {
     borderBottom: 'none',
   },
@@ -44,6 +48,7 @@ const Table = ({
 }) => {
   let [searchParams, setSearchParams] = useSearchParams();
   var specs = []
+  // var scoreHovered, setScoreHovered = React.useState({won: 0, lost: 0});
   if (searchParams.get('specs') != null){
     specs = searchParams.get('specs').split(',');
   }
@@ -104,8 +109,12 @@ const Table = ({
     );
   };
 
+  function x(e){
+    console.log("x")
+  }
+
   const renderRow = (record, index) => {
-    return <Row key={index} index={index} record={record} fieldId={index} columns={columnsData} />;
+    return <Row onMouseOver={x} key={index} index={index} record={record} fieldId={index} columns={columnsData} />;
   };
 
   const rowsComponent = useMemo(() => {
