@@ -1,8 +1,8 @@
-import React, { Fragment, useEffect, useState } from 'react';
-import { TableCell, TableRow, Typography } from '@mui/material';
+import React, {Fragment, useEffect, useState} from 'react';
+import {TableCell, TableRow, Typography} from '@mui/material';
 import _get from 'lodash/get';
 
-const Row = ({ index, record, columns }) => {
+const Row = ({onMouseOver, index, record, columns}) => {
   const [columnsData, setColumnsData] = useState([]);
 
   const setValues = async () => {
@@ -24,26 +24,26 @@ const Row = ({ index, record, columns }) => {
   }, [columns]);
 
   return (
-    <Fragment>
-      <TableRow sx={{ padding: '4px 0' }}>
-        {columnsData.map((column, i) => {
-          const cellValue = column.value || _get(record, column.field);
+      <Fragment>
+        <TableRow sx={{padding: '4px 0'}}>
+          {columnsData.map((column, i) => {
+            const cellValue = column.value || _get(record, column.field);
 
-          return (
-            <TableCell sx={{ padding: '4px 0' }} key={record[i]} align={column.align || 'left'}>
-              {column.render
-                ? column.render({
+            return (
+              <TableCell sx={{padding: '4px 0'}} key={record[i]} align={column.align || 'left'}>
+                {column.render
+                  ? column.render({
                     id: record[i],
                     field: column.field,
                     value: cellValue,
                     record,
                   })
-                : renderDefaultCell(cellValue)}
-            </TableCell>
-          );
-        })}
-      </TableRow>
-    </Fragment>
+                  : renderDefaultCell(cellValue)}
+              </TableCell>
+            );
+          })}
+        </TableRow>
+      </Fragment>
   );
 };
 
