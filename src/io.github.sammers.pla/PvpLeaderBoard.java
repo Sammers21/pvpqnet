@@ -3,9 +3,9 @@ package io.github.sammers.pla;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public record PvpLeaderBoard(
     JsonObject links,
@@ -28,6 +28,40 @@ public record PvpLeaderBoard(
         newEntities.addAll(entities);
         newEntities.addAll(other.entities);
         return new PvpLeaderBoard(links, season, name, bracket, newEntities);
+    }
+
+    public Set<Character> toCharacters(Map<String, WowAPICharacter> characterCache) {
+        return entities.stream()
+            .map(entity -> (JsonObject) entity)
+            .flatMap(entity -> {
+                JsonObject character = entity.getJsonObject("character");
+                JsonObject realmJson = character.getJsonObject("realm");
+                String realm = realmJson.getString("slug").replaceAll("[^A-Za-z]", "");
+                String name = character.getString("name");
+                String key = (name + "-" + realm).toLowerCase();
+                String rank = entity.getString("rank");
+                String rating = entity.getString("rating");
+                WowAPICharacter wowAPICharacter = characterCache.get(key);
+                if(wowAPICharacter == null) {
+                    return Stream.empty();
+                } else {
+                    return Stream.of(new Character(
+                            entity.getLong("rank"),
+                            entity.getLong("rating"),
+                            false,
+                            name,
+                            wowAPICharacter.clazz(),
+                            wowAPICharacter.activeSpec(),
+                            wowAPICharacter.fraction(),
+                            wowAPICharacter.gender(),
+                            wowAPICharacter.race(),
+                            realm,
+                            entity.getLong("season_match_statistics.won"),
+                            entity.getLong("season_match_statistics.lost")
+                    ));
+                }
+            })
+                .collect(Collectors.toSet());
     }
 
     public List<Character> enrich(List<Character> snapshot) {

@@ -151,7 +151,16 @@ public class Ladder {
                     })
                 );
             }
-            resCharList = res.flatMap(s -> blizzardAPI.pvpLeaderboard(bracket, region).map(leaderboard -> leaderboard.enrich(s)).toSingle(s));
+            resCharList = res.flatMap(s -> {
+                Maybe<List<Character>> map = blizzardAPI.pvpLeaderboard(bracket, region)
+                        .map((PvpLeaderBoard leaderboard) -> {
+                            Set<Character> enriched = new HashSet<>(leaderboard.enrich(s));
+//                            enriched.addAll(leaderboard.toCharacters(characterCache));
+                            return enriched.stream().toList();
+                        });
+                return map.toSingle(s);
+            });
+
         }
         return resCharList
             .map(chars -> Snapshot.of(chars, region, currentTimeMillis))
