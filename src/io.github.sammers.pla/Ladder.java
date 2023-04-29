@@ -16,6 +16,9 @@ import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Duration;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -172,7 +175,7 @@ public class Ladder {
             .andThen(loadRegionData(US))
             .andThen(
                 runDataUpdater(US,
-                    runDataUpdater(EU, Observable.interval(0, 30, TimeUnit.MINUTES))
+                    runDataUpdater(EU, Observable.interval(Ladder.minutesTillNextHour(), 30, TimeUnit.MINUTES))
                 )
             )
             .onErrorReturnItem(Snapshot.empty(EU))
@@ -402,5 +405,13 @@ public class Ladder {
             log.info("Data for bracket {} are equal, not updating", bracket);
             return Completable.complete();
         }
+    }
+
+    public static int minutesTillNextHour() {
+        ZoneId zone = ZoneId.systemDefault();
+        ZonedDateTime now = ZonedDateTime.now(zone);
+        ZonedDateTime nextHour = now.withMinute(0).withSecond(0).withNano(0).plusHours(1).plusMinutes(1);
+        Duration duration = Duration.between(now, nextHour);
+        return (int) duration.toMinutes();
     }
 }
