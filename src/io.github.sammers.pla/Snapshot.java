@@ -36,7 +36,7 @@ public record Snapshot(List<Character> characters, Long timestamp, String region
                     .contains(spec.toLowerCase().replaceAll(" ", "").replaceAll("'", ""));
             }
             return res;
-        }).sorted(Comparator.comparing(Character::pos)).toList();
+        }).sorted(Comparator.comparing(Character::rating)).toList();
         return new Snapshot(chars, timestamp, region, dateTime);
     }
 
