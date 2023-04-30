@@ -6,6 +6,7 @@ import io.vertx.core.json.JsonObject;
 
 import java.time.Instant;
 import java.time.ZonedDateTime;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
@@ -35,7 +36,7 @@ public record Snapshot(List<Character> characters, Long timestamp, String region
                     .contains(spec.toLowerCase().replaceAll(" ", "").replaceAll("'", ""));
             }
             return res;
-        }).toList();
+        }).sorted(Comparator.comparing(Character::pos)).toList();
         return new Snapshot(chars, timestamp, region, dateTime);
     }
 
