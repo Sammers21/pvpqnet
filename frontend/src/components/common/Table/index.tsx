@@ -17,7 +17,7 @@ import Pagination from './Pagination';
 import Row from './Row';
 
 import { containerBg } from '../../../theme';
-import SpecFilter from '../SpecFilter';
+import SpecFilter from '../../SpecFilter';
 
 const StyledTable = styled(TableMui)({
   position: 'relative',
@@ -36,6 +36,24 @@ const StyledTable = styled(TableMui)({
   },
 });
 
+interface IProps {
+  loading?: boolean;
+  columns: any[];
+  records?: any[];
+  headerRecords?: any;
+  totalPages?: any;
+  pagination?: any;
+  pageSize?: any;
+  startPageNumber?: any;
+  page?: any;
+  sort?: any;
+  onPageChange?: any;
+  onSpecsChange?: any;
+  noDataText?: any;
+  className?: any;
+  tableProps?: any;
+}
+
 const Table = ({
   loading,
   columns,
@@ -53,19 +71,15 @@ const Table = ({
   className = '',
   tableProps,
   ...props
-}) => {
+}: IProps) => {
   let [searchParams, setSearchParams] = useSearchParams();
-  var specs = [];
+  var specs: any[] = [];
   // var scoreHovered, setScoreHovered = React.useState({won: 0, lost: 0});
   if (searchParams.get('specs') != null) {
-    specs = searchParams.get('specs').split(',');
+    specs = searchParams.get('specs')?.split(',') || [];
   }
 
   const columnsData = columns;
-
-  const isFirstPage = useMemo(() => {
-    return page === startPageNumber;
-  }, [page]);
 
   const renderNoRowsOverlay = useCallback(() => {
     return (
@@ -81,9 +95,7 @@ const Table = ({
     return (
       <Pagination
         page={page}
-        pageSize={pageSize}
         totalPages={totalPages}
-        isFirstPage={isFirstPage}
         pagination={pagination}
         onPageChange={onPageChange}
         recordsLength={records.length}
@@ -117,21 +129,8 @@ const Table = ({
     );
   };
 
-  function x(e) {
-    console.log('x');
-  }
-
-  const renderRow = (record, index) => {
-    return (
-      <Row
-        onMouseOver={x}
-        key={index}
-        index={index}
-        record={record}
-        fieldId={index}
-        columns={columnsData}
-      />
-    );
+  const renderRow = (record: any, index: number) => {
+    return <Row key={index} record={record} columns={columnsData} />;
   };
 
   const rowsComponent = useMemo(() => {
@@ -143,7 +142,7 @@ const Table = ({
   };
 
   const renderLoading = () => {
-    return loading && <BlizzardLoader withBackdrop />;
+    return loading && <BlizzardLoader />;
   };
 
   const renderSpecFilters = () => {

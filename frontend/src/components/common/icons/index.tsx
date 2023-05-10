@@ -1,5 +1,5 @@
-import { ReactComponent as USSvg } from './us.svg';
-import { ReactComponent as EUSvg } from './eu.svg';
+import { ReactComponent as USSvg } from './svg/us.svg';
+import { ReactComponent as EUSvg } from './svg/eu.svg';
 
 interface IProps {
   className?: string;

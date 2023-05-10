@@ -1,6 +1,6 @@
 import type { BRACKET, BACKEND_REGION, ACTIVITY } from '../constants';
 
-export const baseUrl = process.env.REACT_APP_BASE_API_URL;
+export const baseUrl = import.meta.env.VITE_BASE_API_URL;
 
 export const urls = {
   getActivity: ({

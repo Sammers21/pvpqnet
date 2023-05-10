@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 
-import Table from '../../Table';
+import Table from '../../common/Table';
 
 import useColumns from './useColumns';
 import { getData as fetchData } from '../../../services/data.service';
@@ -12,9 +12,10 @@ const DataList = () => {
   const { region = REGION.eu, activity = 'activity', bracket = BRACKET.shuffle } = useParams();
 
   let [searchParams, setSearchParams] = useSearchParams();
-  var initSpecs = [];
+  var initSpecs: any[] = [];
+
   if (searchParams.get('specs') != null) {
-    initSpecs = searchParams.get('specs').split(',');
+    initSpecs = searchParams?.get('specs')?.split(',') || [];
   }
   const [contractors, setData] = useState([]);
   const [totalPages, setTotalPages] = useState(0);
@@ -22,7 +23,7 @@ const DataList = () => {
   const [page, setPage] = useState(1);
   const [specs, setSpecs] = useState(initSpecs);
 
-  const handlePageChange = (event, value) => {
+  const handlePageChange = (event: unknown, value: number) => {
     setPage(value);
   };
 
@@ -34,7 +35,7 @@ const DataList = () => {
     setLoading(true);
 
     const filter = getDataFilter();
-    const { records, totalPages } = await fetchData(filter);
+    const { records, totalPages } = await fetchData(filter as any);
 
     setData(records);
     setTotalPages(totalPages);
