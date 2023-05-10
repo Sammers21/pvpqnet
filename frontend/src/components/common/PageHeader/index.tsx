@@ -1,7 +1,11 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { generatePath } from 'react-router';
 
-import { AppBar, Box, Container, Grid, IconButton, Toolbar, Typography } from '@mui/material';
+import AppBar from '@mui/material/AppBar';
+import Container from '@mui/material/Container';
+import Toolbar from '@mui/material/Toolbar';
+import IconButton from '@mui/material/IconButton';
+
 import { styled } from '@mui/system';
 
 import { borderColor, containerBg } from '../../../theme';
@@ -11,7 +15,6 @@ import Menu from './Menu';
 import { TABS, TABS_MENU } from '../../../constants/pageHeader';
 import { REGION, BRACKET, ACTIVITY } from '../../../constants';
 import { getRegion } from '../../../utils/getFromUrl';
-
 import { publicUrls } from '../../../config';
 
 import type { ITabMenuUrlOption } from '../../../types';
@@ -36,6 +39,8 @@ const PageHeader = () => {
     activity = ACTIVITY.activity,
     bracket = BRACKET.shuffle,
   } = useParams();
+
+  const host = window.location.host.toUpperCase();
   const region = getRegion(regionFromUrl);
 
   const handleSetRegion = (region: REGION) => {
@@ -48,30 +53,15 @@ const PageHeader = () => {
     navigate(newPath);
   };
 
-  const host = window.location.host.toUpperCase();
   return (
     <StyledAppBar position="fixed">
       <Container maxWidth="xl">
         <StyledToolbar disableGutters>
-          <Typography
-            variant="h5"
-            noWrap
-            component="a"
-            href="/"
-            sx={{
-              mr: 2,
-              display: { xs: 'none', md: 'flex' },
-              fontWeight: 700,
-              letterSpacing: '.05rem',
-              color: 'inherit',
-              textDecoration: 'none',
-              marginRight: '40px',
-            }}
-          >
+          <a href="/" className="sm:flex hidden mr-10 font-bold tracking-wider text-xl">
             {host}
-          </Typography>
+          </a>
 
-          <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
+          <div className="flex flex-1">
             {pages.map((page) => (
               <Menu
                 key={page}
@@ -80,26 +70,27 @@ const PageHeader = () => {
                 handleOpenPage={handleOpenPage}
               />
             ))}
-          </Box>
+          </div>
 
-          <Grid>
+          <div>
             <IconButton
               aria-label="eu"
-              sx={region !== REGION.eu ? { filter: 'grayscale(100%)' } : {}}
+              className={`${region !== REGION.eu ? 'grayscale' : ''}`}
               disableRipple
               onClick={() => handleSetRegion(REGION.eu)}
             >
               <EuIcon />
             </IconButton>
+
             <IconButton
               aria-label="us"
-              sx={region !== REGION.us ? { filter: 'grayscale(100%)' } : {}}
+              className={`${region !== REGION.us ? 'grayscale' : ''}`}
               disableRipple
               onClick={() => handleSetRegion(REGION.us)}
             >
-              <UsIcon color="red" />
+              <UsIcon />
             </IconButton>
-          </Grid>
+          </div>
         </StyledToolbar>
       </Container>
     </StyledAppBar>

@@ -1,6 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Box } from '@mui/material';
 
 import PageHeader from '../../components/common/PageHeader';
 import Footer from '../../components/common/Footer';
@@ -9,24 +8,14 @@ import Tabs from '../../components/TablePageFeatures/Tabs';
 import DataTable from '../../components/TablePageFeatures/DataTable';
 
 import { capitalizeFirstLetter } from '../../utils/capitalizeFirstLetter';
-import { REGION, BRACKET } from '../../constants';
+import { REGION, BRACKET, ACTIVITY } from '../../constants';
 
 function Activity() {
-  const { region = REGION.eu, activity = 'activity', bracket = BRACKET.shuffle } = useParams();
-
-  const [width, setWidth] = useState(window.innerWidth);
-
-  function handleWindowSizeChange() {
-    setWidth(window.innerWidth);
-  }
-  useEffect(() => {
-    window.addEventListener('resize', handleWindowSizeChange);
-    return () => {
-      window.removeEventListener('resize', handleWindowSizeChange);
-    };
-  }, []);
-
-  const isMobile = width <= 900;
+  const {
+    region = REGION.eu,
+    activity = ACTIVITY.activity,
+    bracket = BRACKET.shuffle,
+  } = useParams();
 
   useEffect(() => {
     const title = `${capitalizeFirstLetter(bracket)} ${capitalizeFirstLetter(
@@ -35,15 +24,14 @@ function Activity() {
 
     document.title = title;
   }, [region, activity, bracket]);
-  let realw = isMobile ? '100%' : '85%';
-  let margin = '95px auto 45px auto';
+
   return (
     <>
       <PageHeader />
-      <Box sx={{ width: realw, margin: margin }}>
+      <div className="mt-24 mx-auto mb-11 w-full lg:w-[85%]">
         <Tabs />
         <DataTable />
-      </Box>
+      </div>
       <Footer />
     </>
   );
