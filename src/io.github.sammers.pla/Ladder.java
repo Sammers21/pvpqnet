@@ -122,7 +122,7 @@ public class Ladder {
             Single<List<Character>> res = Single.just(new ArrayList<>(1000 * shuffleSpecs.size()));
             for (String shuffleSpec : shuffleSpecs) {
                 Single<List<Character>> sh = Single.just(new ArrayList<>(shuffleSpecs.size()));
-                for (int i = 1; i <= 1; i++) {
+                for (int i = 1; i <= 10; i++) {
                     int finalI = i;
                     sh = sh.flatMap(characters ->
                         ladderShuffle(shuffleSpec, finalI, region).map(c -> {
@@ -145,7 +145,7 @@ public class Ladder {
             });
         } else {
             Single<List<Character>> res = Single.just(new ArrayList<>(1000));
-            for (int i = 1; i <= 1; i++) {
+            for (int i = 1; i <= 10; i++) {
                 int finalI = i;
                 res = res.flatMap(characters ->
                     ladderTraditional(bracket, finalI, region).map(c -> {
@@ -175,7 +175,7 @@ public class Ladder {
             .andThen(loadRegionData(US))
             .andThen(
                 runDataUpdater(US,
-                    runDataUpdater(EU, Observable.interval(0, 30, TimeUnit.MINUTES))
+                    runDataUpdater(EU, Observable.interval(minutesTillNextHour(), 30, TimeUnit.MINUTES))
                 )
             )
             .onErrorReturnItem(Snapshot.empty(EU))
@@ -289,27 +289,25 @@ public class Ladder {
                 String ers = ok.bodyAsString();
                 Document parse = Jsoup.parse(ers);
                 Elements select = parse.select("#main > div.Pane.Pane--dirtBlue.bordered > div.Pane-content > div.Paginator > div.Paginator-pages > div:nth-child(1) > div > div.SortTable-body");
-                Element element = select.get(0);
-                List<Node> nodes = element.childNodes();
-                List<Character> characters = nodes.stream().map(Node::childNodes).map(nodeList -> {
-                    Node nameNode = nodeList.get(2);
-                    String fullSpec = "UNKNOWN";
-                    try {
-                        Node specNode = nameNode.childNode(0).childNode(0).childNode(0).childNode(2).childNode(2);
-                        fullSpec = ((Element) specNode).text().substring(2);
-                    } catch (Exception e) {
-                    }
-                    Long pos = Long.parseLong(nodeList.get(0).attr("data-value"));
-                    Long rating = Long.parseLong(((Element) nodeList.get(1).childNode(0).childNode(0).childNode(0).childNode(1)).text());
-                    String name = nameNode.attr("data-value");
-                    String clazz = nodeList.get(3).attr("data-value");
-                    String fraction = nodeList.get(4).attr("data-value");
-                    String realm = nodeList.get(5).attr("data-value");
-                    Long wins = Long.parseLong(nodeList.get(6).attr("data-value"));
-                    Long losses = Long.parseLong(nodeList.get(7).attr("data-value"));
-                    return enrichWithSpecialData(bracket, region, pos, rating, name, clazz, fullSpec, fraction, realm, wins, losses);
-                }).toList();
-                return characters;
+                if (select.size() == 0) {
+                    return new ArrayList<Character>();
+                } else {
+                    Element element = select.get(0);
+                    List<Node> nodes = element.childNodes();
+                    List<Character> characters = nodes.stream().map(Node::childNodes).map(nodeList -> {
+                        Node nameNode = nodeList.get(2);
+                        Long pos = Long.parseLong(nodeList.get(0).attr("data-value"));
+                        Long rating = Long.parseLong(((Element) nodeList.get(1).childNode(0).childNode(0).childNode(0).childNode(1)).text());
+                        String name = nameNode.attr("data-value");
+                        String clazz = nodeList.get(3).attr("data-value");
+                        String fraction = nodeList.get(4).attr("data-value");
+                        String realm = nodeList.get(5).attr("data-value");
+                        Long wins = Long.parseLong(nodeList.get(6).attr("data-value"));
+                        Long losses = Long.parseLong(nodeList.get(7).attr("data-value"));
+                        return enrichWithSpecialData(bracket, region, pos, rating, name, clazz, "UNKNOWN", fraction, realm, wins, losses);
+                    }).toList();
+                    return characters;
+                }
             })
             .doOnSuccess(ok -> log.debug(String.format("%s-%s ladder has been fetched page=%s", region, bracket, page)))
             .doOnError(err -> log.error(String.format("ERR %s %s %s", region, bracket, page)));
@@ -320,8 +318,8 @@ public class Ladder {
             .flatMapSingle(tick -> threeVThree(region))
             .flatMapSingle(tick -> twoVTwo(region))
             .flatMapSingle(tick -> battlegrounds(region))
-            .flatMapSingle(tick -> shuffle(region));
-//            .flatMapSingle(tick -> updateChars(region).andThen(Single.just(tick)));
+            .flatMapSingle(tick -> shuffle(region))
+            .flatMapSingle(tick -> updateChars(region).andThen(Single.just(tick)));
 //            .flatMapSingle(tick -> loadCutoffs(region).andThen(Single.just(tick)));
     }
 
