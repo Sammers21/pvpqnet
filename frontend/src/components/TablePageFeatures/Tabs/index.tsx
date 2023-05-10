@@ -20,8 +20,8 @@ const TabButton = styled((props: any) => <Button {...props} />)({
   color: 'white',
   flexGrow: 1,
   borderRadius: 0,
-  backgroundColor: ({ isActive }: ITabButtonProps) =>
-    isActive ? 'rgb(21, 128, 61, 0.25)' : 'rgba(31, 41, 55, 0.25)',
+  // backgroundColor: ({ isActive }: ITabButtonProps) =>
+  //   isActive ? 'rgb(21, 128, 61, 0.25)' : 'rgba(31, 41, 55, 0.25)',
   borderColor: borderColor,
   borderRightWidth: 1,
   borderStyle: 'solid',
@@ -63,19 +63,16 @@ export default function ActivityTabs() {
     if (isActivity) {
       fetch(baseUrl + '/api/' + BACKEND_REGION[region] + '/activity/stats')
         .then((res) => res.json())
-        .then(
-          (result) => {
-            const res: any = {};
+        .then((result) => {
+          const res: any = {};
 
-            Object.keys(result).forEach(function (k) {
-              res[k] = '(' + result[k] + ')';
-            });
-            if (!isEqual(data, res)) {
-              setData(res);
-            }
-          },
-          (error) => {}
-        );
+          Object.keys(result).forEach(function (k) {
+            res[k] = '(' + result[k] + ')';
+          });
+          if (!isEqual(data, res)) {
+            setData(res);
+          }
+        });
     } else {
       setData(init);
     }

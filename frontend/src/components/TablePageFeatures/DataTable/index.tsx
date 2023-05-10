@@ -11,7 +11,7 @@ import { REGION, BRACKET } from '../../../constants';
 const DataList = () => {
   const { region = REGION.eu, activity = 'activity', bracket = BRACKET.shuffle } = useParams();
 
-  let [searchParams, setSearchParams] = useSearchParams();
+  let [searchParams] = useSearchParams();
   var initSpecs: any[] = [];
 
   if (searchParams.get('specs') != null) {
@@ -23,7 +23,7 @@ const DataList = () => {
   const [page, setPage] = useState(1);
   const [specs, setSpecs] = useState(initSpecs);
 
-  const handlePageChange = (event: unknown, value: number) => {
+  const handlePageChange = (_: unknown, value: number) => {
     setPage(value);
   };
 

@@ -72,7 +72,7 @@ const Table = ({
   tableProps,
   ...props
 }: IProps) => {
-  let [searchParams, setSearchParams] = useSearchParams();
+  let [searchParams] = useSearchParams();
   var specs: any[] = [];
   // var scoreHovered, setScoreHovered = React.useState({won: 0, lost: 0});
   if (searchParams.get('specs') != null) {
