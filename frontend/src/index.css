@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 html {
   background: url(./assets/df.png) no-repeat center center fixed;
   -webkit-background-size: cover;
