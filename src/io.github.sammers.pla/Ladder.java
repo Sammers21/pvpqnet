@@ -122,7 +122,7 @@ public class Ladder {
             Single<List<Character>> res = Single.just(new ArrayList<>(1000 * shuffleSpecs.size()));
             for (String shuffleSpec : shuffleSpecs) {
                 Single<List<Character>> sh = Single.just(new ArrayList<>(shuffleSpecs.size()));
-                for (int i = 1; i <= 10; i++) {
+                for (int i = 1; i <= 1; i++) {
                     int finalI = i;
                     sh = sh.flatMap(characters ->
                         ladderShuffle(shuffleSpec, finalI, region).map(c -> {
@@ -145,7 +145,7 @@ public class Ladder {
             });
         } else {
             Single<List<Character>> res = Single.just(new ArrayList<>(1000));
-            for (int i = 1; i <= 10; i++) {
+            for (int i = 1; i <= 1; i++) {
                 int finalI = i;
                 res = res.flatMap(characters ->
                     ladderTraditional(bracket, finalI, region).map(c -> {
@@ -175,7 +175,7 @@ public class Ladder {
             .andThen(loadRegionData(US))
             .andThen(
                 runDataUpdater(US,
-                    runDataUpdater(EU, Observable.interval(Ladder.minutesTillNextHour(), 30, TimeUnit.MINUTES))
+                    runDataUpdater(EU, Observable.interval(0, 30, TimeUnit.MINUTES))
                 )
             )
             .onErrorReturnItem(Snapshot.empty(EU))
@@ -246,7 +246,7 @@ public class Ladder {
                 }
             })
             .doOnSuccess(ok -> log.debug(String.format("%s-%s ladder has been fetched page=%s", region, bracket, page)))
-            .doOnError(err -> log.error(String.format("ERR %s %s %s", region, bracket, page)));
+            .doOnError(err -> log.error(String.format("ERR %s %s %s", region, bracket, page), err));
     }
 
     private Character enrichWithSpecialData(String bracket, String region, Long pos, Long rating, String name, String clazz, String fullSpec, String fraction, String realm, Long wins, Long losses) {
@@ -255,7 +255,9 @@ public class Ladder {
         String race = apiCharacter.map(WowAPICharacter::race).orElse("unknown");
         Cutoffs cutoffs = regionCutoff.get(region);
         boolean inCutoff = false;
-        if (bracket.equals("3v3")) {
+        if (cutoffs == null) {
+            inCutoff = false;
+        } else if (bracket.equals("3v3")) {
             Long cutRating = cutoffs.threeVThree();
             inCutoff = rating >= cutRating;
         } else if (bracket.equals("battlegrounds")) {
@@ -318,14 +320,13 @@ public class Ladder {
             .flatMapSingle(tick -> threeVThree(region))
             .flatMapSingle(tick -> twoVTwo(region))
             .flatMapSingle(tick -> battlegrounds(region))
-            .flatMapSingle(tick -> shuffle(region))
-            .flatMapSingle(tick -> updateChars(region).andThen(Single.just(tick)))
-            .flatMapSingle(tick -> loadCutoffs(region).andThen(Single.just(tick)));
+            .flatMapSingle(tick -> shuffle(region));
+//            .flatMapSingle(tick -> updateChars(region).andThen(Single.just(tick)));
+//            .flatMapSingle(tick -> loadCutoffs(region).andThen(Single.just(tick)));
     }
 
     private Completable loadRegionData(String region) {
-        return loadCutoffs(region)
-            .andThen(loadLast(TWO_V_TWO, region))
+        return loadLast(TWO_V_TWO, region)
             .andThen(loadLast(THREE_V_THREE, region))
             .andThen(loadLast(RBG, region))
             .andThen(loadLast(SHUFFLE, region))

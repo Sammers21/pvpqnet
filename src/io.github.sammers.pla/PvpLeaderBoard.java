@@ -39,15 +39,18 @@ public record PvpLeaderBoard(
                 String realm = realmJson.getString("slug").replaceAll("[^A-Za-z]", "");
                 String name = character.getString("name");
                 String key = (name + "-" + realm).toLowerCase();
-                String rank = entity.getString("rank");
-                String rating = entity.getString("rating");
+                Long rank = entity.getLong("rank");
+                Long rating = entity.getLong("rating");
+                JsonObject seasonMatchStatistics = entity.getJsonObject("season_match_statistics");
+                Long won = seasonMatchStatistics.getLong("won");
+                Long lost = seasonMatchStatistics.getLong("lost");
                 WowAPICharacter wowAPICharacter = characterCache.get(key);
                 if(wowAPICharacter == null) {
                     return Stream.empty();
                 } else {
                     return Stream.of(new Character(
-                            entity.getLong("rank"),
-                            entity.getLong("rating"),
+                            rank,
+                            rating,
                             false,
                             name,
                             wowAPICharacter.clazz(),
@@ -56,8 +59,8 @@ public record PvpLeaderBoard(
                             wowAPICharacter.gender(),
                             wowAPICharacter.race(),
                             realm,
-                            entity.getLong("season_match_statistics.won"),
-                            entity.getLong("season_match_statistics.lost")
+                            won,
+                            lost
                     ));
                 }
             })
