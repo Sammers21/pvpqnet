@@ -2,34 +2,35 @@ import { useCallback, useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 
 import Table from '../../common/Table';
+import TableFilter from '../../TableFilter';
 
 import useColumns from './useColumns';
 import { getData as fetchData } from '../../../services/data.service';
 
-import { REGION, BRACKET } from '../../../constants';
+import { REGION, BRACKET, ACTIVITY } from '../../../constants';
+import { getFromSearchParams } from '../../../utils/getFromSearchParams';
 
 const DataList = () => {
-  const { region = REGION.eu, activity = 'activity', bracket = BRACKET.shuffle } = useParams();
+  const {
+    region = REGION.eu,
+    activity = ACTIVITY.activity,
+    bracket = BRACKET.shuffle,
+  } = useParams();
+  const [searchParams] = useSearchParams();
 
-  let [searchParams] = useSearchParams();
-  var initSpecs: any[] = [];
-
-  if (searchParams.get('specs') != null) {
-    initSpecs = searchParams?.get('specs')?.split(',') || [];
-  }
   const [contractors, setData] = useState([]);
   const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
-  const [specs, setSpecs] = useState(initSpecs);
+  const [selectedSpecs, setSelectedSpecs] = useState(getFromSearchParams(searchParams, 'specs'));
 
   const handlePageChange = (_: unknown, value: number) => {
     setPage(value);
   };
 
   const getDataFilter = useCallback(() => {
-    return { page, region, activity, bracket, specs };
-  }, [page, region, activity, bracket, specs]);
+    return { page, region, activity, bracket, selectedSpecs };
+  }, [page, region, activity, bracket, selectedSpecs]);
 
   const getData = async () => {
     setLoading(true);
@@ -48,21 +49,24 @@ const DataList = () => {
 
   useEffect(() => {
     getData();
-  }, [page, region, activity, bracket, specs]);
+  }, [page, region, activity, bracket, selectedSpecs]);
 
   const columns = useColumns();
 
   return (
-    <Table
-      loading={loading}
-      totalPages={totalPages}
-      columns={columns}
-      records={contractors}
-      pagination
-      page={page}
-      onPageChange={handlePageChange}
-      onSpecsChange={setSpecs}
-    />
+    <>
+      <TableFilter selectedSpecs={selectedSpecs} onSpecsChange={setSelectedSpecs} />
+
+      <Table
+        loading={loading}
+        totalPages={totalPages}
+        columns={columns}
+        records={contractors}
+        pagination
+        page={page}
+        onPageChange={handlePageChange}
+      />
+    </>
   );
 };
 

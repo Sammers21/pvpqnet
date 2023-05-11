@@ -17,7 +17,6 @@ import Pagination from './Pagination';
 import Row from './Row';
 
 import { containerBg } from '../../../theme';
-import SpecFilter from '../../SpecFilter';
 
 const StyledTable = styled(TableMui)({
   position: 'relative',
@@ -28,9 +27,6 @@ const StyledTable = styled(TableMui)({
   '& tr:hover': {
     backgroundColor: '#1f2937',
   },
-  // "& .same_hovered": {
-  //   backgroundColor: "green"
-  // },
   '& tr td,th': {
     borderBottom: 'none',
   },
@@ -48,7 +44,6 @@ interface IProps {
   page?: any;
   sort?: any;
   onPageChange?: any;
-  onSpecsChange?: any;
   noDataText?: any;
   className?: any;
   tableProps?: any;
@@ -66,7 +61,6 @@ const Table = ({
   page,
   sort,
   onPageChange,
-  onSpecsChange,
   noDataText = 'No data currently available',
   className = '',
   tableProps,
@@ -74,7 +68,7 @@ const Table = ({
 }: IProps) => {
   let [searchParams] = useSearchParams();
   var specs: any[] = [];
-  // var scoreHovered, setScoreHovered = React.useState({won: 0, lost: 0});
+
   if (searchParams.get('specs') != null) {
     specs = searchParams.get('specs')?.split(',') || [];
   }
@@ -145,10 +139,6 @@ const Table = ({
     return loading && <BlizzardLoader />;
   };
 
-  const renderSpecFilters = () => {
-    return <SpecFilter specs={specs} onSpecsChange={onSpecsChange} />;
-  };
-
   const renderTable = () => (
     <StyledTable size="small" padding="none" {...tableProps}>
       {renderHeader()}
@@ -173,7 +163,6 @@ const Table = ({
         minHeight: '200px',
       }}
     >
-      {renderSpecFilters()}
       {renderFooter()}
       {<TableContainer {...props}>{renderTable()}</TableContainer>}
       {renderLoading()}

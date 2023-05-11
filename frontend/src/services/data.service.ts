@@ -8,7 +8,7 @@ export const getData = async ({
   region = REGION.eu,
   activity = ACTIVITY.activity,
   bracket = BRACKET.shuffle,
-  specs = [],
+  selectedSpecs = [],
 }) => {
   try {
     const url = urls.getActivity({
@@ -16,7 +16,7 @@ export const getData = async ({
       region: BACKEND_REGION[region],
       activity,
       bracket,
-      specs,
+      selectedSpecs,
     });
 
     const response = await request(url, { method: 'GET', isJson: true, baseUrl });

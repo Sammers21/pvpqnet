@@ -12,3 +12,16 @@ export interface ITabMenuOption {
 }
 
 export type TTabMenu = Record<TABS, ITabMenuOption[]>;
+
+export interface ICrestAndSpec {
+  crestId: number;
+  specs: string[];
+}
+
+export interface IActivityRequest {
+  page: number;
+  region: string;
+  activity: string;
+  bracket: string;
+  selectedSpecs: string[];
+}
