@@ -18,7 +18,7 @@ const DataList = () => {
   } = useParams();
   const [searchParams] = useSearchParams();
 
-  const [contractors, setData] = useState([]);
+  const [data, setData] = useState([]);
   const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
@@ -61,7 +61,7 @@ const DataList = () => {
         loading={loading}
         totalPages={totalPages}
         columns={columns}
-        records={contractors}
+        records={data}
         pagination
         page={page}
         onPageChange={handlePageChange}

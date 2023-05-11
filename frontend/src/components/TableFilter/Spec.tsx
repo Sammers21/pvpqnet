@@ -31,7 +31,7 @@ const Spec = ({ crestId, specs, selectedSpecs, handleSpecsSelect }: IProps) => {
   };
 
   return (
-    <div>
+    <div className="flex flex-col items-center justify-center">
       <img
         className={`${crestStyles} w-28 h-28 cursor-pointer`}
         src={getImageSrc(`../assets/crests/${crestId}.png`)}

@@ -6,6 +6,9 @@ export const urls = {
   getActivity: ({ page, region, activity, bracket, selectedSpecs }: IActivityRequest) => {
     return `/api/${region}/${activity}/${bracket}?page=${page}&specs=${selectedSpecs.join(',')}`;
   },
+  getStatistic: (region: string) => {
+    return `/api/${region}/activity/stats`;
+  },
 };
 
 export const publicUrls = {

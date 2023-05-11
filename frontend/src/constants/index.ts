@@ -1,11 +1,11 @@
 export enum REGION {
-  'us' = 'us',
-  'eu' = 'eu',
+  us = 'us',
+  eu = 'eu',
 }
 
 export enum BACKEND_REGION {
-  'us' = 'en-us',
-  'eu' = 'en-gb',
+  us = 'en-us',
+  eu = 'en-gb',
 }
 
 export enum BRACKET {

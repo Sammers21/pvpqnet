@@ -27,3 +27,16 @@ export const getData = async ({
     return { records: [], totalPages: 0 };
   }
 };
+
+export const fetchStatistic = async (region: REGION) => {
+  try {
+    const url = urls.getStatistic(BACKEND_REGION[region]);
+
+    const response = await request(url, { method: 'GET', isJson: true, baseUrl });
+    const statistic = await response.json();
+
+    return statistic;
+  } catch (error) {
+    return { records: [], totalPages: 0 };
+  }
+};
