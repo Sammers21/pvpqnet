@@ -21,16 +21,16 @@ const specNameFromFullSpec = (wowSpec: string) => {
 
 const getDetails = (wowClass: WOW_CLASS, wowSpec: string, wowRace: string, wowGender: string) => {
   const classSrc = new URL(
-    '../../assets/classicons/' + wowClass.replaceAll(' ', '').toLowerCase() + '.png',
+    '../../../assets/classicons/' + wowClass.replaceAll(' ', '').toLowerCase() + '.png',
     import.meta.url
   ).href;
   let specSrc;
   let specIcon = specNameFromFullSpec(wowSpec) + '.png';
   try {
-    specSrc = new URL('../../assets/specicons/' + specIcon, import.meta.url).href;
+    specSrc = new URL('../../../assets/specicons/' + specIcon, import.meta.url).href;
   } catch (e) {
     console.log(`SpecIcon: ${specIcon} was not found`);
-    specSrc = new URL('../../assets/unknown.png', import.meta.url).href;
+    specSrc = new URL('../../../assets/unknown.png', import.meta.url).href;
   }
   let raceSrc;
   let raceIcon =
@@ -38,10 +38,10 @@ const getDetails = (wowClass: WOW_CLASS, wowSpec: string, wowRace: string, wowGe
     wowRace.replaceAll(' ', '').replaceAll("'", '').toLowerCase() +
     '.webp';
   try {
-    raceSrc = new URL('../../assets/raceicons/' + raceIcon, import.meta.url).href;
+    raceSrc = new URL('../../../assets/raceicons/' + raceIcon, import.meta.url).href;
   } catch (e) {
     console.log(`RaceIcon: ${raceIcon} was not found`);
-    raceSrc = new URL('../../assets/unknown.png', import.meta.url).href;
+    raceSrc = new URL('../../../assets/unknown.png', import.meta.url).href;
   }
   return { classSrc, specSrc, raceSrc };
 };

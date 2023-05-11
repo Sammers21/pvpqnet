@@ -1,4 +1,4 @@
-import { urls } from '../config';
+import { baseUrl, urls } from '../config';
 import { ACTIVITY, BACKEND_REGION, BRACKET, REGION } from '../constants';
 
 import request from './request.service';
@@ -19,7 +19,7 @@ export const getData = async ({
       specs,
     });
 
-    const response = await request(url, { method: 'GET', isJson: true });
+    const response = await request(url, { method: 'GET', isJson: true, baseUrl });
     const data = await response.json();
 
     return { records: data?.characters ?? [], totalPages: data?.total_pages ?? 0 };
