@@ -1,252 +1,147 @@
-import { Box, Typography } from '@mui/material';
-import { FRACTION, WOW_CLASS } from '../../../constants';
+import Typography from '@mui/material/Typography';
 
-const TABLE_FIELDS = {
-  rank: 'pos',
-  details: 'details',
-  name: 'name',
-  realm: 'realm',
-  stats: 'stats',
-  rating: 'rating',
-  lastSeen: 'lastSeen',
-};
+import {
+  getClassNameColor,
+  getRankDiffColor,
+  getRealmColor,
+  getDiffColor,
+  getDiffCell,
+  getImages,
+  getWinRate,
+  getWonAndLossColors,
+  getRatingColor,
+} from '../../../utils/activityTable';
 
-const getRealmColor = (fraction: FRACTION) => {
-  return fraction === FRACTION.ALLIANCE ? '#3FC7EB' : '#ff0000';
-};
+import type { IActivityRecord } from '../../../types';
+import { ACTIVITY } from '../../../constants';
 
-const specNameFromFullSpec = (wowSpec: string) => {
-  return wowSpec.trim().replaceAll(' ', '').toLowerCase();
-};
-
-const getDetails = (wowClass: WOW_CLASS, wowSpec: string, wowRace: string, wowGender: string) => {
-  const classSrc = new URL(
-    '../../../assets/classicons/' + wowClass.replaceAll(' ', '').toLowerCase() + '.png',
-    import.meta.url
-  ).href;
-  let specSrc;
-  let specIcon = specNameFromFullSpec(wowSpec) + '.png';
-  try {
-    specSrc = new URL('../../../assets/specicons/' + specIcon, import.meta.url).href;
-  } catch (e) {
-    console.log(`SpecIcon: ${specIcon} was not found`);
-    specSrc = new URL('../../../assets/unknown.png', import.meta.url).href;
-  }
-  let raceSrc;
-  let raceIcon =
-    wowGender.toLowerCase().charAt(0) +
-    wowRace.replaceAll(' ', '').replaceAll("'", '').toLowerCase() +
-    '.webp';
-  try {
-    raceSrc = new URL('../../../assets/raceicons/' + raceIcon, import.meta.url).href;
-  } catch (e) {
-    console.log(`RaceIcon: ${raceIcon} was not found`);
-    raceSrc = new URL('../../../assets/unknown.png', import.meta.url).href;
-  }
-  return { classSrc, specSrc, raceSrc };
-};
-
-const getClassNameColor = (wowClass: string) => {
-  wowClass = wowClass.toUpperCase();
-
-  if (wowClass === WOW_CLASS.WARRIOR) {
-    return '#C69B6D';
-  } else if (wowClass === WOW_CLASS.PALADIN) {
-    return '#F48CBA';
-  } else if (wowClass === WOW_CLASS.HUNTER) {
-    return '#8EBA43';
-  } else if (wowClass === WOW_CLASS.ROGUE) {
-    return '#FFF468';
-  } else if (wowClass === WOW_CLASS.PRIEST) {
-    return '#FFFFFF';
-  } else if (wowClass === WOW_CLASS['DEATH KNIGHT']) {
-    return '#C41E3A';
-  } else if (wowClass === WOW_CLASS.SHAMAN) {
-    return '#0070DD';
-  } else if (wowClass === WOW_CLASS.MAGE) {
-    return '#3FC7EB';
-  } else if (wowClass === WOW_CLASS.WARLOCK) {
-    return '#8788EE';
-  } else if (wowClass === WOW_CLASS.MONK) {
-    return '#00FF98';
-  } else if (wowClass === WOW_CLASS.DRUID) {
-    return '#FF7C0A';
-  } else if (wowClass === WOW_CLASS['DEMON HUNTER']) {
-    return '#A330C9';
-  } else if (wowClass === WOW_CLASS.EVOKER) {
-    return '#33937F';
-  } else {
-    return '#FFFFFF';
-  }
-};
-
-const getDiffColor = (diff: number): string => {
-  if (diff === 0) return 'white';
-  return diff > 0 ? 'green' : '#ff0000';
-};
-
-const getRankDiffColor = (diff: number): string => {
-  if (diff === 0) return 'white';
-  return diff < 0 ? 'green' : '#ff0000';
-};
-
-const getDiffCell = (diff: number): string | number => {
-  return diff >= 0 ? `+${diff}` : diff;
-};
-
-const useColumns = () => {
-  return [
+const useColumns = (activity: string) => {
+  const commonColumns = [
     {
-      field: TABLE_FIELDS.rank,
+      field: 'pos',
       label: 'RANK',
-      render: ({ record }: { record: any }) => {
+      render: ({ record }: { record: IActivityRecord }) => {
         const pos = record?.character?.pos || record?.pos;
+        const rankDiff = record?.diff?.rank_diff;
 
         return (
-          <Box sx={{ display: 'flex' }}>
-            <Typography sx={{ fontWeight: 300 }}>{`#${pos}`}</Typography>
-            {Number.isInteger(record?.diff?.rank_diff) && (
-              <Typography
-                color={getRankDiffColor(record.diff.rank_diff)}
-                sx={{ marginLeft: '4px', fontWeight: 300 }}
-              >
-                {getDiffCell(record.diff.rank_diff)}
+          <div className="flex">
+            <Typography className="font-light">{`#${pos}`}</Typography>
+
+            {rankDiff && Number.isInteger(rankDiff) && (
+              <Typography className="font-light ml-1" color={getRankDiffColor(rankDiff)}>
+                {getDiffCell(rankDiff)}
               </Typography>
             )}
-          </Box>
+          </div>
         );
       },
     },
     {
-      field: TABLE_FIELDS.details,
+      field: 'details',
       label: 'DETAILS',
-      render: ({ record }: { record: any }) => {
+      render: ({ record }: { record: IActivityRecord }) => {
         const wowClass = record?.character?.class || record?.class;
         const wowSpec = record?.character?.full_spec || record?.full_spec;
         const wowRace = record?.character?.race || record?.race;
         const wowGender = record?.character?.gender || record?.gender;
-        const details = getDetails(wowClass, wowSpec, wowRace, wowGender);
+
+        const icons = getImages({ wowClass, wowSpec, wowRace, wowGender });
+
         return (
-          <Box sx={{ display: 'flex' }}>
+          <div className="flex">
             <img
-              style={{
-                border: '1px #37415180 solid',
-                borderRadius: '4px',
-                marginLeft: '5px',
-                height: '20px',
-                width: '20px',
-              }}
-              src={details.raceSrc}
+              className="mr-1 h-5 w-5 rounded border border-solid border-[#37415180]"
+              src={icons.raceIcon}
             />
             <img
-              style={{
-                border: '1px #37415180 solid',
-                borderRadius: '4px',
-                height: '20px',
-                width: '20px',
-              }}
-              src={details.classSrc}
+              className="mr-1 h-5 w-5 rounded border border-solid border-[#37415180]"
+              src={icons.classIcon}
             />
             <img
-              style={{
-                border: '1px #37415180 solid',
-                borderRadius: '4px',
-                marginLeft: '5px',
-                height: '20px',
-                width: '20px',
-              }}
-              src={details.specSrc}
+              className=" h-5 w-5 rounded border border-solid border-[#37415180]"
+              src={icons.specIcon}
             />
-          </Box>
+          </div>
         );
       },
     },
     {
-      field: TABLE_FIELDS.name,
+      field: 'name',
       label: 'NAME',
-      render: ({ record }: { record: any }) => {
+      render: ({ record }: { record: IActivityRecord }) => {
         const wowClass = record?.character?.class || record?.class;
         const name = record?.character?.name || record?.name;
+
         return <Typography color={getClassNameColor(wowClass)}>{name}</Typography>;
       },
     },
     {
-      field: TABLE_FIELDS.realm,
+      field: 'realm',
       label: 'REALM',
-      render: ({ record }: { record: any }) => {
+      render: ({ record }: { record: IActivityRecord }) => {
         const fraction = record?.character?.fraction || record?.fraction;
         const realm = record?.character?.realm || record?.realm;
+
         return <Typography color={getRealmColor(fraction)}>{realm}</Typography>;
       },
     },
     {
-      field: TABLE_FIELDS.stats,
+      field: 'stats',
       label: 'WON / LOST',
-      render: ({ record }: { record: any }) => {
-        const winRate =
-          record?.wins && ((record.wins * 100) / (record.wins + record.losses)).toFixed(2) + `%`;
+      render: ({ record }: { record: IActivityRecord }) => {
+        const winRate = getWinRate(record.wins, record.losses);
+
         const won = record?.diff?.won ?? record?.wins;
         const loss = record?.diff?.lost ?? record?.losses;
-        const wonColor = won > 0 ? 'green' : 'white';
-        const lostColor = loss > 0 ? '#ff0000' : 'white';
+        const { wonColor, lossColor } = getWonAndLossColors(won, loss);
+
         return (
-          <Box sx={{ display: 'flex' }}>
-            <Typography sx={{ fontWeight: 300, marginRight: '4px' }} color={wonColor}>
-              {`${won} `}
-            </Typography>
-            <Typography sx={{ fontWeight: 300 }}>{` / `}</Typography>
-            <Typography color={lostColor} sx={{ marginLeft: '4px', fontWeight: 300 }}>
-              {loss}
-            </Typography>
+          <div className="flex">
+            <Typography className={`font-light mr-1 text-[${wonColor}]`}>{`${won} `}</Typography>
+            <Typography className="font-light">{` / `}</Typography>
+            <Typography className={`font-light ml-1 text-[${lossColor}]`}>{loss}</Typography>
+
             {winRate && (
-              <Typography
-                color="rgb(75, 85, 99)"
-                sx={{
-                  marginLeft: '6px',
-                  marginTop: '2px',
-                  fontWeight: 300,
-                  fontSize: 14,
-                  marginRight: '4px',
-                }}
-              >
+              <Typography className="text-[#4B5563] mt-0.5 ml-2 mr-2 font-light text-sm">
                 {winRate}
               </Typography>
             )}
-          </Box>
+          </div>
         );
       },
     },
     {
-      field: TABLE_FIELDS.rating,
+      field: 'rating',
       label: 'RATING',
-      render: ({ record }: { record: any }) => {
+      render: ({ record }: { record: IActivityRecord }) => {
         const rating = record?.character?.rating ?? record?.rating;
-        const ratingColor = record?.character?.in_cutoff ?? record?.in_cutoff ? '#fb7e00' : 'white';
+        const ratingColor = getRatingColor(record?.character?.in_cutoff ?? record?.in_cutoff);
+        const ratingDiff = record?.diff?.rating_diff;
+
         return (
-          <Box sx={{ display: 'flex' }}>
-            <Typography color={ratingColor} sx={{ fontWeight: 300, marginRight: '4px' }}>
-              {rating}
-            </Typography>
-            {Number.isInteger(record?.diff?.rating_diff) && (
-              <Typography
-                color={getDiffColor(record.diff.rating_diff)}
-                sx={{ marginLeft: '4px', fontWeight: 300 }}
-              >
-                {getDiffCell(record.diff.rating_diff)}
+          <div className="flex">
+            <Typography className={`font-light mr-1 text-[${ratingColor}]`}>{rating}</Typography>
+            {Number.isInteger(ratingDiff) && (
+              <Typography color={getDiffColor(ratingDiff)} className="ml-1 font-light">
+                {getDiffCell(ratingDiff)}
               </Typography>
             )}
-          </Box>
+          </div>
         );
-      },
-    },
-    {
-      field: TABLE_FIELDS.lastSeen,
-      label: 'LAST SEEN',
-      render: ({ record }: { record: any }) => {
-        return <Typography>{record?.diff?.last_seen}</Typography>;
       },
     },
   ];
+
+  const lastSeenColumn = {
+    field: 'lastSeen',
+    label: 'LAST SEEN',
+    render: ({ record }: { record: IActivityRecord }) => {
+      return <Typography>{record?.diff?.last_seen}</Typography>;
+    },
+  };
+
+  return activity === ACTIVITY.activity ? [...commonColumns, lastSeenColumn] : commonColumns;
 };
 
 export default useColumns;

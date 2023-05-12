@@ -1,7 +1,7 @@
 import difference from 'lodash/difference';
 
-import { getImageSrc } from '../../utils/getImageSrc';
-import { isExistsInAnotherArray } from '../../utils/isExistsInAnotherArray';
+import { getImageSrc } from '../../utils/common/getImageSrc';
+import { isExistsInAnotherArray } from '../../utils/common/isExistsInAnotherArray';
 
 interface IProps {
   crestId: number;
@@ -34,7 +34,7 @@ const Spec = ({ crestId, specs, selectedSpecs, handleSpecsSelect }: IProps) => {
     <div className="flex flex-col items-center justify-center">
       <img
         className={`${crestStyles} w-28 h-28 cursor-pointer`}
-        src={getImageSrc(`../assets/crests/${crestId}.png`)}
+        src={getImageSrc(`../../assets/crests/${crestId}.png`)}
         onClick={onCrestSelect}
       />
 
@@ -46,7 +46,7 @@ const Spec = ({ crestId, specs, selectedSpecs, handleSpecsSelect }: IProps) => {
 
           return (
             <img
-              src={getImageSrc(`../assets/specicons/${spec}.png`)}
+              src={getImageSrc(`../../assets/specicons/${spec}.png`)}
               className={`${styles} h-8 w-8 mx-1 cursor-pointer`}
               onClick={() => onSpecSelect(spec)}
             />

@@ -51,7 +51,9 @@ const DataList = () => {
     getData();
   }, [page, region, activity, bracket, selectedSpecs]);
 
-  const columns = useColumns();
+  const getColumns = useCallback(() => {
+    return useColumns(activity);
+  }, [activity]);
 
   return (
     <>
@@ -60,7 +62,7 @@ const DataList = () => {
       <Table
         loading={loading}
         totalPages={totalPages}
-        columns={columns}
+        columns={getColumns()}
         records={data}
         pagination
         page={page}

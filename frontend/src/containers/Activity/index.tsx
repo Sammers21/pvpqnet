@@ -7,7 +7,7 @@ import Footer from '../../components/common/Footer';
 import Tabs from '../../components/TablePageFeatures/Tabs';
 import DataTable from '../../components/TablePageFeatures/DataTable';
 
-import { capitalizeFirstLetter } from '../../utils/capitalizeFirstLetter';
+import { capitalizeFirstLetter } from '../../utils/common/capitalizeFirstLetter';
 import { REGION, BRACKET, ACTIVITY } from '../../constants';
 import { fetchStatistic } from '../../services/data.service';
 
@@ -37,6 +37,7 @@ function Activity() {
     if (activity === ACTIVITY.activity) {
       getStatistic(region as REGION);
     }
+    setStatistic(undefined);
   }, [activity, region]);
 
   return (
