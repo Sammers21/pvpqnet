@@ -53,3 +53,10 @@ export interface IActivityRecord extends IAcitivityCharacter {
   character: IAcitivityCharacter;
   diff: IActivityDiff;
 }
+
+export interface ITableColumn {
+  field: string;
+  label: string;
+  align?: 'right' | 'left';
+  render: ({ record }: { record: IActivityRecord }) => JSX.Element;
+}

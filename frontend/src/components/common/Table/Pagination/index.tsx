@@ -1,4 +1,4 @@
-import { Grid, Pagination } from '@mui/material';
+import Pagination from '@mui/material/Pagination';
 
 interface IProps {
   page: number;
@@ -9,30 +9,19 @@ interface IProps {
 }
 
 const TablePagination = ({ page, totalPages, pagination, onPageChange, recordsLength }: IProps) => {
-  const renderFooter = () => {
-    const visible = pagination && !!recordsLength;
+  const visible = pagination && !!recordsLength;
 
-    return visible ? (
-      <Grid
-        sx={{
-          display: 'flex',
-          justifyContent: 'flex-end',
-          marginBottom: '16px',
-          marginTop: '16px',
-        }}
-      >
-        <Pagination
-          count={totalPages}
-          page={page}
-          onChange={onPageChange}
-          hideNextButton
-          hidePrevButton
-        />
-      </Grid>
-    ) : null;
-  };
-
-  return renderFooter();
+  return visible ? (
+    <div className="flex justify-end mb-4 mt-4">
+      <Pagination
+        count={totalPages}
+        page={page}
+        onChange={onPageChange}
+        hideNextButton
+        hidePrevButton
+      />
+    </div>
+  ) : null;
 };
 
 export default TablePagination;

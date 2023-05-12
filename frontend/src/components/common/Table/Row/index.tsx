@@ -1,54 +1,35 @@
-import { Fragment, useEffect, useState } from 'react';
-import { TableCell, TableRow, Typography } from '@mui/material';
+import TableCell from '@mui/material/TableCell';
+import TableRow from '@mui/material/TableRow';
+import Typography from '@mui/material/Typography';
+
 import get from 'lodash/get';
 
+import type { IActivityRecord, ITableColumn } from '../../../../types';
+
 interface IProps {
-  columns: any;
-  record: any;
+  columns: ITableColumn[];
+  record: IActivityRecord;
 }
 
 const Row = ({ record, columns }: IProps) => {
-  const [columnsData, setColumnsData] = useState<any[]>([]);
-
-  const setValues = async () => {
-    let columnsData = [];
-
-    for (let column of columns) {
-      columnsData.push(column);
-    }
-
-    setColumnsData(columnsData);
-  };
-
   const renderDefaultCell = (value: string) => {
     return <Typography variant="h6">{value}</Typography>;
   };
 
-  useEffect(() => {
-    setValues();
-  }, [columns]);
-
   return (
-    <Fragment>
-      <TableRow sx={{ padding: '4px 0' }}>
-        {columnsData.map((column, i) => {
-          const cellValue = column.value || get(record, column.field);
+    <>
+      <TableRow className="py-1 px-0">
+        {columns.map((column, i) => {
+          const cellValue = get(record, column.field);
 
           return (
-            <TableCell sx={{ padding: '4px 0' }} key={record[i]} align={column.align || 'left'}>
-              {column.render
-                ? column.render({
-                    id: record[i],
-                    field: column.field,
-                    value: cellValue,
-                    record,
-                  })
-                : renderDefaultCell(cellValue)}
+            <TableCell key={i} className="py-1 px-0" align={column.align || 'left'}>
+              {column.render ? column.render({ record }) : renderDefaultCell(cellValue)}
             </TableCell>
           );
         })}
       </TableRow>
-    </Fragment>
+    </>
   );
 };
 

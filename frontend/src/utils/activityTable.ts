@@ -1,4 +1,4 @@
-import { FRACTION, WOW_CLASS, WOW_RACE, WOW_SPEC } from '../constants';
+import { FRACTION, WOW_CLASS, WOW_CLASS_ICON, WOW_RACE, WOW_SPEC } from '../constants';
 import { getImageSrc } from './common/getImageSrc';
 
 export const getRealmColor = (fraction: string) => {
@@ -54,13 +54,13 @@ export const getRankDiffColor = (diff: number): string => {
 };
 
 export const getDiffCell = (diff: number): string | number => {
-  return diff >= 0 ? `+${diff}` : diff;
+  return diff >= 0 ? `+${diff}` : `${diff}`;
 };
 
 const geClassIconPath = (wowClass: string) => {
-  const className = specNameFromFullSpec(wowClass).toUpperCase() as WOW_CLASS;
+  const className = specNameFromFullSpec(wowClass).toUpperCase() as WOW_CLASS_ICON;
 
-  return Object.values(WOW_CLASS).includes(className)
+  return Object.values(WOW_CLASS_ICON).includes(className)
     ? `../../assets/classicons/${specNameFromFullSpec(wowClass)}.png`
     : '../../assets/unknown.png';
 };

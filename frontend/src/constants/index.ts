@@ -130,3 +130,19 @@ export enum WOW_RACE {
   mvulpera = 'mvulpera',
   mworgen = 'mworgen',
 }
+
+export enum WOW_CLASS_ICON {
+  WARRIOR = 'WARRIOR',
+  PALADIN = 'PALADIN',
+  HUNTER = 'HUNTER',
+  ROGUE = 'ROGUE',
+  PRIEST = 'PRIEST',
+  DEATHKNIGHT = 'DEATHKNIGHT',
+  SHAMAN = 'SHAMAN',
+  MAGE = 'MAGE',
+  WARLOCK = 'WARLOCK',
+  MONK = 'MONK',
+  DRUID = 'DRUID',
+  DEMON_HUNTER = 'DEMONHUNTER',
+  EVOKER = 'EVOKER',
+}

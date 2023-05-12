@@ -28,7 +28,7 @@ const useColumns = (activity: string) => {
           <div className="flex">
             <Typography className="font-light">{`#${pos}`}</Typography>
 
-            {rankDiff && Number.isInteger(rankDiff) && (
+            {Number.isInteger(rankDiff) && (
               <Typography className="font-light ml-1" color={getRankDiffColor(rankDiff)}>
                 {getDiffCell(rankDiff)}
               </Typography>

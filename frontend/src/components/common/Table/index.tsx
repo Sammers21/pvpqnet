@@ -1,7 +1,5 @@
 import { useCallback, useMemo } from 'react';
-import { useSearchParams } from 'react-router-dom';
 import {
-  Grid,
   Table as TableMui,
   TableBody,
   TableContainer,
@@ -16,16 +14,11 @@ import BlizzardLoader from '../BlizzardLoader';
 import Pagination from './Pagination';
 import Row from './Row';
 
-import { containerBg } from '../../../theme';
+import { IActivityRecord, ITableColumn } from '../../../types';
 
 const StyledTable = styled(TableMui)({
-  position: 'relative',
-  minHeight: '200px',
   '& tr:nth-child(even)': {
     backgroundColor: '#0e1216',
-  },
-  '& tr:hover': {
-    backgroundColor: '#1f2937',
   },
   '& tr td,th': {
     borderBottom: 'none',
@@ -34,56 +27,44 @@ const StyledTable = styled(TableMui)({
 
 interface IProps {
   loading?: boolean;
-  columns: any[];
-  records?: any[];
-  headerRecords?: any;
-  totalPages?: any;
-  pagination?: any;
-  pageSize?: any;
-  startPageNumber?: any;
-  page?: any;
-  sort?: any;
-  onPageChange?: any;
-  noDataText?: any;
-  className?: any;
-  tableProps?: any;
+  columns: ITableColumn[];
+  records: IActivityRecord[];
+  totalPages: number;
+  pagination: boolean;
+  page: number;
+  onPageChange: (_: unknown, page: number) => void;
 }
 
 const Table = ({
   loading,
   columns,
   records = [],
-  headerRecords,
   totalPages,
-  pagination = false,
-  pageSize = 10,
-  startPageNumber = 1,
+  pagination,
   page,
-  sort,
   onPageChange,
-  noDataText = 'No data currently available',
-  className = '',
-  tableProps,
-  ...props
 }: IProps) => {
-  let [searchParams] = useSearchParams();
-  var specs: any[] = [];
+  const renderRow = (record: IActivityRecord, index: number) => {
+    return <Row key={index} record={record} columns={columns} />;
+  };
 
-  if (searchParams.get('specs') != null) {
-    specs = searchParams.get('specs')?.split(',') || [];
-  }
+  const rowsComponent = useMemo(() => {
+    return records.map((record, index) => renderRow(record, index));
+  }, [records, renderRow]);
 
-  const columnsData = columns;
+  const renderLoading = () => {
+    return loading && <BlizzardLoader />;
+  };
 
   const renderNoRowsOverlay = useCallback(() => {
     return (
       !loading && (
-        <Grid sx={{ position: 'absolute', left: '45%', top: '50%' }}>
-          <Typography variant="h5">{noDataText}</Typography>
-        </Grid>
+        <div className="absolute left-2/4 top-2/4">
+          <Typography variant="h5">No data currently available</Typography>
+        </div>
       )
     );
-  }, [loading, noDataText]);
+  }, [loading]);
 
   const renderFooter = () => {
     return (
@@ -98,21 +79,7 @@ const Table = ({
   };
 
   const renderHeaderCells = () => {
-    return columnsData.map((column, index) => {
-      const title = column.label;
-
-      return (
-        <HeaderCell
-          key={index}
-          column={column}
-          title={title}
-          render={
-            column.renderHeader &&
-            (() => column.renderHeader({ field: column.field, records: headerRecords }))
-          }
-        />
-      );
-    });
+    return columns.map((column, index) => <HeaderCell key={index} column={column} />);
   };
 
   const renderHeader = () => {
@@ -123,31 +90,16 @@ const Table = ({
     );
   };
 
-  const renderRow = (record: any, index: number) => {
-    return <Row key={index} record={record} columns={columnsData} />;
-  };
-
-  const rowsComponent = useMemo(() => {
-    return records.map((record, index) => renderRow(record, index));
-  }, [records, renderRow]);
-
   const renderBody = () => {
-    return <TableBody aria-label={'table-body'}>{rowsComponent}</TableBody>;
-  };
-
-  const renderLoading = () => {
-    return loading && <BlizzardLoader />;
+    return <TableBody aria-label="table-body">{rowsComponent}</TableBody>;
   };
 
   const renderTable = () => (
-    <StyledTable size="small" padding="none" {...tableProps}>
+    <StyledTable size="small" padding="none" className="relative">
       {renderHeader()}
       <colgroup>
-        {columnsData.map((column, index) => (
-          <col
-            key={index}
-            style={{ width: column.width, minWidth: column.width, maxWidth: column.width }}
-          />
+        {columns.map((column, index) => (
+          <col key={index} />
         ))}
       </colgroup>
       {!records.length && !loading ? renderNoRowsOverlay() : renderBody()}
@@ -155,19 +107,12 @@ const Table = ({
   );
 
   return (
-    <Grid
-      sx={{
-        position: 'relative',
-        backgroundColor: containerBg,
-        padding: '12px 32px 32px 32px',
-        minHeight: '200px',
-      }}
-    >
+    <div className="relative pt-3 pb-8 px-8 bg-[#030303e6]">
       {renderFooter()}
-      {<TableContainer {...props}>{renderTable()}</TableContainer>}
+      {<TableContainer>{renderTable()}</TableContainer>}
       {renderLoading()}
       {renderFooter()}
-    </Grid>
+    </div>
   );
 };
 
