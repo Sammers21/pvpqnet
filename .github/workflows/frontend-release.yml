@@ -31,3 +31,15 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           source: "./frontend/build/*"
           target: "/var/www/citest"
+      - name: Copy frontend to ngnix
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.APP_HOST }}
+          username: ${{ secrets.SSH_HOST_USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            cd /var/www/citest/frontend/build/
+            rm -rf /var/www/pvpqnet
+            mkdir -p /var/www/pvpqnet
+            cp -R ./* /var/www/pvpqnet/
+            rm -rf /var/www/citest/frontend/build/
