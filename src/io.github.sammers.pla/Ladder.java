@@ -296,6 +296,12 @@ public class Ladder {
                     List<Node> nodes = element.childNodes();
                     List<Character> characters = nodes.stream().map(Node::childNodes).map(nodeList -> {
                         Node nameNode = nodeList.get(2);
+                        String fullSpec = "UNKNOWN";
+                        try {
+                            Node specNode = nameNode.childNode(0).childNode(0).childNode(0).childNode(2).childNode(2);
+                            fullSpec = ((Element) specNode).text().substring(2);
+                        } catch (Exception e) {
+                        }
                         Long pos = Long.parseLong(nodeList.get(0).attr("data-value"));
                         Long rating = Long.parseLong(((Element) nodeList.get(1).childNode(0).childNode(0).childNode(0).childNode(1)).text());
                         String name = nameNode.attr("data-value");
@@ -304,7 +310,7 @@ public class Ladder {
                         String realm = nodeList.get(5).attr("data-value");
                         Long wins = Long.parseLong(nodeList.get(6).attr("data-value"));
                         Long losses = Long.parseLong(nodeList.get(7).attr("data-value"));
-                        return enrichWithSpecialData(bracket, region, pos, rating, name, clazz, "UNKNOWN", fraction, realm, wins, losses);
+                        return enrichWithSpecialData(bracket, region, pos, rating, name, clazz, fullSpec, fraction, realm, wins, losses);
                     }).toList();
                     return characters;
                 }
@@ -319,8 +325,8 @@ public class Ladder {
             .flatMapSingle(tick -> twoVTwo(region))
             .flatMapSingle(tick -> battlegrounds(region))
             .flatMapSingle(tick -> shuffle(region))
-            .flatMapSingle(tick -> updateChars(region).andThen(Single.just(tick)));
-//            .flatMapSingle(tick -> loadCutoffs(region).andThen(Single.just(tick)));
+            .flatMapSingle(tick -> updateChars(region).andThen(Single.just(tick)))
+            .flatMapSingle(tick -> loadCutoffs(region).andThen(Single.just(tick)));
     }
 
     private Completable loadRegionData(String region) {
@@ -335,7 +341,8 @@ public class Ladder {
         return blizzardAPI.cutoffs(region).map(cutoffs -> {
             regionCutoff.put(region, cutoffs);
             return cutoffs;
-        }).doAfterSuccess(cutoffs -> log.info("Cutoffs for region={} has been loaded", region)).ignoreElement();
+        }).doAfterSuccess(cutoffs -> log.info("Cutoffs for region={} has been loaded", region))
+                .ignoreElement().onErrorComplete();
     }
 
     private Completable loadWowCharApiData(String region) {
