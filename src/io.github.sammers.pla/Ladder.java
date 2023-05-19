@@ -115,6 +115,10 @@ public class Ladder {
         return fetchLadder(bracket, region);
     }
 
+    public WowAPICharacter wowChar(String realm, String name){
+        return characterCache.get(Character.fullNameByRealmAndName(name, realm));
+    }
+
     public Single<Snapshot> fetchLadder(String bracket, String region) {
         long currentTimeMillis = System.currentTimeMillis();
         Single<List<Character>> resCharList;

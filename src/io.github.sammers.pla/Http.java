@@ -76,6 +76,11 @@ public class Http {
             }
             ladder(ctx, applySpecFilter(ctx, ladder.diffsByBracket(bracket, region).get()));
         });
+        router.get("/api/:region/:realm/:name").handler(ctx -> {
+            String realm = ctx.pathParam("realm");
+            String name = ctx.pathParam("name");
+            ctx.response().end(ladder.wowChar(realm, name).toJson().encode());
+        });
         router.get("/:region/ladder/:bracket").handler(ctx -> ctx.response().sendFile("index.html"));
         router.get("/:region/activity/:bracket").handler(ctx -> ctx.response().sendFile("index.html"));
         router.get("/ladder/:bracket").handler(ctx -> ctx.response().sendFile("index.html"));
