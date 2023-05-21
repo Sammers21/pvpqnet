@@ -224,10 +224,12 @@ public class Ladder {
             }).collect(Collectors.toSet());
             log.info("Updating " + uniqChars.size() + " characters");
             List<Completable> completables = uniqChars.stream().map(wowChar -> blizzardAPI.character(region, wowChar.realm(), wowChar.name()).flatMap(c -> {
-                characterCache.put(wowChar.fullName(), c);
-                charSearchIndex.insertNickNames(wowChar.fullName());
-                return db.upsertCharacter(c);
-            }).doOnSuccess(d -> log.debug("Updated character: " + wowChar)).ignoreElement()).toList();
+                    characterCache.put(wowChar.fullName(), c);
+                    charSearchIndex.insertNickNames(wowChar.fullName());
+                    return db.upsertCharacter(c);
+                }).doOnSuccess(d -> log.debug("Updated character: " + wowChar))
+                .doOnError(e -> log.error("Failed to update character: " + wowChar + " Stopping update", e))
+                .ignoreElement()).toList();
             return Completable.concat(completables);
         }).onErrorComplete();
     }
