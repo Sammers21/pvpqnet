@@ -26,8 +26,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -125,7 +127,7 @@ public class Ladder {
         return fetchLadder(bracket, region);
     }
 
-    public WowAPICharacter wowChar(String realm, String name){
+    public WowAPICharacter wowChar(String realm, String name) {
         return characterCache.get(Character.fullNameByRealmAndName(name, realm));
     }
 
@@ -174,11 +176,11 @@ public class Ladder {
             }
             resCharList = res.flatMap(s -> {
                 Maybe<List<Character>> map = blizzardAPI.pvpLeaderboard(bracket, region)
-                        .map((PvpLeaderBoard leaderboard) -> {
-                            Set<Character> enriched = new HashSet<>(leaderboard.enrich(s));
+                    .map((PvpLeaderBoard leaderboard) -> {
+                        Set<Character> enriched = new HashSet<>(leaderboard.enrich(s));
 //                            enriched.addAll(leaderboard.toCharacters(characterCache));
-                            return enriched.stream().toList();
-                        });
+                        return enriched.stream().toList();
+                    });
                 return map.toSingle(s);
             });
 
@@ -201,6 +203,7 @@ public class Ladder {
     }
 
     private Completable updateChars(String region) {
+        long dayAgo = Instant.now().minus(1, ChronoUnit.DAYS).toEpochMilli();
         return Completable.defer(() -> {
             Set<Character> uniqChars = brackets.stream().flatMap(bracket -> {
                 AtomicReference<Snapshot> snapshotAtomicReference = refByBracket(bracket, region);
@@ -212,20 +215,19 @@ public class Ladder {
                     WowAPICharacter wowAPICharacter = characterCache.get(c.fullName());
                     if (wowAPICharacter == null) {
                         return Stream.of(c);
+                    } else if (wowAPICharacter.lastUpdatedUTCms() < dayAgo) {
+                        return Stream.of(c);
                     } else {
                         return Stream.of();
                     }
                 });
             }).collect(Collectors.toSet());
             log.info("Updating " + uniqChars.size() + " characters");
-            List<Completable> completables = uniqChars.stream()
-                .map(wowChar ->
-                    blizzardAPI.character(region, wowChar.realm(), wowChar.name()).flatMap(c -> {
-                        characterCache.put(wowChar.fullName(), c);
-                        charSearchIndex.insertNickNames(wowChar.fullName());
-                        return db.upsertCharacter(c);
-                    }).doOnSuccess(d -> log.debug("Updated character: " + wowChar))
-                    .ignoreElement()).toList();
+            List<Completable> completables = uniqChars.stream().map(wowChar -> blizzardAPI.character(region, wowChar.realm(), wowChar.name()).flatMap(c -> {
+                characterCache.put(wowChar.fullName(), c);
+                charSearchIndex.insertNickNames(wowChar.fullName());
+                return db.upsertCharacter(c);
+            }).doOnSuccess(d -> log.debug("Updated character: " + wowChar)).ignoreElement()).toList();
             return Completable.concat(completables);
         }).onErrorComplete();
     }
@@ -358,15 +360,15 @@ public class Ladder {
 
     private Completable loadCutoffs(String region) {
         return blizzardAPI.cutoffs(region).map(cutoffs -> {
-            regionCutoff.put(region, cutoffs);
-            return cutoffs;
-        }).doAfterSuccess(cutoffs -> log.info("Cutoffs for region={} has been loaded", region))
-                .ignoreElement().onErrorComplete();
+                regionCutoff.put(region, cutoffs);
+                return cutoffs;
+            }).doAfterSuccess(cutoffs -> log.info("Cutoffs for region={} has been loaded", region))
+            .ignoreElement().onErrorComplete();
     }
 
     private Completable loadWowCharApiData(String region) {
         String realRegion;
-        if(region.equals(EU)) {
+        if (region.equals(EU)) {
             realRegion = "eu";
         } else {
             realRegion = "us";

@@ -1,7 +1,11 @@
 package io.github.sammers.pla.blizzard;
 
 import io.github.sammers.pla.http.JsonConvertable;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+
+import java.time.Instant;
+import java.util.List;
 
 /**
  * WoW API character.
@@ -118,60 +122,69 @@ import io.vertx.core.json.JsonObject;
  * }
  */
 public record WowAPICharacter(long id, String name, String realm, String gender, String fraction, String race,
-                              String activeSpec, int level, String clazz, int itemLevel, String region) implements JsonConvertable {
+                              String activeSpec, int level, String clazz, int itemLevel, String region,
+                              List<PvpBracket> brackets, Long lastUpdatedUTCms) implements JsonConvertable {
 
-    public static WowAPICharacter parse(JsonObject entries, String region) {
+    public static WowAPICharacter parse(
+            JsonObject entries,
+            JsonObject pvpSummary,
+            List<JsonObject> brackets,
+            String region) {
+        List<PvpBracket> list = brackets.stream().map(PvpBracket::parse).toList();
+        Long lastUpdatedUTCms = Instant.now().toEpochMilli();
         return new WowAPICharacter(
-            entries.getInteger("id"),
-            entries.getString("name"),
-            entries.getJsonObject("realm").getString("name"),
-            entries.getJsonObject("gender").getString("name"),
-            entries.getJsonObject("faction").getString("name"),
-            entries.getJsonObject("race").getString("name"),
-            entries.getJsonObject("active_spec").getString("name"),
-            entries.getInteger("level"),
-            entries.getJsonObject("character_class").getString("name"),
-            entries.getInteger("equipped_item_level"),
-            region
+                entries.getInteger("id"),
+                entries.getString("name"),
+                entries.getJsonObject("realm").getString("name"),
+                entries.getJsonObject("gender").getString("name"),
+                entries.getJsonObject("faction").getString("name"),
+                entries.getJsonObject("race").getString("name"),
+                entries.getJsonObject("active_spec").getString("name"),
+                entries.getInteger("level"),
+                entries.getJsonObject("character_class").getString("name"),
+                entries.getInteger("equipped_item_level"),
+                region,
+                list,
+                lastUpdatedUTCms
         );
     }
 
     public String fullName() {
         return (name() + "-" + realm().replaceAll(" ", "-")
-            .replaceAll("'", "")).toLowerCase();
+                .replaceAll("'", "")).toLowerCase();
     }
 
     public static WowAPICharacter fromJson(JsonObject entries) {
-        return new WowAPICharacter(
-            entries.getInteger("id"),
-            entries.getString("name"),
-            entries.getString("realm"),
-            entries.getString("gender"),
-            entries.getString("fraction"),
-            entries.getString("race"),
-            entries.getString("activeSpec"),
-            entries.getInteger("level"),
-            entries.getString("class"),
-            entries.getInteger("itemLevel"),
-            entries.getString("region")
-        );
+        List<PvpBracket> brcktsFromJson;
+        JsonArray array = entries.getJsonArray("brackets");
+        if (array == null) {
+            brcktsFromJson = List.of();
+        } else {
+            brcktsFromJson = array.stream().map(o -> PvpBracket.fromJson((JsonObject) o)).toList();
+        }
+        if (entries.getLong("lastUpdatedUTCms") == null) {
+            entries.put("lastUpdatedUTCms", 0L);
+        }
+        return new WowAPICharacter(entries.getInteger("id"), entries.getString("name"), entries.getString("realm"), entries.getString("gender"), entries.getString("fraction"), entries.getString("race"), entries.getString("activeSpec"), entries.getInteger("level"), entries.getString("class"), entries.getInteger("itemLevel"), entries.getString("region"), brcktsFromJson, entries.getLong("lastUpdatedUTCms"));
 
     }
 
     @Override
     public JsonObject toJson() {
         return new JsonObject()
-            .put("id", id)
-            .put("name", name)
-            .put("realm", realm)
-            .put("gender",  gender)
-            .put("fraction", fraction)
-            .put("race", race)
-            .put("activeSpec", activeSpec)
-            .put("level", level)
-            .put("class", clazz)
-            .put("itemLevel", itemLevel)
-            .put("region", region);
+                .put("id", id)
+                .put("name", name)
+                .put("realm", realm)
+                .put("gender", gender)
+                .put("fraction", fraction)
+                .put("race", race)
+                .put("activeSpec", activeSpec)
+                .put("level", level)
+                .put("class", clazz)
+                .put("itemLevel", itemLevel)
+                .put("region", region)
+                .put("lastUpdatedUTCms", lastUpdatedUTCms)
+                .put("brackets", new JsonArray(brackets.stream().map(PvpBracket::toJson).toList()));
     }
 
 }

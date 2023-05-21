@@ -1,7 +1,9 @@
 package io.github.sammers.pla.blizzard;
 
+import io.github.sammers.pla.Main;
 import io.reactivex.Maybe;
 import io.reactivex.Single;
+import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.core.MultiMap;
 import io.vertx.reactivex.ext.web.client.HttpResponse;
 import io.vertx.reactivex.ext.web.client.WebClient;
@@ -10,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -74,7 +77,23 @@ public class BlizzardAPI {
                         res = Maybe.empty();
                     } else {
                         log.debug("Found Character:  " + name + " on " + realm + " in " + realRegion);
-                        res = Maybe.just(WowAPICharacter.parse(json, realRegion));
+                        res = webClient.getAbs(json.getJsonObject("pvp_summary").getString("href"))
+                                .addQueryParam("namespace", realNamespace)
+                                .addQueryParam("locale", LOCALE)
+                                .bearerTokenAuthentication(blizzardAuthToken.accessToken())
+                                .rxSend()
+                                .map(HttpResponse::bodyAsJsonObject)
+                                .flatMapMaybe(pvp -> Single.concatEager(
+                                        pvp.getJsonArray("brackets").stream()
+                                                .map(o -> ((JsonObject) o).getString("href"))
+                                                .map(ref -> webClient.getAbs(ref)
+                                                        .addQueryParam("namespace", realNamespace)
+                                                        .addQueryParam("locale", LOCALE)
+                                                        .bearerTokenAuthentication(blizzardAuthToken.accessToken())
+                                                        .rxSend()
+                                                        .map(HttpResponse::bodyAsJsonObject)
+                                                ).toList()
+                                ).toList().flatMapMaybe(brackets -> Maybe.just(WowAPICharacter.parse(json, pvp, brackets, realRegion))));
                     }
                     return res;
                 })
