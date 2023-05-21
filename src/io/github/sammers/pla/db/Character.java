@@ -4,7 +4,8 @@ package io.github.sammers.pla.db;
 import io.github.sammers.pla.http.JsonConvertable;
 import io.vertx.core.json.JsonObject;
 
-public record Character(Long pos, Long rating, boolean inCutoff, String name, String clazz, String fullSpec, String fraction,
+public record Character(Long pos, Long rating, boolean inCutoff, String name, String clazz, String fullSpec,
+                        String fraction,
                         String gender, String race,
                         String realm, Long wins, Long losses) implements JsonConvertable {
     public String fullNameWClass() {
@@ -40,7 +41,7 @@ public record Character(Long pos, Long rating, boolean inCutoff, String name, St
     }
 
     public static Character withWinsAndLossesAndPosAndRating(Character character, Long wins, Long losses, Long pos, Long rating) {
-        return new Character(pos, rating,character.inCutoff(), character.name(), character.clazz(), character.fullSpec(), character.fraction(),
+        return new Character(pos, rating, character.inCutoff(), character.name(), character.clazz(), character.fullSpec(), character.fraction(),
             character.gender(), character.race(),
             character.realm(), wins, losses);
     }

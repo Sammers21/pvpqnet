@@ -34,11 +34,7 @@ public class Http {
         Vertx vertx = Vertx.vertx(new VertxOptions().setEventLoopPoolSize(4));
         Router router = Router.router(vertx);
         router.route().handler(ctx -> {
-            ctx.response()
-                .putHeader("Access-Control-Allow-Origin", "*")
-                .putHeader("Access-Control-Allow-Credentials", "true")
-                .putHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-                .putHeader("Access-Control-Max-Age", "86400");
+            ctx.response().putHeader("Access-Control-Allow-Origin", "*").putHeader("Access-Control-Allow-Credentials", "true").putHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS").putHeader("Access-Control-Max-Age", "86400");
             if (!(ctx.request().path().contains("df.img") || ctx.request().path().contains(".png"))) {
                 ctx.response().putHeader("Cache-Control", "no-cache, no-store, must-revalidate");
             }
@@ -54,11 +50,8 @@ public class Http {
         router.get("/api/search").handler(ctx -> {
             Optional<String> q = Optional.ofNullable(ctx.request().getParam("q"));
             Optional<String> query = Optional.ofNullable(ctx.request().getParam("query"));
-            Optional<String> opt = Stream.of(q, query)
-                    .filter(Optional::isPresent)
-                    .map(Optional::get)
-                    .findFirst();
-            if(opt.isEmpty()) {
+            Optional<String> opt = Stream.of(q, query).filter(Optional::isPresent).map(Optional::get).findFirst();
+            if (opt.isEmpty()) {
                 ctx.response().end(new JsonArray().encode());
             } else {
                 ctx.response().end(new JsonArray(ladder.search(opt.get())).encode());
@@ -78,12 +71,7 @@ public class Http {
             Integer threes = Optional.ofNullable(ladder.diffsByBracket(THREE_V_THREE, region).get()).map(diff -> diff.chars().size()).orElse(0);
             Integer rbgs = Optional.ofNullable(ladder.diffsByBracket(RBG, region).get()).map(diff -> diff.chars().size()).orElse(0);
             Integer shuffle = Optional.ofNullable(ladder.diffsByBracket(SHUFFLE, region).get()).map(diff -> diff.chars().size()).orElse(0);
-            ctx.response().end(new JsonObject()
-                .put("2v2", twos)
-                .put("3v3", threes)
-                .put("rbg", rbgs)
-                .put("shuffle", shuffle)
-                .encode());
+            ctx.response().end(new JsonObject().put("2v2", twos).put("3v3", threes).put("rbg", rbgs).put("shuffle", shuffle).encode());
         });
         router.get("/api/:region/activity/:bracket").handler(ctx -> {
             String region = ctx.pathParam("region");
@@ -107,9 +95,7 @@ public class Http {
     }
 
     private void ladder(RoutingContext ctx, JsonPaged snapshot) {
-        Long page = Optional.of(ctx.queryParam("page"))
-            .flatMap(l -> l.stream().findFirst())
-            .map(Long::parseLong).orElse(1L);
+        Long page = Optional.of(ctx.queryParam("page")).flatMap(l -> l.stream().findFirst()).map(Long::parseLong).orElse(1L);
         if (snapshot == null) {
             ctx.response().end(Snapshot.empty(EU).toJson(page).encode());
         } else {

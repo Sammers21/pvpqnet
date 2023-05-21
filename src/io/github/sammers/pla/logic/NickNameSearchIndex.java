@@ -28,7 +28,7 @@ public class NickNameSearchIndex {
     private final Directory index;
     private final Analyzer analyzer;
 
-    public NickNameSearchIndex(){
+    public NickNameSearchIndex() {
         index = new ByteBuffersDirectory();
         analyzer = new Analyzer() {
             @Override
@@ -39,12 +39,10 @@ public class NickNameSearchIndex {
                 tok = new NorwegianNormalizationFilter(tok);
                 tok = new ScandinavianNormalizationFilter(tok);
                 tok = new StopFilter(tok, NorwegianAnalyzer.getDefaultStopSet());
-                return new TokenStreamComponents(
-                        r -> {
-                            src.setMaxTokenLength(255);
-                            src.setReader(r);
-                        },
-                        tok);
+                return new TokenStreamComponents(r -> {
+                    src.setMaxTokenLength(255);
+                    src.setReader(r);
+                }, tok);
             }
         };
     }
@@ -71,7 +69,7 @@ public class NickNameSearchIndex {
             IndexReader indexReader = DirectoryReader.open(index);
             IndexSearcher searcher = new IndexSearcher(indexReader);
             TopDocs res = searcher.search(q, 20);
-            for(int i = 0; i < res.scoreDocs.length; i++){
+            for (int i = 0; i < res.scoreDocs.length; i++) {
                 Document doc = searcher.doc(res.scoreDocs[i].doc);
                 searchRes.add(doc.get("nickName"));
             }

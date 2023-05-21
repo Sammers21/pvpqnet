@@ -108,7 +108,7 @@ public class Calculator {
 
     public static Function<Character, String> getIdFunction(String bracket) {
         Function<Character, String> idF;
-        if(bracket.equals("shuffle")) {
+        if (bracket.equals("shuffle")) {
             idF = Character::fullNameWSpec;
         } else {
             idF = Character::fullNameWClass;
