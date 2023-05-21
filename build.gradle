@@ -1,5 +1,5 @@
 plugins {
-    id 'com.github.johnrengelman.shadow' version '8.1.0'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
     id 'java'
     id 'idea'
 }
@@ -32,6 +32,7 @@ dependencies {
     implementation group: 'org.apache.commons', name: 'commons-collections4', version: '4.4'
     implementation 'org.ocpsoft.prettytime:prettytime:5.0.6.Final'
     implementation group: 'org.apache.lucene', name: 'lucene-core', version: '9.6.0'
+    implementation group: 'org.apache.lucene', name: 'lucene-queryparser', version: '9.6.0'
 }
 
 jar {
@@ -44,7 +45,8 @@ shadowJar {
     archiveBaseName.set('wow-pla')
     archiveClassifier.set('')
     archiveVersion.set('')
-    manifest {
-        inheritFrom project.tasks.jar.manifest
-    }
+    mergeServiceFiles()
+//    manifest {
+//        inheritFrom project.tasks.jar.manifest
+//    }
 }

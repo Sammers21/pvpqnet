@@ -1,5 +1,6 @@
 package io.github.sammers.pla.logic;
 
+import io.github.sammers.pla.Main;
 import io.github.sammers.pla.blizzard.PvpLeaderBoard;
 import io.github.sammers.pla.blizzard.BlizzardAPI;
 import io.github.sammers.pla.blizzard.Cutoffs;
@@ -11,6 +12,7 @@ import io.reactivex.Completable;
 import io.reactivex.Maybe;
 import io.reactivex.Observable;
 import io.reactivex.Single;
+import io.reactivex.schedulers.Schedulers;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.buffer.Buffer;
 import io.vertx.reactivex.ext.web.client.HttpRequest;
@@ -91,7 +93,7 @@ public class Ladder {
     private final Map<String, AtomicReference<Snapshot>> refs = new ConcurrentHashMap<>();
     private final Map<String, AtomicReference<SnapshotDiff>> refDiffs = new ConcurrentHashMap<>();
     private final Map<String, WowAPICharacter> characterCache = new ConcurrentHashMap<>();
-    private final CharSearchIndex charSearchIndex = new CharSearchIndex(characterCache);
+    private final NickNameSearchIndex charSearchIndex = new NickNameSearchIndex();
     private final Map<String, Cutoffs> regionCutoff = new ConcurrentHashMap<>();
     private final DB db;
     private BlizzardAPI blizzardAPI;
@@ -125,6 +127,10 @@ public class Ladder {
 
     public WowAPICharacter wowChar(String realm, String name){
         return characterCache.get(Character.fullNameByRealmAndName(name, realm));
+    }
+
+    public List<String> search(String name) {
+        return charSearchIndex.searchNickNames(name);
     }
 
     public Single<Snapshot> fetchLadder(String bracket, String region) {
@@ -216,6 +222,7 @@ public class Ladder {
                 .map(wowChar ->
                     blizzardAPI.character(region, wowChar.realm(), wowChar.name()).flatMap(c -> {
                         characterCache.put(wowChar.fullName(), c);
+                        charSearchIndex.insertNickNames(wowChar.fullName());
                         return db.upsertCharacter(c);
                     }).doOnSuccess(d -> log.debug("Updated character: " + wowChar))
                     .ignoreElement()).toList();
@@ -366,9 +373,14 @@ public class Ladder {
         }
         return db.fetchChars(realRegion)
             .flatMapCompletable(characters -> {
-                log.info("Character data size={} for region={} has been loaded from DB", characters.size(), region);
-                characters.forEach(character -> {
-                    characterCache.put(character.fullName(), character);
+                Main.INDEX_CALC_THREAD.scheduleDirect(() -> {
+                    log.info("Character data size={} for region={} is being loaded to cache", characters.size(), region);
+                    long tick = System.nanoTime();
+                    characters.forEach(character -> {
+                        characterCache.put(character.fullName(), character);
+                        charSearchIndex.insertNickNames(character.fullName());
+                    });
+                    log.info("Character data size={} for region={} has been loaded to cache in {} ms", characters.size(), region, (System.nanoTime() - tick) / 1000000);
                 });
                 return Completable.complete();
             });

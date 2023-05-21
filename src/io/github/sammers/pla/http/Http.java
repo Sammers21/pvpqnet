@@ -3,6 +3,7 @@ package io.github.sammers.pla.http;
 import io.github.sammers.pla.logic.Ladder;
 import io.github.sammers.pla.db.Snapshot;
 import io.vertx.core.VertxOptions;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.ext.web.Router;
@@ -11,6 +12,7 @@ import io.vertx.reactivex.ext.web.RoutingContext;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static io.github.sammers.pla.logic.Ladder.EU;
 import static io.github.sammers.pla.logic.Ladder.RBG;
@@ -49,6 +51,19 @@ public class Http {
         router.routeWithRegex(("\\/classicons\\/(?<classicon>[^\\/]+.png)")).handler(ctx -> ctx.response().sendFile("classicons/" + ctx.pathParam("classicon")));
         router.routeWithRegex(("\\/specicons\\/(?<specicon>[^\\/]+.png)")).handler(ctx -> ctx.response().sendFile("specicons/" + ctx.pathParam("specicon")));
         router.routeWithRegex(("\\/regionicons\\/(?<regionicon>[^\\/]+.svg)")).handler(ctx -> ctx.response().sendFile("regionicons/" + ctx.pathParam("regionicon")));
+        router.get("/api/search").handler(ctx -> {
+            Optional<String> q = Optional.ofNullable(ctx.request().getParam("q"));
+            Optional<String> query = Optional.ofNullable(ctx.request().getParam("query"));
+            Optional<String> opt = Stream.of(q, query)
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
+                    .findFirst();
+            if(opt.isEmpty()) {
+                ctx.response().end(new JsonArray().encode());
+            } else {
+                ctx.response().end(new JsonArray(ladder.search(opt.get())).encode());
+            }
+        });
         router.get("/api/:region/ladder/:bracket").handler(ctx -> {
             String region = ctx.pathParam("region");
             String bracket = ctx.pathParam("bracket");
