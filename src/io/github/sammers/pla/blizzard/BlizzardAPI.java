@@ -99,7 +99,10 @@ public class BlizzardAPI {
                                                             .rxSend()
                                                             .map(HttpResponse::bodyAsJsonObject)
                                                     ).toList()
-                                    ).toList().flatMapMaybe(brackets -> Maybe.just(WowAPICharacter.parse(json, pvp, brackets, realRegion)));
+                                    ).toList()
+                                        .flatMapMaybe(brackets -> Maybe.just(WowAPICharacter.parse(json, pvp, brackets, realRegion)))
+                                        .doOnError(e -> log.error("Error parsing character: " + name + " on " + realm + " in " + realRegion, e))
+                                        .onErrorResumeNext(Maybe.empty());
                                 });
                     }
                     return res;
