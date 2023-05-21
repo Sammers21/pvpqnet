@@ -1,5 +1,7 @@
-package io.github.sammers.pla;
+package io.github.sammers.pla.logic;
 
+import io.github.sammers.pla.db.Character;
+import io.github.sammers.pla.db.Snapshot;
 import io.reactivex.Maybe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

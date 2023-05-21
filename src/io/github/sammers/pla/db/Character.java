@@ -1,6 +1,7 @@
-package io.github.sammers.pla;
+package io.github.sammers.pla.db;
 
 
+import io.github.sammers.pla.http.JsonConvertable;
 import io.vertx.core.json.JsonObject;
 
 public record Character(Long pos, Long rating, boolean inCutoff, String name, String clazz, String fullSpec, String fraction,

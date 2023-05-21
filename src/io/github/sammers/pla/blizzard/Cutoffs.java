@@ -1,5 +1,6 @@
-package io.github.sammers.pla;
+package io.github.sammers.pla.blizzard;
 
+import io.github.sammers.pla.http.JsonConvertable;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 

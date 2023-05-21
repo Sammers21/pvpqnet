@@ -31,6 +31,7 @@ dependencies {
     implementation group: 'io.vertx', name: 'vertx-rx-java2', version: vertxVersion
     implementation group: 'org.apache.commons', name: 'commons-collections4', version: '4.4'
     implementation 'org.ocpsoft.prettytime:prettytime:5.0.6.Final'
+    implementation group: 'org.apache.lucene', name: 'lucene-core', version: '9.6.0'
 }
 
 jar {

@@ -1,4 +1,4 @@
-package io.github.sammers.pla;
+package io.github.sammers.pla.blizzard;
 
 import io.reactivex.Maybe;
 import io.reactivex.Single;

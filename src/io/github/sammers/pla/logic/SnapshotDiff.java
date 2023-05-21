@@ -1,5 +1,8 @@
-package io.github.sammers.pla;
+package io.github.sammers.pla.logic;
 
+import io.github.sammers.pla.Main;
+import io.github.sammers.pla.http.JsonConvertable;
+import io.github.sammers.pla.http.Resp;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 

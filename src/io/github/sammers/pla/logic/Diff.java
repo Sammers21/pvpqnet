@@ -1,5 +1,7 @@
-package io.github.sammers.pla;
+package io.github.sammers.pla.logic;
 
+import io.github.sammers.pla.Main;
+import io.github.sammers.pla.http.JsonConvertable;
 import io.vertx.core.json.JsonObject;
 
 import java.util.Date;

@@ -1,5 +1,7 @@
-package io.github.sammers.pla;
+package io.github.sammers.pla.http;
 
+import io.github.sammers.pla.logic.Ladder;
+import io.github.sammers.pla.db.Snapshot;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.core.Vertx;
@@ -10,11 +12,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static io.github.sammers.pla.Ladder.EU;
-import static io.github.sammers.pla.Ladder.RBG;
-import static io.github.sammers.pla.Ladder.SHUFFLE;
-import static io.github.sammers.pla.Ladder.THREE_V_THREE;
-import static io.github.sammers.pla.Ladder.TWO_V_TWO;
+import static io.github.sammers.pla.logic.Ladder.EU;
+import static io.github.sammers.pla.logic.Ladder.RBG;
+import static io.github.sammers.pla.logic.Ladder.SHUFFLE;
+import static io.github.sammers.pla.logic.Ladder.THREE_V_THREE;
+import static io.github.sammers.pla.logic.Ladder.TWO_V_TWO;
 
 public class Http {
 

@@ -1,5 +1,6 @@
-package io.github.sammers.pla;
+package io.github.sammers.pla.db;
 
+import io.github.sammers.pla.blizzard.WowAPICharacter;
 import io.reactivex.Completable;
 import io.reactivex.Maybe;
 import io.reactivex.Single;

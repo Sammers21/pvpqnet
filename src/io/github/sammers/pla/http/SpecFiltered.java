@@ -1,4 +1,4 @@
-package io.github.sammers.pla;
+package io.github.sammers.pla.http;
 
 import java.util.List;
 

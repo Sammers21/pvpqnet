@@ -1,5 +1,12 @@
-package io.github.sammers.pla;
+package io.github.sammers.pla.logic;
 
+import io.github.sammers.pla.blizzard.PvpLeaderBoard;
+import io.github.sammers.pla.blizzard.BlizzardAPI;
+import io.github.sammers.pla.blizzard.Cutoffs;
+import io.github.sammers.pla.blizzard.WowAPICharacter;
+import io.github.sammers.pla.db.Character;
+import io.github.sammers.pla.db.DB;
+import io.github.sammers.pla.db.Snapshot;
 import io.reactivex.Completable;
 import io.reactivex.Maybe;
 import io.reactivex.Observable;
@@ -84,6 +91,7 @@ public class Ladder {
     private final Map<String, AtomicReference<Snapshot>> refs = new ConcurrentHashMap<>();
     private final Map<String, AtomicReference<SnapshotDiff>> refDiffs = new ConcurrentHashMap<>();
     private final Map<String, WowAPICharacter> characterCache = new ConcurrentHashMap<>();
+    private final CharSearchIndex charSearchIndex = new CharSearchIndex(characterCache);
     private final Map<String, Cutoffs> regionCutoff = new ConcurrentHashMap<>();
     private final DB db;
     private BlizzardAPI blizzardAPI;
