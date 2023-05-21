@@ -127,8 +127,8 @@ public class Ladder {
         return fetchLadder(bracket, region);
     }
 
-    public WowAPICharacter wowChar(String realm, String name) {
-        return characterCache.get(Character.fullNameByRealmAndName(name, realm));
+    public Optional<WowAPICharacter> wowChar(String realm, String name) {
+        return Optional.ofNullable(characterCache.get(Character.fullNameByRealmAndName(name, realm)));
     }
 
     public List<String> search(String name) {

@@ -1,5 +1,6 @@
 package io.github.sammers.pla.http;
 
+import io.github.sammers.pla.blizzard.WowAPICharacter;
 import io.github.sammers.pla.logic.Ladder;
 import io.github.sammers.pla.db.Snapshot;
 import io.vertx.core.VertxOptions;
@@ -84,7 +85,12 @@ public class Http {
         router.get("/api/:region/:realm/:name").handler(ctx -> {
             String realm = ctx.pathParam("realm");
             String name = ctx.pathParam("name");
-            ctx.response().end(ladder.wowChar(realm, name).toJson().encode());
+            Optional<WowAPICharacter> wowAPICharacter = ladder.wowChar(realm, name);
+            if(wowAPICharacter.isEmpty()) {
+                ctx.response().setStatusCode(404).end(new JsonObject().put("error", "Character not found").encode());
+            } else {
+                ctx.response().end(wowAPICharacter.get().toJson().encode());
+            }
         });
         router.get("/:region/ladder/:bracket").handler(ctx -> ctx.response().sendFile("index.html"));
         router.get("/:region/activity/:bracket").handler(ctx -> ctx.response().sendFile("index.html"));
