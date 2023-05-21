@@ -227,7 +227,8 @@ public class Ladder {
                     characterCache.put(wowChar.fullName(), c);
                     charSearchIndex.insertNickNames(wowChar.fullName());
                     return db.upsertCharacter(c);
-                }).doOnSuccess(d -> log.debug("Updated character: " + wowChar))
+                })
+                .doOnSuccess(d -> log.debug("Updated character: " + wowChar))
                 .doOnError(e -> log.error("Failed to update character: " + wowChar + " Stopping update", e))
                 .ignoreElement()).toList();
             return Completable.concat(completables);
@@ -376,7 +377,7 @@ public class Ladder {
             realRegion = "us";
         }
         return db.fetchChars(realRegion)
-            .flatMapCompletable(characters -> {
+            .flatMapCompletable(characters -> Completable.create(emitter -> {
                 Main.INDEX_CALC_THREAD.scheduleDirect(() -> {
                     log.info("Character data size={} for region={} is being loaded to cache", characters.size(), region);
                     long tick = System.nanoTime();
@@ -385,9 +386,9 @@ public class Ladder {
                         charSearchIndex.insertNickNames(character.fullName());
                     });
                     log.info("Character data size={} for region={} has been loaded to cache in {} ms", characters.size(), region, (System.nanoTime() - tick) / 1000000);
+                    emitter.onComplete();
                 });
-                return Completable.complete();
-            });
+            }));
     }
 
     private Completable loadLast(String bracket, String region) {

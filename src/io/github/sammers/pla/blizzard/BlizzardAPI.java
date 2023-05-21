@@ -3,6 +3,7 @@ package io.github.sammers.pla.blizzard;
 import io.github.sammers.pla.Main;
 import io.reactivex.Maybe;
 import io.reactivex.Single;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.core.MultiMap;
 import io.vertx.reactivex.ext.web.client.HttpResponse;
@@ -83,17 +84,23 @@ public class BlizzardAPI {
                                 .bearerTokenAuthentication(blizzardAuthToken.accessToken())
                                 .rxSend()
                                 .map(HttpResponse::bodyAsJsonObject)
-                                .flatMapMaybe(pvp -> Single.concatEager(
-                                        pvp.getJsonArray("brackets").stream()
-                                                .map(o -> ((JsonObject) o).getString("href"))
-                                                .map(ref -> webClient.getAbs(ref)
-                                                        .addQueryParam("namespace", realNamespace)
-                                                        .addQueryParam("locale", LOCALE)
-                                                        .bearerTokenAuthentication(blizzardAuthToken.accessToken())
-                                                        .rxSend()
-                                                        .map(HttpResponse::bodyAsJsonObject)
-                                                ).toList()
-                                ).toList().flatMapMaybe(brackets -> Maybe.just(WowAPICharacter.parse(json, pvp, brackets, realRegion))));
+                                .flatMapMaybe(pvp -> {
+                                    JsonArray bracketFromJson = pvp.getJsonArray("brackets");
+                                    if(bracketFromJson == null) {
+                                        bracketFromJson = new JsonArray();
+                                    }
+                                    return Single.concatEager(
+                                            bracketFromJson.stream()
+                                                    .map(o -> ((JsonObject) o).getString("href"))
+                                                    .map(ref -> webClient.getAbs(ref)
+                                                            .addQueryParam("namespace", realNamespace)
+                                                            .addQueryParam("locale", LOCALE)
+                                                            .bearerTokenAuthentication(blizzardAuthToken.accessToken())
+                                                            .rxSend()
+                                                            .map(HttpResponse::bodyAsJsonObject)
+                                                    ).toList()
+                                    ).toList().flatMapMaybe(brackets -> Maybe.just(WowAPICharacter.parse(json, pvp, brackets, realRegion)));
+                                });
                     }
                     return res;
                 })
