@@ -18,6 +18,11 @@ sourceSets {
             srcDir 'settings'
         }
     }
+    test {
+        java {
+            srcDir 'test'
+        }
+    }
 }
 
 dependencies {
@@ -33,6 +38,8 @@ dependencies {
     implementation 'org.ocpsoft.prettytime:prettytime:5.0.6.Final'
     implementation group: 'org.apache.lucene', name: 'lucene-core', version: '9.6.0'
     implementation group: 'org.apache.lucene', name: 'lucene-queryparser', version: '9.6.0'
+    implementation group: 'org.apache.lucene', name: 'lucene-misc', version: '9.6.0'
+    implementation group: 'org.apache.lucene', name: 'lucene-analysis-common', version: '9.6.0'
 }
 
 jar {

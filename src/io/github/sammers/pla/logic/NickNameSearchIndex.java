@@ -1,6 +1,12 @@
 package io.github.sammers.pla.logic;
 
+import org.apache.lucene.analysis.*;
+import org.apache.lucene.analysis.miscellaneous.ScandinavianNormalizationFilter;
+import org.apache.lucene.analysis.no.NorwegianAnalyzer;
+import org.apache.lucene.analysis.no.NorwegianLightStemFilter;
+import org.apache.lucene.analysis.no.NorwegianNormalizationFilter;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.analysis.standard.StandardTokenizer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.*;
 import org.apache.lucene.queryparser.classic.ParseException;
@@ -10,7 +16,6 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.ByteBuffersDirectory;
 import org.apache.lucene.store.Directory;
-import org.apache.lucene.queryparser.classic.QueryParser;
 import org.slf4j.Logger;
 
 import java.io.IOException;
@@ -21,11 +26,27 @@ public class NickNameSearchIndex {
 
     private static final Logger log = org.slf4j.LoggerFactory.getLogger(NickNameSearchIndex.class);
     private final Directory index;
-    private final StandardAnalyzer analyzer;
+    private final Analyzer analyzer;
 
     public NickNameSearchIndex(){
         index = new ByteBuffersDirectory();
-        analyzer = new StandardAnalyzer();
+        analyzer = new Analyzer() {
+            @Override
+            protected TokenStreamComponents createComponents(String fieldName) {
+                final StandardTokenizer src = new StandardTokenizer();
+                src.setMaxTokenLength(255);
+                TokenStream tok = new LowerCaseFilter(src);
+                tok = new NorwegianNormalizationFilter(tok);
+                tok = new ScandinavianNormalizationFilter(tok);
+                tok = new StopFilter(tok, NorwegianAnalyzer.getDefaultStopSet());
+                return new TokenStreamComponents(
+                        r -> {
+                            src.setMaxTokenLength(255);
+                            src.setReader(r);
+                        },
+                        tok);
+            }
+        };
     }
 
     public void insertNickNames(String... nickNames) {
@@ -49,7 +70,7 @@ public class NickNameSearchIndex {
             Query q = new PrefixQuery(new Term("nickName", query));
             IndexReader indexReader = DirectoryReader.open(index);
             IndexSearcher searcher = new IndexSearcher(indexReader);
-            TopDocs res = searcher.search(q, 10);
+            TopDocs res = searcher.search(q, 20);
             for(int i = 0; i < res.scoreDocs.length; i++){
                 Document doc = searcher.doc(res.scoreDocs[i].doc);
                 searchRes.add(doc.get("nickName"));
