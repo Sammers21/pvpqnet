@@ -35,6 +35,7 @@ const SearchBar = () => {
   return (<Autocomplete
     sx={{
       display: "inline-flex",
+      marginTop: 1,
       width: 300,
     }}
     disablePortal
