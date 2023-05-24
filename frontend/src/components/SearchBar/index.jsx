@@ -1,6 +1,7 @@
 import React from 'react';
 import {Autocomplete, TextField} from '@mui/material';
 const SearchBar = () => {
+  const [inputValue, setInputValue] = React.useState('');
   return (<Autocomplete
     sx={{
       display: "inline-flex",
@@ -8,18 +9,13 @@ const SearchBar = () => {
     }}
     disablePortal
     options={["123"]}
-    id="combo-box-demo"
+    onInputChange={(event, newInputValue) => {
+      console.log("input change:", newInputValue)
+      setInputValue(newInputValue);
+    }}
     renderInput={(params) => {
-      console.log(params)
-      return (<TextField {...params}
-                         label="Seach for characters..."
-                         size="small"
-                         inputProps={{...params.inputProps,
-                           backgroundColor: "rgb(156 163 175 / .25)"}}
-      />);
+      return (<TextField {...params} label="Seach for characters..." size="small"/>);
     }}
   />);
-
-//
 };
 export default SearchBar;
