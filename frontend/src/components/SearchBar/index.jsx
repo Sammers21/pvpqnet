@@ -1,14 +1,45 @@
-import React from 'react';
+import React, {useCallback, useEffect, useMemo} from 'react';
+import {useState} from 'react';
+import _debounce from 'lodash/debounce';
 import {Autocomplete, TextField} from '@mui/material';
+import axios from 'axios';
+
 const SearchBar = () => {
-  const [inputValue, setInputValue] = React.useState('');
+  // Ultra small delay to prevent spamming the API
+  const delayMs = 100;
+  const [inputValue, setInputValue] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [searchResults, setSearchResults] = useState([]);
+
+  const search = async (q) => {
+    if (q === '') {
+      setSearchResults([]);
+      return;
+    }
+    setLoading(true);
+    const response = await axios.get("https://pvpq.net/api/search", {
+      params: {
+        q: q,
+      }
+    });
+    let unique = [...new Set(response.data)];
+    setSearchResults(unique);
+    console.log("search results:", response.data);
+    setLoading(false);
+  }
+  const throttle = useCallback(_debounce(search, delayMs), []);
+  useEffect(() => {
+    throttle(inputValue);
+  }, [inputValue]);
+
   return (<Autocomplete
     sx={{
       display: "inline-flex",
       width: 300,
     }}
     disablePortal
-    options={["123"]}
+    noOptionsText="No results"
+    options={searchResults}
     onInputChange={(event, newInputValue) => {
       console.log("input change:", newInputValue)
       setInputValue(newInputValue);
