@@ -20,8 +20,12 @@ const specNameFromFullSpec = (wowSpec) => {
   return wowSpec.trim().replaceAll(' ', '').toLowerCase();
 };
 
+export const classIcon = (wowClass) => {
+  return require('../../assets/classicons/' + wowClass.replaceAll(' ', '').toLowerCase() + '.png');
+}
+
 const getDetails = (wowClass, wowSpec, wowRace, wowGender) => {
-  const classSrc = require('../../assets/classicons/' + wowClass.replaceAll(' ', '').toLowerCase() + '.png');
+  const classSrc = classIcon(wowClass);
   let specSrc;
   let specIcon = specNameFromFullSpec(wowSpec) + '.png';
   try {
@@ -41,7 +45,7 @@ const getDetails = (wowClass, wowSpec, wowRace, wowGender) => {
   return {classSrc, specSrc, raceSrc};
 };
 
-const getClassNameColor = (wowClass) => {
+export const getClassNameColor = (wowClass) => {
   wowClass = wowClass.toUpperCase();
 
   if (wowClass === 'WARRIOR') {
