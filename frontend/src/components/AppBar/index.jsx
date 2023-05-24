@@ -14,6 +14,7 @@ import {TABS, TABS_MENU} from '../../constants/header';
 import {REGIONS} from '../../constants/region';
 import {getRegion} from '../../utils/urlparts';
 import {BRACKETS} from '../../constants/pvp-activity';
+import SearchBar from "../SearchBar";
 
 const pages = Object.values(TABS);
 
@@ -81,7 +82,7 @@ const PageHeader = () => {
             ))}
           </Box>
 
-          <Grid>
+          <Grid direction="column">
             <IconButton
               aria-label="eu"
               sx={region !== REGIONS.eu ? { filter: 'grayscale(100%)' } : {}}
@@ -98,6 +99,8 @@ const PageHeader = () => {
             >
               <UsIcon color="red" />
             </IconButton>
+            <SearchBar>
+            </SearchBar>
           </Grid>
         </StyledToolbar>
       </Container>

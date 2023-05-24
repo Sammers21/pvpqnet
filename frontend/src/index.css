@@ -132,3 +132,23 @@ body {
   animation: rotate-three 1s linear infinite;
   border-top: 3px solid #efeffa;
 }
+
+.MuiTextField-root {
+  background-color: rgb(156 163 175 / .25);
+}
+
+/*input {*/
+/*  width: 100px;*/
+/*  !*padding: 12px 20px;*!*/
+/*  !*margin: 8px 0;*!*/
+/*  !*box-sizing: border-box;*!*/
+/*  !*border: none;*!*/
+/*  background-color: rgb(156 163 175 / .25);*/
+/*  !*border-radius: 0.25rem;*!*/
+/*  !*padding-left: 0.5rem;*!*/
+/*  !*padding-right: 0.5rem;*!*/
+/*  !*padding-top: 0.25rem;*!*/
+/*  !*padding-bottom: 0.25rem;*!*/
+/*  !*--tw-bg-opacity: .25;*!*/
+/*  !*!*color: white;*!*!*/
+/*}*/
