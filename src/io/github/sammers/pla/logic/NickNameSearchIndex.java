@@ -36,8 +36,8 @@ public class NickNameSearchIndex {
                 final StandardTokenizer src = new StandardTokenizer();
                 src.setMaxTokenLength(255);
                 TokenStream tok = new LowerCaseFilter(src);
-                tok = new NorwegianNormalizationFilter(tok);
-                tok = new ScandinavianNormalizationFilter(tok);
+//                tok = new NorwegianNormalizationFilter(tok);
+//                tok = new ScandinavianNormalizationFilter(tok);
                 tok = new StopFilter(tok, NorwegianAnalyzer.getDefaultStopSet());
                 return new TokenStreamComponents(r -> {
                     src.setMaxTokenLength(255);
