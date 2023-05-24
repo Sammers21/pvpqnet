@@ -57,7 +57,10 @@ const SearchBar = () => {
       const split = option.nick.split("-");
       const realm = capitalize(split[1]);
       const name = capitalize(split[0]);
-      const fullNick = `${name}-${realm}`;
+      var fullNick = `${name}-${realm}`;
+      if(split.length > 2) {
+        fullNick = `${name}-${realm} ${capitalize(split[2])}`;
+      }
       return (<li {...props}>
         <Grid sx={{
           width: '100%',
