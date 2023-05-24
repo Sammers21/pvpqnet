@@ -61,6 +61,7 @@ const SearchBar = () => {
       return (<li {...props}>
         <Grid sx={{
           width: '100%',
+          height: '20px',
           display: 'flex',
           justifyContent: 'space-between',
         }}>
