@@ -3,6 +3,7 @@ package io.github.sammers.pla.http;
 import io.github.sammers.pla.blizzard.WowAPICharacter;
 import io.github.sammers.pla.logic.Ladder;
 import io.github.sammers.pla.db.Snapshot;
+import io.github.sammers.pla.logic.SearchResult;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -56,7 +57,7 @@ public class Http {
             if (opt.isEmpty()) {
                 ctx.response().end(new JsonArray().encode());
             } else {
-                ctx.response().end(new JsonArray(ladder.search(opt.get())).encode());
+                ctx.response().end(new JsonArray(ladder.search(opt.get()).stream().map(SearchResult::toJson).toList()).encode());
             }
         });
         router.get("/api/:region/ladder/:bracket").handler(ctx -> {

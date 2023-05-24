@@ -3,9 +3,10 @@ import {useState} from 'react';
 import _debounce from 'lodash/debounce';
 import {Autocomplete, TextField} from '@mui/material';
 import axios from 'axios';
+import {baseUrl} from "../../config";
 
 const SearchBar = () => {
-  // Ultra small delay to prevent spamming the API
+  // Tiny delay to prevent spamming the API
   const delayMs = 100;
   const [inputValue, setInputValue] = useState('');
   const [loading, setLoading] = useState(false);
@@ -17,7 +18,7 @@ const SearchBar = () => {
       return;
     }
     setLoading(true);
-    const response = await axios.get("https://pvpq.net/api/search", {
+    const response = await axios.get(baseUrl + "/api/search", {
       params: {
         q: q,
       }
@@ -41,6 +42,7 @@ const SearchBar = () => {
     disablePortal
     noOptionsText="No results"
     options={searchResults}
+    getOptionLabel={(option) => option.nick}
     onInputChange={(event, newInputValue) => {
       console.log("input change:", newInputValue)
       setInputValue(newInputValue);

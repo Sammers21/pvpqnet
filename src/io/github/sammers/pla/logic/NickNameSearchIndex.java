@@ -36,8 +36,6 @@ public class NickNameSearchIndex {
                 final StandardTokenizer src = new StandardTokenizer();
                 src.setMaxTokenLength(255);
                 TokenStream tok = new LowerCaseFilter(src);
-//                tok = new NorwegianNormalizationFilter(tok);
-//                tok = new ScandinavianNormalizationFilter(tok);
                 tok = new StopFilter(tok, NorwegianAnalyzer.getDefaultStopSet());
                 return new TokenStreamComponents(r -> {
                     src.setMaxTokenLength(255);
@@ -47,13 +45,15 @@ public class NickNameSearchIndex {
         };
     }
 
-    public void insertNickNames(String... nickNames) {
+    public void insertNickNames(SearchResult... searchResults) {
         try {
             IndexWriterConfig config = new IndexWriterConfig(analyzer);
             IndexWriter w = new IndexWriter(index, config);
-            for (String nickName : nickNames) {
+            for (SearchResult searchResult : searchResults) {
                 Document doc = new Document();
-                doc.add(new org.apache.lucene.document.TextField("nickName", nickName, org.apache.lucene.document.Field.Store.YES));
+                doc.add(new org.apache.lucene.document.TextField("nickName", searchResult.nick(), org.apache.lucene.document.Field.Store.YES));
+                doc.add(new org.apache.lucene.document.TextField("region", searchResult.region(), org.apache.lucene.document.Field.Store.YES));
+                doc.add(new org.apache.lucene.document.TextField("class", searchResult.clazz(), org.apache.lucene.document.Field.Store.YES));
                 w.addDocument(doc);
             }
             w.close();
@@ -62,8 +62,8 @@ public class NickNameSearchIndex {
         }
     }
 
-    public List<String> searchNickNames(String query) {
-        List<String> searchRes = new ArrayList<>();
+    public List<SearchResult> searchNickNames(String query) {
+        List<SearchResult> searchRes = new ArrayList<>();
         try {
             Query q = new PrefixQuery(new Term("nickName", query));
             IndexReader indexReader = DirectoryReader.open(index);
@@ -71,7 +71,7 @@ public class NickNameSearchIndex {
             TopDocs res = searcher.search(q, 20);
             for (int i = 0; i < res.scoreDocs.length; i++) {
                 Document doc = searcher.doc(res.scoreDocs[i].doc);
-                searchRes.add(doc.get("nickName"));
+                searchRes.add(new SearchResult(doc.get("nickName"), doc.get("region"), doc.get("class")));
             }
             return searchRes;
         } catch (IOException e) {

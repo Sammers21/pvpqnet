@@ -131,7 +131,7 @@ public class Ladder {
         return Optional.ofNullable(characterCache.get(Character.fullNameByRealmAndName(name, realm)));
     }
 
-    public List<String> search(String name) {
+    public List<SearchResult> search(String name) {
         return charSearchIndex.searchNickNames(name);
     }
 
@@ -225,7 +225,7 @@ public class Ladder {
             log.info("Updating " + uniqChars.size() + " characters");
             List<Completable> completables = uniqChars.stream().map(wowChar -> blizzardAPI.character(region, wowChar.realm(), wowChar.name()).flatMap(c -> {
                     characterCache.put(wowChar.fullName(), c);
-                    charSearchIndex.insertNickNames(wowChar.fullName());
+                    charSearchIndex.insertNickNames(new SearchResult(wowChar.name(), region, wowChar.clazz()));
                     return db.upsertCharacter(c);
                 })
                 .doOnSuccess(d -> log.debug("Updated character: " + wowChar))
@@ -383,7 +383,7 @@ public class Ladder {
                     long tick = System.nanoTime();
                     characters.forEach(character -> {
                         characterCache.put(character.fullName(), character);
-                        charSearchIndex.insertNickNames(character.fullName());
+                        charSearchIndex.insertNickNames(new SearchResult(character.fullName(), character.region(), character.clazz()));
                     });
                     log.info("Character data size={} for region={} has been loaded to cache in {} ms", characters.size(), region, (System.nanoTime() - tick) / 1000000);
                     emitter.onComplete();
