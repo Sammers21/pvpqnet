@@ -52,6 +52,7 @@ public class Http {
             Optional<String> q = Optional.ofNullable(ctx.request().getParam("q"));
             Optional<String> query = Optional.ofNullable(ctx.request().getParam("query"));
             Optional<String> opt = Stream.of(q, query).filter(Optional::isPresent).map(Optional::get).findFirst();
+            ctx.response().putHeader("Content-Type", "application/json");
             if (opt.isEmpty()) {
                 ctx.response().end(new JsonArray().encode());
             } else {
