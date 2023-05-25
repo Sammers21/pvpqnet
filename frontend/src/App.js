@@ -1,5 +1,5 @@
 import React from 'react';
-import Routes from './routes';
+import AppRoutes from './routes';
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import appTheme from './theme';
@@ -8,7 +8,7 @@ function App() {
   return (
     <ThemeProvider theme={appTheme}>
       <CssBaseline />
-      <Routes />
+      <AppRoutes />
     </ThemeProvider>
   );
 }

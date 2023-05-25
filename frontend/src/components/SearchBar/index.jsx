@@ -6,8 +6,10 @@ import axios from 'axios';
 import {baseUrl} from "../../config";
 import {classIcon, getClassNameColor} from "../DataTable/useColumns"
 import {EuIcon, UsIcon} from "../icons";
+import {useNavigate} from "react-router-dom";
 
 const SearchBar = () => {
+  let navigate = useNavigate();
   // Tiny delay to prevent spamming the API
   const delayMs = 100;
   const [inputValue, setInputValue] = useState('');
@@ -90,8 +92,15 @@ const SearchBar = () => {
         </Grid>
       </li>);
     }}
+    onChange={(event, newValue) => {
+      let searchedElem = searchResults.filter((result) => { return result.nick === newValue.nick })[0];
+      let split = searchedElem.nick.split(/-(.*)/s);
+      let realm = split[1];
+      let name = split[0];
+      let url = `/${searchedElem.region}/${realm}/${name}`
+      navigate(url);
+    }}
     onInputChange={(event, newInputValue) => {
-      console.log("input change:", newInputValue)
       setInputValue(newInputValue);
     }}
     renderInput={(params) => {
