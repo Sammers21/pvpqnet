@@ -15,3 +15,14 @@ export const getActivity = (activity) => {
   const validActivity = Object.values(["activity", "ladder"]).find((r) => activity === r);
   return validActivity ?? "activity";
 };
+
+export const getActivityFromUrl = () => {
+  let activity;
+  let splitx = window.location.pathname.split("/");
+  if(splitx.length >= 4){
+    activity = splitx[2];
+  } else {
+    activity = "activity";
+  }
+  return activity;
+}

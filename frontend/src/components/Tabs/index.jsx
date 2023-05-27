@@ -6,7 +6,7 @@ import {generatePath} from 'react-router';
 import {Box, Button} from '@mui/material';
 import {styled} from '@mui/system';
 
-import {getActivity, getBracket, getRegion} from '../../utils/urlparts';
+import {getActivity, getActivityFromUrl, getBracket, getRegion} from '../../utils/urlparts';
 import {baseUrl, publicUrls} from '../../config';
 import {BRACKETS} from '../../constants/pvp-activity';
 import {borderColor, containerBg} from '../../theme';
@@ -32,11 +32,10 @@ export default function ActivityTabs() {
   let navigate = useNavigate();
   const {
     region: regionFromUrl,
-    activity: activityFromUrl,
     bracket: bracketFromParams,
   } = useParams();
   const bracket = getBracket(bracketFromParams);
-  const activity = getActivity(activityFromUrl);
+  const activity = getActivityFromUrl();
   const region = getRegion(regionFromUrl);
   const isActivity = activity ==="activity";
   const handleBracketChange = (bracket) => {

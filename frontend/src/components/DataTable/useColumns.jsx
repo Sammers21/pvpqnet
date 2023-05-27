@@ -1,6 +1,7 @@
 import React from 'react';
 
 import {Box, Link, Typography} from '@mui/material';
+import {baseUrl} from "../../config";
 
 const TABLE_FIELDS = {
   rank: 'pos',
@@ -97,7 +98,7 @@ const profileUrl = (record) => {
   const name = record?.character?.name || record?.name;
   const realm = record?.character?.realm || record?.realm;
   const region = (record?.character?.region || record?.region) ?? "eu";
-  return `https://pvpq.net/${region}/${realm}/${name}`;
+  return baseUrl + `/${region}/${realm}/${name}`;
 }
 
 const useColumns = () => {

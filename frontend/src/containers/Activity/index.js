@@ -9,6 +9,7 @@ import Footer from '../../components/Footer';
 
 import {REGIONS} from '../../constants/region';
 import {BRACKETS} from '../../constants/pvp-activity';
+import {getActivityFromUrl} from "../../utils/urlparts";
 
 export const capitalizeFirstLetter = (str) => {
   return str.charAt(0).toUpperCase() + str.slice(1);
@@ -17,10 +18,9 @@ export const capitalizeFirstLetter = (str) => {
 function Activity() {
   const {
     region = REGIONS.eu,
-    activity = 'activity',
     bracket = BRACKETS.shuffle,
   } = useParams();
-
+  const activity = getActivityFromUrl();
   const [width, setWidth] = useState(window.innerWidth);
 
   function handleWindowSizeChange() {
@@ -39,7 +39,6 @@ function Activity() {
     const title = `${capitalizeFirstLetter(bracket)} ${capitalizeFirstLetter(
       activity
     )} on ${region.toUpperCase()}`;
-
     document.title = title;
   }, [region, activity, bracket]);
   let realw = isMobile ? '100%' : '85%';

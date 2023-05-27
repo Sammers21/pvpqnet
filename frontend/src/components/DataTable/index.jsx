@@ -7,13 +7,14 @@ import useColumns from './useColumns';
 import {getStatistic} from '../../services/stats.service';
 import {REGIONS} from '../../constants/region';
 import {BRACKETS} from '../../constants/pvp-activity';
+import {getActivityFromUrl} from "../../utils/urlparts";
 
 const DataList = () => {
   const {
     region = REGIONS.eu,
-    activity = 'activity',
     bracket = BRACKETS.shuffle,
   } = useParams();
+  const activity = getActivityFromUrl();
 
   let [searchParams, setSearchParams] = useSearchParams();
   var initSpecs = []
