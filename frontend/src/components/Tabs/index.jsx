@@ -69,7 +69,7 @@ export default function ActivityTabs() {
       } else {
         setData(init)
       }
-    })
+    }, [region]);
   return (
     <Box sx={{
         display: 'flex',
