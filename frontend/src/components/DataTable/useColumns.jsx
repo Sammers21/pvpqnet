@@ -1,6 +1,6 @@
 import React from 'react';
 
-import {Box, Typography} from '@mui/material';
+import {Box, Link, Typography} from '@mui/material';
 
 const TABLE_FIELDS = {
   rank: 'pos',
@@ -93,6 +93,13 @@ const getDiffCell = (diff) => {
   return diff >= 0 ? `+${diff}` : diff;
 };
 
+const profileUrl = (record) => {
+  const name = record?.character?.name || record?.name;
+  const realm = record?.character?.realm || record?.realm;
+  const region = (record?.character?.region || record?.region) ?? "eu";
+  return `https://pvpq.net/${region}/${realm}/${name}`;
+}
+
 const useColumns = () => {
   return [
     {
@@ -166,7 +173,10 @@ const useColumns = () => {
       render: ({ record }) => {
         const wowClass = record?.character?.class || record?.class;
         const name = record?.character?.name || record?.name;
-        return <Typography color={getClassNameColor(wowClass)}>{name}</Typography>;
+        const url = profileUrl(record);
+        return <Typography color={getClassNameColor(wowClass)}>
+          <Link sx={{textDecoration: "none", boxShadow: "none"}}  href={url} color={getClassNameColor(wowClass)}>{name}</Link>
+        </Typography>;
       },
     },
     {
