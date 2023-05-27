@@ -109,12 +109,8 @@ const Table = ({
     );
   };
 
-  function x(e){
-    console.log("x")
-  }
-
   const renderRow = (record, index) => {
-    return <Row onMouseOver={x} key={index} index={index} record={record} fieldId={index} columns={columnsData} />;
+    return <Row key={index} index={index} record={record} fieldId={index} columns={columnsData} />;
   };
 
   const rowsComponent = useMemo(() => {

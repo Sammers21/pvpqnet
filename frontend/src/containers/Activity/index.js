@@ -10,7 +10,7 @@ import Footer from '../../components/Footer';
 import {REGIONS} from '../../constants/region';
 import {BRACKETS} from '../../constants/pvp-activity';
 
-const capitalizeFirstLetter = (str) => {
+export const capitalizeFirstLetter = (str) => {
   return str.charAt(0).toUpperCase() + str.slice(1);
 };
 
