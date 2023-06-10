@@ -50,7 +50,7 @@ const SearchBar = () => {
     renderOption={(props, option, state) => {
       const icon = classIcon(option.class);
       let regionIcon;
-      if (option.region === "US") {
+      if (option.region === "us" || option.region === "en-us") {
         regionIcon = <UsIcon color="red" />;
       } else {
         regionIcon = <EuIcon/>;
