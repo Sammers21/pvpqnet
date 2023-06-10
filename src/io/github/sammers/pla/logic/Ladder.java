@@ -225,7 +225,7 @@ public class Ladder {
             log.info("Updating " + uniqChars.size() + " characters");
             List<Completable> completables = uniqChars.stream().map(wowChar -> blizzardAPI.character(region, wowChar.realm(), wowChar.name()).flatMap(c -> {
                     characterCache.put(wowChar.fullName(), c);
-                    charSearchIndex.insertNickNames(new SearchResult(wowChar.name(), region, wowChar.clazz()));
+                    charSearchIndex.insertNickNames(new SearchResult(wowChar.fullName(), region, wowChar.clazz()));
                     return db.upsertCharacter(c);
                 })
                 .doOnSuccess(d -> log.debug("Updated character: " + wowChar))
