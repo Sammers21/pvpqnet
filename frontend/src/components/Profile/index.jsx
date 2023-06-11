@@ -4,9 +4,10 @@ import Footer from "../Footer";
 import {useParams} from "react-router-dom";
 import axios from "axios";
 import {baseUrl} from "../../config";
-import {Box, Grid} from "@mui/material";
+import {Box, Button, Card, CardActions, CardContent, CardMedia, Grid, Typography} from "@mui/material";
 import {borderColor, containerBg} from "../../theme";
 import {capitalizeFirstLetter} from "../../containers/Activity";
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 
 const Profile = () => {
   let {region, realm, name} = useParams();
@@ -78,16 +79,81 @@ const Profile = () => {
       </Grid>
     </Grid>);
   });
-
   document.title = `${capitalizeFirstLetter(name)}-${capitalizeFirstLetter(realm)}`;
+  var mainRaw =""
+  var avatar = ""
+  var insert =""
+  if (data.media) {
+    mainRaw = data.media.main_raw;
+    avatar = data.media.avatar;
+    insert = data.media.insert;
+  }
+  const openInNewTab = (url) => {
+    window.open(url, "_blank", "noreferrer");
+  };
   return (
     <>
       <PageHeader/>
       <Grid container spacing={2} sx={{paddingTop: '105px', backgroundColor: containerBg,}}>
-        <Grid item xs={5} >
+        <Grid item xs={6} sx={{ backgroundSize: 'cover', backgroundPosition: 'center',}}>
           <h1>{data.name}-{data.realm}</h1>
+          {/*<Box*/}
+          {/*  component="img"*/}
+          {/*  sx={{*/}
+          {/*    height: 233,*/}
+          {/*    width: 350,*/}
+          {/*    maxHeight: { xs: 233, md: 167 },*/}
+          {/*    maxWidth: { xs: 350, md: 250 },*/}
+          {/*  }}*/}
+          {/*  alt="The house from the offer."*/}
+          {/*  src={mainRaw}*/}
+          {/*/>*/}
+          {/*<Box*/}
+          {/*  component="img"*/}
+          {/*  sx={{*/}
+          {/*    height: 233,*/}
+          {/*    width: 350,*/}
+          {/*    maxHeight: { xs: 233, md: 167 },*/}
+          {/*    maxWidth: { xs: 350, md: 250 },*/}
+          {/*  }}*/}
+          {/*  alt="The house from the offer."*/}
+          {/*  src={avatar}*/}
+          {/*/>*/}
+          <Box
+            component="img"
+            sx={{
+              // height: 233,
+              // width: 350,
+              // maxHeight: { xs: 233, md: 167 },
+              // maxWidth: { xs: 350, md: 250 },
+            }}
+            alt="The house from the offer."
+            src={insert}
+          />
+          <Card sx={{maxWidth: 700}}>
+            <CardContent>
+              <Typography gutterBottom variant="h5" component="div">
+                Talents
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {data.talents}
+              </Typography>
+            </CardContent>
+            <CardActions>
+              <Button size="small" onClick={() => {
+                openInNewTab("https://www.wowhead.com/talent-calc/blizzard/" + data.talents)
+              }}>Wowhead</Button>
+              <Button size="small" onClick={() => {
+                navigator.clipboard.writeText(data.talents).then(function() {
+                  console.log('Copying to clipboard was successful!');
+                }, function(err) {
+                  console.error('Async: Could not copy text: ', err);
+                });
+              }}>Copy</Button>
+            </CardActions>
+          </Card>
         </Grid>
-        <Grid container xs={7} spacing={2}>
+        <Grid container xs={6} spacing={2}>
           {shuffleBrackets}
           {pvpBrackts}
         </Grid>
