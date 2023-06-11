@@ -127,7 +127,7 @@ import java.util.stream.Collectors;
 public record WowAPICharacter(long id, String name, String realm, String gender, String fraction, String race,
                               String activeSpec, int level, String clazz, int itemLevel, String region,
                               List<PvpBracket> brackets, Long lastUpdatedUTCms, Set<String> pvpTitles,
-                              CharacterMedia media ) implements JsonConvertable {
+                              CharacterMedia media, String talents) implements JsonConvertable {
 
     public static WowAPICharacter parse(
             JsonObject entries,
@@ -135,7 +135,15 @@ public record WowAPICharacter(long id, String name, String realm, String gender,
             List<JsonObject> brackets,
             JsonObject achievements,
             JsonObject characterMedia,
+            JsonObject specs,
             String region) {
+        String activeSpec = entries.getJsonObject("active_spec").getString("name");
+        String talents = specs.getJsonArray("specializations").stream()
+            .map(s -> (JsonObject)s)
+            .filter(s -> s.getJsonObject("specialization").getString("name").equals(activeSpec))
+            .map(s -> s.getJsonArray("loadouts").getJsonObject(0).getString("talent_loadout_code"))
+            .findFirst()
+            .orElse("");
         List<PvpBracket> list = brackets.stream().map(PvpBracket::parse).toList();
         CharacterMedia media = CharacterMedia.parse(characterMedia);
         Set<String> pvpTitles = achievements.getJsonArray("achievements").stream()
@@ -159,7 +167,7 @@ public record WowAPICharacter(long id, String name, String realm, String gender,
                 entries.getJsonObject("gender").getString("name"),
                 entries.getJsonObject("faction").getString("name"),
                 entries.getJsonObject("race").getString("name"),
-                entries.getJsonObject("active_spec").getString("name"),
+                activeSpec,
                 entries.getInteger("level"),
                 entries.getJsonObject("character_class").getString("name"),
                 entries.getInteger("equipped_item_level"),
@@ -167,7 +175,8 @@ public record WowAPICharacter(long id, String name, String realm, String gender,
                 list,
                 lastUpdatedUTCms,
                 pvpTitles,
-                media
+                media,
+            talents
         );
     }
 
@@ -202,7 +211,8 @@ public record WowAPICharacter(long id, String name, String realm, String gender,
             brcktsFromJson,
             entries.getLong("lastUpdatedUTCms"),
             Optional.ofNullable(entries.getJsonArray("pvpTitles")).map(x -> x.stream().map(o -> (String) o).collect(Collectors.toSet())).orElse(Set.of()),
-            CharacterMedia.fromJson(entries.getJsonObject("media"))
+            CharacterMedia.fromJson(entries.getJsonObject("media")),
+            Optional.ofNullable(entries.getString("talents")).orElse("")
         );
     }
 
@@ -223,7 +233,8 @@ public record WowAPICharacter(long id, String name, String realm, String gender,
                 .put("lastUpdatedUTCms", lastUpdatedUTCms)
                 .put("brackets", new JsonArray(brackets.stream().map(PvpBracket::toJson).toList()))
                 .put("pvpTitles", new JsonArray(pvpTitles.stream().toList()))
-                .put("media", media.toJson());
+                .put("media", media.toJson())
+                .put("talents", talents);
     }
 
 }
