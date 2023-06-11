@@ -14,7 +14,6 @@ import org.ocpsoft.prettytime.PrettyTime;
 
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
-import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 import static java.time.format.DateTimeFormatter.ISO_DATE_TIME;

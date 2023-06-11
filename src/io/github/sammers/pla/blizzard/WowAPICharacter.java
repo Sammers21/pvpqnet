@@ -6,6 +6,8 @@ import io.vertx.core.json.JsonObject;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * WoW API character.
@@ -123,14 +125,31 @@ import java.util.List;
  */
 public record WowAPICharacter(long id, String name, String realm, String gender, String fraction, String race,
                               String activeSpec, int level, String clazz, int itemLevel, String region,
-                              List<PvpBracket> brackets, Long lastUpdatedUTCms) implements JsonConvertable {
+                              List<PvpBracket> brackets, Long lastUpdatedUTCms, Set<String> pvpTitles,
+                              CharacterMedia media ) implements JsonConvertable {
 
     public static WowAPICharacter parse(
             JsonObject entries,
             JsonObject pvpSummary,
             List<JsonObject> brackets,
+            JsonObject achievements,
+            JsonObject characterMedia,
             String region) {
         List<PvpBracket> list = brackets.stream().map(PvpBracket::parse).toList();
+        CharacterMedia media = CharacterMedia.parse(characterMedia);
+        Set<String> pvpTitles = achievements.getJsonArray("achievements").stream()
+            .map(s -> ((JsonObject)s).getJsonObject("achievement").getString("name"))
+            .filter(s -> {
+                boolean r1Glad = s.matches("(\\w+)\\h(Gladiator|Legend)(.*)");
+                return s.startsWith("Gladiator")
+                    || s.startsWith("Duelist")
+                    || s.startsWith("Rival")
+                    || s.startsWith("Challenger")
+                    || s.startsWith("Combatant")
+                    || s.startsWith("Legend")
+                    || r1Glad;
+            })
+            .collect(Collectors.toSet());
         Long lastUpdatedUTCms = Instant.now().toEpochMilli();
         return new WowAPICharacter(
                 entries.getInteger("id"),
@@ -145,7 +164,9 @@ public record WowAPICharacter(long id, String name, String realm, String gender,
                 entries.getInteger("equipped_item_level"),
                 region,
                 list,
-                lastUpdatedUTCms
+                lastUpdatedUTCms,
+                pvpTitles,
+                media
         );
     }
 
@@ -165,7 +186,23 @@ public record WowAPICharacter(long id, String name, String realm, String gender,
         if (entries.getLong("lastUpdatedUTCms") == null) {
             entries.put("lastUpdatedUTCms", 0L);
         }
-        return new WowAPICharacter(entries.getInteger("id"), entries.getString("name"), entries.getString("realm"), entries.getString("gender"), entries.getString("fraction"), entries.getString("race"), entries.getString("activeSpec"), entries.getInteger("level"), entries.getString("class"), entries.getInteger("itemLevel"), entries.getString("region"), brcktsFromJson, entries.getLong("lastUpdatedUTCms"));
+        return new WowAPICharacter(
+            entries.getInteger("id"),
+            entries.getString("name"),
+            entries.getString("realm"),
+            entries.getString("gender"),
+            entries.getString("fraction"),
+            entries.getString("race"),
+            entries.getString("activeSpec"),
+            entries.getInteger("level"),
+            entries.getString("class"),
+            entries.getInteger("itemLevel"),
+            entries.getString("region"),
+            brcktsFromJson,
+            entries.getLong("lastUpdatedUTCms"),
+            entries.getJsonArray("pvpTitles").stream().map(o -> (String) o).collect(Collectors.toSet()),
+            CharacterMedia.fromJson(entries.getJsonObject("media"))
+        );
 
     }
 
@@ -184,7 +221,9 @@ public record WowAPICharacter(long id, String name, String realm, String gender,
                 .put("itemLevel", itemLevel)
                 .put("region", region)
                 .put("lastUpdatedUTCms", lastUpdatedUTCms)
-                .put("brackets", new JsonArray(brackets.stream().map(PvpBracket::toJson).toList()));
+                .put("brackets", new JsonArray(brackets.stream().map(PvpBracket::toJson).toList()))
+                .put("pvpTitles", new JsonArray(pvpTitles.stream().toList()))
+                .put("media", media.toJson());
     }
 
 }

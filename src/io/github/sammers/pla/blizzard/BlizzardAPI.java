@@ -100,7 +100,21 @@ public class BlizzardAPI {
                                                             .map(HttpResponse::bodyAsJsonObject)
                                                     ).toList()
                                     ).toList()
-                                        .flatMapMaybe(brackets -> Maybe.just(WowAPICharacter.parse(json, pvp, brackets, realRegion)))
+                                        .flatMapMaybe(brackets ->
+                                            webClient.getAbs(absoluteURI + "/achievements")
+                                                .addQueryParam("namespace", realNamespace)
+                                                .addQueryParam("locale", LOCALE)
+                                                .bearerTokenAuthentication(blizzardAuthToken.accessToken())
+                                                .rxSend()
+                                                .map(HttpResponse::bodyAsJsonObject)
+                                                .flatMapMaybe(achievements -> webClient.getAbs(absoluteURI + "/character-media")
+                                                    .addQueryParam("namespace", realNamespace)
+                                                    .addQueryParam("locale", LOCALE)
+                                                    .bearerTokenAuthentication(blizzardAuthToken.accessToken())
+                                                    .rxSend()
+                                                    .map(HttpResponse::bodyAsJsonObject)
+                                                    .flatMapMaybe(media -> Maybe.just(WowAPICharacter.parse(json, pvp, brackets, achievements, media, realRegion))))
+                                        )
                                         .doOnError(e -> log.error("Error parsing character: " + name + " on " + realm + " in " + realRegion, e))
                                         .onErrorResumeNext(Maybe.empty());
                                 });
