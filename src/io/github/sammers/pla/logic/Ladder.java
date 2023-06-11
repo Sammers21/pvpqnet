@@ -370,25 +370,31 @@ public class Ladder {
     }
 
     private Completable loadWowCharApiData(String region) {
-        String realRegion;
-        if (region.equals(EU)) {
-            realRegion = "eu";
-        } else {
-            realRegion = "us";
-        }
-        return db.fetchChars(realRegion)
-            .flatMapCompletable(characters -> Completable.create(emitter -> {
-                Main.INDEX_CALC_THREAD.scheduleDirect(() -> {
-                    log.info("Character data size={} for region={} is being loaded to cache", characters.size(), region);
-                    long tick = System.nanoTime();
-                    characters.forEach(character -> {
-                        characterCache.put(character.fullName(), character);
-                        charSearchIndex.insertNickNames(new SearchResult(character.fullName(), character.region(), character.clazz()));
+        return Completable.defer(() -> {
+            log.info("Loading wow api data for region={}...", region);
+            String realRegion;
+            if (region.equals(EU)) {
+                realRegion = "eu";
+            } else {
+                realRegion = "us";
+            }
+            return db.fetchChars(realRegion)
+                .flatMapCompletable(characters -> {
+
+                    return Completable.create(emitter -> {
+                        Main.INDEX_CALC_THREAD.scheduleDirect(() -> {
+                            log.info("Character data size={} for region={} is being loaded to cache", characters.size(), region);
+                            long tick = System.nanoTime();
+                            characters.forEach(character -> {
+                                characterCache.put(character.fullName(), character);
+                                charSearchIndex.insertNickNames(new SearchResult(character.fullName(), character.region(), character.clazz()));
+                            });
+                            log.info("Character data size={} for region={} has been loaded to cache in {} ms", characters.size(), region, (System.nanoTime() - tick) / 1000000);
+                            emitter.onComplete();
+                        });
                     });
-                    log.info("Character data size={} for region={} has been loaded to cache in {} ms", characters.size(), region, (System.nanoTime() - tick) / 1000000);
-                    emitter.onComplete();
                 });
-            }));
+        });
     }
 
     private Completable loadLast(String bracket, String region) {

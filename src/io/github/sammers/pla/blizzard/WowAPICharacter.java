@@ -6,6 +6,7 @@ import io.vertx.core.json.JsonObject;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -200,10 +201,9 @@ public record WowAPICharacter(long id, String name, String realm, String gender,
             entries.getString("region"),
             brcktsFromJson,
             entries.getLong("lastUpdatedUTCms"),
-            entries.getJsonArray("pvpTitles").stream().map(o -> (String) o).collect(Collectors.toSet()),
+            Optional.ofNullable(entries.getJsonArray("pvpTitles")).map(x -> x.stream().map(o -> (String) o).collect(Collectors.toSet())).orElse(Set.of()),
             CharacterMedia.fromJson(entries.getJsonObject("media"))
         );
-
     }
 
     @Override

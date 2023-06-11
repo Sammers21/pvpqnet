@@ -33,6 +33,9 @@ public record CharacterMedia(String avatar, String insert, String mainRaw)  impl
     }
 
     public static CharacterMedia fromJson(JsonObject json) {
+        if (json == null) {
+            return new CharacterMedia(null, null, null);
+        }
         return new CharacterMedia(
             json.getString("avatar"),
             json.getString("insert"),
