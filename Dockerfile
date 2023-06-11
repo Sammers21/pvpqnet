@@ -1,7 +1,7 @@
 FROM amazoncorretto:18 AS build_stage
 WORKDIR /build
 COPY . .
-RUN ./gradlew --no-daemon clean shadowJar --stacktrace
+RUN ./gradlew --no-daemon clean test shadowJar --stacktrace
 
 FROM amazoncorretto:19
 WORKDIR /awg2

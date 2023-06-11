@@ -8,7 +8,6 @@ repositories {
     mavenCentral()
 }
 
-
 sourceSets {
     main {
         java {
@@ -26,20 +25,27 @@ sourceSets {
 }
 
 dependencies {
-    // vertx
+    // logging
     implementation group: 'org.slf4j', name: 'slf4j-api', version: '2.0.4'
     implementation group: 'ch.qos.logback', name: 'logback-classic', version: "1.4.6"
     implementation 'org.jsoup:jsoup:1.15.4'
+    // vertx
     implementation group: 'io.vertx', name: 'vertx-web-client', version: vertxVersion
     implementation group: 'io.vertx', name: 'vertx-mongo-client', version: vertxVersion
     implementation group: 'io.vertx', name: 'vertx-web', version: vertxVersion
     implementation group: 'io.vertx', name: 'vertx-rx-java2', version: vertxVersion
+    //lucene
+    implementation group: 'org.apache.lucene', name: 'lucene-core', version: luceneVersion
+    implementation group: 'org.apache.lucene', name: 'lucene-queryparser', version: luceneVersion
+    implementation group: 'org.apache.lucene', name: 'lucene-misc', version: luceneVersion
+    implementation group: 'org.apache.lucene', name: 'lucene-analysis-common', version: luceneVersion
+    // common libs
+    implementation 'org.jsoup:jsoup:1.15.4'
     implementation group: 'org.apache.commons', name: 'commons-collections4', version: '4.4'
     implementation 'org.ocpsoft.prettytime:prettytime:5.0.6.Final'
-    implementation group: 'org.apache.lucene', name: 'lucene-core', version: '9.6.0'
-    implementation group: 'org.apache.lucene', name: 'lucene-queryparser', version: '9.6.0'
-    implementation group: 'org.apache.lucene', name: 'lucene-misc', version: '9.6.0'
-    implementation group: 'org.apache.lucene', name: 'lucene-analysis-common', version: '9.6.0'
+    // test
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.3'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.3'
 }
 
 jar {
@@ -48,12 +54,14 @@ jar {
     }
 }
 
+test {
+    useJUnitPlatform {
+    }
+}
+
 shadowJar {
     archiveBaseName.set('wow-pla')
     archiveClassifier.set('')
     archiveVersion.set('')
     mergeServiceFiles()
-//    manifest {
-//        inheritFrom project.tasks.jar.manifest
-//    }
 }

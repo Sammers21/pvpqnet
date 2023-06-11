@@ -1,15 +1,11 @@
 package io.github.sammers.pla.logic;
 
 import org.apache.lucene.analysis.*;
-import org.apache.lucene.analysis.miscellaneous.ScandinavianNormalizationFilter;
+import org.apache.lucene.analysis.miscellaneous.ASCIIFoldingFilter;
 import org.apache.lucene.analysis.no.NorwegianAnalyzer;
-import org.apache.lucene.analysis.no.NorwegianLightStemFilter;
-import org.apache.lucene.analysis.no.NorwegianNormalizationFilter;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
-import org.apache.lucene.analysis.standard.StandardTokenizer;
+import org.apache.lucene.analysis.pattern.SimplePatternTokenizer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.*;
-import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Query;
@@ -33,12 +29,11 @@ public class NickNameSearchIndex {
         analyzer = new Analyzer() {
             @Override
             protected TokenStreamComponents createComponents(String fieldName) {
-                final StandardTokenizer src = new StandardTokenizer();
-                src.setMaxTokenLength(255);
+                final Tokenizer src = new SimplePatternTokenizer("(.*)");
                 TokenStream tok = new LowerCaseFilter(src);
+                tok = new ASCIIFoldingFilter(tok, true);
                 tok = new StopFilter(tok, NorwegianAnalyzer.getDefaultStopSet());
                 return new TokenStreamComponents(r -> {
-                    src.setMaxTokenLength(255);
                     src.setReader(r);
                 }, tok);
             }
