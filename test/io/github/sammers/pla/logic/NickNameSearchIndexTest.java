@@ -25,6 +25,7 @@ public class NickNameSearchIndexTest {
         NickNameSearchIndex nickNameSearchIndex = new NickNameSearchIndex();
         nickNameSearchIndex.insertNickNames(new SearchResult(Character.fullNameByRealmAndName("Ømegagødx", "Outland"), "eu", "Priest"));
         Assertions.assertEquals(1, nickNameSearchIndex.searchNickNames("omegago").size());
+        Assertions.assertEquals(1, nickNameSearchIndex.searchNickNames("omegagodx").size());
     }
 
     @Test

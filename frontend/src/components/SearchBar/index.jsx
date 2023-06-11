@@ -27,9 +27,11 @@ const SearchBar = () => {
         q: q,
       }
     });
-    let unique = [...new Set(response.data)];
-    setSearchResults(unique);
-    console.log("search results:", response.data);
+    const key = 'nick';
+    const arrayUniqueByKey = [...new Map(response.data.map(item =>
+      [item[key], item])).values()];
+    console.log("search q and results:", q, arrayUniqueByKey);
+    setSearchResults(arrayUniqueByKey);
     setLoading(false);
   }
   const throttle = useCallback(_debounce(search, delayMs), []);
@@ -46,12 +48,13 @@ const SearchBar = () => {
     disablePortal
     noOptionsText="No results"
     options={searchResults}
+    filterOptions={(x) => x}
     getOptionLabel={(option) => option.nick}
     renderOption={(props, option, state) => {
       const icon = classIcon(option.class);
       let regionIcon;
       if (option.region === "us" || option.region === "en-us") {
-        regionIcon = <UsIcon color="red" />;
+        regionIcon = <UsIcon color="red"/>;
       } else {
         regionIcon = <EuIcon/>;
       }
@@ -60,7 +63,7 @@ const SearchBar = () => {
       const realm = capitalize(split[1]);
       const name = capitalize(split[0]);
       var fullNick = `${name}-${realm}`;
-      if(split.length > 2) {
+      if (split.length > 2) {
         fullNick = `${name}-${realm} ${capitalize(split[2])}`;
       }
       return (<li {...props}>
