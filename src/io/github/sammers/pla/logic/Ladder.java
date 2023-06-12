@@ -8,8 +8,10 @@ import io.github.sammers.pla.blizzard.WowAPICharacter;
 import io.github.sammers.pla.db.Character;
 import io.github.sammers.pla.db.DB;
 import io.github.sammers.pla.db.Snapshot;
-import io.reactivex.*;
+import io.reactivex.Completable;
+import io.reactivex.Maybe;
 import io.reactivex.Observable;
+import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.buffer.Buffer;
@@ -202,7 +204,6 @@ public class Ladder {
 
     private Completable updateChars(String region) {
         long dayAgo = Instant.now().minus(1, ChronoUnit.DAYS).toEpochMilli();
-        long start = System.nanoTime();
         return Completable.defer(() -> {
             Set<Character> uniqChars = brackets.stream().flatMap(bracket -> {
                 AtomicReference<Snapshot> snapshotAtomicReference = refByBracket(bracket, region);
@@ -229,15 +230,9 @@ public class Ladder {
                 })
                 .doOnSuccess(d -> log.debug("Updated character: " + wowChar))
                 .doOnError(e -> log.error("Failed to update character: " + wowChar + " Stopping update", e))
-                .onErrorResumeNext(Maybe.empty())
                 .ignoreElement()).toList();
-            Flowable<Completable> listFlowable = Flowable.fromIterable(completables);
-            return listFlowable.buffer(5).flatMapCompletable(Completable::concat);
-        }).onErrorComplete()
-            .doOnComplete(()-> {
-                long end = System.nanoTime();
-                log.info("Updated chars in " + (end - start) / 1_000_000 + "ms");
-            });
+            return Completable.concat(completables);
+        }).onErrorComplete();
     }
 
     private HttpRequest<Buffer> ladderRequest(String bracket, Integer page, String region) {
