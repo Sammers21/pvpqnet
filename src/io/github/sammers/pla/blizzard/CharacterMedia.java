@@ -3,14 +3,21 @@ package io.github.sammers.pla.blizzard;
 import io.github.sammers.pla.http.JsonConvertable;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.stream.Collectors;
 
 public record CharacterMedia(String avatar, String insert, String mainRaw)  implements JsonConvertable  {
 
+    private static final Logger logger = LoggerFactory.getLogger(CharacterMedia.class);
     public static CharacterMedia parse(JsonObject characterMedia) {
         JsonArray array = characterMedia.getJsonArray("assets");
+        if (array == null) {
+            logger.error("No assets in character media: {}", characterMedia.encodePrettily());
+            return new CharacterMedia(null, null, null);
+        }
         Map<String, String> assets = array.stream()
             .map(o -> (JsonObject) o)
             .collect(Collectors.toMap(

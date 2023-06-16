@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import static io.github.sammers.pla.Main.VTHREAD_EXECUTOR;
 import static io.github.sammers.pla.logic.Ladder.EU;
 import static io.github.sammers.pla.logic.Ladder.RBG;
 import static io.github.sammers.pla.logic.Ladder.SHUFFLE;
@@ -50,49 +51,59 @@ public class Http {
         router.routeWithRegex(("\\/specicons\\/(?<specicon>[^\\/]+.png)")).handler(ctx -> ctx.response().sendFile("specicons/" + ctx.pathParam("specicon")));
         router.routeWithRegex(("\\/regionicons\\/(?<regionicon>[^\\/]+.svg)")).handler(ctx -> ctx.response().sendFile("regionicons/" + ctx.pathParam("regionicon")));
         router.get("/api/search").handler(ctx -> {
-            Optional<String> q = Optional.ofNullable(ctx.request().getParam("q"));
-            Optional<String> query = Optional.ofNullable(ctx.request().getParam("query"));
-            Optional<String> opt = Stream.of(q, query).filter(Optional::isPresent).map(Optional::get).map(String::toLowerCase).findFirst();
-            ctx.response().putHeader("Content-Type", "application/json");
-            if (opt.isEmpty()) {
-                ctx.response().end(new JsonArray().encode());
-            } else {
-                ctx.response().end(new JsonArray(ladder.search(opt.get()).stream().map(SearchResult::toJson).toList()).encode());
-            }
+            VTHREAD_EXECUTOR.execute(() -> {
+                Optional<String> q = Optional.ofNullable(ctx.request().getParam("q"));
+                Optional<String> query = Optional.ofNullable(ctx.request().getParam("query"));
+                Optional<String> opt = Stream.of(q, query).filter(Optional::isPresent).map(Optional::get).map(String::toLowerCase).findFirst();
+                ctx.response().putHeader("Content-Type", "application/json");
+                if (opt.isEmpty()) {
+                    ctx.response().end(new JsonArray().encode());
+                } else {
+                    ctx.response().end(new JsonArray(ladder.search(opt.get()).stream().map(SearchResult::toJson).toList()).encode());
+                }
+            });
         });
         router.get("/api/:region/ladder/:bracket").handler(ctx -> {
-            String region = ctx.pathParam("region");
-            String bracket = ctx.pathParam("bracket");
-            if (bracket.equals("rbg")) {
-                bracket = RBG;
-            }
-            ladder(ctx, applySpecFilter(ctx, ladder.refByBracket(bracket, region).get()));
+            VTHREAD_EXECUTOR.execute(() -> {
+                String region = ctx.pathParam("region");
+                String bracket = ctx.pathParam("bracket");
+                if (bracket.equals("rbg")) {
+                    bracket = RBG;
+                }
+                ladder(ctx, applySpecFilter(ctx, ladder.refByBracket(bracket, region).get()));
+            });
         });
         router.get("/api/:region/activity/stats").handler(ctx -> {
-            String region = ctx.pathParam("region");
-            Integer twos = Optional.ofNullable(ladder.diffsByBracket(TWO_V_TWO, region).get()).map(diff -> diff.chars().size()).orElse(0);
-            Integer threes = Optional.ofNullable(ladder.diffsByBracket(THREE_V_THREE, region).get()).map(diff -> diff.chars().size()).orElse(0);
-            Integer rbgs = Optional.ofNullable(ladder.diffsByBracket(RBG, region).get()).map(diff -> diff.chars().size()).orElse(0);
-            Integer shuffle = Optional.ofNullable(ladder.diffsByBracket(SHUFFLE, region).get()).map(diff -> diff.chars().size()).orElse(0);
-            ctx.response().end(new JsonObject().put("2v2", twos).put("3v3", threes).put("rbg", rbgs).put("shuffle", shuffle).encode());
+            VTHREAD_EXECUTOR.execute(() -> {
+                String region = ctx.pathParam("region");
+                Integer twos = Optional.ofNullable(ladder.diffsByBracket(TWO_V_TWO, region).get()).map(diff -> diff.chars().size()).orElse(0);
+                Integer threes = Optional.ofNullable(ladder.diffsByBracket(THREE_V_THREE, region).get()).map(diff -> diff.chars().size()).orElse(0);
+                Integer rbgs = Optional.ofNullable(ladder.diffsByBracket(RBG, region).get()).map(diff -> diff.chars().size()).orElse(0);
+                Integer shuffle = Optional.ofNullable(ladder.diffsByBracket(SHUFFLE, region).get()).map(diff -> diff.chars().size()).orElse(0);
+                ctx.response().end(new JsonObject().put("2v2", twos).put("3v3", threes).put("rbg", rbgs).put("shuffle", shuffle).encode());
+            });
         });
         router.get("/api/:region/activity/:bracket").handler(ctx -> {
-            String region = ctx.pathParam("region");
-            String bracket = ctx.pathParam("bracket");
-            if (bracket.equals("rbg")) {
-                bracket = RBG;
-            }
-            ladder(ctx, applySpecFilter(ctx, ladder.diffsByBracket(bracket, region).get()));
+            VTHREAD_EXECUTOR.execute(() -> {
+                String region = ctx.pathParam("region");
+                String bracket = ctx.pathParam("bracket");
+                if (bracket.equals("rbg")) {
+                    bracket = RBG;
+                }
+                ladder(ctx, applySpecFilter(ctx, ladder.diffsByBracket(bracket, region).get()));
+            });
         });
         router.get("/api/:region/:realm/:name").handler(ctx -> {
-            String realm = ctx.pathParam("realm");
-            String name = ctx.pathParam("name");
-            Optional<WowAPICharacter> wowAPICharacter = ladder.wowChar(realm, name);
-            if(wowAPICharacter.isEmpty()) {
-                ctx.response().setStatusCode(404).end(new JsonObject().put("error", "Character not found").encode());
-            } else {
-                ctx.response().end(wowAPICharacter.get().toJson().encode());
-            }
+            VTHREAD_EXECUTOR.execute(() -> {
+                String realm = ctx.pathParam("realm");
+                String name = ctx.pathParam("name");
+                Optional<WowAPICharacter> wowAPICharacter = ladder.wowChar(realm, name);
+                if (wowAPICharacter.isEmpty()) {
+                    ctx.response().setStatusCode(404).end(new JsonObject().put("error", "Character not found").encode());
+                } else {
+                    ctx.response().end(wowAPICharacter.get().toJson().encode());
+                }
+            });
         });
         router.get("/:region/ladder/:bracket").handler(ctx -> ctx.response().sendFile("index.html"));
         router.get("/:region/activity/:bracket").handler(ctx -> ctx.response().sendFile("index.html"));

@@ -14,18 +14,19 @@ import org.ocpsoft.prettytime.PrettyTime;
 
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 import static java.time.format.DateTimeFormatter.ISO_DATE_TIME;
 
 public class Main {
+
+    public static final Executor VTHREAD_EXECUTOR = Executors.newVirtualThreadPerTaskExecutor();
+    public static final Scheduler VTHREAD_SCHEDULER = Schedulers.from(VTHREAD_EXECUTOR);
     public static PrettyTime PRETTY_TIME = new PrettyTime(new Locale("en"));
-    public static Scheduler INDEX_CALC_THREAD;
     public static DateTimeFormatter DATA_TIME = ISO_DATE_TIME;
 
     public static void main(String[] args) {
-        INDEX_CALC_THREAD = Schedulers.from(Executors.newSingleThreadExecutor());
-        INDEX_CALC_THREAD.start();
         final Vertx vertx = Vertx.vertx();
         final WebClient webClient = WebClient.create(vertx);
         final String dbUri = System.getenv("DB_URI");

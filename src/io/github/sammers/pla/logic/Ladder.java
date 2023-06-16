@@ -8,11 +8,8 @@ import io.github.sammers.pla.blizzard.WowAPICharacter;
 import io.github.sammers.pla.db.Character;
 import io.github.sammers.pla.db.DB;
 import io.github.sammers.pla.db.Snapshot;
-import io.reactivex.Completable;
-import io.reactivex.Maybe;
+import io.reactivex.*;
 import io.reactivex.Observable;
-import io.reactivex.Single;
-import io.reactivex.schedulers.Schedulers;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.buffer.Buffer;
 import io.vertx.reactivex.ext.web.client.HttpRequest;
@@ -36,6 +33,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static io.github.sammers.pla.Main.VTHREAD_SCHEDULER;
 
 public class Ladder {
 
@@ -178,7 +177,6 @@ public class Ladder {
                 Maybe<List<Character>> map = blizzardAPI.pvpLeaderboard(bracket, region)
                     .map((PvpLeaderBoard leaderboard) -> {
                         Set<Character> enriched = new HashSet<>(leaderboard.enrich(s));
-//                            enriched.addAll(leaderboard.toCharacters(characterCache));
                         return enriched.stream().toList();
                     });
                 return map.toSingle(s);
@@ -228,10 +226,14 @@ public class Ladder {
                     charSearchIndex.insertNickNames(new SearchResult(wowChar.fullName(), region, wowChar.clazz()));
                     return db.upsertCharacter(c);
                 })
+                .subscribeOn(VTHREAD_SCHEDULER)
                 .doOnSuccess(d -> log.debug("Updated character: " + wowChar))
                 .doOnError(e -> log.error("Failed to update character: " + wowChar + " Stopping update", e))
                 .ignoreElement()).toList();
-            return Completable.concat(completables);
+            return Flowable.fromIterable(completables)
+                .buffer(5)
+                .toList()
+                .flatMapCompletable(list -> Completable.concat(list.stream().map(Completable::merge).toList()));
         }).onErrorComplete();
     }
 
@@ -379,21 +381,18 @@ public class Ladder {
                 realRegion = "us";
             }
             return db.fetchChars(realRegion)
-                .flatMapCompletable(characters -> {
-
-                    return Completable.create(emitter -> {
-                        Main.INDEX_CALC_THREAD.scheduleDirect(() -> {
-                            log.info("Character data size={} for region={} is being loaded to cache", characters.size(), region);
-                            long tick = System.nanoTime();
-                            characters.forEach(character -> {
-                                characterCache.put(character.fullName(), character);
-                                charSearchIndex.insertNickNames(new SearchResult(character.fullName(), character.region(), character.clazz()));
-                            });
-                            log.info("Character data size={} for region={} has been loaded to cache in {} ms", characters.size(), region, (System.nanoTime() - tick) / 1000000);
-                            emitter.onComplete();
+                .flatMapCompletable(characters -> Completable.create(emitter -> {
+                    VTHREAD_SCHEDULER.scheduleDirect(() -> {
+                        log.info("Character data size={} for region={} is being loaded to cache", characters.size(), region);
+                        long tick = System.nanoTime();
+                        characters.forEach(character -> {
+                            characterCache.put(character.fullName(), character);
+                            charSearchIndex.insertNickNames(new SearchResult(character.fullName(), character.region(), character.clazz()));
                         });
+                        log.info("Character data size={} for region={} has been loaded to cache in {} ms", characters.size(), region, (System.nanoTime() - tick) / 1000000);
+                        emitter.onComplete();
                     });
-                });
+                }));
         });
     }
 
