@@ -40,7 +40,7 @@ public class NickNameSearchIndex {
         };
     }
 
-    public void insertNickNames(SearchResult... searchResults) {
+    public synchronized void insertNickNames(SearchResult... searchResults) {
         try {
             IndexWriterConfig config = new IndexWriterConfig(analyzer);
             IndexWriter w = new IndexWriter(index, config);

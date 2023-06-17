@@ -229,14 +229,17 @@ public class Ladder {
                         charSearchIndex.insertNickNames(new SearchResult(wowChar.fullName(), region, wowChar.clazz()));
                         return db.upsertCharacter(c);
                     })
+                    .subscribeOn(VTHREAD_SCHEDULER)
                     .doOnSuccess(d -> log.debug("Updated character: " + wowChar))
                     .doOnError(e -> log.error("Failed to update character: " + wowChar + " Stopping update", e))
-                    .ignoreElement()).toList();
+                    .ignoreElement()
+                ).toList();
                 return Flowable.fromIterable(completables)
-                    .buffer(1)
+                    .buffer(5)
                     .toList()
                     .flatMapCompletable(list -> Completable.concat(list.stream().map(Completable::merge).toList()));
-            }).onErrorComplete()
+            })
+            .onErrorComplete()
             .subscribeOn(VTHREAD_SCHEDULER);
     }
 
