@@ -185,7 +185,8 @@ public class Ladder {
         }
         return resCharList
             .map(chars -> Snapshot.of(chars, region, currentTimeMillis))
-            .flatMap(d -> newDataOnBracket(bracket, region, d).andThen(Single.just(d)));
+            .flatMap(d -> newDataOnBracket(bracket, region, d).andThen(Single.just(d)))
+            .onErrorReturnItem(Snapshot.empty(region));
     }
 
     public void start() {
@@ -201,40 +202,41 @@ public class Ladder {
     }
 
     private Completable updateChars(String region) {
-        long dayAgo = Instant.now().minus(1, ChronoUnit.DAYS).toEpochMilli();
         return Completable.defer(() -> {
-            Set<Character> uniqChars = brackets.stream().flatMap(bracket -> {
-                AtomicReference<Snapshot> snapshotAtomicReference = refByBracket(bracket, region);
-                Snapshot snapshot = snapshotAtomicReference.get();
-                if (snapshot == null) {
-                    return Stream.of();
-                }
-                return snapshot.characters().stream().flatMap(c -> {
-                    WowAPICharacter wowAPICharacter = characterCache.get(c.fullName());
-                    if (wowAPICharacter == null) {
-                        return Stream.of(c);
-                    } else if (wowAPICharacter.lastUpdatedUTCms() < dayAgo) {
-                        return Stream.of(c);
-                    } else {
+                log.info("Updating chars in region " + region);
+                long dayAgo = Instant.now().minus(1, ChronoUnit.DAYS).toEpochMilli();
+                Set<Character> uniqChars = brackets.stream().flatMap(bracket -> {
+                    AtomicReference<Snapshot> snapshotAtomicReference = refByBracket(bracket, region);
+                    Snapshot snapshot = snapshotAtomicReference.get();
+                    if (snapshot == null) {
                         return Stream.of();
                     }
-                });
-            }).collect(Collectors.toSet());
-            log.info("Updating " + uniqChars.size() + " characters");
-            List<Completable> completables = uniqChars.stream().map(wowChar -> blizzardAPI.character(region, wowChar.realm(), wowChar.name()).flatMap(c -> {
-                    characterCache.put(wowChar.fullName(), c);
-                    charSearchIndex.insertNickNames(new SearchResult(wowChar.fullName(), region, wowChar.clazz()));
-                    return db.upsertCharacter(c);
-                })
-                .subscribeOn(VTHREAD_SCHEDULER)
-                .doOnSuccess(d -> log.debug("Updated character: " + wowChar))
-                .doOnError(e -> log.error("Failed to update character: " + wowChar + " Stopping update", e))
-                .ignoreElement()).toList();
-            return Flowable.fromIterable(completables)
-                .buffer(5)
-                .toList()
-                .flatMapCompletable(list -> Completable.concat(list.stream().map(Completable::merge).toList()));
-        }).onErrorComplete();
+                    return snapshot.characters().stream().flatMap(c -> {
+                        WowAPICharacter wowAPICharacter = characterCache.get(c.fullName());
+                        if (wowAPICharacter == null) {
+                            return Stream.of(c);
+                        } else if (wowAPICharacter.lastUpdatedUTCms() < dayAgo) {
+                            return Stream.of(c);
+                        } else {
+                            return Stream.of();
+                        }
+                    });
+                }).collect(Collectors.toSet());
+                log.info("Updating " + uniqChars.size() + " characters");
+                List<Completable> completables = uniqChars.stream().map(wowChar -> blizzardAPI.character(region, wowChar.realm(), wowChar.name()).flatMap(c -> {
+                        characterCache.put(wowChar.fullName(), c);
+                        charSearchIndex.insertNickNames(new SearchResult(wowChar.fullName(), region, wowChar.clazz()));
+                        return db.upsertCharacter(c);
+                    })
+                    .doOnSuccess(d -> log.debug("Updated character: " + wowChar))
+                    .doOnError(e -> log.error("Failed to update character: " + wowChar + " Stopping update", e))
+                    .ignoreElement()).toList();
+                return Flowable.fromIterable(completables)
+                    .buffer(1)
+                    .toList()
+                    .flatMapCompletable(list -> Completable.concat(list.stream().map(Completable::merge).toList()));
+            }).onErrorComplete()
+            .subscribeOn(VTHREAD_SCHEDULER);
     }
 
     private HttpRequest<Buffer> ladderRequest(String bracket, Integer page, String region) {
@@ -364,11 +366,15 @@ public class Ladder {
     }
 
     private Completable loadCutoffs(String region) {
-        return blizzardAPI.cutoffs(region).map(cutoffs -> {
-                regionCutoff.put(region, cutoffs);
-                return cutoffs;
-            }).doAfterSuccess(cutoffs -> log.info("Cutoffs for region={} has been loaded", region))
-            .ignoreElement().onErrorComplete();
+        return Completable.defer(() -> {
+            log.info("Load cutoffs for region " + region);
+            return blizzardAPI.cutoffs(region).map(cutoffs -> {
+                    regionCutoff.put(region, cutoffs);
+                    return cutoffs;
+                }).doAfterSuccess(cutoffs -> log.info("Cutoffs for region={} has been loaded", region))
+                .ignoreElement()
+                .onErrorComplete();
+        });
     }
 
     private Completable loadWowCharApiData(String region) {
