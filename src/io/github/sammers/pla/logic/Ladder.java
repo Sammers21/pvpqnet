@@ -186,6 +186,7 @@ public class Ladder {
         return resCharList
             .map(chars -> Snapshot.of(chars, region, currentTimeMillis))
             .flatMap(d -> newDataOnBracket(bracket, region, d).andThen(Single.just(d)))
+            .doOnError(e -> log.error("Error fetching ladder, returning empty snapshot", e))
             .onErrorReturnItem(Snapshot.empty(region));
     }
 
