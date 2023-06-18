@@ -2,6 +2,7 @@ import React from 'react';
 
 import {Box, Link, Typography} from '@mui/material';
 import {baseUrl} from "../../config";
+import {winRateGreyColor} from "../../theme";
 
 const TABLE_FIELDS = {
   rank: 'pos',
@@ -13,8 +14,8 @@ const TABLE_FIELDS = {
   lastSeen: 'lastSeen',
 };
 
-const getRealmColor = (fraction) => {
-  return fraction === 'ALLIANCE' ? '#3FC7EB' : '#ff0000';
+export const getRealmColor = (fraction) => {
+  return fraction.toUpperCase() === 'ALLIANCE' ? '#3FC7EB' : '#ff0000';
 };
 
 const specNameFromFullSpec = (wowSpec) => {
@@ -98,7 +99,7 @@ const profileUrl = (record) => {
   const name = record?.character?.name || record?.name;
   const realm = record?.character?.realm || record?.realm;
   const region = (record?.character?.region || record?.region) ?? "eu";
-  return baseUrl + `/${region}/${realm}/${name}`;
+  return window.location.origin + `/${region}/${realm}/${name}`;
 }
 
 const useColumns = () => {
@@ -210,7 +211,7 @@ const useColumns = () => {
             </Typography>
             {winRate && (
               <Typography
-                color="rgb(75, 85, 99)"
+                color={winRateGreyColor}
                 sx={{
                   marginLeft: '6px',
                   marginTop: '2px',
