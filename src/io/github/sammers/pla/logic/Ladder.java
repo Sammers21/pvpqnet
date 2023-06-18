@@ -195,9 +195,14 @@ public class Ladder {
             .andThen(loadRegionData(US))
             .andThen(
                 runDataUpdater(US,
-                    runDataUpdater(EU, Observable.interval(minutesTillNextHour(), 30, TimeUnit.MINUTES))
+                    runDataUpdater(EU,
+                        Observable.interval(minutesTillNextHour(), 30, TimeUnit.MINUTES)
+                            .observeOn(VTHREAD_SCHEDULER)
+                            .subscribeOn(VTHREAD_SCHEDULER)
+                    )
                 )
             )
+            .doOnError(e -> log.error("Error fetching ladder", e))
             .onErrorReturnItem(Snapshot.empty(EU))
             .subscribe();
     }

@@ -1,5 +1,6 @@
 package io.github.sammers.pla.db;
 
+import io.github.sammers.pla.Main;
 import io.github.sammers.pla.blizzard.WowAPICharacter;
 import io.reactivex.Completable;
 import io.reactivex.Maybe;
@@ -82,6 +83,8 @@ public class DB {
 
     public Single<List<WowAPICharacter>> fetchChars(String region) {
         return mongoClient.rxFind("profile", new JsonObject().put("region", region))
-            .map(res -> res.stream().map(WowAPICharacter::fromJson).toList());
+            .map(res -> res.stream().map(WowAPICharacter::fromJson).toList())
+            .subscribeOn(Main.VTHREAD_SCHEDULER)
+            .observeOn(Main.VTHREAD_SCHEDULER);
     }
 }
