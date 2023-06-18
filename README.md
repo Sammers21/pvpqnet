@@ -4,7 +4,7 @@
 https://pvpq.net is a World of Warcraft PvP data oriented web site which has the following features:
 * Leaderboards with player statistics and rankings
 * Activity graphs for players for the past several hours
-* Support for EU and US regions and every pvp bracket
+* Support for EU and US regions as well as every pvp bracket
 
 # How to run locally
 The project consist of two parts: the frontend and the backend. 
