@@ -4,15 +4,12 @@ import Footer from "../Footer";
 import {useParams} from "react-router-dom";
 import axios from "axios";
 import {baseUrl} from "../../config";
-import {Box, Button, Card, CardActions, CardContent, CardMedia, Grid, Typography} from "@mui/material";
-import {aroundColor, borderColor, containerBg, winRateGreyColor} from "../../theme";
+import {Box} from "@mui/material";
+import {containerBg} from "../../theme";
 import {capitalizeFirstLetter} from "../../containers/Activity";
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import PvpBracketData from "./PvpBracketBox";
-import {getClassNameColor, getRealmColor} from "../DataTable/useColumns";
+import PvpBracketBox from "./PvpBracketBox";
 import PhotoCard from "./PhotoCard";
 import Talents from "./Talents";
-import PvpBracketBox from "./PvpBracketBox";
 import {CLASS_AND_SPECS} from "../../constants/filterSchema";
 
 const Profile = () => {
@@ -62,7 +59,6 @@ const Profile = () => {
         </Box>
         <Talents data={data}></Talents>
       </Box>
-
       <Footer/>
     </>
   );

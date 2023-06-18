@@ -134,6 +134,7 @@ public class Calculator {
         List<Spec> specs = specAndChars.entrySet().stream().map(e -> {
             List<Character> p01Chars = e.getValue().stream().filter(c -> c.rating() >= p01Cutoff).toList();
             List<Character> p001Chars = e.getValue().stream().filter(c -> c.rating() >= p001Cutoff).toList();
+            List<Character> p100Chars = e.getValue().stream().toList();
             double p001Winrate = 0;
             double p001Presence = 0;
             if (p001Chars.size() != 0) {
@@ -146,13 +147,19 @@ public class Calculator {
                 p01Winrate = p01Chars.stream().mapToDouble(c -> c.wins() * 1.0 / (c.wins() + c.losses())).average().orElse(0);
                 p01Presence = (double) p01Chars.size() / p01;
             }
+            double p100Winrate = 0;
+            double p100Presence = 0;
+            if (p01Chars.size() != 0) {
+                p100Winrate = p100Chars.stream().mapToDouble(c -> c.wins() * 1.0 / (c.wins() + c.losses())).average().orElse(0);
+                p100Presence = (double) p100Chars.size() / p01;
+            }
             return new Spec(e.getKey(),
                 p001Winrate, p001Presence,
                 p01Winrate, p01Presence,
                 p01Winrate, p01Presence,
                 p01Winrate, p01Presence,
                 p01Winrate, p01Presence,
-                p01Winrate, p01Presence
+                p100Winrate, p100Presence
             );
         }).collect(Collectors.toList());
         return new Meta(Map.of(), specs);

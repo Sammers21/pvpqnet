@@ -28,7 +28,7 @@ const StyledMenu = styled((props) => <Menu elevation={0} {...props} />)(({ theme
   },
 }));
 
-const StyledButton = styled(Button)({
+export const StyledButton = styled(Button)({
   '& .MuiButton-endIcon': {
     marginLeft: 4,
   },

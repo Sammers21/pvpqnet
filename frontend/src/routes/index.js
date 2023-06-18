@@ -6,6 +6,7 @@ import Loading from '../components/Loading';
 
 import { publicUrls } from '../config';
 import Profile from "../components/Profile";
+import Meta from "../components/Meta";
 
 const { page } = publicUrls;
 
@@ -22,6 +23,7 @@ function AppRoutes() {
     <BrowserRouter>
       <ReactRouterDomRoutes>
         <Route path={"/"} element={<ActivityPage/>}/>
+        <Route path={"/meta"} element={<Meta/>}/>
         <Route path=":region">
             <Route path="activity" element={<ActivityPage/>}>
               <Route path=":bracket" element={<ActivityPage/>}/>

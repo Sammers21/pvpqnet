@@ -2,10 +2,10 @@ import * as React from 'react';
 import {useNavigate, useParams} from 'react-router-dom';
 import {generatePath} from 'react-router';
 
-import {AppBar, Box, Container, Grid, IconButton, Toolbar, Typography} from '@mui/material';
+import {AppBar, Box, Button, Container, Grid, IconButton, Toolbar, Typography} from '@mui/material';
 import {styled} from '@mui/system';
 
-import {borderColor, containerBg} from '../../theme';
+import {borderColor, containerBg, headerButtonColor} from '../../theme';
 import {EuIcon, UsIcon} from '../icons';
 import HeaderMenu from '../HeaderMenu';
 import {publicUrls} from '../../config';
@@ -15,6 +15,7 @@ import {REGIONS} from '../../constants/region';
 import {getRegion} from '../../utils/urlparts';
 import {BRACKETS} from '../../constants/pvp-activity';
 import SearchBar from "../SearchBar";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 
 const pages = Object.values(TABS);
 
@@ -80,8 +81,10 @@ const PageHeader = () => {
                 handleOpenPage={handleOpenPage}
               />
             ))}
+            <Button onClick={() => navigate('/meta')} sx={{ color: headerButtonColor }}>
+              Meta
+            </Button>
           </Box>
-
           <Grid direction="column">
             <IconButton
               aria-label="eu"
@@ -99,8 +102,7 @@ const PageHeader = () => {
             >
               <UsIcon color="red" />
             </IconButton>
-            <SearchBar>
-            </SearchBar>
+            <SearchBar/>
           </Grid>
         </StyledToolbar>
       </Container>
