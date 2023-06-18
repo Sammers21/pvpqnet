@@ -1,12 +1,12 @@
 package io.github.sammers.pla.logic;
 
-import io.github.sammers.pla.Main;
 import io.github.sammers.pla.blizzard.PvpLeaderBoard;
 import io.github.sammers.pla.blizzard.BlizzardAPI;
 import io.github.sammers.pla.blizzard.Cutoffs;
 import io.github.sammers.pla.blizzard.WowAPICharacter;
 import io.github.sammers.pla.db.Character;
 import io.github.sammers.pla.db.DB;
+import io.github.sammers.pla.db.Meta;
 import io.github.sammers.pla.db.Snapshot;
 import io.reactivex.*;
 import io.reactivex.Observable;
@@ -22,10 +22,7 @@ import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.time.Duration;
 import java.time.Instant;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -94,6 +91,7 @@ public class Ladder {
     private final Map<String, AtomicReference<Snapshot>> refs = new ConcurrentHashMap<>();
     private final Map<String, AtomicReference<SnapshotDiff>> refDiffs = new ConcurrentHashMap<>();
     private final Map<String, WowAPICharacter> characterCache = new ConcurrentHashMap<>();
+    private final Map<String, AtomicReference<Meta>> meta = new ConcurrentHashMap<>();
     private final NickNameSearchIndex charSearchIndex = new NickNameSearchIndex();
     private final Map<String, Cutoffs> regionCutoff = new ConcurrentHashMap<>();
     private final DB db;
@@ -379,7 +377,32 @@ public class Ladder {
             .andThen(loadLast(THREE_V_THREE, region))
             .andThen(loadLast(RBG, region))
             .andThen(loadLast(SHUFFLE, region))
+            .andThen(calculateMeta(TWO_V_TWO, region))
+            .andThen(calculateMeta(THREE_V_THREE, region))
+            .andThen(calculateMeta(RBG, region))
             .andThen(loadWowCharApiData(region));
+    }
+    private Completable calculateMeta(String bracket, String region) {
+        return Completable.fromAction(() -> {
+            List.of("dps", "healer", "tank").forEach(role -> {
+                log.info("Calculating meta for " + bracket + " " + region + " " + role);
+                Snapshot snapshot = refByBracket(bracket, region).get();
+                long p001;
+                if (bracket.equals(THREE_V_THREE)) {
+                    p001 = 42L;
+                } else if (bracket.equals(TWO_V_TWO)) {
+                    p001 = 45L;
+                } else if (bracket.equals(RBG)) {
+                    p001 = 46;
+                } else if (bracket.equals(SHUFFLE)) {
+                    p001 = 200L;
+                } else {
+                    p001 = 100L;
+                }
+                Meta calcMeta = Calculator.calculateMeta(snapshot, role, p001);
+                metaRef(bracket, region, role).set(calcMeta);
+            });
+        });
     }
 
     private Completable loadCutoffs(String region) {
@@ -441,6 +464,10 @@ public class Ladder {
                 diffsByBracket(bracket, region).set(res);
                 return Completable.complete();
             });
+    }
+
+    public AtomicReference<Meta> metaRef(String bracket, String region, String role) {
+        return meta.computeIfAbsent(bracket + "_" + role + "_" + region, k -> new AtomicReference<>());
     }
 
     public AtomicReference<Snapshot> refByBracket(String bracket, String region) {

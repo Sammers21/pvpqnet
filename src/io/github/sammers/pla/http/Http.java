@@ -1,6 +1,7 @@
 package io.github.sammers.pla.http;
 
 import io.github.sammers.pla.blizzard.WowAPICharacter;
+import io.github.sammers.pla.db.Meta;
 import io.github.sammers.pla.logic.Ladder;
 import io.github.sammers.pla.db.Snapshot;
 import io.github.sammers.pla.logic.SearchResult;
@@ -61,6 +62,15 @@ public class Http {
                 } else {
                     ctx.response().end(new JsonArray(ladder.search(opt.get()).stream().map(SearchResult::toJson).toList()).encode());
                 }
+            });
+        });
+        router.get("/api/meta").handler(ctx -> {
+            VTHREAD_EXECUTOR.execute(() -> {
+                ctx.response().putHeader("Content-Type", "application/json");
+                String bracket = Optional.ofNullable(ctx.request().getParam("bracket")).orElse(THREE_V_THREE);
+                String region = Optional.ofNullable(ctx.request().getParam("region")).orElse(EU);
+                String role = Optional.ofNullable(ctx.request().getParam("role")).orElse("dps");
+                ctx.response().end(Optional.ofNullable(ladder.metaRef(bracket, region, role).get()).map(Meta::toJson).orElse(new JsonObject()).encode());
             });
         });
         router.get("/api/:region/ladder/:bracket").handler(ctx -> {

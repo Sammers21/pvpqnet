@@ -1,15 +1,14 @@
 package io.github.sammers.pla.logic;
 
 import io.github.sammers.pla.db.Character;
+import io.github.sammers.pla.db.Meta;
 import io.github.sammers.pla.db.Snapshot;
+import io.github.sammers.pla.db.Spec;
 import io.reactivex.Maybe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -124,6 +123,39 @@ public class Calculator {
         }
         List<CharAndDiff> resList = res.values().stream().sorted(Comparator.comparing((CharAndDiff o) -> o.character().rating()).reversed()).toList();
         return new SnapshotDiff(new ArrayList<>(resList), newver.timestamp());
+    }
+
+    public static Meta calculateMeta(Snapshot snapshot, String role, long p001) {
+        List<Character> characters = snapshot.characters();
+        long p01 = p001 * 10;
+        long p001Cutoff = snapshot.characters().stream().sorted(Comparator.comparing(Character::rating).reversed()).skip(p001).findFirst().map(Character::rating).orElse(0L);
+        long p01Cutoff = snapshot.characters().stream().sorted(Comparator.comparing(Character::rating).reversed()).skip(p01).findFirst().map(Character::rating).orElse(0L);
+        Map<String, List<Character>> specAndChars = characters.stream().collect(Collectors.groupingBy(character -> character.fullSpec(), Collectors.toList()));
+        List<Spec> specs = specAndChars.entrySet().stream().map(e -> {
+            List<Character> p01Chars = e.getValue().stream().filter(c -> c.rating() >= p01Cutoff).toList();
+            List<Character> p001Chars = e.getValue().stream().filter(c -> c.rating() >= p001Cutoff).toList();
+            double p001Winrate = 0;
+            double p001Presence = 0;
+            if (p001Chars.size() != 0) {
+                p001Winrate = p001Chars.stream().mapToDouble(c -> c.wins() * 1.0 / (c.wins() + c.losses())).average().orElse(0);
+                p001Presence = (double) p001Chars.size() / p001;
+            }
+            double p01Winrate = 0;
+            double p01Presence = 0;
+            if (p01Chars.size() != 0) {
+                p01Winrate = p01Chars.stream().mapToDouble(c -> c.wins() * 1.0 / (c.wins() + c.losses())).average().orElse(0);
+                p01Presence = (double) p01Chars.size() / p01;
+            }
+            return new Spec(e.getKey(),
+                p001Winrate, p001Presence,
+                p01Winrate, p01Presence,
+                p01Winrate, p01Presence,
+                p01Winrate, p01Presence,
+                p01Winrate, p01Presence,
+                p01Winrate, p01Presence
+            );
+        }).collect(Collectors.toList());
+        return new Meta(Map.of(), specs);
     }
 
     public static Long totalPages(long itemsTotal, long pageSize) {
