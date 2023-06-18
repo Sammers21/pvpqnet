@@ -65,67 +65,56 @@ public class BlizzardAPI {
         String nameSearch = URLEncoder.encode(name.toLowerCase(), StandardCharsets.UTF_8);
         String absoluteURI = "https://" + realRegion + ".api.blizzard.com/profile/wow/character/" + realmSearch + "/" + nameSearch;
         return token().flatMapMaybe(blizzardAuthToken ->
-            webClient.getAbs(absoluteURI)
-                .addQueryParam("namespace", realNamespace)
-                .addQueryParam("locale", LOCALE)
-                .bearerTokenAuthentication(blizzardAuthToken.accessToken())
-                .rxSend()
-                .map(HttpResponse::bodyAsJsonObject)
-                .flatMapMaybe(json -> {
+            maybeResponse(realNamespace, absoluteURI)
+                .flatMap(json -> {
                     Maybe<WowAPICharacter> res;
                     if (json.getInteger("code") != null && json.getInteger("code") == 404) {
                         log.debug("Character not found: " + name + " on " + realm + " in " + realRegion);
                         res = Maybe.empty();
                     } else {
                         log.debug("Found Character:  " + name + " on " + realm + " in " + realRegion);
-                        res = webClient.getAbs(json.getJsonObject("pvp_summary").getString("href"))
-                                .addQueryParam("namespace", realNamespace)
-                                .addQueryParam("locale", LOCALE)
-                                .bearerTokenAuthentication(blizzardAuthToken.accessToken())
-                                .rxSend()
-                                .map(HttpResponse::bodyAsJsonObject)
-                                .flatMapMaybe(pvp -> {
-                                    JsonArray bracketFromJson = pvp.getJsonArray("brackets");
-                                    if(bracketFromJson == null) {
-                                        bracketFromJson = new JsonArray();
-                                    }
-                                    return Single.concatEager(
-                                            bracketFromJson.stream()
-                                                    .map(o -> ((JsonObject) o).getString("href"))
-                                                    .map(ref -> webClient.getAbs(ref)
-                                                            .addQueryParam("namespace", realNamespace)
-                                                            .addQueryParam("locale", LOCALE)
-                                                            .bearerTokenAuthentication(blizzardAuthToken.accessToken())
-                                                            .rxSend()
-                                                            .map(HttpResponse::bodyAsJsonObject)
-                                                    ).toList()
+                        res = maybeResponse(realNamespace, json.getJsonObject("pvp_summary").getString("href"))
+                            .flatMap(pvp -> {
+                                JsonArray bracketFromJson = pvp.getJsonArray("brackets");
+                                if (bracketFromJson == null) {
+                                    bracketFromJson = new JsonArray();
+                                }
+                                return Maybe.concatEager(
+                                        bracketFromJson.stream()
+                                            .map(o -> ((JsonObject) o).getString("href"))
+                                            .map(ref -> maybeResponse(realNamespace, ref)
+                                            ).toList()
                                     ).toList()
-                                        .flatMapMaybe(brackets ->
-                                            webClient.getAbs(absoluteURI + "/achievements")
-                                                .addQueryParam("namespace", realNamespace)
-                                                .addQueryParam("locale", LOCALE)
-                                                .bearerTokenAuthentication(blizzardAuthToken.accessToken())
-                                                .rxSend()
-                                                .map(HttpResponse::bodyAsJsonObject)
-                                                .flatMapMaybe(achievements -> webClient.getAbs(absoluteURI + "/character-media")
-                                                    .addQueryParam("namespace", realNamespace)
-                                                    .addQueryParam("locale", LOCALE)
-                                                    .bearerTokenAuthentication(blizzardAuthToken.accessToken())
-                                                    .rxSend()
-                                                    .map(HttpResponse::bodyAsJsonObject)
-                                                    .flatMapMaybe(media -> webClient.getAbs(absoluteURI + "/specializations")
-                                                        .addQueryParam("namespace", realNamespace)
-                                                        .addQueryParam("locale", LOCALE)
-                                                        .bearerTokenAuthentication(blizzardAuthToken.accessToken())
-                                                        .rxSend()
-                                                        .map(HttpResponse::bodyAsJsonObject)
-                                                        .flatMapMaybe(specs -> Maybe.just(WowAPICharacter.parse(json, pvp, brackets, achievements, media, specs, realRegion)))))
-                                        )
-                                        .doOnError(e -> log.error("Error parsing character: " + name + " on " + realm + " in " + realRegion, e))
-                                        .onErrorResumeNext(Maybe.empty());
-                                });
+                                    .flatMapMaybe(brackets ->
+                                        maybeResponse(realNamespace, absoluteURI + "/achievements")
+                                            .flatMap(achievements ->
+                                                maybeResponse(realNamespace, absoluteURI + "/character-media")
+                                                    .flatMap(media ->
+                                                        maybeResponse(realNamespace, absoluteURI + "/specializations")
+                                                            .flatMap(specs -> Maybe.just(WowAPICharacter.parse(json, pvp, brackets, achievements, media, specs, realRegion)))))
+                                    );
+                            })
+                            .doOnError(e -> log.error("Error parsing character: " + name + " on " + realm + " in " + realRegion, e))
+                            .onErrorResumeNext(Maybe.empty());
                     }
                     return res;
+                })
+        );
+    }
+
+    Maybe<JsonObject> maybeResponse(String namespace, String url) {
+        return token().flatMapMaybe(blizzardAuthToken ->
+            webClient.getAbs(url)
+                .addQueryParam("namespace", namespace)
+                .addQueryParam("locale", LOCALE)
+                .bearerTokenAuthentication(blizzardAuthToken.accessToken())
+                .rxSend()
+                .flatMapMaybe(resp -> {
+                    if (resp.statusCode() == 200) {
+                        return Maybe.just(resp.bodyAsJsonObject());
+                    } else {
+                        return Maybe.error(new IllegalStateException("Error getting " + url + " " + resp.statusCode() + " " + resp.statusMessage() + " " + resp.bodyAsString()));
+                    }
                 })
         );
     }
@@ -161,18 +150,11 @@ public class BlizzardAPI {
         } else {
             realPvpBracket = pvpBracket;
         }
-        return Single.defer(() -> token().flatMap(
-                blizzardAuthToken ->
-                    webClient.getAbs("https://" + realRegion + ".api.blizzard.com/data/wow/pvp-season/" + pvpSeasonId + "/pvp-leaderboard/" + realPvpBracket)
-                        .addQueryParam("namespace", realNamespace)
-                        .addQueryParam("locale", LOCALE)
-                        .bearerTokenAuthentication(blizzardAuthToken.accessToken())
-                        .rxSend()
-                        .map(HttpResponse::bodyAsJsonObject)
+        String url = "https://" + realRegion + ".api.blizzard.com/data/wow/pvp-season/" + pvpSeasonId + "/pvp-leaderboard/" + realPvpBracket;
+        return Maybe.defer(() ->
+                token().flatMapMaybe(blizzardAuthToken -> maybeResponse(realNamespace, url)).map(PvpLeaderBoard::fromJson)
             )
-            .map(PvpLeaderBoard::fromJson)
-        ).doOnSubscribe(disposable -> log.info("Getting leaderboard for region={} ssn={} bracket={}", realRegion, pvpSeasonId, realPvpBracket))
-            .toMaybe()
+            .doOnSubscribe(disposable -> log.info("Getting leaderboard for region={} ssn={} bracket={}", realRegion, pvpSeasonId, realPvpBracket))
             .doOnError(er -> log.error("Error fetching Blizzard PVP leaderboard", er))
             .onErrorResumeNext(Maybe.empty());
     }

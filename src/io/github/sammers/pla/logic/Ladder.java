@@ -353,12 +353,20 @@ public class Ladder {
 
     private <R> Observable<Snapshot> runDataUpdater(String region, Observable<R> tickObservable) {
         return tickObservable
+            .flatMapSingle(tick -> {
+                log.info("Starting data updater for " + region);
+                return Single.just(tick);
+            })
             .flatMapSingle(tick -> threeVThree(region))
             .flatMapSingle(tick -> twoVTwo(region))
             .flatMapSingle(tick -> battlegrounds(region))
             .flatMapSingle(tick -> shuffle(region))
             .flatMapSingle(tick -> updateChars(region).andThen(Single.just(tick)))
-            .flatMapSingle(tick -> loadCutoffs(region).andThen(Single.just(tick)));
+            .flatMapSingle(tick -> loadCutoffs(region).andThen(Single.just(tick)))
+            .flatMapSingle(tick -> {
+                log.info("Data updater for " + region + " has been finished");
+                return Single.just(tick);
+            });
     }
 
     private Completable loadRegionData(String region) {
@@ -383,7 +391,7 @@ public class Ladder {
 
     private Completable loadWowCharApiData(String region) {
         return Completable.defer(() -> {
-            log.info("Loading wow api data for region={}...", region);
+            log.info("Loading WoW Character API data for region " + region);
             String realRegion;
             if (region.equals(EU)) {
                 realRegion = "eu";

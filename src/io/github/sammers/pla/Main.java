@@ -6,6 +6,7 @@ import io.github.sammers.pla.http.Http;
 import io.github.sammers.pla.logic.Ladder;
 import io.reactivex.Scheduler;
 import io.reactivex.schedulers.Schedulers;
+import io.vertx.core.VertxOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.ext.mongo.MongoClient;
@@ -16,6 +17,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import static java.time.format.DateTimeFormatter.ISO_DATE_TIME;
 
@@ -27,7 +29,12 @@ public class Main {
     public static DateTimeFormatter DATA_TIME = ISO_DATE_TIME;
 
     public static void main(String[] args) {
-        final Vertx vertx = Vertx.vertx();
+        final Vertx vertx =
+            Vertx.vertx(new VertxOptions()
+                .setWarningExceptionTime(100)
+                .setWarningExceptionTimeUnit(TimeUnit.MILLISECONDS)
+                .setEventLoopPoolSize(16)
+            );
         final WebClient webClient = WebClient.create(vertx);
         final String dbUri = System.getenv("DB_URI");
         final String clientId = System.getenv("CLIENT_ID");
