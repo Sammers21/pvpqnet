@@ -461,7 +461,7 @@ public class Ladder {
             current.set(newCharacters);
             log.info("Data for bracket {} is different performing update", bracket);
             return db.insertOnlyIfDifferent(bracket, region, newCharacters)
-                .andThen(db.deleteOlderThanHours(bracket, 48)
+                .andThen(db.deleteOlderThanHours(bracket, 24 * 7)
                     .ignoreElement()
                     .andThen(calcDiffs(bracket, region)));
         } else {
