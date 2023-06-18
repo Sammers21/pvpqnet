@@ -26,3 +26,17 @@ export const getActivityFromUrl = () => {
   }
   return activity;
 }
+
+export const capNickname = (nickname) => {
+  if (nickname === undefined || nickname === "")
+    return "";
+  const capitalize = s => s && s[0].toUpperCase() + s.slice(1)
+  const split = nickname.split("-");
+  const realm = capitalize(split[1]);
+  const name = capitalize(split[0]);
+  let fullNick = `${name}-${realm}`;
+  if (split.length > 2) {
+    fullNick = `${name}-${realm} ${capitalize(split[2])}`;
+  }
+  return fullNick;
+}

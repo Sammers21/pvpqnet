@@ -26,7 +26,7 @@ const Profile = () => {
   };
   useEffect(() => {
     loadProfile();
-  }, []);
+  }, [region, realm, name]);
   let arenaAndRbg = ['ARENA_2v2', 'ARENA_3v3', 'BATTLEGROUNDS'].map((bracket) => {
     let found = (data?.brackets ?? []).find((b) => b.bracket_type === bracket)
     return (<PvpBracketBox bracket={bracket} rating={found?.rating ?? 0} wins={found?.won ?? 0} loses={found?.lost ?? 0}/>);

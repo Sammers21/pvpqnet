@@ -7,6 +7,7 @@ import {baseUrl} from "../../config";
 import {classIcon, getClassNameColor} from "../DataTable/useColumns"
 import {EuIcon, UsIcon} from "../icons";
 import {useNavigate} from "react-router-dom";
+import {capNickname} from "../../utils/urlparts";
 
 const SearchBar = () => {
   let navigate = useNavigate();
@@ -49,7 +50,9 @@ const SearchBar = () => {
     noOptionsText="No results"
     options={searchResults}
     filterOptions={(x) => x}
-    getOptionLabel={(option) => option.nick}
+    getOptionLabel={(option) => {
+      return capNickname(option.nick);
+    }}
     renderOption={(props, option, state) => {
       const icon = classIcon(option.class);
       let regionIcon;
@@ -58,14 +61,7 @@ const SearchBar = () => {
       } else {
         regionIcon = <EuIcon/>;
       }
-      const capitalize = s => s && s[0].toUpperCase() + s.slice(1)
-      const split = option.nick.split("-");
-      const realm = capitalize(split[1]);
-      const name = capitalize(split[0]);
-      var fullNick = `${name}-${realm}`;
-      if (split.length > 2) {
-        fullNick = `${name}-${realm} ${capitalize(split[2])}`;
-      }
+      var fullNick = capNickname(option.nick);
       return (<li {...props}>
         <Grid sx={{
           width: '100%',
@@ -100,6 +96,8 @@ const SearchBar = () => {
       let split = searchedElem.nick.split(/-(.*)/s);
       let realm = split[1];
       let name = split[0];
+      name = name.charAt(0).toUpperCase() + name.slice(1);
+      realm = realm.charAt(0).toUpperCase() + realm.slice(1);
       let url = `/${searchedElem.region}/${realm}/${name}`
       navigate(url);
     }}

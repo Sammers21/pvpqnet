@@ -17,9 +17,15 @@ const PvpBracketBox = ({bracket, rating, wins, loses}) => {
   if (rating >= 2400) {
     ratingColor = '#fb7e00';
   } else if (rating >= 2100) {
-    ratingColor = '#0d47a1'
-  } else if (rating >= 1800) {
     ratingColor = '#a335ee';
+  } else if (rating >= 1800) {
+    ratingColor = '#0d47a1'
+  } else if (rating >= 1500) {
+    ratingColor = '#1976d2'
+  } else if (rating >= 1200) {
+    ratingColor = '#4caf50'
+  } else if (rating >= 900) {
+    ratingColor = '#d2d2d2'
   }
   return (
     <Box width="100%"
