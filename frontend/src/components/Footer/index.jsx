@@ -22,18 +22,14 @@ const Footer = () => {
         <Link underline="none" href="https://github.com/Sammers21">
           Sammers
         </Link>
-        <span> </span>&<span> </span>
-        <Link underline="none" href="https://github.com/Starmordar">
-          Starmordar
-        </Link>
       </Grid>
 
       <Link
         sx={{ display: 'flex' }}
         underline="none"
-        href="https://github.com/Sammers21/wow-pla/issues"
+        href="https://github.com/Sammers21/pvpqnet"
       >
-        Have a problem? Report here
+        Please consider giving our GitHub project a star if you find it helpful. Thank you!
         <GitHubIcon sx={{ marginLeft: '8px' }} />
       </Link>
     </Grid>
