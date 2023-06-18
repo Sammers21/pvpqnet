@@ -1,3 +1,5 @@
+[![Backend build](https://github.com/Sammers21/pvpqnet/actions/workflows/backend-build.yml/badge.svg)](https://github.com/Sammers21/pvpqnet/actions/workflows/backend-build.yml)
+[![Frontend build](https://github.com/Sammers21/pvpqnet/actions/workflows/frontend-build.yml/badge.svg)](https://github.com/Sammers21/pvpqnet/actions/workflows/frontend-build.yml)
 # pvpq.net
 https://pvpq.net is a World of Warcraft PvP data oriented web site which has the following features:
 * Leaderboards with player statistics and rankings
