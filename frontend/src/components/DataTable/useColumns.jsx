@@ -18,7 +18,7 @@ export const getRealmColor = (fraction) => {
   return fraction.toUpperCase() === 'ALLIANCE' ? '#3FC7EB' : '#ff0000';
 };
 
-const specNameFromFullSpec = (wowSpec) => {
+export const specNameFromFullSpec = (wowSpec) => {
   return wowSpec.trim().replaceAll(' ', '').toLowerCase();
 };
 

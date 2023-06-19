@@ -1,56 +1,73 @@
 import * as React from 'react';
 import Box from '@mui/material/Box';
-import { DataGrid, GridColDef, GridValueGetterParams } from '@mui/x-data-grid';
+import {DataGrid} from '@mui/x-data-grid';
 import {containerBg} from "../../theme";
+import {Typography} from "@mui/material";
+import {specNameFromFullSpec} from "../DataTable/useColumns";
+
+const percentageCellRender = (params) => {
+  let trueVal = (params.value * 100).toFixed(2) + "%"
+  return (<Typography>{trueVal}</Typography>)
+}
 
 const columns = [
-  { field: 'id', headerName: 'ID', width: 90 },
   {
-    field: 'firstName',
-    headerName: 'First name',
-    width: 150,
-    editable: true,
+    field: 'spec_name', headerName: 'Spec', width: 250, editable: false, renderCell: (params) => {
+      let specSrc;
+      let specIcon = specNameFromFullSpec(params.value) + '.png';
+      try {
+        specSrc = require('../../assets/specicons/' + specIcon);
+      } catch (e) {
+        console.log(`SpecIcon: ${specIcon} was not found`)
+        specSrc = require('../../assets/unknown.png');
+      }
+      return (
+        <Box display={'flex'} flexDirection={'row'}>
+          <img src={specSrc} width={30} height={30}/>
+          <Typography sx={{paddingLeft: '10px'}}>{params.value}</Typography>
+        </Box>
+      )
+    }
   },
-  {
-    field: 'lastName',
-    headerName: 'Last name',
-    width: 150,
-    editable: true,
-  },
-  {
-    field: 'age',
-    headerName: 'Age',
-    type: 'number',
-    width: 110,
-    editable: true,
-  },
-  {
-    field: 'fullName',
-    headerName: 'Full name',
-    description: 'This column has a value getter and is not sortable.',
-    sortable: false,
-    width: 160,
-  },
+  {field: 'p100_presence', headerName: '100% Presence', width: 100, editable: false, renderCell: percentageCellRender},
+  {field: 'p100_win_rate', headerName: '100% Win Rate', width: 100, editable: false, renderCell: percentageCellRender},
+  {field: 'p10_presence', headerName: '10% Presence', width: 100, editable: false, renderCell: percentageCellRender},
+  {field: 'p10_win_rate', headerName: '10% Win Rate', width: 100, editable: false, renderCell: percentageCellRender},
+  {field: 'p01_presence', headerName: '1% Presence', width: 100, editable: false, renderCell: percentageCellRender},
+  {field: 'p01_win_rate', headerName: '1% Win Rate', width: 100, editable: false, renderCell: percentageCellRender},
+  {field: 'p001_presence', headerName: '0.1% Presence', width: 100, editable: false, renderCell: percentageCellRender},
+  {field: 'p001_win_rate', headerName: '0.1% Win Rate', width: 100, editable: false, renderCell: percentageCellRender},
+
 ];
 
-const rows = [
-  { id: 1, lastName: 'Snow', firstName: 'Jon', age: 35 },
-  { id: 2, lastName: 'Lannister', firstName: 'Cersei', age: 42 },
-  { id: 3, lastName: 'Lannister', firstName: 'Jaime', age: 45 },
-  { id: 4, lastName: 'Stark', firstName: 'Arya', age: 16 },
-  { id: 5, lastName: 'Targaryen', firstName: 'Daenerys', age: null },
-  { id: 6, lastName: 'Melisandre', firstName: null, age: 150 },
-  { id: 7, lastName: 'Clifford', firstName: 'Ferrara', age: 44 },
-  { id: 8, lastName: 'Frances', firstName: 'Rossini', age: 36 },
-  { id: 9, lastName: 'Roxie', firstName: 'Harvey', age: 65 },
+const rowsExample = [
+  {
+    "spec_name": " Mistweaver Monk",
+    "p001_win_rate": 0.6683606294155426,
+    "p001_presence": 0.07142857142857142,
+    "p01_win_rate": 0.6198453583982446,
+    "p01_presence": 0.06428571428571428,
+    "p10_win_rate": 0.6198453583982446,
+    "p10_presence": 0.06428571428571428,
+    "p35_win_rate": 0.6198453583982446,
+    "p35_presence": 0.06428571428571428,
+    "p50_win_rate": 0.6198453583982446,
+    "p50_presence": 0.06428571428571428,
+    "p100_win_rate": 0.6000248800044744,
+    "p100_presence": 0.14761904761904762
+  }
 ];
 
 
-const Grid = () => {
+const Grid = (data) => {
+  let rows = data.data.specs
+  console.log("row for grid",data, rows)
+  if (rows === undefined) {
+    rows = rowsExample
+  }
   return (
     <Box
       sx={{
-        width: '100%',
         backgroundColor: containerBg,
         minHeight: '100vh',
         paddingTop: '105px',
@@ -59,18 +76,11 @@ const Grid = () => {
         paddingBottom: '45px',
     }}>
       <DataGrid
+        getRowId={(row) => row.spec_name}
         rows={rows}
         columns={columns}
-        initialState={{
-          pagination: {
-            paginationModel: {
-              pageSize: 5,
-            },
-          },
-        }}
-        pageSizeOptions={[5]}
-        checkboxSelection
-        disableRowSelectionOnClick
+        autoHeight={true}
+        hideFooter={true}
       />
     </Box>
   );
