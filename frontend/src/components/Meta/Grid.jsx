@@ -3,15 +3,26 @@ import Box from '@mui/material/Box';
 import {DataGrid} from '@mui/x-data-grid';
 import {containerBg} from "../../theme";
 import {Typography} from "@mui/material";
-import {specNameFromFullSpec} from "../DataTable/useColumns";
+import {getClassNameColor, specNameFromFullSpec} from "../DataTable/useColumns";
 
 const percentageCellRender = (params) => {
   let trueVal = (params.value * 100).toFixed(2) + "%"
   return (<Typography>{trueVal}</Typography>)
 }
 
-const columns = [
-  {
+const numericColumn = (fieldName, headerName) => {
+  return {
+    field: fieldName,
+    headerName: headerName,
+    minWidth: 50,
+    editable: false,
+    flex: 1,
+    renderCell: percentageCellRender
+  };
+}
+
+const specNameColumn = () => {
+  return {
     field: 'spec_name', headerName: 'Spec', width: 250, editable: false, renderCell: (params) => {
       let specSrc;
       let specIcon = specNameFromFullSpec(params.value) + '.png';
@@ -23,63 +34,54 @@ const columns = [
       }
       return (
         <Box display={'flex'} flexDirection={'row'}>
-          <img src={specSrc} width={30} height={30}/>
-          <Typography sx={{paddingLeft: '10px'}}>{params.value}</Typography>
+          <img src={specSrc} width={24} height={24}/>
+          <Typography color={getClassNameColor(params.value)} sx={{paddingLeft: '10px'}}>{params.value}</Typography>
         </Box>
       )
     }
-  },
-  {field: 'p100_presence', headerName: '100% Presence', width: 100, editable: false, renderCell: percentageCellRender},
-  {field: 'p100_win_rate', headerName: '100% Win Rate', width: 100, editable: false, renderCell: percentageCellRender},
-  {field: 'p10_presence', headerName: '10% Presence', width: 100, editable: false, renderCell: percentageCellRender},
-  {field: 'p10_win_rate', headerName: '10% Win Rate', width: 100, editable: false, renderCell: percentageCellRender},
-  {field: 'p01_presence', headerName: '1% Presence', width: 100, editable: false, renderCell: percentageCellRender},
-  {field: 'p01_win_rate', headerName: '1% Win Rate', width: 100, editable: false, renderCell: percentageCellRender},
-  {field: 'p001_presence', headerName: '0.1% Presence', width: 100, editable: false, renderCell: percentageCellRender},
-  {field: 'p001_win_rate', headerName: '0.1% Win Rate', width: 100, editable: false, renderCell: percentageCellRender},
-
-];
-
-const rowsExample = [
-  {
-    "spec_name": " Mistweaver Monk",
-    "p001_win_rate": 0.6683606294155426,
-    "p001_presence": 0.07142857142857142,
-    "p01_win_rate": 0.6198453583982446,
-    "p01_presence": 0.06428571428571428,
-    "p10_win_rate": 0.6198453583982446,
-    "p10_presence": 0.06428571428571428,
-    "p35_win_rate": 0.6198453583982446,
-    "p35_presence": 0.06428571428571428,
-    "p50_win_rate": 0.6198453583982446,
-    "p50_presence": 0.06428571428571428,
-    "p100_win_rate": 0.6000248800044744,
-    "p100_presence": 0.14761904761904762
   }
-];
-
+}
 
 const Grid = (data) => {
   let rows = data.data.specs
-  console.log("row for grid",data, rows)
   if (rows === undefined) {
-    rows = rowsExample
+    rows = []
   }
+  let columns = [specNameColumn(),]
+  const columnGroupingModel = [];
+  const addColumnGroup = (field, icon) => {
+    let popularity = field + '_presence';
+    let wr = field + '_win_rate';
+    columns.push(numericColumn(popularity, 'Popularity %'))
+    columns.push(numericColumn(wr, 'Win %'))
+    columnGroupingModel.push({
+      groupId: field,
+      children: [{field: popularity}, {field: wr}]
+    });
+  }
+  addColumnGroup('p100', '')
+  addColumnGroup('p10', '')
+  addColumnGroup('p01', '')
+  addColumnGroup('p001', '')
   return (
     <Box
       sx={{
+        width: '100%',
         backgroundColor: containerBg,
-        minHeight: '100vh',
         paddingTop: '105px',
-        paddingLeft: '3%',
-        paddingRight: '3%',
+        paddingLeft: '10%',
+        paddingRight: '10%',
         paddingBottom: '45px',
     }}>
       <DataGrid
+        experimentalFeatures={{ columnGrouping: true }}
+        columnGroupingModel={columnGroupingModel}
         getRowId={(row) => row.spec_name}
         rows={rows}
+        loading={rows.length === 0}
         columns={columns}
         autoHeight={true}
+        rowHeight={33.5}
         hideFooter={true}
       />
     </Box>

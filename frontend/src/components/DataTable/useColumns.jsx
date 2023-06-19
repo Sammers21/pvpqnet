@@ -49,32 +49,31 @@ const getDetails = (wowClass, wowSpec, wowRace, wowGender) => {
 
 export const getClassNameColor = (wowClass) => {
   wowClass = wowClass.toUpperCase();
-
-  if (wowClass === 'WARRIOR') {
+  if (wowClass === 'WARRIOR' || wowClass.includes('WARRIOR')) {
     return '#C69B6D';
-  } else if (wowClass === 'PALADIN') {
-    return '#F48CBA';
-  } else if (wowClass === 'HUNTER') {
-    return '#8EBA43';
-  } else if (wowClass === 'ROGUE') {
-    return '#FFF468';
-  } else if (wowClass === 'PRIEST') {
-    return '#FFFFFF';
-  } else if (wowClass === 'DEATH KNIGHT') {
-    return '#C41E3A';
-  } else if (wowClass === 'SHAMAN') {
-    return '#0070DD';
-  } else if (wowClass === 'MAGE') {
-    return '#3FC7EB';
-  } else if (wowClass === 'WARLOCK') {
-    return '#8788EE';
-  } else if (wowClass === 'MONK') {
-    return '#00FF98';
-  } else if (wowClass === 'DRUID') {
-    return '#FF7C0A';
-  } else if (wowClass === 'DEMON HUNTER') {
+  } else if (wowClass === 'DEMON HUNTER' || wowClass.includes('DEMON HUNTER')) {
     return '#A330C9';
-  } else if (wowClass === 'EVOKER') {
+  } else if (wowClass === 'PALADIN' || wowClass.includes('PALADIN')) {
+    return '#F48CBA';
+  } else if (wowClass === 'HUNTER' || wowClass.includes('HUNTER')) {
+    return '#8EBA43';
+  } else if (wowClass === 'ROGUE' || wowClass.includes('ROGUE')) {
+    return '#FFF468';
+  } else if (wowClass === 'PRIEST' || wowClass.includes('PRIEST')) {
+    return '#FFFFFF';
+  } else if (wowClass === 'DEATH KNIGHT' || wowClass.includes('DEATH KNIGHT')) {
+    return '#C41E3A';
+  } else if (wowClass === 'SHAMAN' || wowClass.includes('SHAMAN')) {
+    return '#0070DD';
+  } else if (wowClass === 'MAGE' || wowClass.includes('MAGE')) {
+    return '#3FC7EB';
+  } else if (wowClass === 'WARLOCK' || wowClass.includes('WARLOCK')) {
+    return '#8788EE';
+  } else if (wowClass === 'MONK' || wowClass.includes('MONK')) {
+    return '#00FF98';
+  } else if (wowClass === 'DRUID' || wowClass.includes('DRUID')) {
+    return '#FF7C0A';
+  } else if (wowClass === 'EVOKER' || wowClass.includes('EVOKER')) {
     return '#33937F';
   } else {
     return '#FFFFFF';
