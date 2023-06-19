@@ -1,8 +1,6 @@
 import PageHeader from "../AppBar";
 import React, {useEffect, useState} from "react";
 import Footer from "../Footer";
-import {useParams} from "react-router-dom";
-import {capitalizeFirstLetter} from "../../containers/Activity";
 import axios from "axios";
 import {baseUrl} from "../../config";
 import Grid from "./Grid";
