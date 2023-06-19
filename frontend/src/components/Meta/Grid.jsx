@@ -49,20 +49,32 @@ const Grid = (data) => {
   }
   let columns = [specNameColumn(),]
   const columnGroupingModel = [];
-  const addColumnGroup = (field, icon) => {
+  const addColumnGroup = (field, rankIcons) => {
     let popularity = field + '_presence';
     let wr = field + '_win_rate';
     columns.push(numericColumn(popularity, 'Popularity %'))
     columns.push(numericColumn(wr, 'Win %'))
     columnGroupingModel.push({
       groupId: field,
-      children: [{field: popularity}, {field: wr}]
+      children: [{field: popularity}, {field: wr}],
+      headerAlign: 'center',
+      renderHeaderGroup: (params) => {
+        return (
+          <Box
+            display={'flex'} flexDirection={'row'} justifyContent={'center'}>
+            {rankIcons.map((icon) => {
+              return (
+                <img src={require('../../assets/ranks/' + icon)} width={24} height={24}/>
+              )
+            })}
+          </Box>
+        )
+      }
     });
   }
-  addColumnGroup('p100', '')
-  addColumnGroup('p10', '')
-  addColumnGroup('p01', '')
-  addColumnGroup('p001', '')
+  addColumnGroup('p100', ['rank_2.png', 'rank_4.png', 'rank_6.png'])
+  addColumnGroup('p10', ['rank_7.png', 'rank_8.png'])
+  addColumnGroup('p01', ['rank_9.png','rank_10.png'])
   return (
     <Box
       sx={{
