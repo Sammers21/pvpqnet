@@ -5,6 +5,8 @@ import {aroundColor, containerBg} from "../../theme";
 import {Select, Typography} from "@mui/material";
 import {getClassNameColor, specNameFromFullSpec} from "../DataTable/useColumns";
 import {styled, alpha} from "@mui/material/styles";
+import InputLabel from '@mui/material/InputLabel';
+import FormControl from "@mui/material/FormControl";
 import MenuItem from "@mui/material/MenuItem";
 
 const ODD_OPACITY = 0.2;
@@ -85,6 +87,33 @@ const Grid = (data) => {
     rows = []
   }
   let columns = [specNameColumn(),]
+  let filters = [
+    {name: "Bracket", param_name:"bracket", default: "Shuffle", options: ['Shuffle',  '2v2', '3v3', 'Rbg']},
+    { name: "Period", param_name: "period", default: "This season", options: ['Last month', 'Last week', 'Last day', 'This season'] },
+    { name: "Role", param_name: "role", default: "All", options: ['All', 'Melee', 'Ranged', 'DPS', 'Healer', 'Tank'] }
+  ]
+  const RenderFilter = (filter) => {
+    const [filterVal, setFilterVal] = React.useState(filter.default);
+    return (<FormControl
+      sx={{
+        m: 1,
+        minWidth: 110,
+        backgroundColor: alpha(aroundColor, 0.3)
+      }}
+    >
+      <InputLabel id="per-l">{filter.name}</InputLabel>
+      <Select
+        labelId="per-l"
+        id="per"
+        autoWidth
+        value={filterVal}
+        label={filter.param_name}>
+        {filter.options.map((option) => {
+          return (<MenuItem value={option}>{option}</MenuItem>)
+        })}
+      </Select>
+    </FormControl>)
+  }
   const columnGroupingModel = [];
   const addColumnGroup = (field, rankIcons) => {
     let popularity = field + '_presence';
@@ -136,9 +165,9 @@ const Grid = (data) => {
         marginY={1}
         padding={2}
         borderRadius={3}>
-        <Select>
-          <MenuItem>Last Month</MenuItem>
-        </Select>
+        {filters.map((filter) => {
+          return RenderFilter(filter)
+        })}
       </Box>
       <Box
         marginX={1}
