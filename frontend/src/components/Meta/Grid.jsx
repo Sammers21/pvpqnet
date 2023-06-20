@@ -2,9 +2,10 @@ import * as React from 'react';
 import Box from '@mui/material/Box';
 import {DataGrid, gridClasses} from '@mui/x-data-grid';
 import {aroundColor, containerBg} from "../../theme";
-import {Typography} from "@mui/material";
+import {Select, Typography} from "@mui/material";
 import {getClassNameColor, specNameFromFullSpec} from "../DataTable/useColumns";
 import {styled, alpha} from "@mui/material/styles";
+import MenuItem from "@mui/material/MenuItem";
 
 const ODD_OPACITY = 0.2;
 
@@ -129,6 +130,15 @@ const Grid = (data) => {
         sx={{backgroundColor: alpha(aroundColor, 0.3)}}>
         <Typography variant={'h4'}>Meta</Typography>
         <Typography variant={'body1'}>Specs Popularity and Win rates, last month, last week and last day, any skill level, any ingame role</Typography>
+      </Box>
+      <Box
+        marginX={1}
+        marginY={1}
+        padding={2}
+        borderRadius={3}>
+        <Select>
+          <MenuItem>Last Month</MenuItem>
+        </Select>
       </Box>
       <Box
         marginX={1}
