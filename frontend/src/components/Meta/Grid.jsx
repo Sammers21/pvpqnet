@@ -1,9 +1,45 @@
 import * as React from 'react';
 import Box from '@mui/material/Box';
-import {DataGrid} from '@mui/x-data-grid';
-import {containerBg} from "../../theme";
+import {DataGrid, gridClasses} from '@mui/x-data-grid';
+import {aroundColor, containerBg} from "../../theme";
 import {Typography} from "@mui/material";
 import {getClassNameColor, specNameFromFullSpec} from "../DataTable/useColumns";
+import {styled, alpha} from "@mui/material/styles";
+
+const ODD_OPACITY = 0.2;
+
+const StripedDataGrid = styled(DataGrid)(({ theme }) => ({
+  [`& .${gridClasses.row}.even`]: {
+    backgroundColor: '#0e1216'  ,
+    '&:hover, &.Mui-hovered': {
+      backgroundColor: alpha(theme.palette.primary.main, ODD_OPACITY),
+      '@media (hover: none)': {
+        backgroundColor: 'transparent',
+      },
+    },
+    '&.Mui-selected': {
+      backgroundColor: alpha(
+        theme.palette.primary.main,
+        ODD_OPACITY + theme.palette.action.selectedOpacity,
+      ),
+      '&:hover, &.Mui-hovered': {
+        backgroundColor: alpha(
+          theme.palette.primary.main,
+          ODD_OPACITY +
+          theme.palette.action.selectedOpacity +
+          theme.palette.action.hoverOpacity,
+        ),
+        // Reset on touch devices, it doesn't add specificity
+        '@media (hover: none)': {
+          backgroundColor: alpha(
+            theme.palette.primary.main,
+            ODD_OPACITY + theme.palette.action.selectedOpacity,
+          ),
+        },
+      },
+    },
+  },
+}));
 
 const percentageCellRender = (params) => {
   let trueVal = (params.value * 100).toFixed(2) + "%"
@@ -84,18 +120,40 @@ const Grid = (data) => {
         paddingLeft: '10%',
         paddingRight: '10%',
         paddingBottom: '45px',
-    }}>
-      <DataGrid
-        experimentalFeatures={{ columnGrouping: true }}
-        columnGroupingModel={columnGroupingModel}
-        getRowId={(row) => row.spec_name}
-        rows={rows}
-        loading={rows.length === 0}
-        columns={columns}
-        autoHeight={true}
-        rowHeight={33.5}
-        hideFooter={true}
-      />
+      }}>
+      <Box
+        marginX={1}
+        marginY={1}
+        padding={2}
+        borderRadius={3}
+        sx={{backgroundColor: alpha(aroundColor, 0.3)}}>
+        <Typography variant={'h4'}>Meta</Typography>
+        <Typography variant={'body1'}>Specs Popularity and Win rates, last month, last week and last day, any skill level, any ingame role</Typography>
+      </Box>
+      <Box
+        marginX={1}
+        marginY={1}
+        padding={2}
+        borderRadius={3}
+        sx={{backgroundColor: alpha(aroundColor, 0.3)}}>
+        <StripedDataGrid
+          experimentalFeatures={{columnGrouping: true}}
+          columnGroupingModel={columnGroupingModel}
+          getRowId={(row) => row.spec_name}
+          rows={rows}
+          loading={rows.length === 0}
+          columns={columns}
+          autoHeight={true}
+          rowHeight={33.5}
+          hideFooter={true}
+          sx={{
+            '&, [class^=MuiDataGrid]': {border: 'none'},
+          }}
+          getRowClassName={(params) =>
+            params.indexRelativeToCurrentPage % 2 === 0 ? 'even' : 'odd'
+          }
+        />
+      </Box>
     </Box>
   );
 }
