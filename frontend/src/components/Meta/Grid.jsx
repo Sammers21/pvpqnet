@@ -8,6 +8,10 @@ import {styled, alpha} from "@mui/material/styles";
 import InputLabel from '@mui/material/InputLabel';
 import FormControl from "@mui/material/FormControl";
 import MenuItem from "@mui/material/MenuItem";
+import {useEffect, useState} from "react";
+import {useSearchParams} from "react-router-dom";
+import axios, {options} from "axios";
+import {baseUrl} from "../../config";
 
 const ODD_OPACITY = 0.2;
 
@@ -81,19 +85,57 @@ const specNameColumn = () => {
   }
 }
 
-const Grid = (data) => {
-  let rows = data.data.specs
+const toLowerAndReplace = (str) => {
+  return str.toLowerCase().replace(" ", "_")
+}
+
+const Grid = () => {
+  let [data, setData] = useState({});
+  let [filters, setFilters] = useState([
+    { name: "Bracket", param_name:"bracket", current: "Shuffle", options: ['Shuffle',  '2v2', '3v3', 'Rbg']},
+    { name: "Period", param_name: "period", current: "This season", options: ['Last month', 'Last week', 'Last day', 'This season'] },
+    { name: "Role", param_name: "role", current: "All", options: ['All', 'Melee', 'Ranged', 'DPS', 'Healer', 'Tank'] }
+  ]);
+  const loadMeta = async () => {
+    let requestParams = {}
+    filters.forEach((filter) => {
+      requestParams[filter.param_name] = filter.current
+    })
+    const data = (await axios.get(baseUrl + `/api/meta`, requestParams)).data
+    console.log("Data: ", data)
+    setData(data);
+  };
+  let rows = data.specs
   if (rows === undefined) {
     rows = []
   }
+  let [searchParams, setSearchParams] = useSearchParams();
   let columns = [specNameColumn(),]
-  let filters = [
-    {name: "Bracket", param_name:"bracket", default: "Shuffle", options: ['Shuffle',  '2v2', '3v3', 'Rbg']},
-    { name: "Period", param_name: "period", default: "This season", options: ['Last month', 'Last week', 'Last day', 'This season'] },
-    { name: "Role", param_name: "role", default: "All", options: ['All', 'Melee', 'Ranged', 'DPS', 'Healer', 'Tank'] }
-  ]
+  useEffect(() => {
+    loadMeta();
+  }, [filters]);
   const RenderFilter = (filter) => {
-    const [filterVal, setFilterVal] = React.useState(filter.default);
+    const searchParamName = searchParams.get(filter.param_name)
+    if (searchParamName !== null) {
+      filter.options.filter((option) => {
+        if (toLowerAndReplace(option) === toLowerAndReplace(searchParamName)) {
+          filter.current = option
+        }
+      })
+    }
+    const [filterVal, setFilterVal] = useState(filter.current);
+    const handleChange = (event) => {
+      let newFilters = filters.map((f) => {
+        if (f.name === filter.name) {
+          f.current = event.target.value
+          searchParams.set(f.param_name, toLowerAndReplace(event.target.value))
+        }
+        return f
+      })
+      setSearchParams(searchParams)
+      setFilters(newFilters);
+      setFilterVal(event.target.value);
+    };
     return (<FormControl
       sx={{
         m: 1,
@@ -107,7 +149,8 @@ const Grid = (data) => {
         id="per"
         autoWidth
         value={filterVal}
-        label={filter.param_name}>
+        label={filter.param_name}
+        onChange={handleChange}>
         {filter.options.map((option) => {
           return (<MenuItem value={option}>{option}</MenuItem>)
         })}
@@ -158,7 +201,7 @@ const Grid = (data) => {
         borderRadius={3}
         sx={{backgroundColor: alpha(aroundColor, 0.3)}}>
         <Typography variant={'h4'}>Meta</Typography>
-        <Typography variant={'body1'}>Specs Popularity and Win rates, last month, last week and last day, any skill level, any ingame role</Typography>
+        <Typography variant={'body1'}>Specs Popularity and Win rates, last month, last week, last day, any skill level, any role and any bracket</Typography>
       </Box>
       <Box
         marginX={1}
