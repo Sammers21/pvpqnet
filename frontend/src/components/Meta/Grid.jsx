@@ -9,7 +9,7 @@ import InputLabel from '@mui/material/InputLabel';
 import FormControl from "@mui/material/FormControl";
 import MenuItem from "@mui/material/MenuItem";
 import {useEffect, useState} from "react";
-import {useSearchParams} from "react-router-dom";
+import {useParams, useSearchParams} from "react-router-dom";
 import axios, {options} from "axios";
 import {baseUrl} from "../../config";
 
@@ -53,9 +53,7 @@ const percentageCellRender = (params) => {
   if (params.field.includes('presence')) {
     color = 'red';
   }
-  console.log('params: ', params)
   let progress = params.value / params.colDef.maxVal * 100;
-  console.log('value: ' + params.value + ' maxVal: ' + params.maxVal + ' progress: ' + progress)
   let trueVal = (params.value * 100).toFixed(2) + "%"
   return (
     <Box width={'100%'}>
@@ -110,6 +108,7 @@ const toLowerAndReplace = (str) => {
 }
 
 const Grid = () => {
+  const { region = 'eu' } = useParams();
   let [data, setData] = useState({});
   let [filters, setFilters] = useState([
     { name: "Bracket", param_name:"bracket", current: "Shuffle", options: ['Shuffle',  '2v2', '3v3', 'Rbg']},
@@ -117,12 +116,11 @@ const Grid = () => {
     { name: "Role", param_name: "role", current: "All", options: ['All', 'Melee', 'Ranged', 'DPS', 'Healer', 'Tank'] }
   ]);
   const loadMeta = async () => {
-    let requestParams = {}
+    let rParam = { region: region }
     filters.forEach((filter) => {
-      requestParams[filter.param_name] = filter.current
+      rParam[filter.param_name] = toLowerAndReplace(filter.current)
     })
-    const data = (await axios.get(baseUrl + `/api/meta`, requestParams)).data
-    console.log("Data: ", data)
+    const data = (await axios.get(baseUrl + `/api/meta`, rParam)).data
     setData(data);
   };
   let rows = data.specs
@@ -133,7 +131,7 @@ const Grid = () => {
   let columns = [specNameColumn(),]
   useEffect(() => {
     loadMeta();
-  }, [filters]);
+  }, [filters, region]);
   const RenderFilter = (filter) => {
     const searchParamName = searchParams.get(filter.param_name)
     if (searchParamName !== null) {

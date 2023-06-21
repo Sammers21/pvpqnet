@@ -1,6 +1,6 @@
 import React from 'react';
 import loadable from '@loadable/component';
-import {BrowserRouter, Routes as ReactRouterDomRoutes, Route, Routes} from 'react-router-dom';
+import {BrowserRouter, Routes as ReactRouterDomRoutes, Route} from 'react-router-dom';
 
 import Loading from '../components/Loading';
 

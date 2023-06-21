@@ -15,7 +15,6 @@ import {REGIONS} from '../../constants/region';
 import {getRegion} from '../../utils/urlparts';
 import {BRACKETS} from '../../constants/pvp-activity';
 import SearchBar from "../SearchBar";
-import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 
 const pages = Object.values(TABS);
 
@@ -37,7 +36,6 @@ const Header = () => {
     activity = 'activity',
     bracket = BRACKETS.shuffle,
   } = useParams();
-  console.log('region from url', regionFromUrl)
   const region = getRegion(regionFromUrl);
 
   const handleSetRegion = (region) => {

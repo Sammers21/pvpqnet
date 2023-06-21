@@ -3,11 +3,11 @@ import React from "react";
 import Footer from "../Footer";
 import Grid from "./Grid";
 
-const Meta = ({}) => {
+const Meta = () => {
   document.title = `Meta`;
   return (<>
     <Header/>
-    <Grid></Grid>
+    <Grid/>
     <Footer/>
   </>);
 }
