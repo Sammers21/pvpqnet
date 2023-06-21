@@ -2,7 +2,7 @@ import * as React from 'react';
 import Box from '@mui/material/Box';
 import {DataGrid, gridClasses} from '@mui/x-data-grid';
 import {aroundColor, containerBg} from "../../theme";
-import {Select, Typography} from "@mui/material";
+import {LinearProgress, Select, Typography} from "@mui/material";
 import {getClassNameColor, specNameFromFullSpec} from "../DataTable/useColumns";
 import {styled, alpha} from "@mui/material/styles";
 import InputLabel from '@mui/material/InputLabel';
@@ -49,13 +49,33 @@ const StripedDataGrid = styled(DataGrid)(({ theme }) => ({
 }));
 
 const percentageCellRender = (params) => {
+  let color = 'green';
+  if (params.field.includes('presence')) {
+    color = 'red';
+  }
+  console.log('params: ', params)
+  let progress = params.value / params.colDef.maxVal * 100;
+  console.log('value: ' + params.value + ' maxVal: ' + params.maxVal + ' progress: ' + progress)
   let trueVal = (params.value * 100).toFixed(2) + "%"
-  return (<Typography>{trueVal}</Typography>)
+  return (
+    <Box width={'100%'}>
+      <Typography>{trueVal}</Typography>
+      <LinearProgress
+        sx={{
+          backgroundColor: 'white',
+          '& .MuiLinearProgress-bar': {
+            backgroundColor: color
+          }
+        }}
+        variant="determinate" value={progress}/>
+    </Box>
+  )
 }
 
-const numericColumn = (fieldName, headerName) => {
+const numericColumn = (fieldName, headerName, maxVal) => {
   return {
     field: fieldName,
+    maxVal: maxVal,
     headerName: headerName,
     minWidth: 50,
     editable: false,
@@ -161,8 +181,18 @@ const Grid = () => {
   const addColumnGroup = (field, rankIcons) => {
     let popularity = field + '_presence';
     let wr = field + '_win_rate';
-    columns.push(numericColumn(popularity, 'Popularity %'))
-    columns.push(numericColumn(wr, 'Win %'))
+    let maxPopularity = 0;
+    let maxWr = 0;
+    if (data.specs !== undefined) {
+      data.specs.forEach((spec) => {
+        maxPopularity = Math.max(maxPopularity, spec[popularity])
+        maxWr = Math.max(maxWr, spec[wr])
+      })
+    }
+    console.log("Max popularity: ", maxPopularity)
+    console.log("Max wr: ", maxWr)
+    columns.push(numericColumn(popularity, 'Popularity %', maxPopularity ))
+    columns.push(numericColumn(wr, 'Win %', maxWr))
     columnGroupingModel.push({
       groupId: field,
       children: [{field: popularity}, {field: wr}],

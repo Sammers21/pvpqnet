@@ -9,6 +9,19 @@ export const winRateGreyColor = 'rgb(75, 85, 99)'
 
 const appTheme = createTheme({
   palette: {
+    primary: {
+      light: '#757ce8',
+      main: '#3f50b5',
+      green: '#4caf50',
+      dark: '#002884',
+      contrastText: '#fff',
+    },
+    secondary: {
+      light: '#ff7961',
+      main: '#f44336',
+      dark: '#ba000d',
+      contrastText: '#000',
+    },
     mode: 'dark',
   },
 });
