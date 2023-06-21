@@ -25,6 +25,7 @@ function AppRoutes() {
         <Route path={"/"} element={<ActivityPage/>}/>
         <Route path={"/meta"} element={<Meta/>}/>
         <Route path=":region">
+            <Route path="meta" element={<Meta/>}/>
             <Route path="activity" element={<ActivityPage/>}>
               <Route path=":bracket" element={<ActivityPage/>}/>
             </Route>

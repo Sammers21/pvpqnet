@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import PageHeader from "../AppBar";
+import Header from "../Header";
 import Footer from "../Footer";
 import {useParams} from "react-router-dom";
 import axios from "axios";
@@ -39,7 +39,7 @@ const Profile = () => {
   }
   return (
     <>
-      <PageHeader/>
+      <Header/>
       <Box sx={{
         width: '100%',
         backgroundColor: containerBg,

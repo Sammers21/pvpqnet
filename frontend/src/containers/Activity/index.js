@@ -2,7 +2,7 @@ import React, {useEffect, useState} from 'react';
 import {useParams} from 'react-router-dom';
 import {Box} from '@mui/material';
 
-import PageHeader from '../../components/AppBar';
+import Header from '../../components/Header';
 import ActivityTabs from '../../components/Tabs';
 import DataTable from '../../components/DataTable';
 import Footer from '../../components/Footer';
@@ -45,7 +45,7 @@ function Activity() {
   let margin = '95px auto 45px auto';
   return (
     <>
-      <PageHeader/>
+      <Header/>
       <Box sx={{width: realw, margin: margin}}>
         <ActivityTabs/>
         <DataTable/>

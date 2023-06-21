@@ -10,6 +10,8 @@ module.exports = {
   publicUrls: {
     page: '/:region/:activity/:bracket',
   },
-
+  metaUrls: {
+    page: '/:region/meta',
+  },
   baseUrl,
 };

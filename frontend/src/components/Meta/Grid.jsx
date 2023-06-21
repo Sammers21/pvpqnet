@@ -189,8 +189,6 @@ const Grid = () => {
         maxWr = Math.max(maxWr, spec[wr])
       })
     }
-    console.log("Max popularity: ", maxPopularity)
-    console.log("Max wr: ", maxWr)
     columns.push(numericColumn(popularity, 'Popularity %', maxPopularity ))
     columns.push(numericColumn(wr, 'Win %', maxWr))
     columnGroupingModel.push({
