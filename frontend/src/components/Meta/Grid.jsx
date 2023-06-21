@@ -113,13 +113,14 @@ const Grid = () => {
   let [filters, setFilters] = useState([
     { name: "Bracket", param_name:"bracket", current: "Shuffle", options: ['Shuffle',  '2v2', '3v3', 'Rbg']},
     { name: "Period", param_name: "period", current: "This season", options: ['Last month', 'Last week', 'Last day', 'This season'] },
-    { name: "Role", param_name: "role", current: "All", options: ['All', 'Melee', 'Ranged', 'DPS', 'Healer', 'Tank'] }
+    { name: "Role", param_name: "role", current: "All", options: ['All', 'Melee', 'Ranged', 'Dps', 'Healer', 'Tank'] }
   ]);
   const loadMeta = async () => {
     let rParam = { region: region }
     filters.forEach((filter) => {
       rParam[filter.param_name] = toLowerAndReplace(filter.current)
     })
+    console.log('rParam', rParam)
     const data = (await axios.get(baseUrl + `/api/meta`, rParam)).data
     setData(data);
   };

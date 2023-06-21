@@ -35,6 +35,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static io.github.sammers.pla.Main.VTHREAD_SCHEDULER;
+import static io.github.sammers.pla.blizzard.BlizzardAPI.realRegion;
 
 public class Ladder {
 
@@ -50,6 +51,7 @@ public class Ladder {
     public static String SHUFFLE = "shuffle";
 
     public static List<String> brackets = List.of(TWO_V_TWO, THREE_V_THREE, RBG, SHUFFLE);
+
     public static final List<String> shuffleSpecs = new ArrayList<>() {{
         add("shuffle/deathknight/blood");
         add("shuffle/deathknight/frost");
@@ -380,31 +382,69 @@ public class Ladder {
             .andThen(loadLast(THREE_V_THREE, region))
             .andThen(loadLast(RBG, region))
             .andThen(loadLast(SHUFFLE, region))
-            .andThen(calculateMeta(TWO_V_TWO, region))
-            .andThen(calculateMeta(THREE_V_THREE, region))
-            .andThen(calculateMeta(RBG, region))
+            .andThen(calculateMeta(region))
             .andThen(loadWowCharApiData(region));
     }
-    private Completable calculateMeta(String bracket, String region) {
-        return Completable.fromAction(() -> {
-            List.of("dps", "healer", "tank").forEach(role -> {
-                log.info("Calculating meta for " + bracket + " " + region + " " + role);
-                Snapshot snapshot = refByBracket(bracket, region).get();
-                long p001;
-                if (bracket.equals(THREE_V_THREE)) {
-                    p001 = 42L;
-                } else if (bracket.equals(TWO_V_TWO)) {
-                    p001 = 45L;
-                } else if (bracket.equals(RBG)) {
-                    p001 = 46;
-                } else if (bracket.equals(SHUFFLE)) {
-                    p001 = 200L;
-                } else {
-                    p001 = 100L;
-                }
-                Meta calcMeta = Calculator.calculateMeta(snapshot, role, p001);
-                metaRef(bracket, region, role).set(calcMeta);
-            });
+
+    private Completable calculateMeta(String region) {
+        String realRegion = realRegion(region);
+        Cutoffs cutoffs = regionCutoff.get(region);
+        return Completable.defer(() -> {
+            List<Completable> res = List.of("2v2", "3v3", "rbg", "shuffle").stream().flatMap(bracket -> {
+                Snapshot now = refByBracket(bracket, region).get();
+                return List.of("this_season", "last_month", "last_week", "last_day").stream().flatMap(period ->
+                    List.of("melee", "ranged", "dps", "healer", "tank").stream().flatMap(role -> {
+                        log.info("Calculating meta for bracket=" + bracket + " region=" + region + " period=" + period + " role=" + role);
+                        Maybe<SnapshotDiff> diff;
+                        long bracketR1Cutoff = 0;
+                        if (bracket.equals("2v2")) {
+                            bracketR1Cutoff = 2109;
+                        } else if (bracket.equals("3v3")) {
+                            bracketR1Cutoff = cutoffs.threeVThree();
+                        } else if (bracket.equals("rbg")) {
+                            bracketR1Cutoff = cutoffs.battlegrounds("horde");
+                        } else if (bracket.equals("shuffle")) {
+                            bracketR1Cutoff = 2300;
+                        }
+                        if (period.equals("this_season")) {
+                            diff = Maybe.just(Calculator.calculateDiff(Snapshot.empty(region), now, bracket));
+                        } else {
+                            int minsAgo = 0;
+                            if (period.equals("last_month")) {
+                                minsAgo = 60 * 24 * 30;
+                            } else if (period.equals("last_week")) {
+                                minsAgo = 60 * 24 * 7;
+                            } else if (period.equals("last_day")) {
+                                minsAgo = 60 * 24;
+                            } else {
+                                diff = Maybe.empty();
+                            }
+                            diff = db.getMinsAgo(region, bracket, minsAgo).map(snap -> Calculator.calculateDiff(snap, now, bracket));
+                        }
+                        return Stream.of(diff.map(realDiff -> {
+                            Meta meta = Calculator.calculateMeta(realDiff, role, 100L);
+                            return meta;
+                        }).ignoreElement());
+                    }));
+            }).collect(Collectors.toList());
+            return Completable.merge(res);
+
+//                log.info("Calculating meta for " + bracket + " " + region + " " + role);
+//                Snapshot snapshot = refByBracket(bracket, region).get();
+//                long p001;
+//                if (bracket.equals(THREE_V_THREE)) {
+//                    p001 = 42L;
+//                } else if (bracket.equals(TWO_V_TWO)) {
+//                    p001 = 45L;
+//                } else if (bracket.equals(RBG)) {
+//                    p001 = 46;
+//                } else if (bracket.equals(SHUFFLE)) {
+//                    p001 = 200L;
+//                } else {
+//                    p001 = 100L;
+//                }
+//                Meta calcMeta = Calculator.calculateMeta(snapshot, role, p001);
+//                metaRef(bracket, region, role).set(calcMeta);
         });
     }
 
@@ -469,8 +509,8 @@ public class Ladder {
             });
     }
 
-    public AtomicReference<Meta> metaRef(String bracket, String region, String role) {
-        return meta.computeIfAbsent(bracket + "_" + role + "_" + region, k -> new AtomicReference<>());
+    public AtomicReference<Meta> metaRef(String bracket, String region, String role, String period) {
+        return meta.computeIfAbsent(bracket + "_" + role + "_" + region + "_" + period, k -> new AtomicReference<>());
     }
 
     public AtomicReference<Snapshot> refByBracket(String bracket, String region) {

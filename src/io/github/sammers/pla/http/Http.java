@@ -66,11 +66,13 @@ public class Http {
         });
         router.get("/api/meta").handler(ctx -> {
             VTHREAD_EXECUTOR.execute(() -> {
+                // Params example: {region: 'eu', bracket: 'shuffle', period: 'this_season', role: 'all'}
                 ctx.response().putHeader("Content-Type", "application/json");
                 String bracket = Optional.ofNullable(ctx.request().getParam("bracket")).orElse(THREE_V_THREE);
                 String region = Optional.ofNullable(ctx.request().getParam("region")).orElse(EU);
                 String role = Optional.ofNullable(ctx.request().getParam("role")).orElse("dps");
-                ctx.response().end(Optional.ofNullable(ladder.metaRef(bracket, region, role).get()).map(Meta::toJson).orElse(new JsonObject()).encode());
+                String period = Optional.ofNullable(ctx.request().getParam("period")).orElse("this_season");
+                ctx.response().end(Optional.ofNullable(ladder.metaRef(bracket, region, role, period).get()).map(Meta::toJson).orElse(new JsonObject()).encode());
             });
         });
         router.get("/api/:region/ladder/:bracket").handler(ctx -> {

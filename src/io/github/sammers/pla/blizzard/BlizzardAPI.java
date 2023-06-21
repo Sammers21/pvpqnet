@@ -119,7 +119,7 @@ public class BlizzardAPI {
         );
     }
 
-    private static String realRegion(String region) {
+    public static String realRegion(String region) {
         String realRegion;
         if (region.equals("en-gb")) {
             realRegion = "eu";
