@@ -239,8 +239,9 @@ public class Ladder {
                     })
                     .subscribeOn(VTHREAD_SCHEDULER)
                     .doOnSuccess(d -> log.debug("Updated character: " + wowChar))
-                    .doOnError(e -> log.error("Failed to update character: " + wowChar + " Stopping update", e))
+                    .doOnError(e -> log.error("Failed to update character: " + wowChar + "Maybe can do it next time", e))
                     .ignoreElement()
+                    .onErrorComplete()
                 ).toList();
                 return Flowable.fromIterable(completables)
                     .buffer(5)
@@ -382,7 +383,6 @@ public class Ladder {
             .andThen(loadLast(THREE_V_THREE, region))
             .andThen(loadLast(RBG, region))
             .andThen(loadLast(SHUFFLE, region))
-            .andThen(calculateMeta(region))
             .andThen(loadWowCharApiData(region));
     }
 
