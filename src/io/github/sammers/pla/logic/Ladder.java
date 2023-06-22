@@ -393,7 +393,7 @@ public class Ladder {
             List<Completable> res = List.of("2v2", "3v3", "rbg", "shuffle").stream().flatMap(bracket -> {
                 Snapshot now = refByBracket(bracket, region).get();
                 return List.of("this_season", "last_month", "last_week", "last_day").stream().flatMap(period ->
-                    List.of("melee", "ranged", "dps", "healer", "tank").stream().flatMap(role -> {
+                    List.of("all", "melee", "ranged", "dps", "healer", "tank").stream().flatMap(role -> {
                         log.info("Calculating meta for bracket=" + bracket + " region=" + region + " period=" + period + " role=" + role);
                         Maybe<SnapshotDiff> diff;
                         long bracketR1Cutoff = 0;
@@ -422,7 +422,7 @@ public class Ladder {
                             diff = db.getMinsAgo(region, bracket, minsAgo).map(snap -> Calculator.calculateDiff(snap, now, bracket));
                         }
                         return Stream.of(diff.map(realDiff -> {
-                            Meta meta = Calculator.calculateMeta(realDiff, role, 100L);
+                            Meta meta = Calculator.calculateMeta(realDiff, role, 16.6, 33.2, 50.2);
                             return meta;
                         }).ignoreElement());
                     }));

@@ -125,44 +125,43 @@ public class Calculator {
         return new SnapshotDiff(new ArrayList<>(resList), newver.timestamp());
     }
 
-    public static double pWinrate(List<CharAndDiff> chars, double from, double to, long p001Cutoff, String role) {
+    public static double pWinrate(List<CharAndDiff> chars) {
         return 0;
     }
 
-    public static double pPresence(List<CharAndDiff> chars, double from, double to, long p001Cutoff, String role) {
+    public static double pPresence(List<CharAndDiff> chars ) {
         return 0;
     }
 
-    public static Meta calculateMeta(SnapshotDiff snapshot, String role, long p001Cutoff) {
+    public static Meta calculateMeta(SnapshotDiff snapshot, String role, double... ratios) {
+        Set<String> acceptedSpecs;
+        if (role.equals("all")){
+            acceptedSpecs = Spec.ALL_SPECS;
+        } else if (role.equals("dps")) {
+            acceptedSpecs = Spec.DPS_SPECS;
+        } else if (role.equals("heal")) {
+            acceptedSpecs = Spec.HEAL_SPECS;
+        } else if (role.equals("tank")) {
+            acceptedSpecs = Spec.TANK_SPECS;
+        } else if (role.equals("melee")) {
+            acceptedSpecs = Spec.MELEE_SPECS;
+        } else if (role.equals("ranged")) {
+            acceptedSpecs = Spec.RANGED_SPECS;
+        } else {
+            throw new IllegalArgumentException("Unknown role: " + role);
+        }
         List<CharAndDiff> characters = snapshot.chars();
-        Map<String, List<CharAndDiff>> specAndChars = characters.stream().collect(Collectors.groupingBy(character -> character.character().fullSpec(), Collectors.toList()));
+        Map<String, List<CharAndDiff>> specAndChars = characters.stream()
+            .filter((CharAndDiff character) -> acceptedSpecs.contains(character.character().fullSpec()))
+            .collect(Collectors.groupingBy(character -> character.character().fullSpec(), Collectors.toList()));
         List<Spec> specs = specAndChars.entrySet().stream().map(entry -> {
-            double p001Winrate = pWinrate(entry.getValue(), 0, 0.001, p001Cutoff, role);
-            double p001Presence = pPresence(entry.getValue(), 0, 0.001, p001Cutoff, role);
-            double p01Winrate = pWinrate(entry.getValue(), 0.001, 0.01, p001Cutoff, role);
-            double p01Presence = pPresence(entry.getValue(), 0.001, 0.01, p001Cutoff, role);
-            double p10WinRate = pWinrate(entry.getValue(), 0.01, 0.1, p001Cutoff, role);
-            double p10Presence = pPresence(entry.getValue(), 0.01, 0.1, p001Cutoff, role);
-            double p35WinRate = pWinrate(entry.getValue(), 0.1, 0.35, p001Cutoff, role);
-            double p35Presence = pPresence(entry.getValue(), 0.1, 0.35, p001Cutoff, role);
-            double p50WinRate = pWinrate(entry.getValue(), 0.35, 0.5, p001Cutoff, role);
-            double p50Presence = pPresence(entry.getValue(), 0.35, 0.5, p001Cutoff, role);
-            double p100WinRate = pWinrate(entry.getValue(), 0.5, 1, p001Cutoff, role);
-            double p100Presence = pPresence(entry.getValue(), 0.5, 1, p001Cutoff, role);
-            return new Spec(entry.getKey(),
-                p001Winrate,
-                p001Presence,
-                p01Winrate,
-                p01Presence,
-                p10WinRate,
-                p10Presence,
-                p35WinRate,
-                p35Presence,
-                p50WinRate,
-                p50Presence,
-                p100WinRate,
-                p100Presence
-            );
+            Map<String, Double> res = new HashMap<>();
+            for(double ratio : ratios) {
+//                double pWinrate = pWinrate(entry.getValue(), r, r + 0.1, 0, role);
+//                double pPresence = pPresence(entry.getValue(), r, r + 0.1, 0, role);
+//                res.put(String.format("%.1f", r), pWinrate * pPresence);
+            }
+            return new Spec(entry.getKey(), res);
         }).collect(Collectors.toList());
 
 //        long p01 = p001 * 10;
