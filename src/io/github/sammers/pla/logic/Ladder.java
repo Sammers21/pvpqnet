@@ -244,7 +244,7 @@ public class Ladder {
                     .onErrorComplete()
                 ).toList();
                 return Flowable.fromIterable(completables)
-                    .buffer(5)
+                    .buffer(2)
                     .toList()
                     .flatMapCompletable(list -> Completable.concat(list.stream().map(Completable::merge).toList()));
             })
