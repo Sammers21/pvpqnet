@@ -380,8 +380,8 @@ public class Ladder {
             .flatMapSingle(tick -> twoVTwo(region))
             .flatMapSingle(tick -> battlegrounds(region))
             .flatMapSingle(tick -> shuffle(region))
-            .flatMapSingle(tick -> calculateMeta(region).andThen(Single.just(tick)))
-            .flatMapSingle(tick -> updateChars(region).andThen(Single.just(tick)))
+//            .flatMapSingle(tick -> calculateMeta(region).andThen(Single.just(tick)))
+//            .flatMapSingle(tick -> updateChars(region).andThen(Single.just(tick)))
             .flatMapSingle(tick -> loadCutoffs(region).andThen(Single.just(tick)))
             .flatMapSingle(tick -> {
                 log.info("Data updater for " + region + " has been finished");
