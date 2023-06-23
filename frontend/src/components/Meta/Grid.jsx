@@ -126,7 +126,7 @@ const toLowerAndReplace = (str) => {
 const Grid = () => {
   const { region = 'eu' } = useParams();
   let [data, setData] = useState({});
-  let [filters, setFilters] = useState([{ name: "Bracket", param_name:"bracket", current: "Shuffle", options: ['Shuffle', '2v2', '3v3', 'Rbg']},
+  let [filters, setFilters] = useState([{ name: "Bracket", param_name:"bracket", current: "Shuffle", options: ['Shuffle', '2v2', '3v3', 'Battlegrounds']},
     { name: "Period", param_name: "period", current: "This season", options: ['Last month', 'Last week', 'Last day', 'This season'] },
     { name: "Role", param_name: "role", current: "All", options: ['All', 'Melee', 'Ranged', 'Dps', 'Healer', 'Tank'] }
   ]);
