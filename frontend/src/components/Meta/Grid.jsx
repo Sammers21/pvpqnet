@@ -110,8 +110,7 @@ const toLowerAndReplace = (str) => {
 const Grid = () => {
   const { region = 'eu' } = useParams();
   let [data, setData] = useState({});
-  let [filters, setFilters] = useState([
-    { name: "Bracket", param_name:"bracket", current: "Shuffle", options: ['Shuffle',  '2v2', '3v3', 'Rbg']},
+  let [filters, setFilters] = useState([{ name: "Bracket", param_name:"bracket", current: "Shuffle", options: ['Shuffle', '2v2', '3v3', 'Rbg']},
     { name: "Period", param_name: "period", current: "This season", options: ['Last month', 'Last week', 'Last day', 'This season'] },
     { name: "Role", param_name: "role", current: "All", options: ['All', 'Melee', 'Ranged', 'Dps', 'Healer', 'Tank'] }
   ]);
@@ -120,8 +119,8 @@ const Grid = () => {
     filters.forEach((filter) => {
       rParam[filter.param_name] = toLowerAndReplace(filter.current)
     })
-    console.log('rParam', rParam)
-    const data = (await axios.get(baseUrl + `/api/meta`, rParam)).data
+    const data = (await axios.get(baseUrl + `/api/meta`, {params: rParam})).data
+    console.log("params and data", rParam, data)
     setData(data);
   };
   let rows = data.specs
@@ -208,9 +207,9 @@ const Grid = () => {
       }
     });
   }
-  addColumnGroup('p100', ['rank_2.png', 'rank_4.png', 'rank_6.png'])
-  addColumnGroup('p10', ['rank_7.png', 'rank_8.png'])
-  addColumnGroup('p01', ['rank_9.png','rank_10.png'])
+  addColumnGroup('0.502', ['rank_2.png', 'rank_4.png', 'rank_6.png'])
+  addColumnGroup('0.332', ['rank_7.png', 'rank_8.png'])
+  addColumnGroup('0.166', ['rank_9.png','rank_10.png'])
   return (
     <Box
       sx={{

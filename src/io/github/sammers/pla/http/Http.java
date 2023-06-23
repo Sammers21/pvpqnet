@@ -69,7 +69,7 @@ public class Http {
                 // Params example: {region: 'eu', bracket: 'shuffle', period: 'this_season', role: 'all'}
                 ctx.response().putHeader("Content-Type", "application/json");
                 String bracket = Optional.ofNullable(ctx.request().getParam("bracket")).orElse(THREE_V_THREE);
-                String region = Optional.ofNullable(ctx.request().getParam("region")).orElse(EU);
+                String region = Optional.ofNullable(ctx.request().getParam("region")).orElse("eu");
                 String role = Optional.ofNullable(ctx.request().getParam("role")).orElse("dps");
                 String period = Optional.ofNullable(ctx.request().getParam("period")).orElse("this_season");
                 ctx.response().end(Optional.ofNullable(ladder.metaRef(bracket, region, role, period).get()).map(Meta::toJson).orElse(new JsonObject()).encode());

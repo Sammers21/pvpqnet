@@ -370,6 +370,7 @@ public class Ladder {
             .flatMapSingle(tick -> twoVTwo(region))
             .flatMapSingle(tick -> battlegrounds(region))
             .flatMapSingle(tick -> shuffle(region))
+            .flatMapSingle(tick -> calculateMeta(region).andThen(Single.just(tick)))
             .flatMapSingle(tick -> updateChars(region).andThen(Single.just(tick)))
             .flatMapSingle(tick -> loadCutoffs(region).andThen(Single.just(tick)))
             .flatMapSingle(tick -> {
@@ -383,31 +384,23 @@ public class Ladder {
             .andThen(loadLast(THREE_V_THREE, region))
             .andThen(loadLast(RBG, region))
             .andThen(loadLast(SHUFFLE, region))
+            .andThen(calculateMeta(region))
             .andThen(loadWowCharApiData(region));
     }
 
     private Completable calculateMeta(String region) {
         String realRegion = realRegion(region);
-        Cutoffs cutoffs = regionCutoff.get(region);
         return Completable.defer(() -> {
-            List<Completable> res = List.of("2v2", "3v3", "rbg", "shuffle").stream().flatMap(bracket -> {
+            List<Completable> res = List.of(TWO_V_TWO, THREE_V_THREE, RBG, SHUFFLE).stream().flatMap(bracket -> {
+                log.info("Calculating meta for bracket=" + bracket + " region=" + region);
                 Snapshot now = refByBracket(bracket, region).get();
                 return List.of("this_season", "last_month", "last_week", "last_day").stream().flatMap(period ->
                     List.of("all", "melee", "ranged", "dps", "healer", "tank").stream().flatMap(role -> {
-                        log.info("Calculating meta for bracket=" + bracket + " region=" + region + " period=" + period + " role=" + role);
                         Maybe<SnapshotDiff> diff;
-                        long bracketR1Cutoff = 0;
-                        if (bracket.equals("2v2")) {
-                            bracketR1Cutoff = 2109;
-                        } else if (bracket.equals("3v3")) {
-                            bracketR1Cutoff = cutoffs.threeVThree();
-                        } else if (bracket.equals("rbg")) {
-                            bracketR1Cutoff = cutoffs.battlegrounds("horde");
-                        } else if (bracket.equals("shuffle")) {
-                            bracketR1Cutoff = 2300;
-                        }
                         if (period.equals("this_season")) {
-                            diff = Maybe.just(Calculator.calculateDiff(Snapshot.empty(region), now, bracket));
+                            Snapshot empty = Snapshot.empty(region);
+                            SnapshotDiff sdif = Calculator.calculateDiff(empty, now, bracket, false);
+                            diff = Maybe.just(sdif);
                         } else {
                             int minsAgo = 0;
                             if (period.equals("last_month")) {
@@ -419,32 +412,17 @@ public class Ladder {
                             } else {
                                 diff = Maybe.empty();
                             }
-                            diff = db.getMinsAgo(region, bracket, minsAgo).map(snap -> Calculator.calculateDiff(snap, now, bracket));
+                            diff = db.getMinsAgo(bracket, region, minsAgo)
+                                .map(snap -> Calculator.calculateDiff(snap, now, bracket, false));
                         }
                         return Stream.of(diff.map(realDiff -> {
-                            Meta meta = Calculator.calculateMeta(realDiff, role, 16.6, 33.2, 50.2);
+                            Meta meta = Calculator.calculateMeta(realDiff, role,bracket, 0.166, 0.332, 0.502);
+                            metaRef(bracket, realRegion, role, period).set(meta);
                             return meta;
-                        }).ignoreElement());
+                        }).ignoreElement().onErrorComplete());
                     }));
             }).collect(Collectors.toList());
             return Completable.merge(res);
-
-//                log.info("Calculating meta for " + bracket + " " + region + " " + role);
-//                Snapshot snapshot = refByBracket(bracket, region).get();
-//                long p001;
-//                if (bracket.equals(THREE_V_THREE)) {
-//                    p001 = 42L;
-//                } else if (bracket.equals(TWO_V_TWO)) {
-//                    p001 = 45L;
-//                } else if (bracket.equals(RBG)) {
-//                    p001 = 46;
-//                } else if (bracket.equals(SHUFFLE)) {
-//                    p001 = 200L;
-//                } else {
-//                    p001 = 100L;
-//                }
-//                Meta calcMeta = Calculator.calculateMeta(snapshot, role, p001);
-//                metaRef(bracket, region, role).set(calcMeta);
         });
     }
 
@@ -531,7 +509,7 @@ public class Ladder {
             current.set(newCharacters);
             log.info("Data for bracket {} is different performing update", bracket);
             return db.insertOnlyIfDifferent(bracket, region, newCharacters)
-                .andThen(db.deleteOlderThanHours(bracket, 24 * 7)
+                .andThen(db.deleteOlderThanHours(bracket, 24 * 30)
                     .ignoreElement()
                     .andThen(calcDiffs(bracket, region)));
         } else {

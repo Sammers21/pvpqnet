@@ -63,8 +63,11 @@ public class Calculator {
                 }
             });
     }
-
     public static SnapshotDiff calculateDiff(Snapshot oldChars, Snapshot newChars, String bracket) {
+        return calculateDiff(oldChars, newChars, bracket, true);
+    }
+
+    public static SnapshotDiff calculateDiff(Snapshot oldChars, Snapshot newChars, String bracket, boolean newIsZero) {
         ArrayList<CharAndDiff> res = new ArrayList<>(newChars.characters().size());
         Function<Character, String> idF = getIdFunction(bracket);
         Map<String, Character> oldMap = oldChars.characters().stream().collect(Collectors.toMap(idF, c -> c, (a, b) -> a));
@@ -79,7 +82,19 @@ public class Calculator {
             }
             CharAndDiff e;
             if (oldChar == null) {
-                e = new CharAndDiff(newChar, new Diff(0L, 0L, 0L, 0L, newChars.timestamp()));
+                if(newIsZero) {
+                    e = new CharAndDiff(newChar, new Diff(0L, 0L, 0L, 0L, newChars.timestamp()));
+                } else {
+                    e = new CharAndDiff(newChar,
+                        new Diff(
+                            newChar.wins(),
+                            newChar.losses(),
+                            newChar.rating(),
+                            newChar.pos(),
+                            newChars.timestamp()
+                        )
+                    );
+                }
             } else {
                 e = new CharAndDiff(newChar,
                     new Diff(
@@ -126,20 +141,26 @@ public class Calculator {
     }
 
     public static double pWinrate(List<CharAndDiff> chars) {
-        return 0;
+        return chars.stream().mapToDouble(c -> {
+            if (c == null || c.diff() == null) {
+                log.error("Null diff: {}", c);
+                return 0;
+            }
+            return c.diff().won() / (double) (c.diff().won() + c.diff().lost());
+        }).average().orElse(0);
     }
 
-    public static double pPresence(List<CharAndDiff> chars ) {
-        return 0;
+    public static double pPresence(List<CharAndDiff> chars, int total) {
+        return chars.size() / (double) total;
     }
 
-    public static Meta calculateMeta(SnapshotDiff snapshot, String role, double... ratios) {
+    public static Meta calculateMeta(SnapshotDiff snapshot, String role,String bracket, double... ratios) {
         Set<String> acceptedSpecs;
         if (role.equals("all")){
             acceptedSpecs = Spec.ALL_SPECS;
         } else if (role.equals("dps")) {
             acceptedSpecs = Spec.DPS_SPECS;
-        } else if (role.equals("heal")) {
+        } else if (role.equals("healer")) {
             acceptedSpecs = Spec.HEAL_SPECS;
         } else if (role.equals("tank")) {
             acceptedSpecs = Spec.TANK_SPECS;
@@ -150,55 +171,60 @@ public class Calculator {
         } else {
             throw new IllegalArgumentException("Unknown role: " + role);
         }
-        List<CharAndDiff> characters = snapshot.chars();
-        Map<String, List<CharAndDiff>> specAndChars = characters.stream()
-            .filter((CharAndDiff character) -> acceptedSpecs.contains(character.character().fullSpec()))
-            .collect(Collectors.groupingBy(character -> character.character().fullSpec(), Collectors.toList()));
-        List<Spec> specs = specAndChars.entrySet().stream().map(entry -> {
+        List<CharAndDiff> totalSortedRoleList = snapshot.chars().stream()
+            .filter((CharAndDiff character) -> acceptedSpecs.contains(character.character().fullSpec().trim()))
+            .sorted(Comparator.comparing((CharAndDiff o) -> o.character().rating()).reversed()).toList();
+        if (bracket.equals("shuffle")) {
+            int maxMinRating = totalSortedRoleList.stream().collect(Collectors.groupingBy(character -> character.character().fullSpec(), Collectors.toList()))
+                    .entrySet().stream()
+                    .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().stream().mapToLong(c -> c.character().rating()).min().orElse(0)))
+                    .values().stream().mapToInt(Long::intValue).max().orElse(0);
+            totalSortedRoleList = totalSortedRoleList.stream().filter(c -> c.character().rating() >= maxMinRating).toList();
+        }
+        LinkedList<CharAndDiff> fsrtList = new LinkedList<>(totalSortedRoleList);
+        LinkedList<List<Spec>> diviedLists = new LinkedList<>();
+        int total = fsrtList.size();
+        for (double ratio : ratios) {
+            int take = (int) (total * ratio);
+            ArrayList<CharAndDiff> sortedRatioList = new ArrayList<>();
+            for (int i = 0; i < take; i++) {
+                if (fsrtList.isEmpty()) {
+                    log.error("Empty fsrtList: {}", i);
+                    break;
+                }
+                CharAndDiff charD = fsrtList.removeFirst();
+                sortedRatioList.add(charD);
+            }
+            int thisRatioTotal = sortedRatioList.size();
+            Map<String, List<CharAndDiff>> specAndChars = sortedRatioList.stream()
+                .collect(Collectors.groupingBy(character -> character.character().fullSpec(), Collectors.toList()));
+            List<Spec> specList = specAndChars.entrySet().stream().map(specAndChar -> {
+                Map<String, Double> res = new HashMap<>();
+                double pWinrate = pWinrate(specAndChar.getValue());
+                double pPresence = pPresence(specAndChar.getValue(), thisRatioTotal);
+                res.put(String.format("%.3f_win_rate", ratio), pWinrate);
+                res.put(String.format("%.3f_presence", ratio), pPresence);
+                res.put(String.format("%.3f_cnt", ratio), Double.valueOf(take));
+                return new Spec(specAndChar.getKey(), res);
+            }).toList();
+            diviedLists.add(specList);
+        }
+        List<Spec> specs = diviedLists.stream().flatMap(List::stream).collect(Collectors.groupingBy(Spec::specName, Collectors.toList()))
+            .entrySet().stream().map(entry -> {
             Map<String, Double> res = new HashMap<>();
-            for(double ratio : ratios) {
-//                double pWinrate = pWinrate(entry.getValue(), r, r + 0.1, 0, role);
-//                double pPresence = pPresence(entry.getValue(), r, r + 0.1, 0, role);
-//                res.put(String.format("%.1f", r), pWinrate * pPresence);
+            for(Spec spec : entry.getValue()) {
+                res.putAll(spec.winRates());
+            }
+            for (Double ratio: ratios) {
+                if(!res.containsKey(String.format("%.3f_win_rate", ratio))) {
+                    res.put(String.format("%.3f_win_rate", ratio), 0.0);
+                }
+                if(!res.containsKey(String.format("%.3f_presence", ratio))) {
+                    res.put(String.format("%.3f_presence", ratio), 0.0);
+                }
             }
             return new Spec(entry.getKey(), res);
-        }).collect(Collectors.toList());
-
-//        long p01 = p001 * 10;
-//        long p001Cutoff = snapshot.chars().stream().sorted(Comparator.comparing(x -> {}).reversed()).skip(p001).findFirst().map(Character::rating).orElse(0L);
-//        long p01Cutoff = snapshot.characters().stream().sorted(Comparator.comparing(Character::rating).reversed()).skip(p01).findFirst().map(Character::rating).orElse(0L);
-//
-//        List<Spec> specs = specAndChars.entrySet().stream().map(e -> {
-//            List<Character> p01Chars = e.getValue().stream().filter(c -> c.rating() >= p01Cutoff).toList();
-//            List<Character> p001Chars = e.getValue().stream().filter(c -> c.rating() >= p001Cutoff).toList();
-//            List<Character> p100Chars = e.getValue().stream().toList();
-//            double p001Winrate = 0;
-//            double p001Presence = 0;
-//            if (p001Chars.size() != 0) {
-//                p001Winrate = p001Chars.stream().mapToDouble(c -> c.wins() * 1.0 / (c.wins() + c.losses())).average().orElse(0);
-//                p001Presence = (double) p001Chars.size() / p001;
-//            }
-//            double p01Winrate = 0;
-//            double p01Presence = 0;
-//            if (p01Chars.size() != 0) {
-//                p01Winrate = p01Chars.stream().mapToDouble(c -> c.wins() * 1.0 / (c.wins() + c.losses())).average().orElse(0);
-//                p01Presence = (double) p01Chars.size() / p01;
-//            }
-//            double p100Winrate = 0;
-//            double p100Presence = 0;
-//            if (p01Chars.size() != 0) {
-//                p100Winrate = p100Chars.stream().mapToDouble(c -> c.wins() * 1.0 / (c.wins() + c.losses())).average().orElse(0);
-//                p100Presence = (double) p100Chars.size() / p01;
-//            }
-//            return new Spec(e.getKey(),
-//                p001Winrate, p001Presence,
-//                p01Winrate, p01Presence,
-//                p01Winrate, p01Presence,
-//                p01Winrate, p01Presence,
-//                p01Winrate, p01Presence,
-//                p100Winrate, p100Presence
-//            );
-//        }).collect(Collectors.toList());
+        }).toList();
         return new Meta(Map.of(), specs);
     }
 
