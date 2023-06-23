@@ -184,6 +184,7 @@ public class Calculator {
         LinkedList<CharAndDiff> fsrtList = new LinkedList<>(totalSortedRoleList);
         LinkedList<List<Spec>> diviedLists = new LinkedList<>();
         int total = fsrtList.size();
+        Map<String, Long> sizing = new HashMap<>();
         for (double ratio : ratios) {
             int take = (int) (total * ratio);
             ArrayList<CharAndDiff> sortedRatioList = new ArrayList<>();
@@ -196,6 +197,11 @@ public class Calculator {
                 sortedRatioList.add(charD);
             }
             int thisRatioTotal = sortedRatioList.size();
+            long maxInRatio = sortedRatioList.stream().mapToLong(c -> c.character().rating()).max().orElse(0);
+            long minInRatio = sortedRatioList.stream().mapToLong(c -> c.character().rating()).min().orElse(0);
+            sizing.put(String.format("%.3f_total", ratio), (long) thisRatioTotal);
+            sizing.put(String.format("%.3f_max", ratio), maxInRatio);
+            sizing.put(String.format("%.3f_min", ratio), minInRatio);
             Map<String, List<CharAndDiff>> specAndChars = sortedRatioList.stream()
                 .collect(Collectors.groupingBy(character -> character.character().fullSpec(), Collectors.toList()));
             List<Spec> specList = specAndChars.entrySet().stream().map(specAndChar -> {
@@ -204,7 +210,6 @@ public class Calculator {
                 double pPresence = pPresence(specAndChar.getValue(), thisRatioTotal);
                 res.put(String.format("%.3f_win_rate", ratio), pWinrate);
                 res.put(String.format("%.3f_presence", ratio), pPresence);
-                res.put(String.format("%.3f_cnt", ratio), Double.valueOf(take));
                 return new Spec(specAndChar.getKey(), res);
             }).toList();
             diviedLists.add(specList);
@@ -223,9 +228,9 @@ public class Calculator {
                     res.put(String.format("%.3f_presence", ratio), 0.0);
                 }
             }
-            return new Spec(entry.getKey(), res);
-        }).toList();
-        return new Meta(Map.of(), specs);
+                return new Spec(entry.getKey(), res);
+            }).toList();
+        return new Meta(Map.of(), sizing, specs);
     }
 
     public static Long totalPages(long itemsTotal, long pageSize) {

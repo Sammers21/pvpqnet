@@ -416,9 +416,14 @@ public class Ladder {
                                 .map(snap -> Calculator.calculateDiff(snap, now, bracket, false));
                         }
                         return Stream.of(diff.map(realDiff -> {
-                            Meta meta = Calculator.calculateMeta(realDiff, role,bracket, 0.166, 0.332, 0.502);
-                            metaRef(bracket, realRegion, role, period).set(meta);
-                            return meta;
+                            try {
+                                Meta meta = Calculator.calculateMeta(realDiff, role, bracket, 0.166, 0.332, 0.502);
+                                metaRef(bracket, realRegion, role, period).set(meta);
+                                return meta;
+                            } catch (Exception e) {
+                                log.error("Error calculating meta for " + bracket + " " + region + " " + role + " " + period, e);
+                                return new Meta(Map.of(), Map.of(), List.of());
+                            }
                         }).ignoreElement().onErrorComplete());
                     }));
             }).collect(Collectors.toList());
