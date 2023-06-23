@@ -55,19 +55,35 @@ const percentageCellRender = (params) => {
   }
   let progress = params.value / params.colDef.maxVal * 100;
   let trueVal = (params.value * 100).toFixed(2) + "%"
-  return (
-    <Box width={'100%'}>
-      <Typography>{trueVal}</Typography>
-      <LinearProgress
-        sx={{
-          backgroundColor: 'white',
-          '& .MuiLinearProgress-bar': {
-            backgroundColor: color
-          }
-        }}
-        variant="determinate" value={progress}/>
-    </Box>
-  )
+  if(params.value === 0) {
+    return (
+      <Box width={'100%'}>
+        <Typography>-</Typography>
+        <LinearProgress
+          sx={{
+            backgroundColor: 'white',
+            '& .MuiLinearProgress-bar': {
+              backgroundColor: 'gray'
+            }
+          }}
+          variant="determinate" value={progress}/>
+      </Box>
+    )
+  } else {
+    return (
+      <Box width={'100%'}>
+        <Typography>{trueVal}</Typography>
+        <LinearProgress
+          sx={{
+            backgroundColor: 'white',
+            '& .MuiLinearProgress-bar': {
+              backgroundColor: color
+            }
+          }}
+          variant="determinate" value={progress}/>
+      </Box>
+    )
+  }
 }
 
 const numericColumn = (fieldName, headerName, maxVal) => {
@@ -256,6 +272,11 @@ const Grid = () => {
           hideFooter={true}
           sx={{
             '&, [class^=MuiDataGrid]': {border: 'none'},
+          }}
+          initialState={{
+            sorting: {
+              sortModel: [{ field: '0.166_presence', sort: 'desc' }],
+            },
           }}
           getRowClassName={(params) =>
             params.indexRelativeToCurrentPage % 2 === 0 ? 'even' : 'odd'
