@@ -30,6 +30,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -50,6 +51,7 @@ public class Ladder {
     public static String RBG = "battlegrounds";
     public static String SHUFFLE = "shuffle";
 
+    private final Random rnd = new Random();
     public static List<String> brackets = List.of(TWO_V_TWO, THREE_V_THREE, RBG, SHUFFLE);
 
     public static final List<String> shuffleSpecs = new ArrayList<>() {{
@@ -199,7 +201,7 @@ public class Ladder {
             .andThen(
                 runDataUpdater(US,
                     runDataUpdater(EU,
-                        Observable.interval(minutesTillNextHour(), 30, TimeUnit.MINUTES)
+                        Observable.interval(0, 30, TimeUnit.MINUTES)
                             .observeOn(VTHREAD_SCHEDULER)
                             .subscribeOn(VTHREAD_SCHEDULER)
                     )
@@ -211,6 +213,7 @@ public class Ladder {
     }
 
     private Completable updateChars(String region) {
+        AtomicLong errors = new AtomicLong(0);
         return Completable.defer(() -> {
                 log.info("Updating chars in region " + region);
                 long dayAgo = Instant.now().minus(1, ChronoUnit.DAYS).toEpochMilli();
@@ -239,14 +242,21 @@ public class Ladder {
                     })
                     .subscribeOn(VTHREAD_SCHEDULER)
                     .doOnSuccess(d -> log.debug("Updated character: " + wowChar))
-                    .doOnError(e -> log.error("Failed to update character: " + wowChar + "Maybe can do it next time", e))
+                    .doOnError(e -> {
+                        errors.incrementAndGet();
+                        if (rnd.nextLong() % 1000 == 0) {
+                            log.error("Failed to update character: " + wowChar);
+                        }
+                    })
                     .ignoreElement()
                     .onErrorComplete()
                 ).toList();
                 return Flowable.fromIterable(completables)
                     .buffer(2)
                     .toList()
-                    .flatMapCompletable(list -> Completable.concat(list.stream().map(Completable::merge).toList()));
+                    .flatMapCompletable(list -> Completable.concat(list.stream().map(Completable::merge).toList()))
+                    .doOnComplete(() -> log.info("Finished updating chars in region " + region + " with " + errors.get() + (" " +
+                        "errors and " + uniqChars.size() + "ok characters")));
             })
             .onErrorComplete()
             .subscribeOn(VTHREAD_SCHEDULER);
