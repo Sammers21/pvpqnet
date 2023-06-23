@@ -384,7 +384,7 @@ public class Ladder {
             .andThen(loadLast(THREE_V_THREE, region))
             .andThen(loadLast(RBG, region))
             .andThen(loadLast(SHUFFLE, region))
-            .andThen(calculateMeta(region))
+//            .andThen(calculateMeta(region))
             .andThen(loadWowCharApiData(region));
     }
 
