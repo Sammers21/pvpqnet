@@ -48,7 +48,7 @@ public class BlizzardAPI {
                 }
                 CompletableEmitter src = requestQes.poll();
                 while (src != null) {
-                    if (ring.size() < 100) {
+                    if (ring.size() < 10) {
                         ring.add(System.currentTimeMillis());
                         src.onComplete();
                     } else {

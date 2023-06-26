@@ -319,7 +319,7 @@ public class Ladder {
                 log.info("Updating " + uniqChars.size() + " characters");
                 List<Completable> completables = uniqChars.stream().map(wowChar -> updateChar(region, wowChar.name(), wowChar.realm())).toList();
                 return Flowable.fromIterable(completables)
-                    .buffer(2)
+                    .buffer(1)
                     .toList()
                     .flatMapCompletable(list -> Completable.concat(list.stream().map(Completable::merge).toList()))
                     .doOnComplete(() -> log.info("Finished updating chars in region " + region + " with " + errors.get() + (" " +
