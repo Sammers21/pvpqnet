@@ -1,8 +1,10 @@
 package io.github.sammers.pla.blizzard;
 
-import com.lmax.disruptor.RingBuffer;
 import io.github.sammers.pla.Main;
-import io.reactivex.*;
+import io.reactivex.Completable;
+import io.reactivex.CompletableEmitter;
+import io.reactivex.Maybe;
+import io.reactivex.Single;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.core.MultiMap;
@@ -14,10 +16,7 @@ import org.slf4j.LoggerFactory;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
