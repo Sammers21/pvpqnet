@@ -1,11 +1,9 @@
 package io.github.sammers.pla.logic;
 
-import io.github.sammers.pla.db.Character;
 import io.reactivex.Scheduler;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 public class RateLimiterTest {

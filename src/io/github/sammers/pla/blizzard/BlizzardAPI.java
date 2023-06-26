@@ -30,7 +30,7 @@ public class BlizzardAPI {
     private final WebClient webClient;
     private final String clientId;
     private final AtomicReference<BlizzardAuthToken> token = new AtomicReference<>();
-    private final RateLimiter rateLimiter = new RateLimiter(3, Main.VTHREAD_SCHEDULER);
+    private final RateLimiter rateLimiter = new RateLimiter(5, Main.VTHREAD_SCHEDULER);
 
     public BlizzardAPI(String clientId, String clientSecret, WebClient webClient) {
         this.clientId = clientId;
@@ -43,11 +43,11 @@ public class BlizzardAPI {
     }
 
     public Single<BlizzardAuthToken> token() {
-        return rpsToken().andThen(Single.defer(() -> {
+        return Single.defer(() -> {
             final BlizzardAuthToken token = this.token.get();
             final Single<BlizzardAuthToken> res;
             if (token == null || token.isExpired()) {
-                res = authorize();
+                res = rpsToken().andThen(authorize());
             } else {
                 res = Single.just(token);
             }
@@ -55,7 +55,7 @@ public class BlizzardAPI {
                 this.token.set(blizzardAuthToken);
                 return blizzardAuthToken;
             });
-        }));
+        });
     }
 
     public Maybe<PvpLeaderBoard> pvpLeaderboard(String bracket, String region) {
