@@ -55,7 +55,7 @@ public record PvpLeaderBoard(
                         false,
                         name,
                         wowAPICharacter.clazz(),
-                        wowAPICharacter.clazz() + " " + wowAPICharacter.activeSpec(),
+                        wowAPICharacter.activeSpec() + " " + wowAPICharacter.clazz(),
                         wowAPICharacter.fraction(),
                         wowAPICharacter.gender(),
                         wowAPICharacter.race(),
