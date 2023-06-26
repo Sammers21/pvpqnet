@@ -203,10 +203,24 @@ const Grid = () => {
         maxWr = Math.max(maxWr, spec[wr])
       })
     }
-    const charCount = data.specs_sizing[field+'_total']
-    const from = data.specs_sizing[field+'_min']
-    const to = data.specs_sizing[field+'_max']
-    const colTitle = `Based on ${charCount} characters between ${from} and ${to} rating`
+    let colTitle
+    if (data.specs_sizing === undefined) {
+      colTitle = `No data for ${field}`
+    } else {
+      let charCount = data.specs_sizing[field + '_total']
+      if (charCount === undefined) {
+        charCount = 0
+      }
+      let from = data.specs_sizing[field + '_min']
+      if (from === undefined) {
+        from = 0
+      }
+      let to = data.specs_sizing[field + '_max']
+      if (to === undefined) {
+        to = 0
+      }
+      colTitle = `Based on ${charCount} characters between ${from} and ${to} rating`
+    }
     columns.push(numericColumn(popularity, 'Popularity %', maxPopularity ))
     columns.push(numericColumn(wr, 'Win %', maxWr))
     columnGroupingModel.push({
