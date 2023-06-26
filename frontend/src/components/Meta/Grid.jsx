@@ -2,7 +2,7 @@ import * as React from 'react';
 import Box from '@mui/material/Box';
 import {DataGrid, gridClasses} from '@mui/x-data-grid';
 import {aroundColor, containerBg} from "../../theme";
-import {LinearProgress, Select, Typography} from "@mui/material";
+import {LinearProgress, Select, Tooltip, Typography} from "@mui/material";
 import {getClassNameColor, specNameFromFullSpec} from "../DataTable/useColumns";
 import {styled, alpha} from "@mui/material/styles";
 import InputLabel from '@mui/material/InputLabel';
@@ -203,6 +203,10 @@ const Grid = () => {
         maxWr = Math.max(maxWr, spec[wr])
       })
     }
+    const charCount = data.specs_sizing[field+'_total']
+    const from = data.specs_sizing[field+'_min']
+    const to = data.specs_sizing[field+'_max']
+    const colTitle = `Based on ${charCount} characters between ${from} and ${to} rating`
     columns.push(numericColumn(popularity, 'Popularity %', maxPopularity ))
     columns.push(numericColumn(wr, 'Win %', maxWr))
     columnGroupingModel.push({
@@ -211,14 +215,16 @@ const Grid = () => {
       headerAlign: 'center',
       renderHeaderGroup: (params) => {
         return (
-          <Box
-            display={'flex'} flexDirection={'row'} justifyContent={'center'}>
-            {rankIcons.map((icon) => {
-              return (
-                <img src={require('../../assets/ranks/' + icon)} width={24} height={24}/>
-              )
-            })}
-          </Box>
+          <Tooltip title={colTitle} placement="top-end">
+            <Box
+              display={'flex'} flexDirection={'row'} justifyContent={'center'}>
+              {rankIcons.map((icon) => {
+                return (
+                  <img src={require('../../assets/ranks/' + icon)} width={24} height={24}/>
+                )
+              })}
+            </Box>
+          </Tooltip>
         )
       }
     });
