@@ -1,8 +1,8 @@
 package io.github.sammers.pla.blizzard;
 
 import io.github.sammers.pla.Main;
+import io.github.sammers.pla.logic.RateLimiter;
 import io.reactivex.Completable;
-import io.reactivex.CompletableEmitter;
 import io.reactivex.Maybe;
 import io.reactivex.Single;
 import io.vertx.core.json.JsonArray;
@@ -15,8 +15,6 @@ import org.slf4j.LoggerFactory;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.LinkedList;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -32,48 +30,16 @@ public class BlizzardAPI {
     private final WebClient webClient;
     private final String clientId;
     private final AtomicReference<BlizzardAuthToken> token = new AtomicReference<>();
-    private final LinkedList<Long> ring = new LinkedList<>();
-    private final ConcurrentLinkedQueue<CompletableEmitter> requestQes = new ConcurrentLinkedQueue<>();
+    private final RateLimiter rateLimiter = new RateLimiter(3, Main.VTHREAD_SCHEDULER);
 
     public BlizzardAPI(String clientId, String clientSecret, WebClient webClient) {
         this.clientId = clientId;
         this.clientSecret = clientSecret;
         this.webClient = webClient;
-        Main.VTHREAD_SCHEDULER.scheduleDirect(() -> {
-            while (true) {
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                    log.error("Interrupted", e);
-                }
-                CompletableEmitter src = requestQes.poll();
-                while (src != null) {
-                    if (ring.size() < 10) {
-                        ring.add(System.currentTimeMillis());
-                        src.onComplete();
-                    } else {
-                        Long oldest = ring.poll();
-                        if (oldest != null) {
-                            Long sleep = 1000 - (System.currentTimeMillis() - oldest);
-                            if (sleep > 0) {
-                                try {
-                                    Thread.sleep(sleep);
-                                } catch (InterruptedException e) {
-                                    log.error("Interrupted", e);
-                                }
-                            }
-                        }
-                        ring.add(System.currentTimeMillis());
-                        src.onComplete();
-                    }
-                    src = requestQes.poll();
-                }
-            }
-        });
     }
 
     public Completable rpsToken() {
-        return Completable.create(requestQes::add);
+        return rateLimiter.request();
     }
 
     public Single<BlizzardAuthToken> token() {
