@@ -200,7 +200,7 @@ public class Ladder {
         AtomicLong start = new AtomicLong(0);
         AtomicLong end = new AtomicLong(0);
         return Flowable.fromIterable(compList)
-            .buffer(2)
+            .buffer(1)
             .toList()
             .flatMapCompletable(list -> Completable.concat(list.stream().map(Completable::merge).toList()))
             .doOnSubscribe(d -> {

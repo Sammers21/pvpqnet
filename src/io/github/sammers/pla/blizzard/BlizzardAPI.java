@@ -1,8 +1,8 @@
 package io.github.sammers.pla.blizzard;
 
+import com.lmax.disruptor.RingBuffer;
 import io.github.sammers.pla.Main;
-import io.reactivex.Maybe;
-import io.reactivex.Single;
+import io.reactivex.*;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.core.MultiMap;
@@ -13,7 +13,11 @@ import org.slf4j.LoggerFactory;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -29,15 +33,52 @@ public class BlizzardAPI {
     private final WebClient webClient;
     private final String clientId;
     private final AtomicReference<BlizzardAuthToken> token = new AtomicReference<>();
+    private final LinkedList<Long> ring = new LinkedList<>();
+    private final ConcurrentLinkedQueue<CompletableEmitter> requestQes = new ConcurrentLinkedQueue<>();
 
     public BlizzardAPI(String clientId, String clientSecret, WebClient webClient) {
         this.clientId = clientId;
         this.clientSecret = clientSecret;
         this.webClient = webClient;
+        Main.VTHREAD_SCHEDULER.scheduleDirect(() -> {
+            while (true) {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    log.error("Interrupted", e);
+                }
+                CompletableEmitter src = requestQes.poll();
+                while (src != null) {
+                    if (ring.size() < 100) {
+                        ring.add(System.currentTimeMillis());
+                        src.onComplete();
+                    } else {
+                        Long oldest = ring.poll();
+                        if (oldest != null) {
+                            Long sleep = 1000 - (System.currentTimeMillis() - oldest);
+                            if (sleep > 0) {
+                                try {
+                                    Thread.sleep(sleep);
+                                } catch (InterruptedException e) {
+                                    log.error("Interrupted", e);
+                                }
+                            }
+                        }
+                        ring.add(System.currentTimeMillis());
+                        src.onComplete();
+                    }
+                    src = requestQes.poll();
+                }
+            }
+        });
+    }
+
+    public Completable rpsToken() {
+        return Completable.create(requestQes::add);
     }
 
     public Single<BlizzardAuthToken> token() {
-        return Single.defer(() -> {
+        return rpsToken().andThen(Single.defer(() -> {
             final BlizzardAuthToken token = this.token.get();
             final Single<BlizzardAuthToken> res;
             if (token == null || token.isExpired()) {
@@ -49,7 +90,7 @@ public class BlizzardAPI {
                 this.token.set(blizzardAuthToken);
                 return blizzardAuthToken;
             });
-        });
+        }));
     }
 
     public Maybe<PvpLeaderBoard> pvpLeaderboard(String bracket, String region) {
@@ -104,18 +145,20 @@ public class BlizzardAPI {
 
     Maybe<JsonObject> maybeResponse(String namespace, String url) {
         return token().flatMapMaybe(blizzardAuthToken ->
-            webClient.getAbs(url)
-                .addQueryParam("namespace", namespace)
-                .addQueryParam("locale", LOCALE)
-                .bearerTokenAuthentication(blizzardAuthToken.accessToken())
-                .rxSend()
-                .flatMapMaybe(resp -> {
-                    if (resp.statusCode() == 200) {
-                        return Maybe.just(resp.bodyAsJsonObject());
-                    } else {
-                        return Maybe.error(new IllegalStateException("Error getting " + url + " " + resp.statusCode() + " " + resp.statusMessage() + " " + resp.bodyAsString()));
-                    }
-                })
+            rpsToken().andThen(
+                webClient.getAbs(url)
+                    .addQueryParam("namespace", namespace)
+                    .addQueryParam("locale", LOCALE)
+                    .bearerTokenAuthentication(blizzardAuthToken.accessToken())
+                    .rxSend()
+                    .flatMapMaybe(resp -> {
+                        if (resp.statusCode() == 200) {
+                            return Maybe.just(resp.bodyAsJsonObject());
+                        } else {
+                            return Maybe.error(new IllegalStateException("Error getting " + url + " " + resp.statusCode() + " " + resp.statusMessage() + " " + resp.bodyAsString()));
+                        }
+                    })
+            )
         );
     }
 
