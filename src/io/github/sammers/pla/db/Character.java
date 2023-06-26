@@ -17,7 +17,8 @@ public record Character(Long pos, Long rating, boolean inCutoff, String name, St
     }
 
     public static String fullNameByRealmAndName(String name, String realm) {
-        return (name + "-" + realm.replaceAll(" ", "-").replaceAll("'", "")).toLowerCase();
+        String realmReplaced = realm.replaceAll(" ", "-").replaceAll("'", "");
+        return (name.trim() + "-" + realmReplaced.trim()).toLowerCase();
     }
 
     public String fullNameWSpec() {

@@ -10,6 +10,7 @@ import io.github.sammers.pla.db.Meta;
 import io.github.sammers.pla.db.Snapshot;
 import io.reactivex.*;
 import io.reactivex.Observable;
+import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.buffer.Buffer;
 import io.vertx.reactivex.ext.web.client.HttpRequest;
@@ -97,7 +98,7 @@ public class Ladder {
 
     private final Map<String, AtomicReference<Snapshot>> refs = new ConcurrentHashMap<>();
     private final Map<String, AtomicReference<SnapshotDiff>> refDiffs = new ConcurrentHashMap<>();
-    private final Map<String, WowAPICharacter> characterCache = new ConcurrentHashMap<>();
+    public final Map<String, WowAPICharacter> characterCache = new ConcurrentHashMap<>();
     private final Map<String, AtomicReference<Meta>> meta = new ConcurrentHashMap<>();
     private final NickNameSearchIndex charSearchIndex = new NickNameSearchIndex();
     private final Map<String, Cutoffs> regionCutoff = new ConcurrentHashMap<>();
@@ -140,7 +141,93 @@ public class Ladder {
     }
 
     public Single<Snapshot> fetchLadder(String bracket, String region) {
-        long currentTimeMillis = System.currentTimeMillis();
+        return fetchLadder(bracket, region, true);
+    }
+
+    public Single<List<Character>> pureBlizzardApiFetch(String bracket, String region){
+        Single<List<Character>> resCharList;
+        if (bracket.equals(SHUFFLE)) {
+            Single<List<Character>> res = Single.just(new ArrayList<>(1000 * shuffleSpecs.size()));
+            for (String shuffleSpec : shuffleSpecs) {
+                Single<List<Character>> sh = Single.just(new ArrayList<>(shuffleSpecs.size()));
+                String specForBlizApi = shuffleSpec.replaceAll("/", "-");
+                sh = sh.flatMap(s -> blizzardAPI.pvpLeaderboard(specForBlizApi, region)
+                    .flatMapSingle(leaderboard ->
+                        leadeboardToChars(leaderboard, region)
+                            .map(characters -> {
+                                s.addAll(characters);
+                                return s;
+                            })
+                    ));
+                Single<List<Character>> finalSh = sh;
+                res = res.flatMap(characters -> finalSh.map(s -> {
+                    characters.addAll(s);
+                    return characters;
+                }));
+            }
+            resCharList = res.map(chars -> {
+                chars.sort(Comparator.comparing(Character::rating).reversed());
+                return chars;
+            });
+        } else {
+            Single<List<Character>> res = Single.just(new ArrayList<>(1000));
+            resCharList = res.flatMap(s -> blizzardAPI.pvpLeaderboard(bracket, region)
+                .flatMapSingle(leaderboard ->
+                    leadeboardToChars(leaderboard, region)
+                        .map(characters -> {
+                            s.addAll(characters);
+                            return s;
+                        })
+                )
+            );
+        }
+        return resCharList;
+    }
+
+    private Single<Set<Character>> leadeboardToChars(PvpLeaderBoard leaderboard, String region) {
+        List<Completable> compList = leaderboard.entities().stream().map(entity -> (JsonObject) entity)
+            .flatMap(entity -> {
+                JsonObject character = entity.getJsonObject("character");
+                JsonObject realmJson = character.getJsonObject("realm");
+                String realm = realmJson.getString("slug");
+                String name = character.getString("name");
+                if (name == null || realm == null || characterCache.containsKey(Character.fullNameByRealmAndName(name, realm))) {
+                    return Stream.empty();
+                } else {
+                    return Stream.of(updateChar(region, name, realm));
+                }
+            }).collect(Collectors.toList());
+        AtomicLong start = new AtomicLong(0);
+        AtomicLong end = new AtomicLong(0);
+        return Flowable.fromIterable(compList)
+            .buffer(2)
+            .toList()
+            .flatMapCompletable(list -> Completable.concat(list.stream().map(Completable::merge).toList()))
+            .doOnSubscribe(d -> {
+                start.set(System.currentTimeMillis());
+                log.info("Start updating {} chars", compList.size());
+            }).doOnComplete(()->{
+                end.set(System.currentTimeMillis());
+                log.info("End updating {} chars, took {} ms", compList.size(), end.get() - start.get());
+            })
+            .andThen(Single.fromCallable(() -> leaderboard.toCharacters(characterCache)));
+    }
+
+    public Single<Snapshot> fetchLadder(String bracket, String region, boolean newWay) {
+        Single<List<Character>> resCharList;
+        if (newWay) {
+            resCharList = pureBlizzardApiFetch(bracket, region);
+        } else {
+            resCharList = ladderPageFetch(bracket, region);
+        }
+        return resCharList
+            .map(chars -> Snapshot.of(chars, region, System.currentTimeMillis()))
+            .flatMap(d -> newDataOnBracket(bracket, region, d).andThen(Single.just(d)))
+            .doOnError(e -> log.error("Error fetching ladder, returning empty snapshot", e))
+            .onErrorReturnItem(Snapshot.empty(region));
+    }
+
+    public Single<List<Character>> ladderPageFetch(String bracket, String region){
         Single<List<Character>> resCharList;
         if (bracket.equals(SHUFFLE)) {
             Single<List<Character>> res = Single.just(new ArrayList<>(1000 * shuffleSpecs.size()));
@@ -186,13 +273,8 @@ public class Ladder {
                     });
                 return map.toSingle(s);
             });
-
         }
-        return resCharList
-            .map(chars -> Snapshot.of(chars, region, currentTimeMillis))
-            .flatMap(d -> newDataOnBracket(bracket, region, d).andThen(Single.just(d)))
-            .doOnError(e -> log.error("Error fetching ladder, returning empty snapshot", e))
-            .onErrorReturnItem(Snapshot.empty(region));
+        return resCharList;
     }
 
     public void start() {
@@ -235,22 +317,7 @@ public class Ladder {
                     });
                 }).collect(Collectors.toSet());
                 log.info("Updating " + uniqChars.size() + " characters");
-                List<Completable> completables = uniqChars.stream().map(wowChar -> blizzardAPI.character(region, wowChar.realm(), wowChar.name()).flatMap(c -> {
-                        characterCache.put(wowChar.fullName(), c);
-                        charSearchIndex.insertNickNames(new SearchResult(wowChar.fullName(), region, wowChar.clazz()));
-                        return db.upsertCharacter(c);
-                    })
-                    .subscribeOn(VTHREAD_SCHEDULER)
-                    .doOnSuccess(d -> log.debug("Updated character: " + wowChar))
-                    .doOnError(e -> {
-                        errors.incrementAndGet();
-                        if (rnd.nextLong() % 1000 == 0) {
-                            log.error("Failed to update character: " + wowChar);
-                        }
-                    })
-                    .ignoreElement()
-                    .onErrorComplete()
-                ).toList();
+                List<Completable> completables = uniqChars.stream().map(wowChar -> updateChar(region, wowChar.name(), wowChar.realm())).toList();
                 return Flowable.fromIterable(completables)
                     .buffer(2)
                     .toList()
@@ -260,6 +327,22 @@ public class Ladder {
             })
             .onErrorComplete()
             .subscribeOn(VTHREAD_SCHEDULER);
+    }
+    private Completable updateChar(String region, String name, String realm) {
+        String fullName = Character.fullNameByRealmAndName(name, realm);
+        return blizzardAPI.character(region, realm, name).flatMap(c -> {
+            characterCache.put(fullName, c);
+            charSearchIndex.insertNickNames(new SearchResult(fullName, region, c.clazz()));
+            return db.upsertCharacter(c);
+        }).subscribeOn(VTHREAD_SCHEDULER)
+            .doOnSuccess(d -> log.debug("Updated character: " + fullName))
+            .doOnError(e -> {
+                if (rnd.nextLong() % 1000 == 0) {
+                    log.error("Failed to update character: " + fullName);
+                }
+            })
+            .ignoreElement()
+            .onErrorComplete();
     }
 
     private HttpRequest<Buffer> ladderRequest(String bracket, Integer page, String region) {
@@ -404,6 +487,10 @@ public class Ladder {
             List<Completable> res = List.of(TWO_V_TWO, THREE_V_THREE, RBG, SHUFFLE).stream().flatMap(bracket -> {
                 log.info("Calculating meta for bracket=" + bracket + " region=" + region);
                 Snapshot now = refByBracket(bracket, region).get();
+                if (now == null) {
+                    log.info("No data for bracket=" + bracket + " region=" + region);
+                    return Stream.empty();
+                }
                 return List.of("this_season", "last_month", "last_week", "last_day").stream().flatMap(period ->
                     List.of("all", "melee", "ranged", "dps", "healer", "tank").stream().flatMap(role -> {
                         Maybe<SnapshotDiff> diff;
@@ -453,7 +540,7 @@ public class Ladder {
         });
     }
 
-    private Completable loadWowCharApiData(String region) {
+    public Completable loadWowCharApiData(String region) {
         return Completable.defer(() -> {
             log.info("Loading WoW Character API data for region " + region);
             String realRegion;
@@ -479,7 +566,12 @@ public class Ladder {
     }
 
     private Completable loadLast(String bracket, String region) {
-        return db.getLast(bracket, region).flatMapCompletable(characters -> {
+        return db.getLast(bracket, region)
+            .switchIfEmpty(Maybe.defer(() -> {
+                log.info("No data for bracket {}-{} in DB", region, bracket);
+                return Maybe.empty();
+            }))
+            .flatMapCompletable(characters -> {
             refByBracket(bracket, region).set(characters);
             log.info("Data for bracket {}-{} has been loaded from DB", region, bracket);
             return calcDiffs(bracket, region);

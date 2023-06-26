@@ -41,7 +41,7 @@ public class DB {
 
     public Maybe<MongoClientDeleteResult> deleteOlderThanHours(String bracket, int hours) {
         return mongoClient.rxRemoveDocuments(bracket,
-            new JsonObject().put("timestamp", new JsonObject().put("$lt", new Date().getTime() - hours * 60 * 60 * 1000))
+            new JsonObject().put("timestamp", new JsonObject().put("$lt", new Date().getTime() - (long) hours * 60 * 60 * 1000))
         ).doOnSuccess(res -> log.info("Deleted " + res.getRemovedCount() + " records " + bracket + " snapshots"));
     }
 
@@ -78,7 +78,7 @@ public class DB {
             new JsonObject().put("id", character.id()),
             new JsonObject().put("$set", character.toJson()),
             new UpdateOptions().setUpsert(true)
-        );
+        ).doOnSuccess(ok -> log.info("Upserted character: {}", character.fullName()));
     }
 
     public Single<List<WowAPICharacter>> fetchChars(String region) {

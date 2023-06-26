@@ -40,29 +40,28 @@ public record PvpLeaderBoard(
                 JsonObject realmJson = character.getJsonObject("realm");
                 String realm = realmJson.getString("slug").replaceAll("[^A-Za-z]", "");
                 String name = character.getString("name");
-                String key = (name + "-" + realm).toLowerCase();
                 Long rank = entity.getLong("rank");
                 Long rating = entity.getLong("rating");
                 JsonObject seasonMatchStatistics = entity.getJsonObject("season_match_statistics");
                 Long won = seasonMatchStatistics.getLong("won");
                 Long lost = seasonMatchStatistics.getLong("lost");
-                WowAPICharacter wowAPICharacter = characterCache.get(key);
+                WowAPICharacter wowAPICharacter = characterCache.get(Character.fullNameByRealmAndName(name, realm));
                 if(wowAPICharacter == null) {
                     return Stream.empty();
                 } else {
                     return Stream.of(new Character(
-                            rank,
-                            rating,
-                            false,
-                            name,
-                            wowAPICharacter.clazz(),
-                            wowAPICharacter.activeSpec(),
-                            wowAPICharacter.fraction(),
-                            wowAPICharacter.gender(),
-                            wowAPICharacter.race(),
-                            realm,
-                            won,
-                            lost
+                        rank,
+                        rating,
+                        false,
+                        name,
+                        wowAPICharacter.clazz(),
+                        wowAPICharacter.clazz() + " " + wowAPICharacter.activeSpec(),
+                        wowAPICharacter.fraction(),
+                        wowAPICharacter.gender(),
+                        wowAPICharacter.race(),
+                        realm,
+                        won,
+                        lost
                     ));
                 }
             })
