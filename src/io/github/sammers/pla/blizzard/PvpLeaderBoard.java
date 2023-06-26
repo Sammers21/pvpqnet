@@ -38,14 +38,15 @@ public record PvpLeaderBoard(
             .flatMap(entity -> {
                 JsonObject character = entity.getJsonObject("character");
                 JsonObject realmJson = character.getJsonObject("realm");
-                String realm = realmJson.getString("slug").replaceAll("[^A-Za-z]", "");
+                String slug = realmJson.getString("slug").replaceAll("[^A-Za-z]", "");
+                String realm = slug.substring(0, 1).toUpperCase() + slug.substring(1);
                 String name = character.getString("name");
                 Long rank = entity.getLong("rank");
                 Long rating = entity.getLong("rating");
                 JsonObject seasonMatchStatistics = entity.getJsonObject("season_match_statistics");
                 Long won = seasonMatchStatistics.getLong("won");
                 Long lost = seasonMatchStatistics.getLong("lost");
-                WowAPICharacter wowAPICharacter = characterCache.get(Character.fullNameByRealmAndName(name, realm));
+                WowAPICharacter wowAPICharacter = characterCache.get(Character.fullNameByRealmAndName(name, slug));
                 if(wowAPICharacter == null) {
                     return Stream.empty();
                 } else {
