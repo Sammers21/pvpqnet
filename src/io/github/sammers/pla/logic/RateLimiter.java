@@ -1,12 +1,10 @@
 package io.github.sammers.pla.logic;
 
-import io.github.sammers.pla.Main;
 import io.reactivex.Completable;
 import io.reactivex.CompletableEmitter;
 import io.reactivex.Scheduler;
 
 import java.util.LinkedList;
-import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class RateLimiter {
@@ -14,10 +12,8 @@ public class RateLimiter {
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(RateLimiter.class);
     private final LinkedList<Long> ring = new LinkedList<>();
     private final ConcurrentLinkedQueue<CompletableEmitter> requestQes = new ConcurrentLinkedQueue<>();
-    private final int maxRequestsPerSecond;
 
     public RateLimiter(int maxRequestsPerSecond, Scheduler scheduler) {
-        this.maxRequestsPerSecond = maxRequestsPerSecond;
         for (int i = 0; i < maxRequestsPerSecond; i++) {
             ring.add(System.currentTimeMillis());
         }
@@ -47,7 +43,7 @@ public class RateLimiter {
                     src = requestQes.poll();
                 }
                 try {
-                    log.debug("Sleeping for {} ms after processing all requests", 100);
+                    log.trace("Sleeping for {} ms after processing all requests", 100);
                     Thread.sleep(100);
                 } catch (InterruptedException e) {
                     log.error("Interrupted", e);

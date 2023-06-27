@@ -151,12 +151,12 @@ public class Ladder {
             for (String shuffleSpec : shuffleSpecs) {
                 Single<List<Character>> sh = Single.just(new ArrayList<>(shuffleSpecs.size()));
                 String specForBlizApi = shuffleSpec.replaceAll("/", "-");
-                sh = sh.flatMap(s -> blizzardAPI.pvpLeaderboard(specForBlizApi, region)
+                sh = sh.flatMap(thisSpecChars -> blizzardAPI.pvpLeaderboard(specForBlizApi, region)
                     .flatMapSingle(leaderboard ->
                         leadeboardToChars(leaderboard, region)
                             .map(characters -> {
-                                s.addAll(characters);
-                                return s;
+                                thisSpecChars.addAll(characters);
+                                return thisSpecChars;
                             })
                     ));
                 Single<List<Character>> finalSh = sh;
@@ -185,18 +185,27 @@ public class Ladder {
     }
 
     private Single<Set<Character>> leadeboardToChars(PvpLeaderBoard leaderboard, String region) {
-        List<Completable> compList = leaderboard.entities().stream().map(entity -> (JsonObject) entity)
-            .flatMap(entity -> {
-                JsonObject character = entity.getJsonObject("character");
-                JsonObject realmJson = character.getJsonObject("realm");
-                String realm = realmJson.getString("slug");
-                String name = character.getString("name");
-                if (name == null || realm == null || characterCache.containsKey(Character.fullNameByRealmAndName(name, realm))) {
-                    return Stream.empty();
-                } else {
-                    return Stream.of(updateChar(region, name, realm));
-                }
-            }).collect(Collectors.toList());
+        return leadeboardToChars(leaderboard, region, false);
+    }
+
+    private Single<Set<Character>> leadeboardToChars(PvpLeaderBoard leaderboard, String region, boolean updateBefore) {
+        List<Completable> compList;
+        if (updateBefore) {
+            compList = leaderboard.entities().stream().map(entity -> (JsonObject) entity)
+                .flatMap(entity -> {
+                    JsonObject character = entity.getJsonObject("character");
+                    JsonObject realmJson = character.getJsonObject("realm");
+                    String realm = realmJson.getString("slug");
+                    String name = character.getString("name");
+                    if (name == null || realm == null || characterCache.containsKey(Character.fullNameByRealmAndName(name, realm))) {
+                        return Stream.empty();
+                    } else {
+                        return Stream.of(updateChar(region, name, realm));
+                    }
+                }).collect(Collectors.toList());
+        } else {
+            compList = List.of();
+        }
         AtomicLong start = new AtomicLong(0);
         AtomicLong end = new AtomicLong(0);
         return Flowable.fromIterable(compList)
@@ -206,7 +215,7 @@ public class Ladder {
             .doOnSubscribe(d -> {
                 start.set(System.currentTimeMillis());
                 log.info("Start updating {} chars", compList.size());
-            }).doOnComplete(()->{
+            }).doOnComplete(() -> {
                 end.set(System.currentTimeMillis());
                 log.info("End updating {} chars, took {} ms", compList.size(), end.get() - start.get());
             })
