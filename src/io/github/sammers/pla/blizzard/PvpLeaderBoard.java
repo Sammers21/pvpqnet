@@ -6,6 +6,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -15,6 +16,13 @@ public record PvpLeaderBoard(
     String name,
     JsonObject bracket,
     JsonArray entities) implements JsonConvertable {
+
+    public void shuffleSpec(String shuffleSpec) {
+        String[] split = shuffleSpec.split("/");
+        bracket.put("shuffleSpec", split[2].substring(0, 1).toUpperCase() + split[2].substring(1) +
+            " " + split[1].substring(0, 1).toUpperCase() + split[1].substring(1)
+        );
+    }
 
     public JsonObject toJson() {
         return new JsonObject()
@@ -50,13 +58,17 @@ public record PvpLeaderBoard(
                 if(wowAPICharacter == null) {
                     return Stream.empty();
                 } else {
+                    String fullSpec = wowAPICharacter.activeSpec() + " " + wowAPICharacter.clazz();
+                    if(bracket.getString("type").equals("SHUFFLE")) {
+                        fullSpec = bracket.getString("shuffleSpec");
+                    }
                     return Stream.of(new Character(
                         rank,
                         rating,
                         false,
                         name,
                         wowAPICharacter.clazz(),
-                        wowAPICharacter.activeSpec() + " " + wowAPICharacter.clazz(),
+                        fullSpec,
                         wowAPICharacter.fraction(),
                         wowAPICharacter.gender(),
                         wowAPICharacter.race(),

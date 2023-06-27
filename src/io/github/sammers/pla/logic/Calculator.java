@@ -13,6 +13,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static io.github.sammers.pla.logic.Ladder.SHUFFLE;
+
 public class Calculator {
 
     private static final Logger log = LoggerFactory.getLogger(Calculator.class);
@@ -106,7 +108,7 @@ public class Calculator {
                     )
                 );
                 if (e.diff().won() < 0 || e.diff().lost() < 0) {
-                    System.out.println("Negative diff: " + e);
+                    log.error("Negative diff: " + e);
                     e = new CharAndDiff(e.character(), new Diff(e.diff().won(), e.diff().lost(), e.diff().ratingDiff(), e.diff().rankDiff(), e.diff().timestamp()));
                 }
             }

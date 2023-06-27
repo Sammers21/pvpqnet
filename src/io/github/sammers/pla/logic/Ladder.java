@@ -152,12 +152,14 @@ public class Ladder {
                 Single<List<Character>> sh = Single.just(new ArrayList<>(shuffleSpecs.size()));
                 String specForBlizApi = shuffleSpec.replaceAll("/", "-");
                 sh = sh.flatMap(thisSpecChars -> blizzardAPI.pvpLeaderboard(specForBlizApi, region)
-                    .flatMapSingle(leaderboard ->
-                        leadeboardToChars(leaderboard, region)
-                            .map(characters -> {
-                                thisSpecChars.addAll(characters);
-                                return thisSpecChars;
-                            })
+                    .flatMapSingle(leaderboard -> {
+                            leaderboard.shuffleSpec(shuffleSpec);
+                            return leadeboardToChars(leaderboard, region)
+                                .map(characters -> {
+                                    thisSpecChars.addAll(characters);
+                                    return thisSpecChars;
+                                });
+                        }
                     ));
                 Single<List<Character>> finalSh = sh;
                 res = res.flatMap(characters -> finalSh.map(s -> {
