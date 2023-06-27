@@ -292,7 +292,7 @@ public class Ladder {
             .andThen(
                 runDataUpdater(US,
                     runDataUpdater(EU,
-                        Observable.interval(0, 30, TimeUnit.MINUTES)
+                        Observable.interval(minutesTillNextHour(), 60, TimeUnit.MINUTES)
                             .observeOn(VTHREAD_SCHEDULER)
                             .subscribeOn(VTHREAD_SCHEDULER)
                     )
