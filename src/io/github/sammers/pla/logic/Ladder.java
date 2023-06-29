@@ -187,7 +187,7 @@ public class Ladder {
     }
 
     private Single<Set<Character>> leadeboardToChars(PvpLeaderBoard leaderboard, String region) {
-        return leadeboardToChars(leaderboard, region, true);
+        return leadeboardToChars(leaderboard, region, false);
     }
 
     private Single<Set<Character>> leadeboardToChars(PvpLeaderBoard leaderboard, String region, boolean updateBefore) {
