@@ -161,7 +161,7 @@ public record WowAPICharacter(long id, String name, String realm, String gender,
             .collect(Collectors.toSet());
         Long lastUpdatedUTCms = Instant.now().toEpochMilli();
         String name = entries.getString("name").substring(0, 1).toUpperCase() + entries.getString("name").substring(1);
-1        String realm = entries.getJsonObject("realm").getString("name").substring(0, 1).toUpperCase() +
+        String realm = entries.getJsonObject("realm").getString("name").substring(0, 1).toUpperCase() +
                 entries.getJsonObject("realm").getString("name").substring(1);
         return new WowAPICharacter(
             entries.getInteger("id"),
