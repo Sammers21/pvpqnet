@@ -30,7 +30,7 @@ public class BlizzardAPI {
     private final WebClient webClient;
     private final String clientId;
     private final AtomicReference<BlizzardAuthToken> token = new AtomicReference<>();
-    private final RateLimiter rateLimiter = new RateLimiter(2, Main.VTHREAD_SCHEDULER);
+    private final RateLimiter rateLimiter = new RateLimiter(50, Main.VTHREAD_SCHEDULER);
 
     public BlizzardAPI(String clientId, String clientSecret, WebClient webClient) {
         this.clientId = clientId;

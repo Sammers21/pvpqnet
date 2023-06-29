@@ -147,7 +147,7 @@ public class Ladder {
     public Single<List<Character>> pureBlizzardApiFetch(String bracket, String region){
         Single<List<Character>> resCharList;
         if (bracket.equals(SHUFFLE)) {
-            Single<List<Character>> res = Single.just(new ArrayList<>(1000 * shuffleSpecs.size()));
+            Single<List<Character>> res = Single.just(new ArrayList<>(5000 * shuffleSpecs.size()));
             for (String shuffleSpec : shuffleSpecs) {
                 Single<List<Character>> sh = Single.just(new ArrayList<>(shuffleSpecs.size()));
                 String specForBlizApi = shuffleSpec.replaceAll("/", "-");
@@ -172,7 +172,7 @@ public class Ladder {
                 return chars;
             });
         } else {
-            Single<List<Character>> res = Single.just(new ArrayList<>(1000));
+            Single<List<Character>> res = Single.just(new ArrayList<>(5000));
             resCharList = res.flatMap(s -> blizzardAPI.pvpLeaderboard(bracket, region)
                 .flatMapSingle(leaderboard ->
                     leadeboardToChars(leaderboard, region)
@@ -187,7 +187,7 @@ public class Ladder {
     }
 
     private Single<Set<Character>> leadeboardToChars(PvpLeaderBoard leaderboard, String region) {
-        return leadeboardToChars(leaderboard, region, false);
+        return leadeboardToChars(leaderboard, region, true);
     }
 
     private Single<Set<Character>> leadeboardToChars(PvpLeaderBoard leaderboard, String region, boolean updateBefore) {
@@ -211,7 +211,7 @@ public class Ladder {
         AtomicLong start = new AtomicLong(0);
         AtomicLong end = new AtomicLong(0);
         return Flowable.fromIterable(compList)
-            .buffer(1)
+            .buffer(10)
             .toList()
             .flatMapCompletable(list -> Completable.concat(list.stream().map(Completable::merge).toList()))
             .doOnSubscribe(d -> {
