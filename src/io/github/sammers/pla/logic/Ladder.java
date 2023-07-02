@@ -1,16 +1,17 @@
 package io.github.sammers.pla.logic;
 
-import io.github.sammers.pla.blizzard.PvpLeaderBoard;
 import io.github.sammers.pla.blizzard.BlizzardAPI;
 import io.github.sammers.pla.blizzard.Cutoffs;
+import io.github.sammers.pla.blizzard.PvpLeaderBoard;
 import io.github.sammers.pla.blizzard.WowAPICharacter;
 import io.github.sammers.pla.db.Character;
 import io.github.sammers.pla.db.DB;
 import io.github.sammers.pla.db.Meta;
 import io.github.sammers.pla.db.Snapshot;
-import io.reactivex.*;
+import io.reactivex.Completable;
+import io.reactivex.Maybe;
 import io.reactivex.Observable;
-import io.vertx.core.json.JsonObject;
+import io.reactivex.Single;
 import io.vertx.reactivex.core.buffer.Buffer;
 import io.vertx.reactivex.ext.web.client.HttpRequest;
 import io.vertx.reactivex.ext.web.client.WebClient;
@@ -28,7 +29,6 @@ import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -166,14 +166,12 @@ public class Ladder {
                 String specForBlizApi = shuffleSpec.replaceAll("/", "-");
                 sh = sh.flatMap(thisSpecChars -> blizzardAPI.pvpLeaderboard(specForBlizApi, region)
                     .flatMapSingle(leaderboard -> {
-                            leaderboard.shuffleSpec(shuffleSpec);
-                            return leadeboardToChars(leaderboard, region)
-                                .map(characters -> {
-                                    thisSpecChars.addAll(characters);
-                                    return thisSpecChars;
-                                });
+                            Set<Character> chrs = leaderboard.toCharacters(characterCache, shuffleSpec);
+                            thisSpecChars.addAll(chrs);
+                            return Single.just(thisSpecChars);
                         }
-                    ));
+                    )
+                );
                 Single<List<Character>> finalSh = sh;
                 res = res.flatMap(characters -> finalSh.map(s -> {
                     characters.addAll(s);
@@ -187,54 +185,15 @@ public class Ladder {
         } else {
             Single<List<Character>> res = Single.just(new ArrayList<>(5000));
             resCharList = res.flatMap(s -> blizzardAPI.pvpLeaderboard(bracket, region)
-                .flatMapSingle(leaderboard ->
-                    leadeboardToChars(leaderboard, region)
-                        .map(characters -> {
-                            s.addAll(characters);
-                            return s;
-                        })
+                .flatMapSingle(leaderboard -> {
+                        Set<Character> chrs = leaderboard.toCharacters(characterCache, bracket);
+                        s.addAll(chrs);
+                        return Single.just(s);
+                    }
                 )
             );
         }
         return resCharList;
-    }
-
-    private Single<Set<Character>> leadeboardToChars(PvpLeaderBoard leaderboard, String region) {
-        return leadeboardToChars(leaderboard, region, false);
-    }
-
-    private Single<Set<Character>> leadeboardToChars(PvpLeaderBoard leaderboard, String region, boolean updateBefore) {
-        List<Completable> compList;
-        if (updateBefore) {
-            compList = leaderboard.entities().stream().map(entity -> (JsonObject) entity)
-                .flatMap(entity -> {
-                    JsonObject character = entity.getJsonObject("character");
-                    JsonObject realmJson = character.getJsonObject("realm");
-                    String realm = realmJson.getString("slug");
-                    String name = character.getString("name");
-                    if (name == null || realm == null || characterCache.containsKey(Character.fullNameByRealmAndName(name, realm))) {
-                        return Stream.empty();
-                    } else {
-                        return Stream.of(updateChar(region, name, realm));
-                    }
-                }).collect(Collectors.toList());
-        } else {
-            compList = List.of();
-        }
-        AtomicLong start = new AtomicLong(0);
-        AtomicLong end = new AtomicLong(0);
-        return Flowable.fromIterable(compList)
-            .buffer(10)
-            .toList()
-            .flatMapCompletable(list -> Completable.concat(list.stream().map(Completable::merge).toList()))
-            .doOnSubscribe(d -> {
-                start.set(System.currentTimeMillis());
-                log.info("Start updating {} chars", compList.size());
-            }).doOnComplete(() -> {
-                end.set(System.currentTimeMillis());
-                log.info("End updating {} chars, took {} ms", compList.size(), end.get() - start.get());
-            })
-            .andThen(Single.fromCallable(() -> leaderboard.toCharacters(characterCache)));
     }
 
     public Single<Snapshot> fetchLadder(String bracket, String region, boolean newWay) {

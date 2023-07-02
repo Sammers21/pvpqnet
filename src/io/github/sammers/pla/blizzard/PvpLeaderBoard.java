@@ -42,13 +42,6 @@ public record PvpLeaderBoard(
             }).toList();
     }
 
-    public void shuffleSpec(String shuffleSpec) {
-        String[] split = shuffleSpec.split("/");
-        bracket.put("shuffleSpec", split[2].substring(0, 1).toUpperCase() + split[2].substring(1) +
-            " " + split[1].substring(0, 1).toUpperCase() + split[1].substring(1)
-        );
-    }
-
     public JsonObject toJson() {
         return new JsonObject()
             .put("_links", links)
@@ -65,7 +58,7 @@ public record PvpLeaderBoard(
         return new PvpLeaderBoard(links, season, name, bracket, newEntities);
     }
 
-    public Set<Character> toCharacters(Map<String, WowAPICharacter> characterCache) {
+    public Set<Character> toCharacters(Map<String, WowAPICharacter> characterCache, String bracketId) {
         return entities.stream()
             .map(entity -> (JsonObject) entity)
             .flatMap(entity -> {
@@ -85,7 +78,9 @@ public record PvpLeaderBoard(
                 } else {
                     String fullSpec = wowAPICharacter.activeSpec() + " " + wowAPICharacter.clazz();
                     if(bracket.getString("type").equals("SHUFFLE")) {
-                        fullSpec = bracket.getString("shuffleSpec");
+                        String[] split = bracketId.split("/");
+                        fullSpec =  split[2].substring(0, 1).toUpperCase() + split[2].substring(1) +
+                                " " + split[1].substring(0, 1).toUpperCase() + split[1].substring(1);
                     }
                     return Stream.of(new Character(
                         rank,
