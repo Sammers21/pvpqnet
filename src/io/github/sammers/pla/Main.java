@@ -50,7 +50,7 @@ public class Main {
         );
         final BlizzardAPI blizzardAPI = new BlizzardAPI(clientId, clientSecret, webClient);
         DB db = new DB(mongoClient);
-        Ladder ladder = new Ladder(vertx, webClient, db, blizzardAPI);
+        Ladder ladder = new Ladder(webClient, db, blizzardAPI);
         ladder.start();
         new Http(vertx, ladder).start();
     }

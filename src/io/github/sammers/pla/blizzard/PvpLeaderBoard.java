@@ -17,6 +17,31 @@ public record PvpLeaderBoard(
     JsonObject bracket,
     JsonArray entities) implements JsonConvertable {
 
+    public List<CharOnLeaderBoard> charOnLeaderBoards() {
+        return entities().stream()
+            .map(entity -> (JsonObject) entity)
+            .map(entity -> {
+                JsonObject character = entity.getJsonObject("character");
+                JsonObject realmJson = character.getJsonObject("realm");
+                String slug = realmJson.getString("slug").replaceAll("[^A-Za-z]", "");
+                String realm = slug.substring(0, 1).toUpperCase() + slug.substring(1);
+                String name = character.getString("name");
+                Long rank = entity.getLong("rank");
+                Long rating = entity.getLong("rating");
+                JsonObject seasonMatchStatistics = entity.getJsonObject("season_match_statistics");
+                Long won = seasonMatchStatistics.getLong("won");
+                Long lost = seasonMatchStatistics.getLong("lost");
+                return new CharOnLeaderBoard(
+                    name,
+                    realm,
+                    rank,
+                    rating,
+                    won,
+                    lost
+                );
+            }).toList();
+    }
+
     public void shuffleSpec(String shuffleSpec) {
         String[] split = shuffleSpec.split("/");
         bracket.put("shuffleSpec", split[2].substring(0, 1).toUpperCase() + split[2].substring(1) +

@@ -11,7 +11,6 @@ import io.github.sammers.pla.db.Snapshot;
 import io.reactivex.*;
 import io.reactivex.Observable;
 import io.vertx.core.json.JsonObject;
-import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.buffer.Buffer;
 import io.vertx.reactivex.ext.web.client.HttpRequest;
 import io.vertx.reactivex.ext.web.client.WebClient;
@@ -24,10 +23,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
-import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -42,9 +39,7 @@ import static io.github.sammers.pla.blizzard.BlizzardAPI.realRegion;
 public class Ladder {
 
     private static final Logger log = LoggerFactory.getLogger(Ladder.class);
-    private final Vertx vertx;
     private final WebClient web;
-
     public static String EU = "en-gb";
     public static String US = "en-us";
     public static String TWO_V_TWO = "2v2";
@@ -53,7 +48,7 @@ public class Ladder {
     public static String SHUFFLE = "shuffle";
 
     private final Random rnd = new Random();
-    public static List<String> brackets = List.of(TWO_V_TWO, THREE_V_THREE, RBG, SHUFFLE);
+    public static List<String> BRACKETS = List.of(TWO_V_TWO, THREE_V_THREE, RBG, SHUFFLE);
 
     public static final List<String> shuffleSpecs = new ArrayList<>() {{
         add("shuffle/deathknight/blood");
@@ -102,14 +97,32 @@ public class Ladder {
     private final Map<String, AtomicReference<Meta>> meta = new ConcurrentHashMap<>();
     private final NickNameSearchIndex charSearchIndex = new NickNameSearchIndex();
     private final Map<String, Cutoffs> regionCutoff = new ConcurrentHashMap<>();
+    private final CharUpdater charUpdater;
     private final DB db;
-    private BlizzardAPI blizzardAPI;
+    private final BlizzardAPI blizzardAPI;
 
-    public Ladder(Vertx vertx, WebClient web, DB db, BlizzardAPI blizzardAPI) {
-        this.vertx = vertx;
+    public Ladder(WebClient web, DB db, BlizzardAPI blizzardAPI) {
         this.web = web;
         this.db = db;
         this.blizzardAPI = blizzardAPI;
+        this.charUpdater = new CharUpdater(blizzardAPI, characterCache, charSearchIndex, db);
+    }
+
+    public void start() {
+        loadRegionData(EU)
+            .andThen(loadRegionData(US))
+            .andThen(
+                runDataUpdater(US,
+                    runDataUpdater(EU,
+                        Observable.interval(minutesTillNextHour(), 60, TimeUnit.MINUTES)
+                            .observeOn(VTHREAD_SCHEDULER)
+                            .subscribeOn(VTHREAD_SCHEDULER)
+                    )
+                )
+            )
+            .doOnError(e -> log.error("Error fetching ladder", e))
+            .onErrorReturnItem(Snapshot.empty(EU))
+            .subscribe();
     }
 
     public Single<Snapshot> threeVThree(String region) {
@@ -288,57 +301,6 @@ public class Ladder {
         return resCharList;
     }
 
-    public void start() {
-        loadRegionData(EU)
-            .andThen(loadRegionData(US))
-            .andThen(
-                runDataUpdater(US,
-                    runDataUpdater(EU,
-                        Observable.interval(minutesTillNextHour(), 60, TimeUnit.MINUTES)
-                            .observeOn(VTHREAD_SCHEDULER)
-                            .subscribeOn(VTHREAD_SCHEDULER)
-                    )
-                )
-            )
-            .doOnError(e -> log.error("Error fetching ladder", e))
-            .onErrorReturnItem(Snapshot.empty(EU))
-            .subscribe();
-    }
-
-    private Completable updateChars(String region) {
-        AtomicLong errors = new AtomicLong(0);
-        return Completable.defer(() -> {
-                log.info("Updating chars in region " + region);
-                long dayAgo = Instant.now().minus(1, ChronoUnit.DAYS).toEpochMilli();
-                Set<Character> uniqChars = brackets.stream().flatMap(bracket -> {
-                    AtomicReference<Snapshot> snapshotAtomicReference = refByBracket(bracket, region);
-                    Snapshot snapshot = snapshotAtomicReference.get();
-                    if (snapshot == null) {
-                        return Stream.of();
-                    }
-                    return snapshot.characters().stream().flatMap(c -> {
-                        WowAPICharacter wowAPICharacter = characterCache.get(c.fullName());
-                        if (wowAPICharacter == null) {
-                            return Stream.of(c);
-                        } else if (wowAPICharacter.lastUpdatedUTCms() < dayAgo) {
-                            return Stream.of(c);
-                        } else {
-                            return Stream.of();
-                        }
-                    });
-                }).collect(Collectors.toSet());
-                log.info("Updating " + uniqChars.size() + " characters");
-                List<Completable> completables = uniqChars.stream().map(wowChar -> updateChar(region, wowChar.name(), wowChar.realm())).toList();
-                return Flowable.fromIterable(completables)
-                    .buffer(1)
-                    .toList()
-                    .flatMapCompletable(list -> Completable.concat(list.stream().map(Completable::merge).toList()))
-                    .doOnComplete(() -> log.info("Finished updating chars in region " + region + " with " + errors.get() + (" " +
-                        "errors and " + uniqChars.size() + "ok characters")));
-            })
-            .onErrorComplete()
-            .subscribeOn(VTHREAD_SCHEDULER);
-    }
     private Completable updateChar(String region, String name, String realm) {
         String fullName = Character.fullNameByRealmAndName(name, realm);
         return blizzardAPI.character(region, realm, name).flatMap(c -> {
@@ -475,7 +437,6 @@ public class Ladder {
             .flatMapSingle(tick -> battlegrounds(region))
             .flatMapSingle(tick -> shuffle(region))
             .flatMapSingle(tick -> calculateMeta(region).andThen(Single.just(tick)))
-            .flatMapSingle(tick -> updateChars(region).andThen(Single.just(tick)))
             .flatMapSingle(tick -> loadCutoffs(region).andThen(Single.just(tick)))
             .flatMapSingle(tick -> {
                 log.info("Data updater for " + region + " has been finished");
@@ -517,8 +478,6 @@ public class Ladder {
                                 minsAgo = 60 * 24 * 7;
                             } else if (period.equals("last_day")) {
                                 minsAgo = 60 * 24;
-                            } else {
-                                diff = Maybe.empty();
                             }
                             diff = db.getMinsAgo(bracket, region, minsAgo)
                                 .map(snap -> Calculator.calculateDiff(snap, now, bracket, false));
@@ -570,6 +529,7 @@ public class Ladder {
                             charSearchIndex.insertNickNames(new SearchResult(character.fullName(), character.region(), character.clazz()));
                         });
                         log.info("Character data size={} for region={} has been loaded to cache in {} ms", characters.size(), region, (System.nanoTime() - tick) / 1000000);
+                        VTHREAD_SCHEDULER.scheduleDirect(() -> charUpdater.updateCharsInfinite(region).subscribe());
                         emitter.onComplete();
                     });
                 }));

@@ -1,5 +1,6 @@
 package io.github.sammers.pla.blizzard;
 
+import io.github.sammers.pla.db.Character;
 import io.github.sammers.pla.http.JsonConvertable;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -184,8 +185,7 @@ public record WowAPICharacter(long id, String name, String realm, String gender,
     }
 
     public String fullName() {
-        return (name() + "-" + realm().replaceAll(" ", "-")
-                .replaceAll("'", "")).toLowerCase();
+        return Character.fullNameByRealmAndName(name, realm);
     }
 
     public static WowAPICharacter fromJson(JsonObject entries) {

@@ -78,7 +78,9 @@ public class DB {
             new JsonObject().put("id", character.id()),
             new JsonObject().put("$set", character.toJson()),
             new UpdateOptions().setUpsert(true)
-        ).doOnSuccess(ok -> log.info("Upserted character: {}", character.fullName()));
+        ).doOnSuccess(ok -> log.info("Upserted character: {}", character.fullName()))
+            .doOnSubscribe(sub -> log.debug("Start upserting character: {}", character.fullName()))
+            .doOnError(err -> log.error("Error upserting character: {}", character.fullName(), err));
     }
 
     public Single<List<WowAPICharacter>> fetchChars(String region) {

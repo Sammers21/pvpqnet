@@ -62,6 +62,12 @@ public class BlizzardAPI {
         return pvpLeaderboard(region, CURRENT_PVP_SEASON_ID, bracket, "dynamic-" + region);
     }
 
+    public Maybe<WowAPICharacter> character(String region, String fullName) {
+        String name = fullName.split("-")[0];
+        String realm = fullName.substring(name.length() + 1);
+        return character(region, realm, name);
+    }
+
     public Maybe<WowAPICharacter> character(String region, String realm, String name) {
         String realRegion;
         String realNamespace;
