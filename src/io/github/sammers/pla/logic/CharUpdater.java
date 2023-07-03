@@ -1,10 +1,7 @@
 package io.github.sammers.pla.logic;
 
 import io.github.sammers.pla.Main;
-import io.github.sammers.pla.blizzard.BlizzardAPI;
-import io.github.sammers.pla.blizzard.CharOnLeaderBoard;
-import io.github.sammers.pla.blizzard.PvpLeaderBoard;
-import io.github.sammers.pla.blizzard.WowAPICharacter;
+import io.github.sammers.pla.blizzard.*;
 import io.github.sammers.pla.db.DB;
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
@@ -15,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 import static io.github.sammers.pla.logic.Ladder.*;
@@ -47,6 +45,7 @@ public class CharUpdater {
                 String s = spec.replaceAll("/", "-");
                 boards.add(api.pvpLeaderboard(s, region));
             }
+            Map<String, Long> nickAndMaxRating = new ConcurrentHashMap<>();
             return Maybe.concat(boards)
                 .toList()
                 .map((List<PvpLeaderBoard> list) -> {
@@ -55,13 +54,28 @@ public class CharUpdater {
                         for (CharOnLeaderBoard charOnLeaderBoard : board.charOnLeaderBoards()) {
                             if (characterCache.get(charOnLeaderBoard.fullName()) == null) {
                                 charsToUpdate.add(charOnLeaderBoard.fullName());
+                                nickAndMaxRating.compute(charOnLeaderBoard.fullName(), (nick, maxRating) -> {
+                                    if (maxRating == null) {
+                                        return charOnLeaderBoard.rating();
+                                    } else {
+                                        return Math.max(maxRating, charOnLeaderBoard.rating());
+                                    }
+                                });
                             }
                         }
                     }
                     int newChars = charsToUpdate.size();
-                    long dayAgo = Instant.now().minus(7, ChronoUnit.DAYS).toEpochMilli();
+                    long dayAgo = Instant.now().minus(30, ChronoUnit.DAYS).toEpochMilli();
                     characterCache.values().stream().flatMap(wowAPICharacter -> {
                         if (wowAPICharacter.lastUpdatedUTCms() < dayAgo) {
+                            nickAndMaxRating.compute(wowAPICharacter.fullName(), (nick, maxRating) -> {
+                                Long chMax = wowAPICharacter.brackets().stream().max(Comparator.comparingLong(PvpBracket::rating)).map(PvpBracket::rating).orElse(0L);
+                                if (maxRating == null) {
+                                    return chMax;
+                                } else {
+                                    return Math.max(maxRating, chMax);
+                                }
+                            });
                             return Stream.of(wowAPICharacter);
                         } else {
                             return Stream.of();
@@ -71,8 +85,13 @@ public class CharUpdater {
                     return charsToUpdate;
                 }).flatMapCompletable(charsToUpdate -> {
                     log.info("Updating " + charsToUpdate.size() + " chars");
-                    List<Completable> compList = charsToUpdate.stream().map(nickName -> updateChar(region, nickName)).toList();
-                    return Flowable.fromIterable(compList)
+                    return Flowable.fromIterable(charsToUpdate)
+                        .sorted(((Comparator<String>) (o1, o2) -> {
+                            Long maxRating1 = nickAndMaxRating.get(o1);
+                            Long maxRating2 = nickAndMaxRating.get(o2);
+                            return Long.compare(maxRating2, maxRating1);
+                        }))
+                        .map(nickName -> updateChar(region, nickName))
                         .buffer(5)
                         .toList()
                         .flatMapCompletable(list -> Completable.concat(list.stream().map(Completable::merge).toList()))
