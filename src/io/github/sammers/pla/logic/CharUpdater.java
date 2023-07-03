@@ -4,7 +4,6 @@ import io.github.sammers.pla.Main;
 import io.github.sammers.pla.blizzard.*;
 import io.github.sammers.pla.db.DB;
 import io.reactivex.Completable;
-import io.reactivex.Flowable;
 import io.reactivex.Maybe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -85,20 +84,26 @@ public class CharUpdater {
                     return charsToUpdate;
                 }).flatMapCompletable(charsToUpdate -> {
                     log.info("Updating " + charsToUpdate.size() + " chars");
-                    return Flowable.fromIterable(charsToUpdate)
-                        .sorted(((Comparator<String>) (o1, o2) -> {
-                            Long maxRating1 = nickAndMaxRating.get(o1);
-                            Long maxRating2 = nickAndMaxRating.get(o2);
-                            return Long.compare(maxRating2, maxRating1);
-                        }))
-                        .map(nickName -> updateChar(region, nickName))
-                        .buffer(5)
-                        .toList()
-                        .flatMapCompletable(list -> Completable.concat(list.stream().map(Completable::merge).toList()))
-                        .doOnComplete(() -> log.info("Updated " + charsToUpdate.size() + " chars"))
-                        .doOnError(e -> log.error("Error updating chars", e));
+                    // first we update 300 highest rated characters
+                    // and everything else is after
+                    List<String> charsToUpdateList = new ArrayList<>(charsToUpdate);
+                    charsToUpdateList.sort(Comparator.comparingLong(nickAndMaxRating::get).reversed());
+                    List<String> firstPortion = charsToUpdateList.subList(0, Math.min(charsToUpdateList.size(), 300));
+                    List<String> rest = charsToUpdateList.subList(firstPortion.size(), charsToUpdateList.size());
+                    return updateChars(firstPortion, region)
+                        .doOnSubscribe(d -> log.info("Updating first portion of chars: " + firstPortion.size()))
+                        .doOnComplete(() -> log.info("First portion of chars has been updated"))
+                        .andThen(updateChars(rest, region))
+                        .doOnSubscribe(d -> log.info("Updating second portion of chars: " + rest.size()))
+                        .doOnComplete(() -> log.info("Second portion of chars has been updated"));
                 });
-        }).subscribeOn(Main.VTHREAD_SCHEDULER).andThen(Completable.defer(() -> updateCharsInfinite(region)));
+        }).subscribeOn(Main.VTHREAD_SCHEDULER)
+            .andThen(Completable.defer(() -> updateCharsInfinite(region)));
+    }
+
+    public Completable updateChars(List<String> nickNames, String region) {
+        return Completable.concat(nickNames.stream().map(nickName -> updateChar(region, nickName)).toList())
+            .subscribeOn(Main.VTHREAD_SCHEDULER);
     }
 
     public Completable updateChar(String region, String nickName) {
