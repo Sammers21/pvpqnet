@@ -1,10 +1,12 @@
 package io.github.sammers.pla.http;
 
 import io.github.sammers.pla.blizzard.WowAPICharacter;
+import io.github.sammers.pla.db.Character;
 import io.github.sammers.pla.db.Meta;
 import io.github.sammers.pla.logic.Ladder;
 import io.github.sammers.pla.db.Snapshot;
 import io.github.sammers.pla.logic.SearchResult;
+import io.reactivex.Single;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -115,6 +117,22 @@ public class Http {
                 } else {
                     ctx.response().end(wowAPICharacter.get().toJson().encode());
                 }
+            });
+        });
+        router.get("/api/:region/:realm/:name/update").handler(ctx -> {
+            VTHREAD_EXECUTOR.execute(() -> {
+                String region = ctx.pathParam("region");
+                String realm = ctx.pathParam("realm");
+                String name = ctx.pathParam("name");
+                ladder.charUpdater.updateChar(region, Character.fullNameByRealmAndName(name, realm))
+                    .andThen(Single.fromCallable(() -> ladder.wowChar(realm, name)))
+                    .subscribe(wowAPICharacter -> {
+                        if (wowAPICharacter.isEmpty()) {
+                            ctx.response().setStatusCode(404).end(new JsonObject().put("error", "Character not found").encode());
+                        } else {
+                            ctx.response().end(wowAPICharacter.get().toJson().encode());
+                        }
+                    });
             });
         });
         router.get("/:region/ladder/:bracket").handler(ctx -> ctx.response().sendFile("index.html"));

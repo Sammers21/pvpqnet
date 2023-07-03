@@ -97,7 +97,7 @@ public class Ladder {
     private final Map<String, AtomicReference<Meta>> meta = new ConcurrentHashMap<>();
     private final NickNameSearchIndex charSearchIndex = new NickNameSearchIndex();
     private final Map<String, Cutoffs> regionCutoff = new ConcurrentHashMap<>();
-    private final CharUpdater charUpdater;
+    public final CharUpdater charUpdater;
     private final DB db;
     private final BlizzardAPI blizzardAPI;
 

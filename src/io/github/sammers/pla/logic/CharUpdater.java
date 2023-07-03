@@ -71,13 +71,7 @@ public class CharUpdater {
                     return charsToUpdate;
                 }).flatMapCompletable(charsToUpdate -> {
                     log.info("Updating " + charsToUpdate.size() + " chars");
-                    List<Completable> compList = charsToUpdate.stream().map(nickName -> {
-                        return api.character(region, nickName).flatMapCompletable(wowAPICharacter -> {
-                            characterCache.put(nickName, wowAPICharacter);
-                            charSearchIndex.insertNickNames(new SearchResult(nickName, region, wowAPICharacter.clazz()));
-                            return db.upsertCharacter(wowAPICharacter).ignoreElement();
-                        }).onErrorComplete();
-                    }).toList();
+                    List<Completable> compList = charsToUpdate.stream().map(nickName -> updateChar(region, nickName)).toList();
                     return Flowable.fromIterable(compList)
                         .buffer(5)
                         .toList()
@@ -86,5 +80,13 @@ public class CharUpdater {
                         .doOnError(e -> log.error("Error updating chars", e));
                 });
         }).subscribeOn(Main.VTHREAD_SCHEDULER).andThen(Completable.defer(() -> updateCharsInfinite(region)));
+    }
+
+    public Completable updateChar(String region, String nickName) {
+        return api.character(region, nickName).flatMapCompletable(wowAPICharacter -> {
+            characterCache.put(nickName, wowAPICharacter);
+            charSearchIndex.insertNickNames(new SearchResult(nickName, region, wowAPICharacter.clazz()));
+            return db.upsertCharacter(wowAPICharacter).ignoreElement();
+        }).onErrorComplete();
     }
 }
