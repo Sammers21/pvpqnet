@@ -91,6 +91,49 @@ public class Ladder {
         add("shuffle/warrior/protection");
     }};
 
+    public static Map<String, String> SHUFFLE_SPEC_TO_SPEC = new HashMap<>() {
+        {
+            put("shuffle/deathknight/blood", "Blood Death Knight");
+            put("shuffle/deathknight/frost", "Frost Death Knight");
+            put("shuffle/deathknight/unholy", "Unholy Death Knight");
+            put("shuffle/demonhunter/havoc", "Havoc Demon Hunter");
+            put("shuffle/demonhunter/vengeance", "Vengeance Demon Hunter");
+            put("shuffle/druid/balance", "Balance Druid");
+            put("shuffle/druid/feral", "Feral Druid");
+            put("shuffle/druid/guardian", "Guardian Druid");
+            put("shuffle/druid/restoration", "Restoration Druid");
+            put("shuffle/evoker/devastation", "Devastation Evoker");
+            put("shuffle/evoker/preservation", "Preservation Evoker");
+            put("shuffle/hunter/beastmastery", "Beast Mastery Hunter");
+            put("shuffle/hunter/marksmanship", "Marksmanship Hunter");
+            put("shuffle/hunter/survival", "Survival Hunter");
+            put("shuffle/mage/arcane", "Arcane Mage");
+            put("shuffle/mage/fire", "Fire Mage");
+            put("shuffle/mage/frost", "Frost Mage");
+            put("shuffle/monk/brewmaster", "Brewmaster Monk");
+            put("shuffle/monk/mistweaver", "Mistweaver Monk");
+            put("shuffle/monk/windwalker", "Windwalker Monk");
+            put("shuffle/paladin/holy", "Holy Paladin");
+            put("shuffle/paladin/protection", "Protection Paladin");
+            put("shuffle/paladin/retribution", "Retribution Paladin");
+            put("shuffle/priest/discipline", "Discipline Priest");
+            put("shuffle/priest/holy", "Holy Priest");
+            put("shuffle/priest/shadow", "Shadow Priest");
+            put("shuffle/rogue/assassination", "Assassination Rogue");
+            put("shuffle/rogue/outlaw", "Outlaw Rogue");
+            put("shuffle/rogue/subtlety", "Subtlety Rogue");
+            put("shuffle/shaman/elemental", "Elemental Shaman");
+            put("shuffle/shaman/enhancement", "Enhancement Shaman");
+            put("shuffle/shaman/restoration", "Restoration Shaman");
+            put("shuffle/warlock/affliction", "Affliction Warlock");
+            put("shuffle/warlock/demonology", "Demonology Warlock");
+            put("shuffle/warlock/destruction", "Destruction Warlock");
+            put("shuffle/warrior/arms", "Arms Warrior");
+            put("shuffle/warrior/fury", "Fury Warrior");
+            put("shuffle/warrior/protection", "Protection Warrior");
+        }
+    };
+
     private final Map<String, AtomicReference<Snapshot>> refs = new ConcurrentHashMap<>();
     private final Map<String, AtomicReference<SnapshotDiff>> refDiffs = new ConcurrentHashMap<>();
     public final Map<String, WowAPICharacter> characterCache = new ConcurrentHashMap<>();
@@ -201,11 +244,11 @@ public class Ladder {
         if (newWay) {
             resCharList = pureBlizzardApiFetch(bracket, region).flatMap(chars -> {
                 Map<String, Character> pureleyFetchedChars = new HashMap<>();
-                chars.forEach(c -> pureleyFetchedChars.put(c.fullName(), c));
+                chars.forEach(c -> pureleyFetchedChars.put(c.fullNameWSpec(), c));
                 return ladderPageFetch(bracket, region).map(ladderPageFetched -> {
                     long pureSize = pureleyFetchedChars.size();
                     for(Character c : ladderPageFetched){
-                        pureleyFetchedChars.putIfAbsent(c.fullName(), c);
+                        pureleyFetchedChars.putIfAbsent(c.fullNameWSpec(), c);
                     }
                     long addedFromLadderPage = pureleyFetchedChars.size() - pureSize;
                     log.info("Pure fetched: {}, added from ladder page: {}, total: {}", pureSize, addedFromLadderPage, pureleyFetchedChars.size());
@@ -323,7 +366,7 @@ public class Ladder {
                         String realm = nodeList.get(6).attr("data-value");
                         Long wins = Long.parseLong(nodeList.get(7).attr("data-value"));
                         Long losses = Long.parseLong(nodeList.get(8).attr("data-value"));
-                        return enrichWithSpecialData(bracket, region, pos, rating, name, clazz, fullSpec, fraction, realm, wins, losses);
+                        return enrichWithSpecialData(new Character(pos, rating, false, name, clazz, fullSpec,"","", fraction, realm, wins, losses), bracket, region);
                     }).toList();
                     return characters;
                 }
@@ -332,8 +375,8 @@ public class Ladder {
             .doOnError(err -> log.error(String.format("ERR %s %s %s", region, bracket, page), err));
     }
 
-    private Character enrichWithSpecialData(String bracket, String region, Long pos, Long rating, String name, String clazz, String fullSpec, String fraction, String realm, Long wins, Long losses) {
-        Optional<WowAPICharacter> apiCharacter = Optional.ofNullable(characterCache.get(Character.fullNameByRealmAndName(name, realm)));
+    private Character enrichWithSpecialData(Character character, String region, String bracket) {
+        Optional<WowAPICharacter> apiCharacter = Optional.ofNullable(characterCache.get(character.fullName()));
         String gender = apiCharacter.map(WowAPICharacter::gender).orElse("unknown");
         String race = apiCharacter.map(WowAPICharacter::race).orElse("unknown");
         Cutoffs cutoffs = regionCutoff.get(region);
@@ -342,10 +385,10 @@ public class Ladder {
             inCutoff = false;
         } else if (bracket.equals("3v3")) {
             Long cutRating = cutoffs.threeVThree();
-            inCutoff = rating >= cutRating;
+            inCutoff = character.rating() >= cutRating;
         } else if (bracket.equals("battlegrounds")) {
-            Long cutRating = cutoffs.battlegrounds(fraction);
-            inCutoff = rating >= cutRating;
+            Long cutRating = cutoffs.battlegrounds(character.fraction());
+            inCutoff = character.rating() >= cutRating;
         } else if (bracket.startsWith("shuffle")) {
             String[] split = bracket.split("/");
             String specialization = split[2];
@@ -357,9 +400,21 @@ public class Ladder {
             }
             Long ct = cutoffs.shuffle(specialization);
             Long cutRating = ct == null ? 0 : ct;
-            inCutoff = rating >= cutRating;
+            inCutoff = character.rating() >= cutRating;
         }
-        return new Character(pos, rating, inCutoff, name, clazz, fullSpec, fraction, gender, race, realm, wins, losses);
+        return new Character(character.pos(),
+            character.rating(),
+            inCutoff,
+            character.name(),
+            character.clazz(),
+            character.fullSpec(),
+            character.fraction(),
+            gender,
+            race,
+            character.realm(),
+            character.wins(),
+            character.losses()
+        );
     }
 
     public Single<List<Character>> ladderTraditional(String bracket, Integer page, String region) {
@@ -393,7 +448,7 @@ public class Ladder {
                         String realm = nodeList.get(5).attr("data-value");
                         Long wins = Long.parseLong(nodeList.get(6).attr("data-value"));
                         Long losses = Long.parseLong(nodeList.get(7).attr("data-value"));
-                        return enrichWithSpecialData(bracket, region, pos, rating, name, clazz, fullSpec, fraction, realm, wins, losses);
+                        return enrichWithSpecialData(new Character(pos, rating, false, name, clazz, fullSpec,"","", fraction, realm, wins, losses), bracket, region);
                     }).toList();
                     return characters;
                 }

@@ -9,7 +9,7 @@ public record Character(Long pos, Long rating, boolean inCutoff, String name, St
                         String gender, String race,
                         String realm, Long wins, Long losses) implements JsonConvertable {
     public String fullNameWClass() {
-        return fullName() + " " + clazz;
+        return fullName() + " " + clazz.trim();
     }
 
     public String fullName() {
@@ -22,7 +22,7 @@ public record Character(Long pos, Long rating, boolean inCutoff, String name, St
     }
 
     public String fullNameWSpec() {
-        return fullName() + " " + fullSpec;
+        return fullName() + " " + fullSpec.trim();
     }
 
     public JsonObject toJson() {

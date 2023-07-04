@@ -2,6 +2,7 @@ package io.github.sammers.pla.blizzard;
 
 import io.github.sammers.pla.db.Character;
 import io.github.sammers.pla.http.JsonConvertable;
+import io.github.sammers.pla.logic.Ladder;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
@@ -78,9 +79,7 @@ public record PvpLeaderBoard(
                 } else {
                     String fullSpec = wowAPICharacter.activeSpec() + " " + wowAPICharacter.clazz();
                     if(bracket.getString("type").equals("SHUFFLE")) {
-                        String[] split = bracketId.split("/");
-                        fullSpec =  split[2].substring(0, 1).toUpperCase() + split[2].substring(1) +
-                                " " + split[1].substring(0, 1).toUpperCase() + split[1].substring(1);
+                        fullSpec = Ladder.SHUFFLE_SPEC_TO_SPEC.get(bracketId);
                     }
                     return Stream.of(new Character(
                         rank,
