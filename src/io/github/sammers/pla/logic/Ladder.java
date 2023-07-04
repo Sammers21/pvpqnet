@@ -199,7 +199,22 @@ public class Ladder {
     public Single<Snapshot> fetchLadder(String bracket, String region, boolean newWay) {
         Single<List<Character>> resCharList;
         if (newWay) {
-            resCharList = pureBlizzardApiFetch(bracket, region);
+            resCharList = pureBlizzardApiFetch(bracket, region).flatMap(chars -> {
+                Map<String, Character> pureleyFetchedChars = new HashMap<>();
+                chars.forEach(c -> pureleyFetchedChars.put(c.fullName(), c));
+                return ladderPageFetch(bracket, region).map(ladderPageFetched -> {
+                    long pureSize = pureleyFetchedChars.size();
+                    for(Character c : ladderPageFetched){
+                        pureleyFetchedChars.putIfAbsent(c.fullName(), c);
+                    }
+                    long addedFromLadderPage = pureleyFetchedChars.size() - pureSize;
+                    log.info("Pure fetched: {}, added from ladder page: {}, total: {}", pureSize, addedFromLadderPage, pureleyFetchedChars.size());
+                    List<Character> res = new ArrayList<>();
+                    res.addAll(pureleyFetchedChars.values());
+                    res.sort(Comparator.comparing(Character::rating).reversed());
+                    return res;
+                });
+            });
         } else {
             resCharList = ladderPageFetch(bracket, region);
         }
