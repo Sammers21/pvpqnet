@@ -212,6 +212,8 @@ public class Ladder {
                     List<Character> res = new ArrayList<>();
                     res.addAll(pureleyFetchedChars.values());
                     res.sort(Comparator.comparing(Character::rating).reversed());
+                    // limit to first 50k chars
+                    res = res.stream().limit(50000).collect(Collectors.toList());
                     return res;
                 });
             });
@@ -503,7 +505,7 @@ public class Ladder {
                             charSearchIndex.insertNickNames(new SearchResult(character.fullName(), character.region(), character.clazz()));
                         });
                         log.info("Character data size={} for region={} has been loaded to cache in {} ms", characters.size(), region, (System.nanoTime() - tick) / 1000000);
-                        VTHREAD_SCHEDULER.scheduleDirect(() -> charUpdater.updateCharsInfinite(region).subscribe());
+//                        VTHREAD_SCHEDULER.scheduleDirect(() -> charUpdater.updateCharsInfinite(region).subscribe());
                         emitter.onComplete();
                     });
                 }));
