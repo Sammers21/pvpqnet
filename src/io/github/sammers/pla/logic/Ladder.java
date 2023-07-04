@@ -366,7 +366,7 @@ public class Ladder {
                         String realm = nodeList.get(6).attr("data-value");
                         Long wins = Long.parseLong(nodeList.get(7).attr("data-value"));
                         Long losses = Long.parseLong(nodeList.get(8).attr("data-value"));
-                        return enrichWithSpecialData(new Character(pos, rating, false, name, clazz, fullSpec,"","", fraction, realm, wins, losses), bracket, region);
+                        return enrichWithSpecialData(new Character(pos, rating, false, name, clazz, fullSpec, fraction, "", "", realm, wins, losses), bracket, region);
                     }).toList();
                     return characters;
                 }
@@ -402,7 +402,8 @@ public class Ladder {
             Long cutRating = ct == null ? 0 : ct;
             inCutoff = character.rating() >= cutRating;
         }
-        return new Character(character.pos(),
+        return new Character(
+            character.pos(),
             character.rating(),
             inCutoff,
             character.name(),
@@ -448,7 +449,7 @@ public class Ladder {
                         String realm = nodeList.get(5).attr("data-value");
                         Long wins = Long.parseLong(nodeList.get(6).attr("data-value"));
                         Long losses = Long.parseLong(nodeList.get(7).attr("data-value"));
-                        return enrichWithSpecialData(new Character(pos, rating, false, name, clazz, fullSpec,"","", fraction, realm, wins, losses), bracket, region);
+                        return enrichWithSpecialData(new Character(pos, rating, false, name, clazz, fullSpec,fraction,"", "", realm, wins, losses), bracket, region);
                     }).toList();
                     return characters;
                 }
