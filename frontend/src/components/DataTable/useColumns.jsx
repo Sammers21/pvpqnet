@@ -15,6 +15,9 @@ const TABLE_FIELDS = {
 };
 
 export const getRealmColor = (fraction) => {
+  if (fraction === undefined) {
+    return '#FFFFFF'
+  }
   return fraction.toUpperCase() === 'ALLIANCE' ? '#3FC7EB' : '#ff0000';
 };
 
