@@ -30,6 +30,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -244,11 +245,17 @@ public class Ladder {
         if (newWay) {
             resCharList = pureBlizzardApiFetch(bracket, region).flatMap(chars -> {
                 Map<String, Character> pureleyFetchedChars = new HashMap<>();
-                chars.forEach(c -> pureleyFetchedChars.put(c.fullNameWSpec(), c));
+                Function<Character, String> idf;
+                if (bracket.equals(SHUFFLE)) {
+                    idf = c -> c.fullNameWSpec();
+                } else {
+                    idf = c -> c.fullName();
+                }
+                chars.forEach(c -> pureleyFetchedChars.put(idf.apply(c), c));
                 return ladderPageFetch(bracket, region).map(ladderPageFetched -> {
                     long pureSize = pureleyFetchedChars.size();
-                    for(Character c : ladderPageFetched){
-                        pureleyFetchedChars.putIfAbsent(c.fullNameWSpec(), c);
+                    for (Character c : ladderPageFetched) {
+                        pureleyFetchedChars.putIfAbsent(idf.apply(c), c);
                     }
                     long addedFromLadderPage = pureleyFetchedChars.size() - pureSize;
                     log.info("Pure fetched: {}, added from ladder page: {}, total: {}", pureSize, addedFromLadderPage, pureleyFetchedChars.size());
