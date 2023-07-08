@@ -13,7 +13,11 @@ const PhotoCard = ({ data, update, loading }) => {
   if (data.media) {
     insert = data.media.insert;
   }
-  const url = 'https://worldofwarcraft.blizzard.com/en-gb/character/' + data.region + '/' + data.realm + '/' + data.name;
+  let realm = data.realm
+  if(realm !== undefined) {
+    realm = realm.replaceAll(" ", "-").replaceAll("'", "")
+  }
+  const url = 'https://worldofwarcraft.blizzard.com/en-gb/character/' + data.region + '/' + realm + '/' + data.name;
   const ago = dayjs().to(dayjs(data.lastUpdatedUTCms ?? 0))
   let charInfoTypog = <Box
     display="flex"
