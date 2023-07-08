@@ -5,7 +5,6 @@ import _ from 'lodash';
 
 const Row = ({curDiff, onMouseOverDiff, index, record, columns}) => {
   const [columnsData, setColumnsData] = useState([]);
-console.log(record)
   const setValues = async () => {
     let columnsData = [];
     for (let column of columns) {

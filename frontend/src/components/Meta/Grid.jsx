@@ -136,7 +136,6 @@ const Grid = () => {
       rParam[filter.param_name] = toLowerAndReplace(filter.current)
     })
     const data = (await axios.get(baseUrl + `/api/meta`, {params: rParam})).data
-    console.log("params and data", rParam, data)
     setData(data);
   };
   let rows = data.specs

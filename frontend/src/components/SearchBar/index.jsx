@@ -31,7 +31,6 @@ const SearchBar = () => {
     const key = 'nick';
     const arrayUniqueByKey = [...new Map(response.data.map(item =>
       [item[key], item])).values()];
-    console.log("search q and results:", q, arrayUniqueByKey);
     setSearchResults(arrayUniqueByKey);
     setLoading(false);
   }

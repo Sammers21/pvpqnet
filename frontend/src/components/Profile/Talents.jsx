@@ -20,7 +20,6 @@ const Talents = ({data}) => {
       }}>Wowhead</Button>
       <Button size="small" onClick={() => {
         navigator.clipboard.writeText(data.talents).then(function () {
-          console.log('Copying to clipboard was successful!');
         }, function (err) {
           console.error('Async: Could not copy text: ', err);
         });

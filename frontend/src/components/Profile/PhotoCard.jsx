@@ -1,5 +1,5 @@
 import {aroundColor, borderColor, winRateGreyColor} from "../../theme";
-import {alpha, Box, Button, Typography} from "@mui/material";
+import {alpha, Box, Button, Link, Typography} from "@mui/material";
 import {getClassNameColor, getRealmColor} from "../DataTable/useColumns";
 import LoadingButton from '@mui/lab/LoadingButton';
 import dayjs from 'dayjs-ext'
@@ -13,6 +13,7 @@ const PhotoCard = ({ data, update, loading }) => {
   if (data.media) {
     insert = data.media.insert;
   }
+  const url = 'https://worldofwarcraft.blizzard.com/en-gb/character/' + data.region + '/' + data.realm + '/' + data.name;
   const ago = dayjs().to(dayjs(data.lastUpdatedUTCms ?? 0))
   let charInfoTypog = <Box
     display="flex"
@@ -21,11 +22,12 @@ const PhotoCard = ({ data, update, loading }) => {
       padding : '10px',
     }}
   >
+
     <Typography
       variant="h6"
       component="div"
       color={getClassNameColor(data.class ?? "")}>
-      {data.name}
+      <Link sx={{textDecoration: "none", boxShadow: "none"}}  href={url} color={getClassNameColor(data.class ?? "")}>{data.name}</Link>
     </Typography>
     <Typography
       variant="h7"

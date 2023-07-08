@@ -97,14 +97,13 @@ const getDiffCell = (diff) => {
   return diff >= 0 ? `+${diff}` : diff;
 };
 
-const profileUrl = (record) => {
+const profileUrl = (record, region) => {
   const name = record?.character?.name || record?.name;
   const realm = record?.character?.realm || record?.realm;
-  const region = (record?.character?.region || record?.region) ?? "eu";
   return window.location.origin + `/${region}/${realm}/${name}`;
 }
 
-const useColumns = (includeLastSeen) => {
+const useColumns = (includeLastSeen, region) => {
   let res = [
     {
       field: TABLE_FIELDS.rank,
@@ -177,7 +176,7 @@ const useColumns = (includeLastSeen) => {
       render: ({ record }) => {
         const wowClass = record?.character?.class || record?.class;
         const name = record?.character?.name || record?.name;
-        const url = profileUrl(record);
+        const url = profileUrl(record, region);
         return <Typography color={getClassNameColor(wowClass)}>
           <Link sx={{textDecoration: "none", boxShadow: "none"}}  href={url} color={getClassNameColor(wowClass)}>{name}</Link>
         </Typography>;
