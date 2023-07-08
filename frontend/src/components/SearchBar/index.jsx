@@ -43,7 +43,8 @@ const SearchBar = () => {
     sx={{
       display: "inline-flex",
       marginTop: 1,
-      width: 300,
+      marginBottom: 1,
+      width: '100%',
     }}
     disablePortal
     noOptionsText="No results"
