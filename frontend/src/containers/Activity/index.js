@@ -22,17 +22,16 @@ function Activity() {
   } = useParams();
   const activity = getActivityFromUrl();
   const [width, setWidth] = useState(window.innerWidth);
-
-  function handleWindowSizeChange() {
-    setWidth(window.innerWidth);
-  }
   useEffect(() => {
-    window.addEventListener('resize', handleWindowSizeChange);
+    window.addEventListener('resize', function () {
+      setWidth(window.innerWidth);
+    });
     return () => {
-      window.removeEventListener('resize', handleWindowSizeChange);
+      window.removeEventListener('resize', function () {
+        setWidth(window.innerWidth);
+      });
     }
   }, []);
-
   const isMobile = width <= 900;
 
   useEffect(() => {

@@ -14,7 +14,7 @@ const PhotoCard = ({ data, update, loading }) => {
     insert = data.media.insert;
   }
   let realm = data.realm
-  if(realm !== undefined) {
+  if (realm !== undefined) {
     realm = realm.replaceAll(" ", "-").replaceAll("'", "")
   }
   const url = 'https://worldofwarcraft.blizzard.com/en-gb/character/' + data.region + '/' + realm + '/' + data.name;
