@@ -263,10 +263,11 @@ const useColumns = (includeLastSeen, region, isMobile) => {
   let lastSeen = {
     field: TABLE_FIELDS.lastSeen,
     label: lastSeenLabel,
-    render: ({ record }) => {
+    render: ({record}) => {
       let content = record?.diff?.last_seen
-      if(isMobile){
-        content = content.substring(0, 3) + '.';
+      if (isMobile) {
+        const split = content.split(' ');
+        content = split[0] + ' ' + split[1].substring(0, 1) + '.';
       }
       return <Typography>{content}</Typography>;
     },
