@@ -26,6 +26,18 @@ const DataList = () => {
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [specs, setSpecs] = useState(initSpecs);
+  const [width, setWidth] = useState(window.innerWidth);
+  useEffect(() => {
+    window.addEventListener('resize', function () {
+      setWidth(window.innerWidth);
+    });
+    return () => {
+      window.removeEventListener('resize', function () {
+        setWidth(window.innerWidth);
+      });
+    }
+  }, []);
+  const isMobile = width <= 900;
 
   const handlePageChange = (event, value) => {
     setPage(value);
@@ -55,10 +67,10 @@ const DataList = () => {
   }, [page, region, activity, bracket, specs]);
 
   const includeLastSeen = activity === 'activity'
-  const columns = useColumns(includeLastSeen, region);
-
+  const columns = useColumns(includeLastSeen, region, isMobile);
   return (
     <Table
+      isMobile={isMobile}
       loading={loading}
       totalPages={totalPages}
       columns={columns}

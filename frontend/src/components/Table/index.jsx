@@ -21,6 +21,7 @@ const StyledTable = styled(TableMui)({
 
 const Table = ({
   loading,
+  isMobile,
   columns,
   records = [],
   headerRecords,
@@ -136,12 +137,16 @@ const Table = ({
     </StyledTable>
   );
 
+  let padding = '12px 32px 32px 32px';
+  if (isMobile){
+    padding = '12px 5px 32px 5px';
+  }
   return (
     <Grid
       sx={{
         position: 'relative',
         backgroundColor: containerBg,
-        padding: '12px 32px 32px 32px',
+        padding: padding,
         minHeight: '200px',
       }}
     >
