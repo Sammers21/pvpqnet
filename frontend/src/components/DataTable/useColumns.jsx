@@ -104,8 +104,8 @@ const profileUrl = (record) => {
   return window.location.origin + `/${region}/${realm}/${name}`;
 }
 
-const useColumns = () => {
-  return [
+const useColumns = (includeLastSeen) => {
+  let res = [
     {
       field: TABLE_FIELDS.rank,
       label: 'RANK',
@@ -139,14 +139,14 @@ const useColumns = () => {
         return (
           <Box sx={{ display: 'flex' }}>
             <img
-                style={{
-                  border: '1px #37415180 solid',
-                  borderRadius: '4px',
-                  marginLeft: '5px',
-                  height: '20px',
-                  width: '20px',
-                }}
-                src={details.raceSrc}
+              style={{
+                border: '1px #37415180 solid',
+                borderRadius: '4px',
+                marginLeft: '5px',
+                height: '20px',
+                width: '20px',
+              }}
+              src={details.raceSrc}
             />
             <img
               style={{
@@ -249,15 +249,18 @@ const useColumns = () => {
           </Box>
         );
       },
-    },
-    {
+    }
+  ];
+  if(includeLastSeen) {
+    res.push({
       field: TABLE_FIELDS.lastSeen,
       label: 'LAST SEEN',
       render: ({ record }) => {
         return <Typography>{record?.diff?.last_seen}</Typography>;
       },
-    },
-  ];
+    });
+  }
+  return res;
 };
 
 export default useColumns;

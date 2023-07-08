@@ -37,7 +37,7 @@ export default function ActivityTabs() {
   const bracket = getBracket(bracketFromParams);
   const activity = getActivityFromUrl();
   const region = getRegion(regionFromUrl);
-  const isActivity = activity ==="activity";
+  const isActivity = activity === "activity";
   const handleBracketChange = (bracket) => {
     const newPath = generatePath(publicUrls.page, { region, activity, bracket }) + window.location.search;
     navigate(newPath);
@@ -69,7 +69,7 @@ export default function ActivityTabs() {
       } else {
         setData(init)
       }
-    }, [region]);
+    }, [region, activity]);
   return (
     <Box sx={{
         display: 'flex',

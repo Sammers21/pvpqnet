@@ -54,7 +54,8 @@ const DataList = () => {
     getData();
   }, [page, region, activity, bracket, specs]);
 
-  const columns = useColumns();
+  const includeLastSeen = activity === 'activity'
+  const columns = useColumns(includeLastSeen);
 
   return (
     <Table
