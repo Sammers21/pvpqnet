@@ -1,4 +1,4 @@
-import React, {useCallback, useMemo} from 'react';
+import React, {useCallback, useMemo, useState} from 'react';
 import {Grid, Table as TableMui, TableBody, TableContainer, TableHead, TableRow, Typography,} from '@mui/material';
 import {styled} from '@mui/system';
 
@@ -14,15 +14,6 @@ import {useSearchParams} from "react-router-dom";
 const StyledTable = styled(TableMui)({
   position: 'relative',
   minHeight: '200px',
-  '& tr:nth-child(even)': {
-    backgroundColor: '#0e1216',
-  },
-  "& tr:hover": {
-    backgroundColor: "#1f2937",
-  },
-  // "& .same_hovered": {
-  //   backgroundColor: "green"
-  // },
   '& tr td,th': {
     borderBottom: 'none',
   },
@@ -47,6 +38,7 @@ const Table = ({
   ...props
 }) => {
   let [searchParams, setSearchParams] = useSearchParams();
+  const [diff, setDiff] = useState({});
   var specs = []
   // var scoreHovered, setScoreHovered = React.useState({won: 0, lost: 0});
   if (searchParams.get('specs') != null){
@@ -110,7 +102,7 @@ const Table = ({
   };
 
   const renderRow = (record, index) => {
-    return <Row key={index} index={index} record={record} fieldId={index} columns={columnsData} />;
+    return <Row curDiff={diff} onMouseOverDiff={(diff) => setDiff(diff)} key={index} index={index} record={record} fieldId={index} columns={columnsData} />;
   };
 
   const rowsComponent = useMemo(() => {
