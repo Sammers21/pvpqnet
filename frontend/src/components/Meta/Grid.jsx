@@ -98,9 +98,13 @@ const numericColumn = (fieldName, headerName, maxVal) => {
   };
 }
 
-const specNameColumn = () => {
+const specNameColumn = (isMobile) => {
+  let width = 250;
+  if (isMobile) {
+    width = 10;
+  }
   return {
-    field: 'spec_name', headerName: 'Spec', width: 250, editable: false, renderCell: (params) => {
+    field: 'spec_name', headerName: 'Spec', width: width, editable: false, renderCell: (params) => {
       let specSrc;
       let specIcon = specNameFromFullSpec(params.value) + '.png';
       try {
@@ -110,9 +114,9 @@ const specNameColumn = () => {
         specSrc = require('../../assets/unknown.png');
       }
       return (
-        <Box display={'flex'} flexDirection={'row'}>
+        <Box display={'flex'} flexDirection={'row'} justifyContent={'flex-start'} alignItems={'center'}>
           <img src={specSrc} width={24} height={24}/>
-          <Typography color={getClassNameColor(params.value)} sx={{paddingLeft: '10px'}}>{params.value}</Typography>
+          {!isMobile && <Typography color={getClassNameColor(params.value)} sx={{paddingLeft: '10px'}}>{params.value}</Typography>}
         </Box>
       )
     }
@@ -130,6 +134,18 @@ const Grid = () => {
     { name: "Period", param_name: "period", current: "This season", options: ['Last month', 'Last week', 'Last day', 'This season'] },
     { name: "Role", param_name: "role", current: "All", options: ['All', 'Melee', 'Ranged', 'Dps', 'Healer', 'Tank'] }
   ]);
+  const [width, setWidth] = useState(window.innerWidth);
+  useEffect(() => {
+    window.addEventListener('resize', function () {
+      setWidth(window.innerWidth);
+    });
+    return () => {
+      window.removeEventListener('resize', function () {
+        setWidth(window.innerWidth);
+      });
+    }
+  }, []);
+  const isMobile = width <= 900;
   const loadMeta = async () => {
     let rParam = { region: region }
     filters.forEach((filter) => {
@@ -143,7 +159,7 @@ const Grid = () => {
     rows = []
   }
   let [searchParams, setSearchParams] = useSearchParams();
-  let columns = [specNameColumn(),]
+  let columns = [specNameColumn(isMobile),]
   useEffect(() => {
     loadMeta();
   }, [filters, region]);
@@ -245,14 +261,20 @@ const Grid = () => {
   addColumnGroup('0.502', ['rank_2.png', 'rank_4.png', 'rank_6.png'])
   addColumnGroup('0.332', ['rank_7.png', 'rank_8.png'])
   addColumnGroup('0.166', ['rank_9.png','rank_10.png'])
+  let paddingLeft = '10%'
+  let paddingRight = '10%'
+  if (isMobile) {
+    paddingLeft = '0%'
+    paddingRight = '0%'
+  }
   return (
     <Box
       sx={{
         width: '100%',
         backgroundColor: containerBg,
         paddingTop: '105px',
-        paddingLeft: '10%',
-        paddingRight: '10%',
+        paddingLeft: paddingLeft,
+        paddingRight: paddingRight,
         paddingBottom: '45px',
       }}>
       <Box
@@ -284,6 +306,7 @@ const Grid = () => {
           columnGroupingModel={columnGroupingModel}
           getRowId={(row) => row.spec_name}
           rows={rows}
+          disableColumnMenu={true}
           loading={rows.length === 0}
           columns={columns}
           autoHeight={true}
