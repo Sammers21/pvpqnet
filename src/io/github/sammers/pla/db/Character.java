@@ -22,7 +22,7 @@ public record Character(Long pos, Long rating, boolean inCutoff, String name, St
     }
 
     public String fullNameWSpec() {
-        return fullName() + " " + fullSpec.trim();
+        return fullName() + " " + fullSpec.trim().replaceAll(" ", "").toLowerCase();
     }
 
     public JsonObject toJson() {
