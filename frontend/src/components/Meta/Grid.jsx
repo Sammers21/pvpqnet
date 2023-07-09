@@ -258,9 +258,9 @@ const Grid = () => {
       }
     });
   }
-  addColumnGroup('0.502', ['rank_2.png', 'rank_4.png', 'rank_6.png'])
-  addColumnGroup('0.332', ['rank_7.png', 'rank_8.png'])
-  addColumnGroup('0.166', ['rank_9.png','rank_10.png'])
+  addColumnGroup('0.850', ['rank_2.png', 'rank_4.png', 'rank_6.png'])
+  addColumnGroup('0.100', ['rank_7.png', 'rank_8.png'])
+  addColumnGroup('0.050', ['rank_9.png','rank_10.png'])
   let paddingLeft = '10%'
   let paddingRight = '10%'
   if (isMobile) {

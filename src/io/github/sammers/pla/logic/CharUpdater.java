@@ -64,7 +64,7 @@ public class CharUpdater {
                         }
                     }
                     int newChars = charsToUpdate.size();
-                    long dayAgo = Instant.now().minus(30, ChronoUnit.DAYS).toEpochMilli();
+                    long dayAgo = Instant.now().minus(7, ChronoUnit.DAYS).toEpochMilli();
                     characterCache.values().stream().flatMap(wowAPICharacter -> {
                         if (wowAPICharacter.lastUpdatedUTCms() < dayAgo) {
                             nickAndMaxRating.compute(wowAPICharacter.fullName(), (nick, maxRating) -> {

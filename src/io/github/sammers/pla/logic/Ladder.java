@@ -247,9 +247,9 @@ public class Ladder {
                 Map<String, Character> pureleyFetchedChars = new HashMap<>();
                 Function<Character, String> idf;
                 if (bracket.equals(SHUFFLE)) {
-                    idf = c -> c.fullNameWSpec();
+                    idf = Character::fullNameWSpec;
                 } else {
-                    idf = c -> c.fullName();
+                    idf = Character::fullName;
                 }
                 chars.forEach(c -> pureleyFetchedChars.put(idf.apply(c), c));
                 return ladderPageFetch(bracket, region).map(ladderPageFetched -> {
@@ -263,7 +263,7 @@ public class Ladder {
                     res.addAll(pureleyFetchedChars.values());
                     res.sort(Comparator.comparing(Character::rating).reversed());
                     // limit to first 50k chars
-                    res = res.stream().limit(50000).collect(Collectors.toList());
+                    res = res.stream().limit(50000).map(character -> enrichWithSpecialData(character, region, bracket)).collect(Collectors.toList());
                     return res;
                 });
             });
@@ -368,7 +368,7 @@ public class Ladder {
                         String[] splitted = bracket.split("/");
                         String clazz = nodeList.get(3).attr("data-value");
                         String specName = splitted[2].substring(0, 1).toUpperCase() + splitted[2].substring(1);
-                        String fullSpec = specName + " " + clazz;
+                        String fullSpec = (specName + " " + clazz).trim();
                         String fraction = nodeList.get(5).attr("data-value");
                         String realm = nodeList.get(6).attr("data-value");
                         Long wins = Long.parseLong(nodeList.get(7).attr("data-value"));
@@ -523,7 +523,7 @@ public class Ladder {
                         }
                         return Stream.of(diff.map(realDiff -> {
                             try {
-                                Meta meta = Calculator.calculateMeta(realDiff, role, bracket, 0.166, 0.332, 0.502);
+                                Meta meta = Calculator.calculateMeta(realDiff, role, bracket, 0.05, 0.10, 0.85);
                                 metaRef(bracket, realRegion, role, period).set(meta);
                                 return meta;
                             } catch (Exception e) {
@@ -568,7 +568,7 @@ public class Ladder {
                             charSearchIndex.insertNickNames(new SearchResult(character.fullName(), character.region(), character.clazz()));
                         });
                         log.info("Character data size={} for region={} has been loaded to cache in {} ms", characters.size(), region, (System.nanoTime() - tick) / 1000000);
-//                        VTHREAD_SCHEDULER.scheduleDirect(() -> charUpdater.updateCharsInfinite(region).subscribe());
+                        VTHREAD_SCHEDULER.scheduleDirect(() -> charUpdater.updateCharsInfinite(region).subscribe());
                         emitter.onComplete();
                     });
                 }));

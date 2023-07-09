@@ -156,7 +156,7 @@ public class Calculator {
         return chars.size() / (double) total;
     }
 
-    public static Meta calculateMeta(SnapshotDiff snapshot, String role,String bracket, double... ratios) {
+    public static Meta calculateMeta(SnapshotDiff snapshot, String role, String bracket, double... ratios) {
         Set<String> acceptedSpecs;
         if (role.equals("all")){
             acceptedSpecs = Spec.ALL_SPECS;
@@ -174,7 +174,7 @@ public class Calculator {
             throw new IllegalArgumentException("Unknown role: " + role);
         }
         List<CharAndDiff> totalSortedRoleList = snapshot.chars().stream()
-            .filter((CharAndDiff character) -> acceptedSpecs.contains(character.character().fullSpec().trim()))
+            .filter((CharAndDiff character) -> acceptedSpecs.contains(character.character().fullSpec()))
             .sorted(Comparator.comparing((CharAndDiff o) -> o.character().rating()).reversed()).toList();
         if (bracket.equals("shuffle")) {
             int maxMinRating = totalSortedRoleList.stream().collect(Collectors.groupingBy(character -> character.character().fullSpec(), Collectors.toList()))
