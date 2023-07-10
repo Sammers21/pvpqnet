@@ -263,7 +263,7 @@ public class Ladder {
                     res.addAll(pureleyFetchedChars.values());
                     res.sort(Comparator.comparing(Character::rating).reversed());
                     // limit to first 50k chars
-                    res = res.stream().limit(50000).map(character -> enrichWithSpecialData(character, region, bracket)).collect(Collectors.toList());
+                    res = res.stream().limit(50000).collect(Collectors.toList());
                     return res;
                 });
             });
