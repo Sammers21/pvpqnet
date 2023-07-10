@@ -317,7 +317,7 @@ const Grid = () => {
           }}
           initialState={{
             sorting: {
-              sortModel: [{ field: '0.166_presence', sort: 'desc' }],
+              sortModel: [{ field: '0.050_presence', sort: 'desc' }],
             },
           }}
           getRowClassName={(params) =>
