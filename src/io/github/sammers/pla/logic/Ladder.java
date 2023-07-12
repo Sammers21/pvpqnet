@@ -63,6 +63,7 @@ public class Ladder {
         add("shuffle/druid/restoration");
         add("shuffle/evoker/devastation");
         add("shuffle/evoker/preservation");
+        add("shuffle/evoker/augmentation");
         add("shuffle/hunter/beastmastery");
         add("shuffle/hunter/marksmanship");
         add("shuffle/hunter/survival");
@@ -105,6 +106,7 @@ public class Ladder {
             put("shuffle/druid/restoration", "Restoration Druid");
             put("shuffle/evoker/devastation", "Devastation Evoker");
             put("shuffle/evoker/preservation", "Preservation Evoker");
+            put("shuffle/evoker/augmentation", "Augmentation Evoker");
             put("shuffle/hunter/beastmastery", "Beast Mastery Hunter");
             put("shuffle/hunter/marksmanship", "Marksmanship Hunter");
             put("shuffle/hunter/survival", "Survival Hunter");
