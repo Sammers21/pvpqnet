@@ -1,7 +1,7 @@
 import {alpha, Box, Divider, Typography} from "@mui/material";
 import {aroundColor, winRateGreyColor} from "../../theme";
 
-const PvpBracketBox = ({bracket, rating, wins, loses}) => {
+const PvpBracketBox = ({isMobile, totalInRow, bracket, rating, wins, loses}) => {
   let shortBracketName = bracket;
   if (bracket.startsWith('ARENA')) {
     shortBracketName = bracket.split('_')[1];
@@ -27,8 +27,25 @@ const PvpBracketBox = ({bracket, rating, wins, loses}) => {
   } else if (rating >= 900) {
     ratingColor = '#d2d2d2'
   }
+  var ratingVariant = 'h3';
+  var bracketVariant = 'h5';
+  if (isMobile) {
+    ratingVariant = 'h4';
+    bracketVariant = 'h7';
+  }
+  let under = <Box display={'flex'} flexDirection={isMobile ? 'column' : 'row'}>
+    <Typography variant={ratingVariant} component="div" color={ratingColor}>{rating}</Typography>
+    {showWinRate && (<Box m={1} display={'column'}>
+      <Box display={'flex'}>
+        <Typography variant="h7" component="div" color={wonColor}>{wins}</Typography>
+        <Typography variant="h7" component="div" color={winRateGreyColor}> / </Typography>
+        <Typography variant="h7" component="div" color={lostColor}>{loses}</Typography>
+      </Box>
+      <Typography variant="h7" component="div" color={winRateGreyColor}>{winRate + 'win ratio'}</Typography>
+    </Box>)}
+  </Box>;
   return (
-    <Box width="100%"
+    <Box width={isMobile ? `${100 / totalInRow}%` : `${100 / totalInRow}%`}
          marginX={1}
          marginY={1}
          padding={1}
@@ -38,20 +55,10 @@ const PvpBracketBox = ({bracket, rating, wins, loses}) => {
          }}>
       <Box display="flex" flexDirection={'column'}>
         <Typography
-          variant="h5"
+          variant={bracketVariant}
           component="div">{shortBracketName}</Typography>
         <Divider/>
-        <Box display={'flex'}>
-          <Typography variant="h3" component="div" color={ratingColor}>{rating}</Typography>
-          {showWinRate && (<Box m={1} display={'column'}>
-            <Box display={'flex'}>
-            <Typography variant="h7" component="div" color={wonColor}>{wins}</Typography>
-            <Typography variant="h7" component="div" color={winRateGreyColor}> / </Typography>
-            <Typography variant="h7" component="div" color={lostColor}>{loses}</Typography>
-            </Box>
-            <Typography variant="h7" component="div" color={winRateGreyColor}>{winRate + 'win ratio'}</Typography>
-          </Box>)}
-        </Box>
+        {under}
       </Box>
     </Box>);
 };

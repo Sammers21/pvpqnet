@@ -7,7 +7,7 @@ import SaveIcon from '@mui/icons-material/Save';
 import relativeTime from 'dayjs-ext/plugin/relativeTime'
 import React from "react";
 
-const PhotoCard = ({ data, update, loading }) => {
+const PhotoCard = ({ isMobile, data, update, loading }) => {
   dayjs.extend(relativeTime)
   var insert = ""
   if (data.media) {
@@ -63,7 +63,11 @@ const PhotoCard = ({ data, update, loading }) => {
       {data.itemLevel + " equipped ilvl"}
     </Typography>
   </Box>;
+
   let picture = <Box
+    width={isMobile ? '40%' : 'auto'}
+    height={isMobile ? 'auto' : '100%'}
+    si
     component="img"
     sx={{
       border: 1,
@@ -79,18 +83,22 @@ const PhotoCard = ({ data, update, loading }) => {
   } else {
     updButton = <Button sx={{p: 1, marginTop: 1,}} variant="contained" onClick={() => update()}>Update now</Button>;
   }
+
   return (<Box
+    width={isMobile ? '100%' : 'auto'}
     display="flex"
     borderRadius={2}
-    margin={1}
-    padding={2}
-    flexDirection={'row'}
+    margin={isMobile ? 1 : 1}
+    padding={isMobile ? 1 : 1}
+    flexDirection={isMobile ? 'column' : 'row'}
     sx={{
       backgroundColor: alpha(aroundColor, 0.3),
     }}
   >
-    {picture}
-    {charInfoTypog}
+    <Box display={'flex'} flexDirection={'row'} justifyContent={'center'}>
+      {picture}
+      {charInfoTypog}
+    </Box>
     <Box sx={{
       width: '100%',
       p: 1,

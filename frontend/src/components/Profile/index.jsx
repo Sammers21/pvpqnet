@@ -18,7 +18,20 @@ const Profile = () => {
   let [data, setData] = useState({});
   let [status, setStatus] = useState(200);
   let [loading, setLoading] = useState(false);
-  document.title = `${capitalizeFirstLetter(name)}-${capitalizeFirstLetter(realm)}`;
+  document.title = `${capitalizeFirstLetter(name)}-${capitalizeFirstLetter(realm)} on`;
+  const [width, setWidth] = useState(window.innerWidth);
+  useEffect(() => {
+    window.addEventListener('resize', function () {
+      setWidth(window.innerWidth);
+    });
+    return () => {
+      window.removeEventListener('resize', function () {
+        setWidth(window.innerWidth);
+      });
+    }
+  }, []);
+  const isMobile = width <= 900;
+
   const loadProfile = async (update) => {
     let url
     if (update) {
@@ -43,36 +56,41 @@ const Profile = () => {
   }, [region, realm, name]);
   let arenaAndRbg = ['ARENA_2v2', 'ARENA_3v3', 'BATTLEGROUNDS'].map((bracket) => {
     let found = (data?.brackets ?? []).find((b) => b.bracket_type === bracket)
-    return (<PvpBracketBox bracket={bracket} rating={found?.rating ?? 0} wins={found?.won ?? 0} loses={found?.lost ?? 0}/>);
+    return (
+        <PvpBracketBox totalInRow={3} isMobile={isMobile} bracket={bracket} rating={found?.rating ?? 0} wins={found?.won ?? 0}
+                       loses={found?.lost ?? 0}/>)
   });
   var shuffle
   if (data.class) {
-    shuffle = CLASS_AND_SPECS[data.class].map((spec) => {
+    let classAndSpec = CLASS_AND_SPECS[data.class];
+    shuffle = classAndSpec.map((spec) => {
       let found = (data?.brackets ?? []).find((b) => b.bracket_type.includes(spec))
-      return (<PvpBracketBox bracket={spec} rating={found?.rating ?? 0} wins={found?.won ?? 0} loses={found?.lost ?? 0}/>);
+      return (
+        <PvpBracketBox totalInRow={classAndSpec.length} isMobile={isMobile} bracket={spec} rating={found?.rating ?? 0} wins={found?.won ?? 0} loses={found?.lost ?? 0}/>
+      );
     });
   } else {
     shuffle = [];
   }
   let normalResp = <><>
     <Header/>
-    <Box sx={{
-      width: '100%',
-      backgroundColor: containerBg,
-      minHeight: '100vh',
-      paddingTop: '105px',
-      paddingLeft: '3%',
-      paddingRight: '3%',
-      paddingBottom: '45px',
-    }} display={'flex'}
-         flexDirection={'column'}>
-      <PhotoCard data={data} loading={loading} update={() => {
+    <Box
+      width={'100%'}
+      sx={{
+        backgroundColor: containerBg,
+        minHeight: '100vh',
+        paddingTop: '105px',
+        paddingLeft: isMobile ? '2%' : '3%',
+        paddingRight: isMobile ? '2%' : '3%',
+        paddingBottom: '45px',
+      }} display={'flex'} flexDirection={'column'}>
+      <PhotoCard isMobile={isMobile} data={data} loading={loading} update={() => {
         return loadProfile(true);
-      }}></PhotoCard>
-      <Box display={'flex'}>
+      }}/>
+      <Box display={'flex'} flexDirection={'row'} justifyContent={'space-between'}>
         {arenaAndRbg}
       </Box>
-      <Box display={'flex'}>
+      <Box display={'flex'} flexDirection={'row'} justifyContent={'space-between'}>
         {shuffle}
       </Box>
       <Talents data={data}></Talents>
@@ -80,6 +98,8 @@ const Profile = () => {
     <Footer/>
   </>
   </>;
+
+
   let notFoundResp = <><>
     <Header/>
     <NotFound/>
