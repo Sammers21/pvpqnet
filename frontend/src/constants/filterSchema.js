@@ -27,5 +27,5 @@ export const CLASS_AND_SPECS = {
   "Monk": ['Brewmaster', 'Windwalker', 'Mistweaver'],
   "Druid": ['Balance', 'Feral', 'Guardian', 'Restoration'],
   "Demon Hunter": ['Havoc', 'Vengeance'],
-  "Evoker": ['Devastation', 'Preservation'],
+  "Evoker": ['Devastation', 'Preservation', 'Augmentation'],
 }
