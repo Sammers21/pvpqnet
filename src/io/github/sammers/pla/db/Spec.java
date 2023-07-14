@@ -48,7 +48,6 @@ public record Spec(String specName, Map<String, Double> winRates) implements Jso
         "Balance Druid",
         "Beast Mastery Hunter",
         "Marksmanship Hunter",
-        "Survival Hunter",
         "Arcane Mage",
         "Fire Mage",
         "Frost Mage",
