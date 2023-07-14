@@ -56,7 +56,9 @@ public record Spec(String specName, Map<String, Double> winRates) implements Jso
         "Elemental Shaman",
         "Affliction Warlock",
         "Demonology Warlock",
-        "Destruction Warlock"
+        "Destruction Warlock",
+        "Devastation Evoker",
+        "Augmentation Evoker"
     );
 
     public static Set<String> DPS_SPECS = Stream.concat(RANGED_SPECS.stream(), MELEE_SPECS.stream()).collect(Collectors.toSet());
