@@ -11,7 +11,7 @@ export const CRESTS_AND_SPECS = {
   10: ['brewmastermonk', 'windwalkermonk', 'mistweavermonk'],
   11: ['balancedruid', 'feraldruid', 'guardiandruid', 'restorationdruid'],
   12: ['havocdemonhunter', 'vengeancedemonhunter'],
-  13: ['devastationevoker', 'preservationevoker'],
+  13: ['devastationevoker', 'preservationevoker', 'augmentationevoker'],
 };
 
 export const CLASS_AND_SPECS = {
