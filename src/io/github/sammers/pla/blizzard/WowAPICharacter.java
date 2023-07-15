@@ -127,7 +127,7 @@ import java.util.stream.Collectors;
  */
 public record WowAPICharacter(long id, String name, String realm, String gender, String fraction, String race,
                               String activeSpec, int level, String clazz, int itemLevel, String region,
-                              List<PvpBracket> brackets, Long lastUpdatedUTCms, Set<String> pvpTitles,
+                              List<PvpBracket> brackets, Long lastUpdatedUTCms, Achievements achievements ,
                               CharacterMedia media, String talents) implements JsonConvertable {
 
     public static WowAPICharacter parse(
@@ -147,19 +147,6 @@ public record WowAPICharacter(long id, String name, String realm, String gender,
             .orElse("");
         List<PvpBracket> list = brackets.stream().map(PvpBracket::parse).toList();
         CharacterMedia media = CharacterMedia.parse(characterMedia);
-        Set<String> pvpTitles = achievements.getJsonArray("achievements").stream()
-            .map(s -> ((JsonObject)s).getJsonObject("achievement").getString("name"))
-            .filter(s -> {
-                boolean r1Glad = s.matches("(\\w+)\\h(Gladiator|Legend)(.*)");
-                return s.startsWith("Gladiator")
-                    || s.startsWith("Duelist")
-                    || s.startsWith("Rival")
-                    || s.startsWith("Challenger")
-                    || s.startsWith("Combatant")
-                    || s.startsWith("Legend")
-                    || r1Glad;
-            })
-            .collect(Collectors.toSet());
         Long lastUpdatedUTCms = Instant.now().toEpochMilli();
         String name = entries.getString("name").substring(0, 1).toUpperCase() + entries.getString("name").substring(1);
         String realm = entries.getJsonObject("realm").getString("name").substring(0, 1).toUpperCase() +
@@ -178,7 +165,7 @@ public record WowAPICharacter(long id, String name, String realm, String gender,
             region,
             list,
             lastUpdatedUTCms,
-            pvpTitles,
+            Achievements.parse(achievements),
             media,
             talents
         );
@@ -213,7 +200,7 @@ public record WowAPICharacter(long id, String name, String realm, String gender,
             entries.getString("region"),
             brcktsFromJson,
             entries.getLong("lastUpdatedUTCms"),
-            Optional.ofNullable(entries.getJsonArray("pvpTitles")).map(x -> x.stream().map(o -> (String) o).collect(Collectors.toSet())).orElse(Set.of()),
+            Achievements.fromJson(entries.getJsonObject("achievements")),
             CharacterMedia.fromJson(entries.getJsonObject("media")),
             Optional.ofNullable(entries.getString("talents")).orElse("")
         );
@@ -235,7 +222,7 @@ public record WowAPICharacter(long id, String name, String realm, String gender,
                 .put("region", region)
                 .put("lastUpdatedUTCms", lastUpdatedUTCms)
                 .put("brackets", new JsonArray(brackets.stream().map(PvpBracket::toJson).toList()))
-                .put("pvpTitles", new JsonArray(pvpTitles.stream().toList()))
+                .put("achievements", achievements.toJson())
                 .put("media", media.toJson())
                 .put("talents", talents);
     }

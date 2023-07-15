@@ -3,12 +3,10 @@ package io.github.sammers.pla;
 import io.github.sammers.pla.blizzard.BlizzardAPI;
 import io.github.sammers.pla.db.DB;
 import io.github.sammers.pla.http.Http;
-import io.github.sammers.pla.http.JsonConvertable;
 import io.github.sammers.pla.logic.Ladder;
 import io.reactivex.Scheduler;
 import io.reactivex.schedulers.Schedulers;
 import io.vertx.core.VertxOptions;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.ext.mongo.MongoClient;
@@ -17,12 +15,10 @@ import org.ocpsoft.prettytime.PrettyTime;
 
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
-import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import static io.github.sammers.pla.logic.Ladder.EU;
 import static java.time.format.DateTimeFormatter.ISO_DATE_TIME;
 
 public class Main {
