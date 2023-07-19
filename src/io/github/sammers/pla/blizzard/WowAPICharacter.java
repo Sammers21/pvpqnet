@@ -151,6 +151,7 @@ public record WowAPICharacter(long id, String name, String realm, String gender,
         String name = entries.getString("name").substring(0, 1).toUpperCase() + entries.getString("name").substring(1);
         String realm = entries.getJsonObject("realm").getString("name").substring(0, 1).toUpperCase() +
                 entries.getJsonObject("realm").getString("name").substring(1);
+        Achievements parsedAchievements = Achievements.parse(achievements);
         return new WowAPICharacter(
             entries.getInteger("id"),
             name,
@@ -165,7 +166,7 @@ public record WowAPICharacter(long id, String name, String realm, String gender,
             region,
             list,
             lastUpdatedUTCms,
-            Achievements.parse(achievements),
+            parsedAchievements,
             media,
             talents
         );
