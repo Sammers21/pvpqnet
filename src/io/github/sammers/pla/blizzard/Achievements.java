@@ -119,7 +119,12 @@ public record Achievements(Long totalQuantity,
         });
         Map<String, Long> expansionAndMaxTimestamp = new HashMap<>();
         expansions.forEach((expansion, expansionMap) -> {
-            Long maxTimestamp = expansionMap.values().stream().map(Pair::getValue1).map(Season::highestAchievement).map(Achievement::completedTimestamp).max(Long::compareTo).orElse(0L);
+            Long maxTimestamp = expansionMap.values().stream().map(Pair::getValue1)
+                .map(Season::highestAchievement)
+                .map(Achievement::completedTimestamp)
+                .filter(Objects::nonNull)
+                .max(Long::compareTo)
+                .orElse(0L);
             expansionAndMaxTimestamp.put(expansion, maxTimestamp);
         });
         return new TitlesHistory(expansions.keySet().stream()
