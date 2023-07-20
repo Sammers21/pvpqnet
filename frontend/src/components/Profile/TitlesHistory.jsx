@@ -36,6 +36,8 @@ const TitlesHistory = ({expansions}) => {
           rankImg = 'rank_4.png'
         } else if (rank === 'Combatant') {
           rankImg = 'rank_2.png'
+        } else {
+          rankImg = 'rank_2.png'
         }
         let pic = require('../../assets/ranks/' + rankImg);
         return (<Box sx={{
