@@ -1,7 +1,7 @@
 import * as React from 'react';
 import Box from '@mui/material/Box';
 import {DataGrid, gridClasses} from '@mui/x-data-grid';
-import {aroundColor, containerBg} from "../../theme";
+import {aroundColor, borderRadius, containerBg} from "../../theme";
 import {LinearProgress, Select, Tooltip, Typography} from "@mui/material";
 import {getClassNameColor, specNameFromFullSpec} from "../DataTable/useColumns";
 import {styled, alpha} from "@mui/material/styles";
@@ -281,7 +281,7 @@ const Grid = () => {
         marginX={1}
         marginY={1}
         padding={2}
-        borderRadius={3}
+        borderRadius={borderRadius}
         sx={{backgroundColor: alpha(aroundColor, 0.3)}}>
         <Typography variant={'h4'}>Meta</Typography>
         <Typography variant={'body1'}>Specs Popularity and Win rates, last month, last week, last day, any skill level, any role and any bracket</Typography>
@@ -290,7 +290,7 @@ const Grid = () => {
         marginX={1}
         marginY={1}
         padding={2}
-        borderRadius={3}>
+        borderRadius={borderRadius}>
         {filters.map((filter) => {
           return RenderFilter(filter)
         })}
@@ -299,7 +299,7 @@ const Grid = () => {
         marginX={1}
         marginY={1}
         padding={2}
-        borderRadius={3}
+        borderRadius={borderRadius}
         sx={{backgroundColor: alpha(aroundColor, 0.3)}}>
         <StripedDataGrid
           experimentalFeatures={{columnGrouping: true}}

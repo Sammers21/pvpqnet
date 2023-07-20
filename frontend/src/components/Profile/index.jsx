@@ -58,7 +58,10 @@ const Profile = () => {
   let arenaAndRbg = ['ARENA_2v2', 'ARENA_3v3', 'BATTLEGROUNDS'].map((bracket) => {
     let found = (data?.brackets ?? []).find((b) => b.bracket_type === bracket)
     return (
-        <PvpBracketBox totalInRow={3} isMobile={isMobile} bracket={bracket} rating={found?.rating ?? 0} wins={found?.won ?? 0}
+        <PvpBracketBox totalInRow={3}
+                       isMobile={isMobile}
+                       bracket={bracket}
+                       rating={found?.rating ?? 0} wins={found?.won ?? 0}
                        loses={found?.lost ?? 0}/>)
   });
   var shuffle
@@ -82,20 +85,40 @@ const Profile = () => {
         backgroundColor: containerBg,
         minHeight: '100vh',
         paddingTop: '105px',
-        paddingLeft: isMobile ? '2%' : '3%',
-        paddingRight: isMobile ? '2%' : '3%',
+        paddingLeft: isMobile ? '0' : '3%',
+        paddingRight: isMobile ? '0' : '3%',
         paddingBottom: '45px',
       }} display={'flex'} flexDirection={'column'}>
       <PhotoCard isMobile={isMobile} data={data} loading={loading} update={() => {
         return loadProfile(true);
       }}/>
-      <Box display={'flex'} flexDirection={'row'} justifyContent={'space-between'}>
+      <Box
+        margin={isMobile ? 0 : 1}
+        padding={isMobile ? 0 : 1}
+        paddingLeft={'10px'}
+        paddingRight={'10px'}
+        paddingTop={1}
+        paddingBottom={0}
+        marginTop={0}
+        marginBottom={0}
+        display={'flex'}
+        flexDirection={'row'}
+        justifyContent={'space-between'}>
         {arenaAndRbg}
       </Box>
-      <Box display={'flex'} flexDirection={'row'} justifyContent={'space-between'}>
+      <Box
+        margin={isMobile ? 0 : 1}
+        padding={isMobile ? 0 : 1}
+        paddingTop={1}
+        paddingBottom={0}
+        marginTop={0}
+        marginBottom={0}
+        display={'flex'}
+        flexDirection={'row'}
+        justifyContent={'space-between'}>
         {shuffle}
       </Box>
-      <Talents data={data}></Talents>
+      <Talents isMobile={isMobile} data={data}></Talents>
       <TitlesHistory expansions={titlesHistory}></TitlesHistory>
     </Box>
     <Footer/>

@@ -1,5 +1,5 @@
 import {alpha, Box, Divider, Typography} from "@mui/material";
-import {aroundColor, winRateGreyColor} from "../../theme";
+import {aroundColor, borderRadius, winRateGreyColor} from "../../theme";
 
 const PvpBracketBox = ({isMobile, totalInRow, bracket, rating, wins, loses}) => {
   let shortBracketName = bracket;
@@ -49,7 +49,7 @@ const PvpBracketBox = ({isMobile, totalInRow, bracket, rating, wins, loses}) => 
          marginX={1}
          marginY={1}
          padding={1}
-         borderRadius={1}
+         borderRadius={borderRadius}
          sx={{
            backgroundColor: alpha(aroundColor, 0.3),
          }}>

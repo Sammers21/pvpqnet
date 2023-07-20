@@ -1,4 +1,4 @@
-import {aroundColor, borderColor, winRateGreyColor} from "../../theme";
+import {aroundColor, borderColor, borderRadius, winRateGreyColor} from "../../theme";
 import {alpha, Box, Button, Link, Typography} from "@mui/material";
 import {getClassNameColor, getRealmColor} from "../DataTable/useColumns";
 import LoadingButton from '@mui/lab/LoadingButton';
@@ -26,7 +26,6 @@ const PhotoCard = ({ isMobile, data, update, loading }) => {
       padding : '10px',
     }}
   >
-
     <Typography
       variant="h6"
       component="div"
@@ -65,15 +64,15 @@ const PhotoCard = ({ isMobile, data, update, loading }) => {
   </Box>;
 
   let picture = <Box
-    width={isMobile ? '40%' : 'auto'}
-    height={isMobile ? 'auto' : '100%'}
+    width={isMobile ? '170px' : '200px'}
+    height={'100%'}
     si
     component="img"
     sx={{
       border: 1,
       borderColor: borderColor,
     }}
-    alt="Pic"
+    alt="Profile-pic"
     src={insert}
   />;
 
@@ -87,15 +86,15 @@ const PhotoCard = ({ isMobile, data, update, loading }) => {
   return (<Box
     width={isMobile ? '100%' : 'auto'}
     display="flex"
-    borderRadius={2}
-    margin={isMobile ? 1 : 1}
-    padding={isMobile ? 1 : 1}
+    borderRadius={borderRadius}
+    margin={isMobile ? 0 : 3}
+    padding={isMobile ? 0 : 3}
     flexDirection={isMobile ? 'column' : 'row'}
     sx={{
       backgroundColor: alpha(aroundColor, 0.3),
     }}
   >
-    <Box display={'flex'} flexDirection={'row'} justifyContent={'center'}>
+    <Box display={'flex'} flexDirection={'row'}>
       {picture}
       {charInfoTypog}
     </Box>

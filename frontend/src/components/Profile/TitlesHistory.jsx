@@ -1,14 +1,19 @@
 import {alpha, Divider, Typography} from "@mui/material";
 import Box from "@mui/material/Box";
 import * as React from "react";
-import {aroundColor} from "../../theme";
+import {aroundColor, borderRadius} from "../../theme";
 import Paper from '@mui/material/Paper';
 
 const TitlesHistory = ({expansions}) => {
   return (<Box sx={{
     backgroundColor: alpha(aroundColor, 0.3),
+    borderRadius: borderRadius,
     marginTop: '15px', marginBottom: '15px',
-    width: '100%', paddingTop: '15px', paddingBottom: '15px', paddingLeft: '15px', paddingRight: '15px',
+    width: '100%',
+    paddingTop: '15px',
+    paddingBottom: '15px',
+    paddingLeft: '15px',
+    paddingRight: '15px',
   }}>
     <Typography gutterBottom variant="h5" component="div">Titles History</Typography>
     <Divider/>
