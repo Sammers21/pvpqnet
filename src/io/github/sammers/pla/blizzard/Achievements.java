@@ -76,7 +76,8 @@ public record Achievements(Long totalQuantity,
             || newR1.matches()
             || shuffleR1.matches()
             || newLowRanks.matches()
-            || oldLowRanks.matches();
+            || oldLowRanks.matches()
+            || achievement.completedTimestamp() != null;
     }
 
     private static Map<String, Long> rankToLong = Map.of(
