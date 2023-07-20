@@ -4,10 +4,7 @@ import io.github.sammers.pla.http.JsonConvertable;
 import io.vertx.core.json.JsonObject;
 import org.javatuples.Pair;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -96,38 +93,45 @@ public record Achievements(Long totalQuantity,
 
     private static TitlesHistory calculateTitlesHistory(Set<Achievement> achievements) {
         // Expansion -> Map<SeasonName, Pair<Rank, Season>>
-        Map<String, Map<Long, Pair<String, Season>>> seasons = new HashMap<>();
+        Map<String, Map<Long, Pair<String, Season>>> expansions = new HashMap<>();
         achievements.stream().forEach(achievement -> {
             Matcher newR1 = NewRankOnePattern.matcher(achievement.name());
             if (newR1.find()) {
                 String rank = "r1_3s";
                 String seasonName = newR1.group(2);
                 Long seasonNumber = Long.parseLong(newR1.group(3));
-                updateSeasons(seasons, achievement, rank, seasonName, seasonNumber);
+                updateSeasons(expansions, achievement, rank, seasonName, seasonNumber);
             }
             Matcher shuffleR1 = ShuffleRankOnePattern.matcher(achievement.name());
             if (shuffleR1.find()) {
                 String rank = "r1_shuffle";
                 String seasonName = shuffleR1.group(2);
                 Long seasonNumber = Long.parseLong(shuffleR1.group(3));
-                updateSeasons(seasons, achievement, rank, seasonName, seasonNumber);
+                updateSeasons(expansions, achievement, rank, seasonName, seasonNumber);
             }
             Matcher newLowRanks = NewLowRanks.matcher(achievement.name());
             if (newLowRanks.find()) {
                 String rank = newLowRanks.group(1);
                 String seasonName = newLowRanks.group(2);
                 Long seasonNumber = Long.parseLong(newLowRanks.group(3));
-                updateSeasons(seasons, achievement, rank, seasonName, seasonNumber);
+                updateSeasons(expansions, achievement, rank, seasonName, seasonNumber);
             }
         });
-        return new TitlesHistory(seasons.keySet().stream().map(expansion -> {
-            Map<Long, Pair<String, Season>> expansionMap = seasons.get(expansion);
-            List<Season> seasonsList = expansionMap.keySet().stream().map(seasonNumber -> {
-                Pair<String, Season> pair = expansionMap.get(seasonNumber);
-                return pair.getValue1();
-            }).collect(Collectors.toList());
-            return new Expansion(expansion, seasonsList);
-        }).collect(Collectors.toList()));
+        Map<String, Long> expansionAndMaxTimestamp = new HashMap<>();
+        expansions.forEach((expansion, expansionMap) -> {
+            Long maxTimestamp = expansionMap.values().stream().map(Pair::getValue1).map(Season::highestAchievement).map(Achievement::completedTimestamp).max(Long::compareTo).orElse(0L);
+            expansionAndMaxTimestamp.put(expansion, maxTimestamp);
+        });
+        return new TitlesHistory(expansions.keySet().stream()
+            .sorted(Comparator.comparing(expansionAndMaxTimestamp::get).reversed())
+            .map(expansion -> {
+                Map<Long, Pair<String, Season>> expansionMap = expansions.get(expansion);
+                List<Season> seasonsList = expansionMap.keySet().stream().map(seasonNumber -> {
+                    Pair<String, Season> pair = expansionMap.get(seasonNumber);
+                    return pair.getValue1();
+                }).collect(Collectors.toList());
+                return new Expansion(expansion, seasonsList);
+            }).collect(Collectors.toList()));
     }
 
     private static void updateSeasons(Map<String, Map<Long, Pair<String, Season>>> seasons, Achievement achievement, String rank, String expansion, Long seasonNumber) {
