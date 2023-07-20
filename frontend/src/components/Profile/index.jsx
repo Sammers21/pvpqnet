@@ -12,6 +12,7 @@ import PhotoCard from "./PhotoCard";
 import Talents from "./Talents";
 import {CLASS_AND_SPECS} from "../../constants/filterSchema";
 import NotFound from "./NotFound";
+import TitlesHistory from "./TitlesHistory";
 
 const Profile = () => {
   let {region, realm, name} = useParams();
@@ -72,6 +73,7 @@ const Profile = () => {
   } else {
     shuffle = [];
   }
+  const titlesHistory = data.achievements?.titles_history.expansions ?? [];
   let normalResp = <><>
     <Header/>
     <Box
@@ -94,6 +96,7 @@ const Profile = () => {
         {shuffle}
       </Box>
       <Talents data={data}></Talents>
+      <TitlesHistory expansions={titlesHistory}></TitlesHistory>
     </Box>
     <Footer/>
   </>
