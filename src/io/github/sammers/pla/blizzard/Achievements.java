@@ -72,12 +72,11 @@ public record Achievements(Long totalQuantity,
         Matcher shuffleR1 = ShuffleRankOnePattern.matcher(name);
         Matcher newLowRanks = NewLowRanks.matcher(name);
         Matcher oldLowRanks = OldLowRanks.matcher(name);
-        return oldR1.matches()
+        return (oldR1.matches()
             || newR1.matches()
             || shuffleR1.matches()
             || newLowRanks.matches()
-            || oldLowRanks.matches()
-            || achievement.completedTimestamp() != null;
+            || oldLowRanks.matches()) && achievement.completedTimestamp() != null;
     }
 
     private static Map<String, Long> rankToLong = Map.of(
