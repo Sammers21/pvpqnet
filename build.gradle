@@ -43,6 +43,7 @@ dependencies {
     implementation 'org.jsoup:jsoup:1.15.4'
     implementation group: 'org.apache.commons', name: 'commons-collections4', version: '4.4'
     implementation 'org.ocpsoft.prettytime:prettytime:5.0.6.Final'
+    implementation group: 'org.javatuples', name: 'javatuples', version: '1.2'
     // test
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.3'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.3'
