@@ -1,7 +1,8 @@
 import React, {useCallback, useEffect, useMemo} from 'react';
 import {useState} from 'react';
 import _debounce from 'lodash/debounce';
-import {Autocomplete, Box, Grid, TextField, Typography} from '@mui/material';
+import {Autocomplete, Box, Grid, InputAdornment, TextField, Typography} from '@mui/material';
+import SearchIcon from "@mui/icons-material/Search";
 import axios from 'axios';
 import {baseUrl} from "../../config";
 import {classIcon, getClassNameColor} from "../DataTable/useColumns"
@@ -104,9 +105,39 @@ const SearchBar = () => {
     onInputChange={(event, newInputValue) => {
       setInputValue(newInputValue);
     }}
+    disableClearable
     renderInput={(params) => {
-      return (<TextField {...params} label="Seach for characters..." size="small"/>);
+      return (
+        <TextField
+          {...params}
+          label="Seach for characters..."
+          size="small"
+          InputProps={{
+            ...params.InputProps,
+            endAdornment: (
+              <InputAdornment position="end">
+                <SearchIcon />
+              </InputAdornment>
+            ),
+          }}
+        />);
     }}
   />);
+
+  // renderInput={(params) => (
+  //   <TextField
+  //     {...params}
+  //     label="Search"
+  //     InputProps={{
+  //       ...params.InputProps,
+  //       endAdornment: (
+  //         <React.Fragment>
+  //           {loading ? 'Loading...' : null}
+  //           {params.InputProps.endAdornment}
+  //         </React.Fragment>
+  //       ),
+  //     }}
+  //   />)
+
 };
 export default SearchBar;

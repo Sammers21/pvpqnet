@@ -169,17 +169,29 @@ const Header = () => {
     sx={{color: headerButtonColor}}>
     Activity
   </Button>
-  let header = <>{webSiteTypo}
-    <Box sx={{flexGrow: 1, display: {xs: 'none', md: 'flex'}}}>
-      {activityBtn}
-      {ladderBtn}
-      {metaBtn}
-    </Box>
-    <Box display={'flex'} alignItems={'center'} width={'500px'}>
-      {euBtn}
-      {naBtn}
-      <SearchBar/>
-    </Box>
+  let header = <>
+    <Grid container
+          direction="row"
+          justifyContent="space-between"
+          alignItems="center">
+      <Grid item xs={4}>
+        <Box sx={{flexGrow: 1, display: {xs: 'none', md: 'flex'}}}>
+          {webSiteTypo}
+          {activityBtn}
+          {ladderBtn}
+          {metaBtn}
+        </Box>
+      </Grid>
+      <Grid item xs={6}>
+        <SearchBar/>
+      </Grid>
+      <Grid item xs={1}>
+        <Box display={'flex'} alignItems={'center'}justifyContent="flex-end">
+          {euBtn}
+          {naBtn}
+        </Box>
+      </Grid>
+    </Grid>
   </>;
   if (isMobile) {
     header =
