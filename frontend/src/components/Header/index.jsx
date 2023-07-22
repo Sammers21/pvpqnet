@@ -81,6 +81,20 @@ const Header = () => {
   let clickMeta = () => {
     navigate("/" + region + '/meta' + window.location.search);
   }
+  let clickLadder = () => {
+    if (window.location.pathname.includes('meta')) {
+      handleOpenPage({activity: 'ladder', bracket: BRACKETS.shuffle});
+    } else {
+      handleOpenPage({activity: 'ladder', bracket: bracket})
+    }
+  }
+  let clickAcivity = () => {
+    if (window.location.pathname.includes('meta')) {
+      handleOpenPage({activity: 'activity', bracket: BRACKETS.shuffle});
+    } else {
+      handleOpenPage({activity: 'activity', bracket: bracket})
+    }
+  }
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const handleDrawerToggle = () => {
     setMobileOpen((prevState) => !prevState);
@@ -140,19 +154,25 @@ const Header = () => {
   >
     {host}
   </Typography>;
-  let metaBtn = <Button onClick={clickMeta} sx={{color: headerButtonColor}}>
+  let metaBtn = <Button
+    onClick={clickMeta}
+    sx={{color: headerButtonColor}}>
     Meta
   </Button>;
+  let ladderBtn = <Button
+    onClick={clickLadder}
+    sx={{color: headerButtonColor}}>
+    Ladder
+  </Button>
+  let activityBtn = <Button
+    onClick={clickAcivity}
+    sx={{color: headerButtonColor}}>
+    Activity
+  </Button>
   let header = <>{webSiteTypo}
     <Box sx={{flexGrow: 1, display: {xs: 'none', md: 'flex'}}}>
-      {pages.map((page) => (
-        <HeaderMenu
-          key={page}
-          label={page}
-          options={TABS_MENU[page]}
-          handleOpenPage={handleOpenPage}
-        />
-      ))}
+      {activityBtn}
+      {ladderBtn}
       {metaBtn}
     </Box>
     <Box display={'flex'} alignItems={'center'} width={'500px'}>
