@@ -1,4 +1,5 @@
 import * as React from 'react';
+import {useEffect, useState} from 'react';
 import {useNavigate, useParams} from 'react-router-dom';
 import {generatePath} from 'react-router';
 
@@ -11,7 +12,10 @@ import {
   Drawer,
   Grid,
   IconButton,
-  List, ListItem, ListItemButton, ListItemText,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemText,
   Toolbar,
   Typography
 } from '@mui/material';
@@ -20,15 +24,13 @@ import MenuIcon from '@mui/icons-material/Menu';
 
 import {borderColor, containerBg, headerButtonColor} from '../../theme';
 import {EuIcon, UsIcon} from '../icons';
-import HeaderMenu from '../HeaderMenu';
 import {metaUrls, publicUrls} from '../../config';
 
-import {TABS, TABS_MENU} from '../../constants/header';
+import {TABS} from '../../constants/header';
 import {REGIONS} from '../../constants/region';
 import {getRegion} from '../../utils/urlparts';
 import {BRACKETS} from '../../constants/pvp-activity';
 import SearchBar from "../SearchBar";
-import {useEffect, useState} from "react";
 
 const pages = Object.values(TABS);
 const drawerWidth = 240;
@@ -143,13 +145,12 @@ const Header = () => {
     component="a"
     href="/"
     sx={{
-      mr: 2,
       display: {xs: 'none', md: 'flex'},
       fontWeight: 700,
       letterSpacing: '.05rem',
       color: 'inherit',
       textDecoration: 'none',
-      marginRight: '40px',
+      paddingRight: '20px',
     }}
   >
     {host}
@@ -174,19 +175,22 @@ const Header = () => {
           direction="row"
           justifyContent="space-between"
           alignItems="center">
-      <Grid item xs={4}>
-        <Box sx={{flexGrow: 1, display: {xs: 'none', md: 'flex'}}}>
-          {webSiteTypo}
-          {activityBtn}
-          {ladderBtn}
-          {metaBtn}
+      <Grid item xs={8}>
+        <Box
+            display={'flex'} alignItems={'center'} justifyContent="space-between">
+          <Box sx={{}} width={'60%'} display={'flex'} alignItems={'center'} justifyContent="flex-start">
+            {webSiteTypo}
+            {activityBtn}
+            {ladderBtn}
+            {metaBtn}
+          </Box>
+          <Box width={'40%'}>
+            <SearchBar/>
+          </Box>
         </Box>
       </Grid>
-      <Grid item xs={6}>
-        <SearchBar/>
-      </Grid>
       <Grid item xs={1}>
-        <Box display={'flex'} alignItems={'center'}justifyContent="flex-end">
+        <Box display={'flex'} alignItems={'center'} justifyContent="flex-end">
           {euBtn}
           {naBtn}
         </Box>

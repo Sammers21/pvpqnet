@@ -48,7 +48,7 @@ const SearchBar = () => {
       width: '100%',
     }}
     disablePortal
-    noOptionsText="No results"
+    freeSolo
     options={searchResults}
     filterOptions={(x) => x}
     getOptionLabel={(option) => {
@@ -108,36 +108,20 @@ const SearchBar = () => {
     disableClearable
     renderInput={(params) => {
       return (
-        <TextField
-          {...params}
-          label="Seach for characters..."
-          size="small"
-          InputProps={{
-            ...params.InputProps,
-            endAdornment: (
-              <InputAdornment position="end">
-                <SearchIcon />
-              </InputAdornment>
-            ),
-          }}
-        />);
+          <TextField
+              {...params}
+              label="Seach for characters..."
+              size="small"
+              InputProps={{
+                ...params.InputProps,
+                startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon/>
+                    </InputAdornment>
+                ),
+              }}
+          />);
     }}
   />);
-
-  // renderInput={(params) => (
-  //   <TextField
-  //     {...params}
-  //     label="Search"
-  //     InputProps={{
-  //       ...params.InputProps,
-  //       endAdornment: (
-  //         <React.Fragment>
-  //           {loading ? 'Loading...' : null}
-  //           {params.InputProps.endAdornment}
-  //         </React.Fragment>
-  //       ),
-  //     }}
-  //   />)
-
 };
 export default SearchBar;
