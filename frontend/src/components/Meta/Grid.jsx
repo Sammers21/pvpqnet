@@ -60,8 +60,9 @@ const percentageCellRender = (params) => {
       <Box width={'100%'}>
         <Typography>-</Typography>
         <LinearProgress
+          colo
           sx={{
-            backgroundColor: 'white',
+            backgroundColor: 'transparent',
             '& .MuiLinearProgress-bar': {
               backgroundColor: 'gray'
             }
@@ -75,7 +76,7 @@ const percentageCellRender = (params) => {
         <Typography>{trueVal}</Typography>
         <LinearProgress
           sx={{
-            backgroundColor: 'white',
+            backgroundColor: 'transparent',
             '& .MuiLinearProgress-bar': {
               backgroundColor: color
             }
