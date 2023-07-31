@@ -249,7 +249,7 @@ const Grid = () => {
               display={'flex'} flexDirection={'row'} justifyContent={'center'}>
               {rankIcons.map((icon) => {
                 return (
-                  <img src={require('../../assets/ranks/' + icon)} width={24} height={24}/>
+                  <img src={require('../../assets/ranks/' + icon)} width={36} height={36}/>
                 )
               })}
             </Box>
