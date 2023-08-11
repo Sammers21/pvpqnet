@@ -192,12 +192,11 @@ public class Ladder {
     }
 
     public Completable loadRegionData(String region) {
-        return
-                loadLast(TWO_V_TWO, region)
-//            .andThen(loadLast(THREE_V_THREE, region))
-//            .andThen(loadLast(RBG, region))
-//            .andThen(loadLast(SHUFFLE, region))
-//            .andThen(calculateMeta(region))
+        return loadLast(TWO_V_TWO, region)
+            .andThen(loadLast(THREE_V_THREE, region))
+            .andThen(loadLast(RBG, region))
+            .andThen(loadLast(SHUFFLE, region))
+            .andThen(calculateMeta(region))
             .andThen(loadWowCharApiData(region));
     }
 

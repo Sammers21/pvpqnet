@@ -56,11 +56,6 @@ public record Cutoffs(String region, String season, Map<String, Long> cutoffs,
         return cutoffs.get("SHUFFLE/" + specialization.toLowerCase());
     }
 
-//    public Long shuffleAllAvg() {
-//        return cutoffs.entrySet().stream().filter(x -> x.getKey().startsWith("SHUFFLE/"))
-//            .mapToLong(Map.Entry::getValue).average().orElse(0);
-//    }
-
     @Override
     public JsonObject toJson() {
         return new JsonObject()

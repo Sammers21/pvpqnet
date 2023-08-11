@@ -27,12 +27,9 @@ import static io.github.sammers.pla.logic.Ladder.THREE_V_THREE;
 import static io.github.sammers.pla.logic.Ladder.TWO_V_TWO;
 
 public class Http {
-
-    private final Vertx vertx;
     private final Ladder ladder;
 
-    public Http(Vertx vertx, Ladder ladder) {
-        this.vertx = vertx;
+    public Http(Ladder ladder) {
         this.ladder = ladder;
     }
 

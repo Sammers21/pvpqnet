@@ -48,6 +48,6 @@ public class Main {
         DB db = new DB(mongoClient);
         Ladder ladder = new Ladder(webClient, db, blizzardAPI);
         ladder.start();
-        new Http(vertx, ladder).start();
+        new Http(ladder).start();
     }
 }
