@@ -10,12 +10,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import static io.github.sammers.pla.logic.Ladder.SHUFFLE;
 
 public class Calculator {
 
@@ -237,19 +234,26 @@ public class Calculator {
         return new Meta(Map.of(), sizing, specs);
     }
 
-    public static void calculateAlts(Iterable<WowAPICharacter> characters, Map<String, List<WowAPICharacter>> alts) {
+    public static void calculateAlts(Iterable<WowAPICharacter> characters, Map<Integer, List<WowAPICharacter>> alts) {
         long start = System.currentTimeMillis();
         for (WowAPICharacter character : characters) {
-            String hash = character.achieventsHash();
-            alts.compute(hash, (key, value) -> {
-                if (value == null) {
-                    value = new ArrayList<>();
-                }
-                value.add(character);
-                return value;
-            });
+            indexCharAlts(alts, character);
         }
         log.info("Alts calculated in {} ms", System.currentTimeMillis() - start);
+    }
+
+    public static void indexCharAlts(Map<Integer, List<WowAPICharacter>> alts, WowAPICharacter character) {
+        int hash = character.petHash();
+        alts.compute(hash, (key, value) -> {
+            if (key == -1) {
+                return null;
+            }
+            if (value == null)  {
+                value = new ArrayList<>();
+            }
+            value.add(character);
+            return value;
+        });
     }
 
     public static Long totalPages(long itemsTotal, long pageSize) {

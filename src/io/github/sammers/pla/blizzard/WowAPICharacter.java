@@ -129,7 +129,8 @@ import java.util.stream.Collectors;
  */
 public record WowAPICharacter(long id, String name, String realm, String gender, String fraction, String race,
                               String activeSpec, int level, String clazz, int itemLevel, String region,
-                              List<PvpBracket> brackets, Long lastUpdatedUTCms, Achievements achievements ,
+                              List<PvpBracket> brackets, Long lastUpdatedUTCms, Achievements achievements,
+                              int petHash,
                               CharacterMedia media, String talents) implements JsonConvertable {
 
     private static MessageDigest md;
@@ -149,6 +150,7 @@ public record WowAPICharacter(long id, String name, String realm, String gender,
             JsonObject achievements,
             JsonObject characterMedia,
             JsonObject specs,
+            JsonObject pets,
             String region) {
         String activeSpec = entries.getJsonObject("active_spec").getString("name");
         String talents = specs.getJsonArray("specializations").stream()
@@ -179,6 +181,7 @@ public record WowAPICharacter(long id, String name, String realm, String gender,
             list,
             lastUpdatedUTCms,
             parsedAchievements,
+            pets.getJsonArray("pets").encode().hashCode(),
             media,
             talents
         );
@@ -199,6 +202,9 @@ public record WowAPICharacter(long id, String name, String realm, String gender,
         if (entries.getLong("lastUpdatedUTCms") == null) {
             entries.put("lastUpdatedUTCms", 0L);
         }
+        if (entries.getInteger("petHash") == null) {
+            entries.put("petHash", -1);
+        }
         return new WowAPICharacter(
             entries.getInteger("id"),
             entries.getString("name"),
@@ -214,6 +220,7 @@ public record WowAPICharacter(long id, String name, String realm, String gender,
             brcktsFromJson,
             entries.getLong("lastUpdatedUTCms"),
             Achievements.fromJson(entries.getJsonObject("achievements")),
+            entries.getInteger("petHash"),
             CharacterMedia.fromJson(entries.getJsonObject("media")),
             Optional.ofNullable(entries.getString("talents")).orElse("")
         );
@@ -250,6 +257,7 @@ public record WowAPICharacter(long id, String name, String realm, String gender,
                 .put("lastUpdatedUTCms", lastUpdatedUTCms)
                 .put("brackets", new JsonArray(brackets.stream().map(PvpBracket::toJson).toList()))
                 .put("achievements", achievements.toJson())
+                .put("petHash", petHash)
                 .put("media", media.toJson())
                 .put("talents", talents);
     }

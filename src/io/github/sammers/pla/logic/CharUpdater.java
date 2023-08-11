@@ -22,15 +22,17 @@ public class CharUpdater {
 
     private final BlizzardAPI api;
     private final Map<String, WowAPICharacter> characterCache;
+    private final Map<Integer, List<WowAPICharacter>> altsCache;
     private final NickNameSearchIndex charSearchIndex;
     private final DB db;
 
     public CharUpdater(BlizzardAPI api,
                        Map<String, WowAPICharacter> characterCache,
-                       NickNameSearchIndex charSearchIndex,
+                       Map<Integer, List<WowAPICharacter>> altsCache, NickNameSearchIndex charSearchIndex,
                        DB db) {
         this.api = api;
         this.characterCache = characterCache;
+        this.altsCache = altsCache;
         this.charSearchIndex = charSearchIndex;
         this.db = db;
     }
@@ -108,6 +110,7 @@ public class CharUpdater {
 
     public Completable updateChar(String region, String nickName) {
         return api.character(region, nickName).flatMapCompletable(wowAPICharacter -> {
+            Calculator.indexCharAlts(altsCache, wowAPICharacter);
             characterCache.put(nickName, wowAPICharacter);
             charSearchIndex.insertNickNames(new SearchResult(nickName, region, wowAPICharacter.clazz()));
             return db.upsertCharacter(wowAPICharacter).ignoreElement();

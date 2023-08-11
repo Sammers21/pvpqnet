@@ -142,7 +142,7 @@ public class Http {
     }
 
     private JsonObject wowCharToJson(WowAPICharacter character) {
-        List<WowAPICharacter> alts = ladder.alts.get(character.achieventsHash());
+        List<WowAPICharacter> alts = ladder.alts.get(character.petHash());
         JsonObject res = character.toJson();
         if (alts != null) {
             res.put("alts", new JsonArray(alts.stream().filter( c-> c.id() != character.id()).map(WowAPICharacter::toJson).toList()));

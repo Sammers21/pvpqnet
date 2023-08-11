@@ -121,7 +121,7 @@ const Profile = () => {
       </Box>
       <Talents isMobile={isMobile} data={data}></Talents>
       <TitlesHistory expansions={titlesHistory}></TitlesHistory>
-      {/* <Alts isMobile={isMobile} alts={data.alts}></Alts> */}
+      <Alts isMobile={isMobile} alts={data.alts}></Alts>
     </Box>
     <Footer/>
   </>

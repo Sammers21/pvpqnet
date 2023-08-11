@@ -9,6 +9,9 @@ const Alts = ({ isMobile, alts }) => {
     if (alts === undefined) {
         alts = [];
     }
+    if (alts.length === 0) {
+        return <></>
+    }
     return (
         <>
             <Box

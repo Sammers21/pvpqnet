@@ -139,7 +139,7 @@ public class Ladder {
     private final Map<String, AtomicReference<Snapshot>> refs = new ConcurrentHashMap<>();
     private final Map<String, AtomicReference<SnapshotDiff>> refDiffs = new ConcurrentHashMap<>();
     public final Map<String, WowAPICharacter> characterCache = new ConcurrentHashMap<>();
-    public final Map<String, List<WowAPICharacter>> alts = new ConcurrentHashMap<>();
+    public final Map<Integer, List<WowAPICharacter>> alts = new ConcurrentHashMap<>();
     private final Map<String, AtomicReference<Meta>> meta = new ConcurrentHashMap<>();
     private final NickNameSearchIndex charSearchIndex = new NickNameSearchIndex();
     private final Map<String, Cutoffs> regionCutoff = new ConcurrentHashMap<>();
@@ -151,7 +151,7 @@ public class Ladder {
         this.web = web;
         this.db = db;
         this.blizzardAPI = blizzardAPI;
-        this.charUpdater = new CharUpdater(blizzardAPI, characterCache, charSearchIndex, db);
+        this.charUpdater = new CharUpdater(blizzardAPI, characterCache, alts, charSearchIndex, db);
     }
 
     public void start() {

@@ -102,8 +102,10 @@ public class BlizzardAPI {
                                             .flatMap(achievements ->
                                                 maybeResponse(realNamespace, absoluteURI + "/character-media")
                                                     .flatMap(media ->
-                                                        maybeResponse(realNamespace, absoluteURI + "/specializations")
-                                                            .flatMap(specs -> Maybe.just(WowAPICharacter.parse(json, pvp, brackets, achievements, media, specs, realRegion)))))
+                                                        maybeResponse(realNamespace, absoluteURI + "/collections/pets")
+                                                            .flatMap(pets ->
+                                                                maybeResponse(realNamespace, absoluteURI + "/specializations")
+                                                                    .flatMap(specs -> Maybe.just(WowAPICharacter.parse(json, pvp, brackets, achievements, media, specs, pets, realRegion))))))
                                     );
                             })
                             .doOnError(e -> log.error("Error parsing character: " + name + " on " + realm + " in " + realRegion, e))
