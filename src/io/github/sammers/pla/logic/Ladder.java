@@ -161,9 +161,12 @@ public class Ladder {
             .andThen(
                 runDataUpdater(US,
                     runDataUpdater(EU,
-                        Observable.interval(minutesTillNextHour(), 60, TimeUnit.MINUTES)
-                            .observeOn(VTHREAD_SCHEDULER)
-                            .subscribeOn(VTHREAD_SCHEDULER)
+                        Observable.defer(() -> {
+                            int initialDelay = minutesTillNextHour();
+                            return Observable.interval(initialDelay, 60, TimeUnit.MINUTES)
+                                    .observeOn(VTHREAD_SCHEDULER)
+                                    .subscribeOn(VTHREAD_SCHEDULER);
+                        })
                     )
                 )
             )
