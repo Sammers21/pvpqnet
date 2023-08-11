@@ -5,6 +5,8 @@ import io.github.sammers.pla.http.JsonConvertable;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -130,6 +132,16 @@ public record WowAPICharacter(long id, String name, String realm, String gender,
                               List<PvpBracket> brackets, Long lastUpdatedUTCms, Achievements achievements ,
                               CharacterMedia media, String talents) implements JsonConvertable {
 
+    private static MessageDigest md;
+
+    static {
+        try {
+            md = MessageDigest.getInstance("SHA-256");
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public static WowAPICharacter parse(
             JsonObject entries,
             JsonObject pvpSummary,
@@ -205,6 +217,20 @@ public record WowAPICharacter(long id, String name, String realm, String gender,
             CharacterMedia.fromJson(entries.getJsonObject("media")),
             Optional.ofNullable(entries.getString("talents")).orElse("")
         );
+    }
+
+    public String achieventsHash() {
+        String encoded = new JsonArray(
+                achievements
+                        .achievements()
+                        .stream()
+                        .filter(a -> a.completedTimestamp() != null)
+                        .sorted((a, b) -> a.completedTimestamp().compareTo(b.completedTimestamp()))
+                        .limit(3)
+                        .map(Achievement::toJson)
+                        .toList()
+        ).encode();
+        return String.valueOf(encoded.hashCode());
     }
 
     @Override

@@ -140,6 +140,7 @@ public class Ladder {
     private final Map<String, AtomicReference<Snapshot>> refs = new ConcurrentHashMap<>();
     private final Map<String, AtomicReference<SnapshotDiff>> refDiffs = new ConcurrentHashMap<>();
     public final Map<String, WowAPICharacter> characterCache = new ConcurrentHashMap<>();
+    public final Map<String, List<WowAPICharacter>> alts = new ConcurrentHashMap<>();
     private final Map<String, AtomicReference<Meta>> meta = new ConcurrentHashMap<>();
     private final NickNameSearchIndex charSearchIndex = new NickNameSearchIndex();
     private final Map<String, Cutoffs> regionCutoff = new ConcurrentHashMap<>();
@@ -156,20 +157,50 @@ public class Ladder {
 
     public void start() {
         loadRegionData(EU)
-            .andThen(loadRegionData(US))
-            .andThen(
-                runDataUpdater(US,
-                    runDataUpdater(EU,
-                        Observable.interval(minutesTillNextHour(), 60, TimeUnit.MINUTES)
-                            .observeOn(VTHREAD_SCHEDULER)
-                            .subscribeOn(VTHREAD_SCHEDULER)
-                    )
-                )
-            )
-            .doOnError(e -> log.error("Error fetching ladder", e))
-            .onErrorReturnItem(Snapshot.empty(EU))
+//            .andThen(loadRegionData(US))
+            .andThen(calcAlts())
+//            .andThen(
+//                runDataUpdater(US,
+//                    runDataUpdater(EU,
+//                        Observable.interval(minutesTillNextHour(), 60, TimeUnit.MINUTES)
+//                            .observeOn(VTHREAD_SCHEDULER)
+//                            .subscribeOn(VTHREAD_SCHEDULER)
+//                    )
+//                )
+//            )
+//            .doOnError(e -> log.error("Error fetching ladder", e))
+//            .onErrorReturnItem(Snapshot.empty(EU))
             .subscribe();
     }
+
+    private <R> Observable<Snapshot> runDataUpdater(String region, Observable<R> tickObservable) {
+        return tickObservable
+            .flatMapSingle(tick -> {
+                log.info("Starting data updater for " + region);
+                return Single.just(tick);
+            })
+            .flatMapSingle(tick -> threeVThree(region))
+            .flatMapSingle(tick -> twoVTwo(region))
+            .flatMapSingle(tick -> battlegrounds(region))
+            .flatMapSingle(tick -> shuffle(region))
+            .flatMapSingle(tick -> calculateMeta(region).andThen(Single.just(tick)))
+            .flatMapSingle(tick -> loadCutoffs(region).andThen(Single.just(tick)))
+            .flatMapSingle(tick -> {
+                log.info("Data updater for " + region + " has been finished");
+                return Single.just(tick);
+            });
+    }
+
+    public Completable loadRegionData(String region) {
+        return
+                loadLast(TWO_V_TWO, region)
+//            .andThen(loadLast(THREE_V_THREE, region))
+//            .andThen(loadLast(RBG, region))
+//            .andThen(loadLast(SHUFFLE, region))
+//            .andThen(calculateMeta(region))
+            .andThen(loadWowCharApiData(region));
+    }
+
 
     public Single<Snapshot> threeVThree(String region) {
         String bracket = "3v3";
@@ -201,6 +232,10 @@ public class Ladder {
 
     public Single<Snapshot> fetchLadder(String bracket, String region) {
         return fetchLadder(bracket, region, true);
+    }
+
+    public Completable calcAlts(){
+        return Completable.fromAction(() -> Calculator.calculateAlts(characterCache.values(), alts));
     }
 
     public Single<List<Character>> pureBlizzardApiFetch(String bracket, String region){
@@ -467,33 +502,6 @@ public class Ladder {
             .doOnError(err -> log.error(String.format("ERR %s %s %s", region, bracket, page)));
     }
 
-    private <R> Observable<Snapshot> runDataUpdater(String region, Observable<R> tickObservable) {
-        return tickObservable
-            .flatMapSingle(tick -> {
-                log.info("Starting data updater for " + region);
-                return Single.just(tick);
-            })
-            .flatMapSingle(tick -> threeVThree(region))
-            .flatMapSingle(tick -> twoVTwo(region))
-            .flatMapSingle(tick -> battlegrounds(region))
-            .flatMapSingle(tick -> shuffle(region))
-            .flatMapSingle(tick -> calculateMeta(region).andThen(Single.just(tick)))
-            .flatMapSingle(tick -> loadCutoffs(region).andThen(Single.just(tick)))
-            .flatMapSingle(tick -> {
-                log.info("Data updater for " + region + " has been finished");
-                return Single.just(tick);
-            });
-    }
-
-    private Completable loadRegionData(String region) {
-        return loadLast(TWO_V_TWO, region)
-            .andThen(loadLast(THREE_V_THREE, region))
-            .andThen(loadLast(RBG, region))
-            .andThen(loadLast(SHUFFLE, region))
-            .andThen(calculateMeta(region))
-            .andThen(loadWowCharApiData(region));
-    }
-
     private Completable calculateMeta(String region) {
         String realRegion = realRegion(region);
         return Completable.defer(() -> {
@@ -570,7 +578,7 @@ public class Ladder {
                             charSearchIndex.insertNickNames(new SearchResult(character.fullName(), character.region(), character.clazz()));
                         });
                         log.info("Character data size={} for region={} has been loaded to cache in {} ms", characters.size(), region, (System.nanoTime() - tick) / 1000000);
-                        VTHREAD_SCHEDULER.scheduleDirect(() -> charUpdater.updateCharsInfinite(region).subscribe());
+//                        VTHREAD_SCHEDULER.scheduleDirect(() -> charUpdater.updateCharsInfinite(region).subscribe());
                         emitter.onComplete();
                     });
                 }));

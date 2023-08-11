@@ -97,7 +97,7 @@ const getDiffCell = (diff) => {
   return diff >= 0 ? `+${diff}` : diff;
 };
 
-const profileUrl = (record, region) => {
+export const profileUrl = (record, region) => {
   const name = record?.character?.name || record?.name;
   const realm = record?.character?.realm || record?.realm;
   return window.location.origin + `/${region}/${realm}/${name}`;

@@ -115,7 +115,7 @@ public class Http {
                 if (wowAPICharacter.isEmpty()) {
                     ctx.response().setStatusCode(404).end(new JsonObject().put("error", "Character not found").encode());
                 } else {
-                    ctx.response().end(wowAPICharacter.get().toJson().encode());
+                    ctx.response().end(wowCharToJson(wowAPICharacter.get()).encode());
                 }
             });
         });
@@ -130,7 +130,7 @@ public class Http {
                         if (wowAPICharacter.isEmpty()) {
                             ctx.response().setStatusCode(404).end(new JsonObject().put("error", "Character not found").encode());
                         } else {
-                            ctx.response().end(wowAPICharacter.get().toJson().encode());
+                            ctx.response().end(wowCharToJson(wowAPICharacter.get()).encode());
                         }
                     });
             });
@@ -141,6 +141,17 @@ public class Http {
         router.get("/activity/:bracket").handler(ctx -> ctx.response().sendFile("index.html"));
         router.get("/").handler(ctx -> ctx.response().sendFile("index.html"));
         vertx.createHttpServer().requestHandler(router).listen(9000);
+    }
+
+    private JsonObject wowCharToJson(WowAPICharacter character) {
+        List<WowAPICharacter> alts = ladder.alts.get(character.achieventsHash());
+        JsonObject res = character.toJson();
+        if (alts != null) {
+            res.put("alts", new JsonArray(alts.stream().filter( c-> c.id() != character.id()).map(WowAPICharacter::toJson).toList()));
+        } else {
+            res.put("alts", new JsonArray());
+        }
+        return res;
     }
 
     private void ladder(RoutingContext ctx, JsonPaged snapshot) {

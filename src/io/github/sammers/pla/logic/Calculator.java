@@ -1,5 +1,6 @@
 package io.github.sammers.pla.logic;
 
+import io.github.sammers.pla.blizzard.WowAPICharacter;
 import io.github.sammers.pla.db.Character;
 import io.github.sammers.pla.db.Meta;
 import io.github.sammers.pla.db.Snapshot;
@@ -9,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -231,8 +233,23 @@ public class Calculator {
                 }
             }
                 return new Spec(entry.getKey(), res);
-            }).toList();
+            }).toList();    
         return new Meta(Map.of(), sizing, specs);
+    }
+
+    public static void calculateAlts(Iterable<WowAPICharacter> characters, Map<String, List<WowAPICharacter>> alts) {
+        long start = System.currentTimeMillis();
+        for (WowAPICharacter character : characters) {
+            String hash = character.achieventsHash();
+            alts.compute(hash, (key, value) -> {
+                if (value == null) {
+                    value = new ArrayList<>();
+                }
+                value.add(character);
+                return value;
+            });
+        }
+        log.info("Alts calculated in {} ms", System.currentTimeMillis() - start);
     }
 
     public static Long totalPages(long itemsTotal, long pageSize) {

@@ -13,6 +13,7 @@ import Talents from "./Talents";
 import {CLASS_AND_SPECS} from "../../constants/filterSchema";
 import NotFound from "./NotFound";
 import TitlesHistory from "./TitlesHistory";
+import Alts from './Alts';
 
 const Profile = () => {
   let {region, realm, name} = useParams();
@@ -120,6 +121,7 @@ const Profile = () => {
       </Box>
       <Talents isMobile={isMobile} data={data}></Talents>
       <TitlesHistory expansions={titlesHistory}></TitlesHistory>
+      {/* <Alts isMobile={isMobile} alts={data.alts}></Alts> */}
     </Box>
     <Footer/>
   </>
