@@ -6,6 +6,7 @@ import io.github.sammers.pla.db.Meta;
 import io.github.sammers.pla.logic.Ladder;
 import io.github.sammers.pla.db.Snapshot;
 import io.github.sammers.pla.logic.SearchResult;
+import io.github.sammers.pla.logic.SnapshotDiff;
 import io.reactivex.Single;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.json.JsonArray;

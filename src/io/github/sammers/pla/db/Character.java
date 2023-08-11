@@ -8,6 +8,11 @@ public record Character(Long pos, Long rating, boolean inCutoff, String name, St
                         String fraction,
                         String gender, String race,
                         String realm, Long wins, Long losses) implements JsonConvertable {
+
+    public Character changeCutoff(boolean inCutoff) {
+        return new Character(pos, rating, inCutoff, name, clazz, fullSpec, fraction, gender, race, realm, wins, losses);
+    }
+
     public String fullSpec() {
         return fullSpec.trim();
     }

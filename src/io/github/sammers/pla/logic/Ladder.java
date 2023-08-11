@@ -47,7 +47,6 @@ public class Ladder {
     public static String THREE_V_THREE = "3v3";
     public static String RBG = "battlegrounds";
     public static String SHUFFLE = "shuffle";
-
     private final Random rnd = new Random();
     public static List<String> BRACKETS = List.of(TWO_V_TWO, THREE_V_THREE, RBG, SHUFFLE);
 
@@ -193,6 +192,7 @@ public class Ladder {
 
     public Completable loadRegionData(String region) {
         return loadLast(TWO_V_TWO, region)
+            .andThen(loadCutoffs(region))
             .andThen(loadLast(THREE_V_THREE, region))
             .andThen(loadLast(RBG, region))
             .andThen(loadLast(SHUFFLE, region))
@@ -577,7 +577,7 @@ public class Ladder {
                             charSearchIndex.insertNickNames(new SearchResult(character.fullName(), character.region(), character.clazz()));
                         });
                         log.info("Character data size={} for region={} has been loaded to cache in {} ms", characters.size(), region, (System.nanoTime() - tick) / 1000000);
-//                        VTHREAD_SCHEDULER.scheduleDirect(() -> charUpdater.updateCharsInfinite(region).subscribe());
+                        VTHREAD_SCHEDULER.scheduleDirect(() -> charUpdater.updateCharsInfinite(region).subscribe());
                         emitter.onComplete();
                     });
                 }));
@@ -618,11 +618,129 @@ public class Ladder {
     }
 
     public AtomicReference<Snapshot> refByBracket(String bracket, String region) {
-        return refs.computeIfAbsent(bracket + "_" + region, k -> new AtomicReference<>());
+        return refs.compute(bracket + "_" + region, (k, v) -> {
+            if (v == null) {
+                return new AtomicReference<>();
+            } else {
+                v.lazySet(applyCutoffs(bracket, region, v.get()));
+                return v;
+            }
+        });
     }
 
     public AtomicReference<SnapshotDiff> diffsByBracket(String bracket, String region) {
-        return refDiffs.computeIfAbsent(bracket + "_" + region, k -> new AtomicReference<>());
+        return refDiffs.compute(bracket + "_" + region, (k, v) -> {
+            if (v == null) {
+                return new AtomicReference<>();
+            } else {
+                v.lazySet(applyCutoffs(bracket, region, v.get()));
+                return v;
+            }
+        });
+    }
+
+    private SnapshotDiff applyCutoffs(String bracket, String region, SnapshotDiff diff) {
+        Cutoffs cutoffs = regionCutoff.get(region);
+        if (cutoffs == null) {
+            return diff;
+        }
+        if (diff == null) {
+            return null;
+        }
+        if (bracket.equals(THREE_V_THREE)) {
+            Long cutoff = cutoffs.threeVThree();
+            return new SnapshotDiff(diff.chars().stream().map(charAndDiff -> {
+                if (charAndDiff.character().rating() >= cutoff) {
+                    return new CharAndDiff(charAndDiff.character().changeCutoff(true), charAndDiff.diff());
+                } else {
+                    return charAndDiff;
+                }
+            }).collect(Collectors.toList()), diff.timestamp());
+        } else if (bracket.equals(RBG)) {
+            Long cutoff = cutoffs.battlegrounds("ALLIANCE");
+            return new SnapshotDiff(diff.chars().stream().map(charAndDiff -> {
+                if (charAndDiff.character().rating() >= cutoff) {
+                    return new CharAndDiff(charAndDiff.character().changeCutoff(true), charAndDiff.diff());
+                } else {
+                    return charAndDiff;
+                }
+            }).collect(Collectors.toList()), diff.timestamp());
+        } else if (bracket.equals(SHUFFLE)) {
+            return new SnapshotDiff(diff.chars().stream().map(charAndDiff -> {
+                String fullSpec = charAndDiff.character().fullSpec();
+                String spec = fullSpec.toLowerCase().split(" ")[0];
+                if (fullSpec.equals("Frost Mage")) {
+                    spec = "frostm";
+                } else if (fullSpec.equals("Frost Death Knight")) {
+                    spec = "frostd";
+                } else if (fullSpec.equals("Beast Mastery Hunter")) {
+                    spec = "beastmastery";
+                }
+                Long cutoff = cutoffs.shuffle(spec);
+                if(cutoff == null) {
+                    log.warn("No cutoff for spec {} in shuffle", spec + " " + fullSpec);
+                    return charAndDiff;
+                }
+                if (charAndDiff.character().rating() >= cutoff) {
+                    return new CharAndDiff(charAndDiff.character().changeCutoff(true), charAndDiff.diff());
+                } else {
+                    return charAndDiff;
+                }
+            }).collect(Collectors.toList()), diff.timestamp());
+        }
+        return diff;
+    }
+
+    private Snapshot applyCutoffs(String bracket, String region, Snapshot diff) {
+        Cutoffs cutoffs = regionCutoff.get(region);
+        if (cutoffs == null) {
+            return diff;
+        }
+        if (diff == null) {
+            return null;
+        }
+        if (bracket.equals(THREE_V_THREE)) {
+            Long cutoff = cutoffs.threeVThree();
+            return new Snapshot(diff.characters().stream().map(ch -> {
+                if (ch.rating() >= cutoff) {
+                    return ch.changeCutoff(true);
+                } else {
+                    return ch;
+                }
+            }).collect(Collectors.toList()), diff.timestamp(), diff.region(), diff.dateTime());
+        } else if (bracket.equals(RBG)) {
+            Long cutoff = cutoffs.battlegrounds("ALLIANCE");
+            return new Snapshot(diff.characters().stream().map(ch -> {
+                if (ch.rating() >= cutoff) {
+                    return ch.changeCutoff(true);
+                } else {
+                    return ch;
+                }
+            }).collect(Collectors.toList()), diff.timestamp(), diff.region(), diff.dateTime());
+        } else if (bracket.equals(SHUFFLE)) {
+            return new Snapshot(diff.characters().stream().map(ch -> {
+                String fullSpec = ch.fullSpec();
+                String spec = fullSpec.toLowerCase().split(" ")[0];
+                if (fullSpec.equals("Frost Mage")) {
+                    spec = "frostm";
+                } else if (fullSpec.equals("Frost Death Knight")) {
+                    spec = "frostd";
+                } else if (fullSpec.equals("Beast Mastery Hunter")) {
+                    spec = "beastmastery";
+                }
+                Long cutoff = cutoffs.shuffle(spec);
+                if(cutoff == null) {
+                    log.warn("No cutoff for spec {} in shuffle", spec + " " + fullSpec);
+                    return ch;
+                }
+                if (ch.rating() >= cutoff) {
+                    return ch.changeCutoff(true);
+                } else {
+                    return ch;
+                }
+            }).collect(Collectors.toList()), diff.timestamp(), diff.region(), diff.dateTime());
+        }
+        return diff;
     }
 
     public Completable newDataOnBracket(String bracket, String region, Snapshot newCharacters) {
