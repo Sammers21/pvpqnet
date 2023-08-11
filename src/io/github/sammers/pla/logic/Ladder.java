@@ -157,19 +157,19 @@ public class Ladder {
 
     public void start() {
         loadRegionData(EU)
-//            .andThen(loadRegionData(US))
+            .andThen(loadRegionData(US))
             .andThen(calcAlts())
-//            .andThen(
-//                runDataUpdater(US,
-//                    runDataUpdater(EU,
-//                        Observable.interval(minutesTillNextHour(), 60, TimeUnit.MINUTES)
-//                            .observeOn(VTHREAD_SCHEDULER)
-//                            .subscribeOn(VTHREAD_SCHEDULER)
-//                    )
-//                )
-//            )
-//            .doOnError(e -> log.error("Error fetching ladder", e))
-//            .onErrorReturnItem(Snapshot.empty(EU))
+            .andThen(
+                runDataUpdater(US,
+                    runDataUpdater(EU,
+                        Observable.interval(minutesTillNextHour(), 60, TimeUnit.MINUTES)
+                            .observeOn(VTHREAD_SCHEDULER)
+                            .subscribeOn(VTHREAD_SCHEDULER)
+                    )
+                )
+            )
+            .doOnError(e -> log.error("Error fetching ladder", e))
+            .onErrorReturnItem(Snapshot.empty(EU))
             .subscribe();
     }
 
