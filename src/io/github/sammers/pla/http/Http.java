@@ -18,6 +18,7 @@ import io.vertx.reactivex.ext.web.RoutingContext;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static io.github.sammers.pla.Main.VTHREAD_EXECUTOR;
@@ -142,10 +143,10 @@ public class Http {
     }
 
     private JsonObject wowCharToJson(WowAPICharacter character) {
-        List<WowAPICharacter> alts = ladder.alts.get(character.petHash());
+        Set<WowAPICharacter> alts = ladder.alts.get(character.petHash());
         JsonObject res = character.toJson();
         if (alts != null) {
-            res.put("alts", new JsonArray(alts.stream().filter( c-> c.id() != character.id()).map(WowAPICharacter::toJson).toList()));
+            res.put("alts", new JsonArray(alts.stream().filter(c -> c.id() != character.id()).map(WowAPICharacter::toJson).toList()));
         } else {
             res.put("alts", new JsonArray());
         }

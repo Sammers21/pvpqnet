@@ -22,13 +22,13 @@ public class CharUpdater {
 
     private final BlizzardAPI api;
     private final Map<String, WowAPICharacter> characterCache;
-    private final Map<Integer, List<WowAPICharacter>> altsCache;
+    private final Map<Integer, Set<WowAPICharacter>> altsCache;
     private final NickNameSearchIndex charSearchIndex;
     private final DB db;
 
     public CharUpdater(BlizzardAPI api,
                        Map<String, WowAPICharacter> characterCache,
-                       Map<Integer, List<WowAPICharacter>> altsCache, NickNameSearchIndex charSearchIndex,
+                       Map<Integer, Set<WowAPICharacter>> altsCache, NickNameSearchIndex charSearchIndex,
                        DB db) {
         this.api = api;
         this.characterCache = characterCache;

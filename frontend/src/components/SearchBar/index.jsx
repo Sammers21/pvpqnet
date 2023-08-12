@@ -13,7 +13,7 @@ import {capNickname} from "../../utils/urlparts";
 const SearchBar = () => {
   let navigate = useNavigate();
   // Tiny delay to prevent spamming the API
-  const delayMs = 100;
+  const delayMs = 5;
   const [inputValue, setInputValue] = useState('');
   const [loading, setLoading] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
@@ -88,7 +88,7 @@ const SearchBar = () => {
               {fullNick}
             </Typography>
           </Grid>
-          <Box>{regionIcon}</Box>
+          {regionIcon}
         </Grid>
       </li>);
     }}

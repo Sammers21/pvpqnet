@@ -234,7 +234,7 @@ public class Calculator {
         return new Meta(Map.of(), sizing, specs);
     }
 
-    public static void calculateAlts(Iterable<WowAPICharacter> characters, Map<Integer, List<WowAPICharacter>> alts) {
+    public static void calculateAlts(Iterable<WowAPICharacter> characters, Map<Integer, Set<WowAPICharacter>> alts) {
         long start = System.currentTimeMillis();
         for (WowAPICharacter character : characters) {
             indexCharAlts(alts, character);
@@ -242,14 +242,14 @@ public class Calculator {
         log.info("Alts calculated in {} ms", System.currentTimeMillis() - start);
     }
 
-    public static void indexCharAlts(Map<Integer, List<WowAPICharacter>> alts, WowAPICharacter character) {
+    public static void indexCharAlts(Map<Integer, Set<WowAPICharacter>> alts, WowAPICharacter character) {
         int hash = character.petHash();
         alts.compute(hash, (key, value) -> {
             if (key == -1) {
                 return null;
             }
             if (value == null)  {
-                value = new ArrayList<>();
+                value = new HashSet<>();
             }
             value.add(character);
             return value;
