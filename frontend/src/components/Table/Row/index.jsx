@@ -25,7 +25,7 @@ const Row = ({curDiff, onMouseOverDiff, index, record, columns}) => {
   if (even) {
     sx.backgroundColor = "#0e1216";
   }
-  if(!_.isEmpty(curDiff) && curDiff.won ==record.diff.won && curDiff.lost ==record.diff.lost){
+  if (!_.isEmpty(curDiff) && curDiff.won == record.diff.won && curDiff.lost == record.diff.lost && curDiff.last_seen == record.diff.last_seen) {
     sx.backgroundColor = 'rgb(21, 128, 61, 0.25)';
   }
   const enter = () => {
