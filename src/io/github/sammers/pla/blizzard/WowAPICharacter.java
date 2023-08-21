@@ -241,6 +241,11 @@ public record WowAPICharacter(long id, String name, String realm, String gender,
     }
 
     @Override
+    public int hashCode() {
+        return fullName().hashCode();
+    }
+
+    @Override
     public JsonObject toJson() {
         return new JsonObject()
                 .put("id", id)
