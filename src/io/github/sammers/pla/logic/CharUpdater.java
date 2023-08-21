@@ -2,7 +2,9 @@ package io.github.sammers.pla.logic;
 
 import io.github.sammers.pla.Main;
 import io.github.sammers.pla.blizzard.*;
+import io.github.sammers.pla.db.Character;
 import io.github.sammers.pla.db.DB;
+import io.github.sammers.pla.db.Snapshot;
 import io.reactivex.Completable;
 import io.reactivex.Maybe;
 import org.slf4j.Logger;
@@ -12,6 +14,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
 import static io.github.sammers.pla.logic.Ladder.*;
@@ -25,12 +28,16 @@ public class CharUpdater {
     private final Map<Integer, Set<WowAPICharacter>> altsCache;
     private final NickNameSearchIndex charSearchIndex;
     private final DB db;
+    private final Map<String, AtomicReference<Snapshot>> refs;
 
     public CharUpdater(BlizzardAPI api,
                        Map<String, WowAPICharacter> characterCache,
-                       Map<Integer, Set<WowAPICharacter>> altsCache, NickNameSearchIndex charSearchIndex,
+                       Map<String, AtomicReference<Snapshot>> refs,
+                       Map<Integer, Set<WowAPICharacter>> altsCache,
+                       NickNameSearchIndex charSearchIndex,
                        DB db) {
         this.api = api;
+        this.refs = refs;
         this.characterCache = characterCache;
         this.altsCache = altsCache;
         this.charSearchIndex = charSearchIndex;
@@ -40,19 +47,14 @@ public class CharUpdater {
     public Completable updateCharsInfinite(String region) {
         return Completable.defer(() -> {
             log.info("Updating chars in region " + region);
-            List<Maybe<PvpLeaderBoard>> boards = new ArrayList<>(Stream.of(TWO_V_TWO, THREE_V_THREE, RBG)
-                .map(bracket -> api.pvpLeaderboard(bracket, region)).toList());
-            for (String spec : shuffleSpecs) {
-                String s = spec.replaceAll("/", "-");
-                boards.add(api.pvpLeaderboard(s, region));
-            }
+            List<Snapshot> snapshots = new ArrayList<>(Stream.of(TWO_V_TWO, THREE_V_THREE, RBG, SHUFFLE)
+                .map(bracket -> refs.get(bucketRef(bracket, region)).get()).toList());
             Map<String, Long> nickAndMaxRating = new ConcurrentHashMap<>();
-            return Maybe.concat(boards)
-                .toList()
-                .map((List<PvpLeaderBoard> list) -> {
+            return Maybe.just(snapshots)
+                .map((List<Snapshot> list) -> {
                     Set<String> charsToUpdate = new HashSet<>();
-                    for (PvpLeaderBoard board : list) {
-                        for (CharOnLeaderBoard charOnLeaderBoard : board.charOnLeaderBoards()) {
+                    for (Snapshot board : list) {
+                        for (Character charOnLeaderBoard : board.characters()) {
                             if (characterCache.get(charOnLeaderBoard.fullName()) == null) {
                                 charsToUpdate.add(charOnLeaderBoard.fullName());
                                 nickAndMaxRating.compute(charOnLeaderBoard.fullName(), (nick, maxRating) -> {
@@ -66,7 +68,7 @@ public class CharUpdater {
                         }
                     }
                     int newChars = charsToUpdate.size();
-                    long dayAgo = Instant.now().minus(7, ChronoUnit.DAYS).toEpochMilli();
+                    long dayAgo = Instant.now().minus(1, ChronoUnit.DAYS).toEpochMilli();
                     characterCache.values().stream().flatMap(wowAPICharacter -> {
                         if (wowAPICharacter.lastUpdatedUTCms() < dayAgo) {
                             nickAndMaxRating.compute(wowAPICharacter.fullName(), (nick, maxRating) -> {

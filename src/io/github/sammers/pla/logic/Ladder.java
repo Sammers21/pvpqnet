@@ -151,7 +151,7 @@ public class Ladder {
         this.web = web;
         this.db = db;
         this.blizzardAPI = blizzardAPI;
-        this.charUpdater = new CharUpdater(blizzardAPI, characterCache, alts, charSearchIndex, db);
+        this.charUpdater = new CharUpdater(blizzardAPI, characterCache, refs, alts, charSearchIndex, db);
     }
 
     public void start() {
@@ -620,8 +620,12 @@ public class Ladder {
         return meta.computeIfAbsent(bracket + "_" + role + "_" + region + "_" + period, k -> new AtomicReference<>());
     }
 
+    public static String bucketRef(String bracket, String region) {
+        return bracket + "_" + region;
+    }
+
     public AtomicReference<Snapshot> refByBracket(String bracket, String region) {
-        return refs.compute(bracket + "_" + region, (k, v) -> {
+        return refs.compute(bucketRef(bracket, region), (k, v) -> {
             if (v == null) {
                 return new AtomicReference<>();
             } else {
@@ -632,7 +636,7 @@ public class Ladder {
     }
 
     public AtomicReference<SnapshotDiff> diffsByBracket(String bracket, String region) {
-        return refDiffs.compute(bracket + "_" + region, (k, v) -> {
+        return refDiffs.compute(bucketRef(bracket, region), (k, v) -> {
             if (v == null) {
                 return new AtomicReference<>();
             } else {
