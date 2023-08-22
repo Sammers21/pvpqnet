@@ -409,7 +409,7 @@ public class Ladder {
                         String specName = splitted[2].substring(0, 1).toUpperCase() + splitted[2].substring(1);
                         String fullSpec = (specName + " " + clazz).trim();
                         String fraction = nodeList.get(5).attr("data-value");
-                        String realm = nodeList.get(6).attr("data-value");
+                        String realm = Calculator.realmCalc(nodeList.get(6).attr("data-value"));
                         Long wins = Long.parseLong(nodeList.get(7).attr("data-value"));
                         Long losses = Long.parseLong(nodeList.get(8).attr("data-value"));
                         return enrichWithSpecialData(new Character(pos, rating, false, name, clazz, fullSpec, fraction, "", "", realm, wins, losses), bracket, region);
@@ -492,7 +492,7 @@ public class Ladder {
                         String name = nameNode.attr("data-value");
                         String clazz = nodeList.get(3).attr("data-value");
                         String fraction = nodeList.get(4).attr("data-value");
-                        String realm = nodeList.get(5).attr("data-value");
+                        String realm = Calculator.realmCalc(nodeList.get(5).attr("data-value"));
                         Long wins = Long.parseLong(nodeList.get(6).attr("data-value"));
                         Long losses = Long.parseLong(nodeList.get(7).attr("data-value"));
                         return enrichWithSpecialData(new Character(pos, rating, false, name, clazz, fullSpec,fraction,"", "", realm, wins, losses), bracket, region);
@@ -580,7 +580,7 @@ public class Ladder {
                             charSearchIndex.insertNickNames(new SearchResult(character.fullName(), character.region(), character.clazz()));
                         });
                         log.info("Character data size={} for region={} has been loaded to cache in {} ms", characters.size(), region, (System.nanoTime() - tick) / 1000000);
-                        VTHREAD_SCHEDULER.scheduleDirect(() -> charUpdater.updateCharsInfinite(region).subscribe());
+//                        VTHREAD_SCHEDULER.scheduleDirect(() -> charUpdater.updateCharsInfinite(region).subscribe());
                         emitter.onComplete();
                     });
                 }));

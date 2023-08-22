@@ -2,6 +2,7 @@ package io.github.sammers.pla.blizzard;
 
 import io.github.sammers.pla.db.Character;
 import io.github.sammers.pla.http.JsonConvertable;
+import io.github.sammers.pla.logic.Calculator;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
@@ -163,8 +164,7 @@ public record WowAPICharacter(long id, String name, String realm, String gender,
         CharacterMedia media = CharacterMedia.parse(characterMedia);
         Long lastUpdatedUTCms = Instant.now().toEpochMilli();
         String name = entries.getString("name").substring(0, 1).toUpperCase() + entries.getString("name").substring(1);
-        String realm = entries.getJsonObject("realm").getString("name").substring(0, 1).toUpperCase() +
-                entries.getJsonObject("realm").getString("name").substring(1);
+        String realm = Calculator.realmCalc(entries.getJsonObject("realm").getString("name"));
         Achievements parsedAchievements = Achievements.parse(achievements);
         return new WowAPICharacter(
             entries.getInteger("id"),

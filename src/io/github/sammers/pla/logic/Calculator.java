@@ -265,4 +265,9 @@ public class Calculator {
         }
         return result;
     }
+
+    public static String realmCalc(String realm) {
+        String withCapFirst = realm.substring(0, 1).toUpperCase() + realm.substring(1).toLowerCase();
+        return withCapFirst.replace(" ", "-");
+    }
 }
