@@ -136,7 +136,7 @@ const useColumns = (includeLastSeen, region, isMobile) => {
       const details = getDetails(wowClass, wowSpec, wowRace, wowGender);
       return (
         <Box sx={{ display: 'flex' }}>
-          {!isMobile && <img
+          {window.innerWidth > 600 && <img
             style={{
               border: '1px #37415180 solid',
               borderRadius: '4px',
@@ -146,7 +146,7 @@ const useColumns = (includeLastSeen, region, isMobile) => {
             }}
             src={details.raceSrc}
           />}
-          {!isMobile && <img
+          {window.innerWidth > 700 && <img
             style={{
               border: '1px #37415180 solid',
               borderRadius: '4px',
@@ -177,7 +177,9 @@ const useColumns = (includeLastSeen, region, isMobile) => {
       let name = record?.character?.name || record?.name;
       if(isMobile){
         // const cut = name.length > 6 ? '..' : '';
-        name = name.substring(0, 8);
+        let max = Math.round(Math.max(6, 6 + ((window.innerWidth - 500) / 30)))
+        console.log("Max ", max)
+        name = name.substring(0, max);
       }
       const url = profileUrl(record, region);
       return <Typography color={getClassNameColor(wowClass)}>

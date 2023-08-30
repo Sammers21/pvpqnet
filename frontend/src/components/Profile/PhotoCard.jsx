@@ -6,6 +6,7 @@ import dayjs from 'dayjs-ext'
 import SaveIcon from '@mui/icons-material/Save';
 import relativeTime from 'dayjs-ext/plugin/relativeTime'
 import React from "react";
+import UpdateButton from "./UpdateButton";
 
 const PhotoCard = ({ isMobile, data, update, loading }) => {
   dayjs.extend(relativeTime)
@@ -76,13 +77,8 @@ const PhotoCard = ({ isMobile, data, update, loading }) => {
     src={insert}
   />;
 
-  let updButton;
-  if (loading) {
-    updButton = <LoadingButton sx={{p: 1, marginTop: 1,}} loading loadingPosition="start" startIcon={<SaveIcon/>} variant="outlined">Updating</LoadingButton>
-  } else {
-    updButton = <Button sx={{p: 1, marginTop: 1,}} variant="contained" onClick={() => update()}>Update now</Button>;
-  }
-
+  let upd = () => update()
+  let updButton = <UpdateButton loading={loading} update={upd}/>
   return (<Box
     width={isMobile ? '100%' : 'auto'}
     display="flex"

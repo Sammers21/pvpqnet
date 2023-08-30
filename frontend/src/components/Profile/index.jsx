@@ -20,7 +20,9 @@ const Profile = () => {
   let [data, setData] = useState({});
   let [status, setStatus] = useState(200);
   let [loading, setLoading] = useState(false);
-  document.title = `${capitalizeFirstLetter(name)}-${capitalizeFirstLetter(realm)} on`;
+  useEffect(() => {
+    document.title = `${capitalizeFirstLetter(name)}-${capitalizeFirstLetter(realm)} on ${region.toUpperCase()}`;
+  }, [name, realm, region]);
   const [width, setWidth] = useState(window.innerWidth);
   useEffect(() => {
     window.addEventListener('resize', function () {
@@ -35,23 +37,26 @@ const Profile = () => {
   const isMobile = width <= 900;
 
   const loadProfile = async (update) => {
-    let url
+    let url;
     if (update) {
       url = baseUrl + `/api/${region}/${realm}/${name}/update`;
     } else {
       url = baseUrl + `/api/${region}/${realm}/${name}`;
     }
-    setLoading(true)
+    setLoading(true);
     let resp = await axios.get(url, {
       validateStatus: function (status) {
         return status < 500; // Resolve only if the status code is less than 500
-      }
+      },
     });
-    setLoading(false)
-    const data = resp.data
+    setLoading(false);
+    const data = resp.data;
     setStatus(resp.status);
     setData(data);
     return resp;
+  };
+  let upd = () => {
+    return loadProfile(true);
   };
   useEffect(() => {
     loadProfile(false);
@@ -90,9 +95,7 @@ const Profile = () => {
         paddingRight: isMobile ? '0' : '3%',
         paddingBottom: '45px',
       }} display={'flex'} flexDirection={'column'}>
-      <PhotoCard isMobile={isMobile} data={data} loading={loading} update={() => {
-        return loadProfile(true);
-      }}/>
+      <PhotoCard isMobile={isMobile} data={data} loading={loading} update={upd}/>
       <Box
         margin={isMobile ? 0 : 1}
         padding={isMobile ? 0 : 1}
@@ -130,7 +133,7 @@ const Profile = () => {
 
   let notFoundResp = <><>
     <Header/>
-    <NotFound/>
+    <NotFound loading={loading} update={upd}/>
     <Footer/>
   </>
   </>;
