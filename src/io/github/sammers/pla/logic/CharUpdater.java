@@ -102,7 +102,11 @@ public class CharUpdater {
                         .doOnComplete(() -> log.info("Second portion of chars has been updated"));
                 });
         }).subscribeOn(Main.VTHREAD_SCHEDULER)
-            .andThen(Completable.defer(() -> updateCharsInfinite(region)));
+            .andThen(Completable.defer(() -> updateCharsInfinite(region)))
+                .doOnError(e -> {
+                    log.error("Update chars infinite error in region " + region, e);
+                    updateCharsInfinite(region).subscribe();
+                });
     }
 
     public Completable updateChars(List<String> nickNames, String region) {

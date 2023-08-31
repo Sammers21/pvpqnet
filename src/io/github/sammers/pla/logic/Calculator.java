@@ -249,7 +249,7 @@ public class Calculator {
                 return null;
             }
             if (value == null)  {
-                value = new HashSet<>();
+                value = new TreeSet<>(Comparator.comparing(WowAPICharacter::id));
             }
             value.add(character);
             return value;
