@@ -120,6 +120,12 @@ const Header = () => {
         handleClick: () => {
           clickMeta();
         }
+      },
+      {
+        label: 'Play with Pro',
+        handleClick: () => {
+          clickMeta();
+        }
       }
     ]
   }
@@ -150,7 +156,7 @@ const Header = () => {
       letterSpacing: '.05rem',
       color: 'inherit',
       textDecoration: 'none',
-      paddingRight: '20px',
+      // paddingRight: '20px',
     }}
   >
     {host}
@@ -183,6 +189,13 @@ const Header = () => {
             {activityBtn}
             {ladderBtn}
             {metaBtn}
+            {<Button onClick={() => window.open('https://secretshop.gg/wow/arena-rbg', "_blank")} sx={{color: headerButtonColor}}>
+            <Box display={'flex'} flexDirection={'column'} alignItems={'center'} justifyContent="center">
+              <Typography variant={'inherit'}>
+                Play with Pro
+              </Typography>
+              </Box>
+            </Button>}
           </Box>
           <Box width={'40%'}>
             <SearchBar/>
@@ -234,6 +247,7 @@ const Header = () => {
                   </ListItemButton>
                 </ListItem>
               ))}
+
             </List>
           </Box>
         </Drawer>
