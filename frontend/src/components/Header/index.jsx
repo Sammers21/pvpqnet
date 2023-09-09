@@ -124,7 +124,7 @@ const Header = () => {
       {
         label: 'Play with Pro',
         handleClick: () => {
-          clickMeta();
+           window.open('https://secretshop.gg/wow/arena-rbg', "_blank")
         }
       }
     ]
