@@ -127,7 +127,7 @@ public class BlizzardAPI {
                     .flatMapMaybe(resp -> {
                         if (resp.statusCode() == 200) {
                             return Maybe.just(resp.bodyAsJsonObject());
-                        } else if (resp.statusCode() == 429 || resp.statusCode() == 500) {
+                        } else if (resp.statusCode() == 429 || resp.statusCode() / 100 == 5) {
                             int code = resp.statusCode();
                             log.info(code + " Retrying " + url + " " + resp.statusMessage());
                             return rpsToken().andThen(rpsToken()).andThen(maybeResponse(namespace, url));
