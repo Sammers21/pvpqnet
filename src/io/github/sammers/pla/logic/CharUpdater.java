@@ -99,14 +99,10 @@ public class CharUpdater {
                         .doOnComplete(() -> log.info("First portion of chars has been updated"))
                         .andThen(updateChars(rest, region))
                         .doOnSubscribe(d -> log.info("Updating second portion of chars: " + rest.size()))
-                        .doOnComplete(() -> log.info("Second portion of chars has been updated"));
+                        .doOnComplete(() -> log.info("Second portion of chars has been updated"))
+                        .onErrorComplete();
                 });
-        }).subscribeOn(Main.VTHREAD_SCHEDULER)
-            .andThen(Completable.defer(() -> updateCharsInfinite(region)))
-                .doOnError(e -> {
-                    log.error("Update chars infinite error in region " + region, e);
-                    updateCharsInfinite(region).subscribe();
-                });
+        }).subscribeOn(Main.VTHREAD_SCHEDULER).doOnError(e -> log.error("Update chars infinite error in region " + region, e));
     }
 
     public Completable updateChars(List<String> nickNames, String region) {
