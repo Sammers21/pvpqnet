@@ -6,10 +6,7 @@ import io.reactivex.Completable;
 import io.reactivex.Maybe;
 import io.reactivex.Single;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.mongo.FindOptions;
-import io.vertx.ext.mongo.MongoClientDeleteResult;
-import io.vertx.ext.mongo.MongoClientUpdateResult;
-import io.vertx.ext.mongo.UpdateOptions;
+import io.vertx.ext.mongo.*;
 import io.vertx.reactivex.ext.mongo.MongoClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,6 +62,13 @@ public class DB {
                 return Maybe.empty();
             }
         });
+    }
+
+    public Maybe<MongoClientBulkWriteResult> bulkUpdateChars(List<WowAPICharacter> characters) {
+        List<BulkOperation> operations = characters.stream()
+                .map(character -> BulkOperation.createUpdate(new JsonObject().put("id", character.id()), character.toJson()))
+                .toList();
+        return mongoClient.rxBulkWrite("profile", operations);
     }
 
     public Completable insertOnlyIfDifferent(String bracket, String region, Snapshot snapshot) {
