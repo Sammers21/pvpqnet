@@ -66,8 +66,15 @@ public class DB {
 
     public Maybe<MongoClientBulkWriteResult> bulkUpdateChars(List<WowAPICharacter> characters) {
         List<BulkOperation> operations = characters.stream()
-                .map(character -> BulkOperation.createUpdate(new JsonObject().put("id", character.id()), character.toJson()))
-                .toList();
+            .map(character -> {
+                    BulkOperation op = BulkOperation.createUpdate(
+                        new JsonObject().put("id", character.id()),
+                        new JsonObject().put("$set", character.toJson())
+                    );
+                    op.setUpsert(true);
+                    return op;
+                }
+            ).toList();
         return mongoClient.rxBulkWrite("profile", operations);
     }
 

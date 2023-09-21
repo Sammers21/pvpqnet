@@ -580,7 +580,7 @@ public class Ladder {
                             charSearchIndex.insertNickNames(new SearchResult(character.fullName(), character.region(), character.clazz()));
                         });
                         log.info("Character data size={} for region={} has been loaded to cache in {} ms", characters.size(), region, (System.nanoTime() - tick) / 1000000);
-                        VTHREAD_SCHEDULER.schedulePeriodicallyDirect(() -> charUpdater.updateCharsInfinite(region).subscribe(), 0, 24, TimeUnit.HOURS);
+//                        VTHREAD_SCHEDULER.schedulePeriodicallyDirect(() -> charUpdater.updateCharsInfinite(region).subscribe(), 0, 24, TimeUnit.HOURS);
                         emitter.onComplete();
                     });
                 }));
