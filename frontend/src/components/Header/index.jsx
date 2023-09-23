@@ -122,7 +122,7 @@ const Header = () => {
         }
       },
       {
-        label: 'Play with Pro',
+        label: 'Coaching',
         handleClick: () => {
            window.open('https://secretshop.gg/wow/arena-rbg', "_blank")
         }
@@ -192,7 +192,7 @@ const Header = () => {
             {<Button onClick={() => window.open('https://secretshop.gg/wow/arena-rbg', "_blank")} sx={{color: headerButtonColor}}>
             <Box display={'flex'} flexDirection={'column'} alignItems={'center'} justifyContent="center">
               <Typography variant={'inherit'}>
-                Play with Pro
+                Coaching
               </Typography>
               </Box>
             </Button>}
