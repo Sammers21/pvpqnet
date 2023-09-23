@@ -235,10 +235,6 @@ public class Ladder {
         return fetchLadder(bracket, region, true);
     }
 
-    public Completable calcAlts(){
-        return Completable.fromAction(() -> Calculator.calculateAlts(characterCache.values(), alts));
-    }
-
     public Single<List<Character>> pureBlizzardApiFetch(String bracket, String region){
         Single<List<Character>> resCharList;
         if (bracket.equals(SHUFFLE)) {
@@ -532,16 +528,21 @@ public class Ladder {
                             diff = db.getMinsAgo(bracket, region, minsAgo)
                                 .map(snap -> Calculator.calculateDiff(snap, now, bracket, false));
                         }
-                        return Stream.of(diff.map(realDiff -> {
+                        return Stream.of(diff.flatMapCompletable(realDiff -> {
                             try {
-                                Meta meta = Calculator.calculateMeta(realDiff, role, bracket, 0.05, 0.10, 0.85);
-                                metaRef(bracket, realRegion, role, period).set(meta);
-                                return meta;
+                                VTHREAD_SCHEDULER.scheduleDirect(() -> {
+                                    long tick = System.nanoTime();
+                                    Meta meta = Calculator.calculateMeta(realDiff, role, bracket, 0.05, 0.10, 0.85);
+                                    metaRef(bracket, realRegion, role, period).set(meta);
+                                    long elapsed = (System.nanoTime() - tick) / 1000000;
+                                    log.info("Meta for bracket={} region={} role={} period={} has been calculated in {} ms", bracket, region, role, period, elapsed);
+                                });
+                                return Completable.complete();
                             } catch (Exception e) {
                                 log.error("Error calculating meta for " + bracket + " " + region + " " + role + " " + period, e);
-                                return new Meta(Map.of(), Map.of(), List.of());
+                                return Completable.error(e);
                             }
-                        }).ignoreElement().onErrorComplete());
+                        }).onErrorComplete());
                     }));
             }).collect(Collectors.toList());
             return Completable.merge(res);
