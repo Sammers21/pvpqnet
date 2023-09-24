@@ -111,11 +111,12 @@ public class CharUpdater {
     }
 
     public Completable updateChar(String region, String nickName) {
-        return api.character(region, nickName).flatMapCompletable(wowAPICharacter -> {
-            Calculator.indexCharAlts(altsCache, wowAPICharacter);
-            characterCache.put(nickName, wowAPICharacter);
-            charSearchIndex.insertNickNames(new SearchResult(nickName, region, wowAPICharacter.clazz()));
-            return db.upsertCharacter(wowAPICharacter).ignoreElement();
-        }).onErrorComplete();
+        return Completable.defer(() -> api.character(region, nickName).flatMapCompletable(wowAPICharacter -> {
+                Calculator.indexCharAlts(altsCache, wowAPICharacter);
+                characterCache.put(nickName, wowAPICharacter);
+                charSearchIndex.insertNickNames(new SearchResult(nickName, region, wowAPICharacter.clazz()));
+                return db.upsertCharacter(wowAPICharacter).ignoreElement();
+            }).onErrorComplete()
+        );
     }
 }

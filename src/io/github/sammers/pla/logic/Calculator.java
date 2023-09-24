@@ -9,6 +9,9 @@ import io.reactivex.Maybe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Duration;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
@@ -64,6 +67,7 @@ public class Calculator {
                 }
             });
     }
+
     public static SnapshotDiff calculateDiff(Snapshot oldChars, Snapshot newChars, String bracket) {
         return calculateDiff(oldChars, newChars, bracket, true);
     }
@@ -83,7 +87,7 @@ public class Calculator {
             }
             CharAndDiff e;
             if (oldChar == null) {
-                if(newIsZero) {
+                if (newIsZero) {
                     e = new CharAndDiff(newChar, new Diff(0L, 0L, 0L, 0L, newChars.timestamp()));
                 } else {
                     e = new CharAndDiff(newChar,
@@ -157,7 +161,7 @@ public class Calculator {
 
     public static Meta calculateMeta(SnapshotDiff snapshot, String role, String bracket, double... ratios) {
         Set<String> acceptedSpecs;
-        if (role.equals("all")){
+        if (role.equals("all")) {
             acceptedSpecs = Spec.ALL_SPECS;
         } else if (role.equals("dps")) {
             acceptedSpecs = Spec.DPS_SPECS;
@@ -177,9 +181,9 @@ public class Calculator {
             .sorted(Comparator.comparing((CharAndDiff o) -> o.character().rating()).reversed()).toList();
         if (bracket.equals("shuffle")) {
             int maxMinRating = totalSortedRoleList.stream().collect(Collectors.groupingBy(character -> character.character().fullSpec(), Collectors.toList()))
-                    .entrySet().stream()
-                    .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().stream().mapToLong(c -> c.character().rating()).min().orElse(0)))
-                    .values().stream().mapToInt(Long::intValue).max().orElse(0);
+                .entrySet().stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().stream().mapToLong(c -> c.character().rating()).min().orElse(0)))
+                .values().stream().mapToInt(Long::intValue).max().orElse(0);
             totalSortedRoleList = totalSortedRoleList.stream().filter(c -> c.character().rating() >= maxMinRating).toList();
         }
         LinkedList<CharAndDiff> fsrtList = new LinkedList<>(totalSortedRoleList);
@@ -217,20 +221,20 @@ public class Calculator {
         }
         List<Spec> specs = diviedLists.stream().flatMap(List::stream).collect(Collectors.groupingBy(Spec::specName, Collectors.toList()))
             .entrySet().stream().map(entry -> {
-            Map<String, Double> res = new HashMap<>();
-            for(Spec spec : entry.getValue()) {
-                res.putAll(spec.winRates());
-            }
-            for (Double ratio: ratios) {
-                if(!res.containsKey(String.format("%.3f_win_rate", ratio))) {
-                    res.put(String.format("%.3f_win_rate", ratio), 0.0);
+                Map<String, Double> res = new HashMap<>();
+                for (Spec spec : entry.getValue()) {
+                    res.putAll(spec.winRates());
                 }
-                if(!res.containsKey(String.format("%.3f_presence", ratio))) {
-                    res.put(String.format("%.3f_presence", ratio), 0.0);
+                for (Double ratio : ratios) {
+                    if (!res.containsKey(String.format("%.3f_win_rate", ratio))) {
+                        res.put(String.format("%.3f_win_rate", ratio), 0.0);
+                    }
+                    if (!res.containsKey(String.format("%.3f_presence", ratio))) {
+                        res.put(String.format("%.3f_presence", ratio), 0.0);
+                    }
                 }
-            }
                 return new Spec(entry.getKey(), res);
-            }).toList();    
+            }).toList();
         return new Meta(Map.of(), sizing, specs);
     }
 
@@ -248,7 +252,7 @@ public class Calculator {
             if (key == -1) {
                 return null;
             }
-            if (value == null)  {
+            if (value == null) {
                 value = new TreeSet<>(Comparator.comparing(WowAPICharacter::id));
             }
             value.add(character);
@@ -269,5 +273,21 @@ public class Calculator {
     public static String realmCalc(String realm) {
         String withCapFirst = realm.substring(0, 1).toUpperCase() + realm.substring(1).toLowerCase();
         return withCapFirst.replace(" ", "-");
+    }
+
+    public static int minutesTillNextHour() {
+        ZoneId zone = ZoneId.systemDefault();
+        ZonedDateTime now = ZonedDateTime.now(zone);
+        ZonedDateTime nextHour = now.withMinute(0).withSecond(0).withNano(0).plusHours(1).plusMinutes(1);
+        Duration duration = Duration.between(now, nextHour);
+        return (int) duration.toMinutes();
+    }
+
+    public static int minutesTill5am() {
+        ZoneId zone = ZoneId.systemDefault();
+        ZonedDateTime now = ZonedDateTime.now(zone);
+        ZonedDateTime nextHour = now.withMinute(0).withSecond(0).withHour(5).plusDays(1);
+        Duration duration = Duration.between(now, nextHour);
+        return (int) duration.toMinutes();
     }
 }

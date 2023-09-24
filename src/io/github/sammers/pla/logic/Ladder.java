@@ -36,6 +36,8 @@ import java.util.stream.Stream;
 
 import static io.github.sammers.pla.Main.VTHREAD_SCHEDULER;
 import static io.github.sammers.pla.blizzard.BlizzardAPI.realRegion;
+import static io.github.sammers.pla.logic.Calculator.minutesTill5am;
+import static io.github.sammers.pla.logic.Calculator.minutesTillNextHour;
 
 public class Ladder {
 
@@ -161,7 +163,7 @@ public class Ladder {
                 runDataUpdater(US,
                     runDataUpdater(EU,
                         Observable.defer(() -> {
-                            int initialDelay = minutesTillNextHour();
+                            int initialDelay = Calculator.minutesTillNextHour();
                             return Observable.interval(initialDelay, 60, TimeUnit.MINUTES)
                                     .observeOn(VTHREAD_SCHEDULER)
                                     .subscribeOn(VTHREAD_SCHEDULER);
@@ -184,8 +186,8 @@ public class Ladder {
             .flatMapSingle(tick -> twoVTwo(region))
             .flatMapSingle(tick -> battlegrounds(region))
             .flatMapSingle(tick -> shuffle(region))
-            .flatMapSingle(tick -> calculateMeta(region).andThen(Single.just(tick)))
             .flatMapSingle(tick -> loadCutoffs(region).andThen(Single.just(tick)))
+            .flatMapSingle(tick -> calculateMeta(region).andThen(Single.just(tick)))
             .flatMapSingle(tick -> {
                 log.info("Data updater for " + region + " has been finished");
                 return Single.just(tick);
@@ -587,7 +589,7 @@ public class Ladder {
                         List<SearchResult> list = characters.stream().map(charz -> new SearchResult(charz.fullName(), charz.region(), charz.clazz())).toList();
                         charSearchIndex.insertNickNames(list);
                         log.info("Character data size={} for region={} has been loaded to cache in {} ms", characters.size(), region, (System.nanoTime() - tick) / 1000000);
-//                        VTHREAD_SCHEDULER.schedulePeriodicallyDirect(() -> charUpdater.updateCharsInfinite(region).subscribe(), 0, 24, TimeUnit.HOURS);
+                        VTHREAD_SCHEDULER.schedulePeriodicallyDirect(() -> charUpdater.updateCharsInfinite(region).subscribe(), minutesTill5am(), 24 * 60, TimeUnit.MINUTES);
                         emitter.onComplete();
                     });
                 }));
@@ -777,13 +779,5 @@ public class Ladder {
             log.info("Data for bracket {} are equal, not updating", bracket);
             return Completable.complete();
         }
-    }
-
-    public static int minutesTillNextHour() {
-        ZoneId zone = ZoneId.systemDefault();
-        ZonedDateTime now = ZonedDateTime.now(zone);
-        ZonedDateTime nextHour = now.withMinute(0).withSecond(0).withNano(0).plusHours(1).plusMinutes(1);
-        Duration duration = Duration.between(now, nextHour);
-        return (int) duration.toMinutes();
     }
 }
