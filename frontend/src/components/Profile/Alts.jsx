@@ -40,6 +40,9 @@ const Alts = ({ isMobile, alts }) => {
   };
 
   const renderNumber = (number) => {
+    if(number === undefined) {
+      number = 0;
+    }
     let color = ratingToColor(number);
     return <Typography color={color}>{number}</Typography>;
   };
@@ -59,7 +62,10 @@ const Alts = ({ isMobile, alts }) => {
         console.error("Unknown bracket: " + bracket);
     }
     let found = (alt?.brackets ?? []).filter(findQuery);
-    let max = Math.max(...found.map((bracket) => bracket.rating));
+    let max = 0;
+    if(found.length > 0) {
+      max = Math.max(...found.map((bracket) => bracket.rating));
+    }
     return renderNumber(max);
   };
 
@@ -116,6 +122,11 @@ const Alts = ({ isMobile, alts }) => {
         alt["SHUFFLE"] = Math.max(cur, bracket.rating);
       } else {
         alt[bracket.bracket_type] = bracket.rating;
+      }
+    });
+    ["SHUFFLE", "ARENA_2v2", "ARENA_3v3", "BATTLEGROUNDS"].forEach((bracket) => {
+      if(alt[bracket] === undefined) {
+        alt[bracket] = 0;
       }
     });
     return alt;
