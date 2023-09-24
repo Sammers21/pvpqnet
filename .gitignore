@@ -6,3 +6,4 @@ bin/
 out/
 src/io/github/sammers/.DS_Store
 docker-compose.yml
+.env
