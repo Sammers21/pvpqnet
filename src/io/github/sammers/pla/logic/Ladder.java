@@ -535,7 +535,12 @@ public class Ladder {
                                     Meta meta = Calculator.calculateMeta(realDiff, role, bracket, 0.05, 0.10, 0.85);
                                     metaRef(bracket, realRegion, role, period).set(meta);
                                     long elapsed = (System.nanoTime() - tick) / 1000000;
-                                    log.info("Meta for bracket={} region={} role={} period={} has been calculated in {} ms", bracket, region, role, period, elapsed);
+                                    String msg = "Meta for bracket={} region={} role={} period={} has been calculated in {} ms";
+                                    if (elapsed > 1000) {
+                                        log.info(msg, bracket, region, role, period, elapsed);
+                                    } else {
+                                        log.debug(msg, bracket, region, role, period, elapsed);
+                                    }
                                 });
                                 return Completable.complete();
                             } catch (Exception e) {
@@ -589,15 +594,18 @@ public class Ladder {
     }
 
     private Completable loadLast(String bracket, String region) {
-        return db.getLast(bracket, region)
-            .switchIfEmpty(Maybe.defer(() -> {
-                log.info("No data for bracket {}-{} in DB", region, bracket);
-                return Maybe.empty();
-            }))
-            .flatMapCompletable(characters -> {
-            refByBracket(bracket, region).set(characters);
-            log.info("Data for bracket {}-{} has been loaded from DB", region, bracket);
-            return calcDiffs(bracket, region);
+        return Completable.defer(() -> {
+            long tick = System.nanoTime();
+            return db.getLast(bracket, region)
+                .switchIfEmpty(Maybe.defer(() -> {
+                    log.info("No data for bracket {}-{} in DB", region, bracket);
+                    return Maybe.empty();
+                }))
+                .flatMapCompletable(characters -> {
+                    refByBracket(bracket, region).set(characters);
+                    log.info("Data for bracket {}-{} has been loaded from DB in {} ms", region, bracket, (System.nanoTime() - tick) / 1000000);
+                    return calcDiffs(bracket, region);
+                });
         });
     }
 

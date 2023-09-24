@@ -49,10 +49,6 @@ dependencies {
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.3'
 }
 
-tasks.withType(JavaCompile).each {
-    it.options.compilerArgs.add('--enable-preview')
-}
-
 jar {
     manifest {
         attributes 'Main-Class': 'io.github.sammers.pla.Main'
@@ -70,5 +66,5 @@ shadowJar {
     archiveVersion.set('')
     mergeServiceFiles()
 }
-sourceCompatibility = JavaVersion.VERSION_20
-targetCompatibility = JavaVersion.VERSION_20
+sourceCompatibility = JavaVersion.VERSION_21
+targetCompatibility = JavaVersion.VERSION_21

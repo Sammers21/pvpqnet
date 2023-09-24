@@ -31,9 +31,11 @@ public class Main {
     public static void main(String[] args) {
         final Vertx vertx =
             Vertx.vertx(new VertxOptions()
+                .setBlockedThreadCheckInterval(10)
+                .setBlockedThreadCheckIntervalUnit(TimeUnit.SECONDS)
                 .setWarningExceptionTime(100)
                 .setWarningExceptionTimeUnit(TimeUnit.MILLISECONDS)
-                .setEventLoopPoolSize(16)
+                .setEventLoopPoolSize(32)
             );
         final WebClient webClient = WebClient.create(vertx);
         final String dbUri = System.getenv("DB_URI");

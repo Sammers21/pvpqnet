@@ -26,11 +26,11 @@ const Footer = () => {
     </Link>
   </Grid>;
   let giveItAStar = <Link
-    sx={{display: 'flex'}}
+  sx={{ textDecoration: "none", boxShadow: "none", display: 'flex' }}
     underline="none"
     href="https://github.com/Sammers21/pvpqnet"
   >
-    Please consider giving our GitHub project a star if you find it helpful. Thank you!
+    Source Code
     <GitHubIcon sx={{marginLeft: '8px'}}/>
   </Link>;
   return (
