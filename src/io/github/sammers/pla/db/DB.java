@@ -95,8 +95,13 @@ public class DB {
     }
 
     public Single<List<WowAPICharacter>> fetchChars(String region) {
+        long tick = System.nanoTime();
         return mongoClient.rxFind("profile", new JsonObject().put("region", region))
             .map(res -> res.stream().map(WowAPICharacter::fromJson).toList())
+            .doOnSuccess(chars -> {
+                long elapsed = System.nanoTime() - tick;
+                log.info("Fetched {} characters region {} in {} ms", chars.size(), region, elapsed / 1000000);
+            })
             .subscribeOn(Main.VTHREAD_SCHEDULER)
             .observeOn(Main.VTHREAD_SCHEDULER);
     }

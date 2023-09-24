@@ -40,6 +40,10 @@ public class NickNameSearchIndex {
         };
     }
 
+    public void insertNickNames(List<SearchResult> searchResults) {
+        insertNickNames(searchResults.toArray(new SearchResult[0]));
+    }
+
     public synchronized void insertNickNames(SearchResult... searchResults) {
         try {
             IndexWriterConfig config = new IndexWriterConfig(analyzer);

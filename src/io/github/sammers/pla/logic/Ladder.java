@@ -581,10 +581,10 @@ public class Ladder {
                         log.info("Character data size={} for region={} is being loaded to cache", characters.size(), region);
                         long tick = System.nanoTime();
                         characters.forEach(character -> {
-                            Calculator.indexCharAlts(alts, character);
                             characterCache.put(character.fullName(), character);
-                            charSearchIndex.insertNickNames(new SearchResult(character.fullName(), character.region(), character.clazz()));
                         });
+                        List<SearchResult> list = characters.stream().map(charz -> new SearchResult(charz.fullName(), charz.region(), charz.clazz())).toList();
+                        charSearchIndex.insertNickNames(list);
                         log.info("Character data size={} for region={} has been loaded to cache in {} ms", characters.size(), region, (System.nanoTime() - tick) / 1000000);
 //                        VTHREAD_SCHEDULER.schedulePeriodicallyDirect(() -> charUpdater.updateCharsInfinite(region).subscribe(), 0, 24, TimeUnit.HOURS);
                         emitter.onComplete();
