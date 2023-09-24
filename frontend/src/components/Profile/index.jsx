@@ -4,7 +4,7 @@ import Footer from "../Footer";
 import {useParams} from "react-router-dom";
 import axios from "axios";
 import {baseUrl} from "../../config";
-import {Box} from "@mui/material";
+import {Box, Grid} from "@mui/material";
 import {containerBg} from "../../theme";
 import {capitalizeFirstLetter} from "../../containers/Activity";
 import PvpBracketBox from "./PvpBracketBox";
@@ -74,61 +74,95 @@ const Profile = () => {
   if (data.class) {
     let classAndSpec = CLASS_AND_SPECS[data.class];
     shuffle = classAndSpec.map((spec) => {
-      let found = (data?.brackets ?? []).find((b) => b.bracket_type.includes(spec))
+      let found = (data?.brackets ?? []).find((b) =>
+        b.bracket_type.includes(spec)
+      );
       return (
-        <PvpBracketBox totalInRow={classAndSpec.length} isMobile={isMobile} bracket={spec} rating={found?.rating ?? 0} wins={found?.won ?? 0} loses={found?.lost ?? 0}/>
+        <PvpBracketBox
+          totalInRow={classAndSpec.length}
+          isMobile={isMobile}
+          bracket={spec}
+          rating={found?.rating ?? 0}
+          wins={found?.won ?? 0}
+          loses={found?.lost ?? 0}
+        />
       );
     });
   } else {
     shuffle = [];
   }
   const titlesHistory = data.achievements?.titles_history.expansions ?? [];
-  let normalResp = <><>
-    <Header/>
-    <Box
-      width={'100%'}
-      sx={{
-        backgroundColor: containerBg,
-        minHeight: '100vh',
-        paddingTop: '105px',
-        paddingLeft: isMobile ? '0' : '3%',
-        paddingRight: isMobile ? '0' : '3%',
-        paddingBottom: '45px',
-      }} display={'flex'} flexDirection={'column'}>
-      <PhotoCard isMobile={isMobile} data={data} loading={loading} update={upd}/>
-      <Box
-        margin={isMobile ? 0 : 1}
-        padding={isMobile ? 0 : 1}
-        paddingLeft={'10px'}
-        paddingRight={'10px'}
-        paddingTop={1}
-        paddingBottom={0}
-        marginTop={0}
-        marginBottom={0}
-        display={'flex'}
-        flexDirection={'row'}
-        justifyContent={'space-between'}>
-        {arenaAndRbg}
-      </Box>
-      <Box
-        margin={isMobile ? 0 : 1}
-        padding={isMobile ? 0 : 1}
-        paddingTop={1}
-        paddingBottom={0}
-        marginTop={0}
-        marginBottom={0}
-        display={'flex'}
-        flexDirection={'row'}
-        justifyContent={'space-between'}>
-        {shuffle}
-      </Box>
-      <Talents isMobile={isMobile} data={data}></Talents>
-      <TitlesHistory expansions={titlesHistory}></TitlesHistory>
-      <Alts isMobile={isMobile} alts={data.alts}></Alts>
-    </Box>
-    <Footer/>
-  </>
-  </>;
+  let bottom = (
+    <Grid container spacing={2}>
+      <Grid item xs={isMobile ? 12 : 6}>
+        <TitlesHistory
+          isMobile={isMobile}
+          expansions={titlesHistory}
+        ></TitlesHistory>
+      </Grid>
+      <Grid item xs={isMobile ? 12 : 6}>
+        <Alts isMobile={isMobile} alts={data.alts}></Alts>
+      </Grid>
+    </Grid>
+  );
+  let normalResp = (
+    <>
+      <>
+        <Header />
+        <Box
+          width={"100%"}
+          sx={{
+            backgroundColor: containerBg,
+            minHeight: "100vh",
+            paddingTop: "105px",
+            paddingLeft: isMobile ? "0" : "3%",
+            paddingRight: isMobile ? "0" : "3%",
+            paddingBottom: "45px",
+          }}
+          display={"flex"}
+          flexDirection={"column"}
+        >
+          <PhotoCard
+            isMobile={isMobile}
+            data={data}
+            loading={loading}
+            update={upd}
+          />
+          <Box
+            margin={isMobile ? 0 : 1}
+            padding={isMobile ? 0 : 1}
+            paddingLeft={"10px"}
+            paddingRight={"10px"}
+            paddingTop={1}
+            paddingBottom={0}
+            marginTop={0}
+            marginBottom={0}
+            display={"flex"}
+            flexDirection={"row"}
+            justifyContent={"space-between"}
+          >
+            {arenaAndRbg}
+          </Box>
+          <Box
+            margin={isMobile ? 0 : 1}
+            padding={isMobile ? 0 : 1}
+            paddingTop={1}
+            paddingBottom={0}
+            marginTop={0}
+            marginBottom={0}
+            display={"flex"}
+            flexDirection={"row"}
+            justifyContent={"space-between"}
+          >
+            {shuffle}
+          </Box>
+          <Talents isMobile={isMobile} data={data}></Talents>
+          {bottom}
+        </Box>
+        <Footer />
+      </>
+    </>
+  );
 
 
   let notFoundResp = <><>

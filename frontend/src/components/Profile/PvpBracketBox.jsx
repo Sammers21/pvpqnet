@@ -1,19 +1,8 @@
 import {alpha, Box, Divider, Typography} from "@mui/material";
 import {aroundColor, borderRadius, winRateGreyColor} from "../../theme";
 
-const PvpBracketBox = ({isMobile, totalInRow, bracket, rating, wins, loses}) => {
-  let shortBracketName = bracket;
-  if (bracket.startsWith('ARENA')) {
-    shortBracketName = bracket.split('_')[1];
-  }
-  if (bracket === 'BATTLEGROUNDS') {
-    shortBracketName = 'RBG';
-  }
-  const wonColor = wins > 0 ? 'green' : 'white';
-  const lostColor = loses > 0 ? '#ff0000' : 'white';
-  const winRate = wins && ((wins * 100) / (wins + loses)).toFixed(2) + `%`;
-  const showWinRate = wins > 0 || loses > 0;
-  let ratingColor = 'white';
+export const ratingToColor = (rating) => {
+    let ratingColor = 'white';
   if (rating >= 2400) {
     ratingColor = '#fb7e00';
   } else if (rating >= 2100) {
@@ -27,6 +16,22 @@ const PvpBracketBox = ({isMobile, totalInRow, bracket, rating, wins, loses}) => 
   } else if (rating >= 900) {
     ratingColor = '#d2d2d2'
   }
+  return ratingColor;
+}
+
+const PvpBracketBox = ({isMobile, totalInRow, bracket, rating, wins, loses}) => {
+  let shortBracketName = bracket;
+  if (bracket.startsWith('ARENA')) {
+    shortBracketName = bracket.split('_')[1];
+  }
+  if (bracket === 'BATTLEGROUNDS') {
+    shortBracketName = 'RBG';
+  }
+  const wonColor = wins > 0 ? 'green' : 'white';
+  const lostColor = loses > 0 ? '#ff0000' : 'white';
+  const winRate = wins && ((wins * 100) / (wins + loses)).toFixed(2) + `%`;
+  const showWinRate = wins > 0 || loses > 0;
+  let ratingColor = ratingToColor(rating);
   var ratingVariant = 'h3';
   var bracketVariant = 'h5';
   if (isMobile) {
