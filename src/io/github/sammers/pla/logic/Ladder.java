@@ -581,6 +581,7 @@ public class Ladder {
                         log.info("Character data size={} for region={} is being loaded to cache", characters.size(), region);
                         long tick = System.nanoTime();
                         characters.forEach(character -> {
+                            Calculator.indexCharAlts(alts, character);
                             characterCache.put(character.fullName(), character);
                         });
                         List<SearchResult> list = characters.stream().map(charz -> new SearchResult(charz.fullName(), charz.region(), charz.clazz())).toList();
