@@ -1,12 +1,12 @@
 import { BRACKETS } from '../constants/pvp-activity';
 import { REGIONS } from '../constants/region';
 
-export function getBracket(bracket: string) {
+export function getBracket(bracket?: string) {
   const validBracket = Object.values(BRACKETS).find((r) => bracket === r);
   return validBracket ?? BRACKETS.shuffle;
 }
 
-export function getRegion(region: string) {
+export function getRegion(region?: string) {
   const validRegion = Object.values(REGIONS).find((r) => region === r);
   return validRegion ?? REGIONS.eu;
 }

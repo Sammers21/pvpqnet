@@ -1,19 +1,18 @@
-import React from 'react';
 import loadable from '@loadable/component';
 import { BrowserRouter, Routes as ReactRouterDomRoutes, Route } from 'react-router-dom';
 
-import Loading from '../components/Loading';
+import Loading from '../components/common/Loading';
 import { publicUrls } from '../config';
 
 const { page } = publicUrls;
 const ActivityScreen = loadable(() => import('../containers/Activity'), {
-  fallback: Loading({ pastDelay: true, error: false, timedOut: false }),
+  fallback: <Loading />,
 });
 const MetaScreen = loadable(() => import('../components/Meta'), {
-  fallback: Loading({ pastDelay: true, error: false, timedOut: false }),
+  fallback: <Loading />,
 });
 const ProfileScreen = loadable(() => import('../components/Profile'), {
-  fallback: Loading({ pastDelay: true, error: false, timedOut: false }),
+  fallback: <Loading />,
 });
 
 const AppRoutes = () => {

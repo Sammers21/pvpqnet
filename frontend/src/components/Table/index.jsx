@@ -1,15 +1,23 @@
-import React, {useCallback, useMemo, useState} from 'react';
-import {Grid, Table as TableMui, TableBody, TableContainer, TableHead, TableRow, Typography,} from '@mui/material';
-import {styled} from '@mui/system';
+import React, { useCallback, useMemo, useState } from 'react';
+import {
+  Grid,
+  Table as TableMui,
+  TableBody,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Typography,
+} from '@mui/material';
+import { styled } from '@mui/system';
 
 import HeaderCell from './HeaderCell';
-import BlizzardLoader from '../BlizzardLoader';
+import BlizzardLoader from '../common/BlizzardLoader';
 import Pagination from './Pagination';
 import Row from './Row';
 
-import {containerBg} from '../../theme';
-import SpecFilter from "../SpecFilter";
-import {useSearchParams} from "react-router-dom";
+import { containerBg } from '../../theme';
+import SpecFilter from '../SpecFilter';
+import { useSearchParams } from 'react-router-dom';
 
 const StyledTable = styled(TableMui)({
   position: 'relative',
@@ -40,9 +48,9 @@ const Table = ({
 }) => {
   let [searchParams, setSearchParams] = useSearchParams();
   const [diff, setDiff] = useState({});
-  var specs = []
+  var specs = [];
   // var scoreHovered, setScoreHovered = React.useState({won: 0, lost: 0});
-  if (searchParams.get('specs') != null){
+  if (searchParams.get('specs') != null) {
     specs = searchParams.get('specs').split(',');
   }
 
@@ -103,7 +111,17 @@ const Table = ({
   };
 
   const renderRow = (record, index) => {
-    return <Row curDiff={diff} onMouseOverDiff={(diff) => setDiff(diff)} key={index} index={index} record={record} fieldId={index} columns={columnsData} />;
+    return (
+      <Row
+        curDiff={diff}
+        onMouseOverDiff={(diff) => setDiff(diff)}
+        key={index}
+        index={index}
+        record={record}
+        fieldId={index}
+        columns={columnsData}
+      />
+    );
   };
 
   const rowsComponent = useMemo(() => {
@@ -119,7 +137,7 @@ const Table = ({
   };
 
   const renderSpecFilters = () => {
-    return <SpecFilter specs={specs} onSpecsChange={onSpecsChange}/>;
+    return <SpecFilter specs={specs} onSpecsChange={onSpecsChange} />;
   };
 
   const renderTable = () => (
@@ -138,7 +156,7 @@ const Table = ({
   );
 
   let padding = '12px 32px 32px 32px';
-  if (isMobile){
+  if (isMobile) {
     padding = '12px 5px 32px 5px';
   }
   return (

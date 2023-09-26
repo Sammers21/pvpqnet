@@ -24,3 +24,16 @@ export const getStatistic = async ({
     return null;
   }
 };
+
+export async function fetchStatistic(region: REGIONS) {
+  try {
+    const url = urls.getStatistic(statsMap[region]);
+
+    const response = await request(url, { method: 'GET', isJson: true });
+    const statistic = JSON.parse(response.body);
+
+    return statistic;
+  } catch (error) {
+    return { '2v2': 0, '3v3': 0, rbg: 0, shuffle: 0 };
+  }
+}
