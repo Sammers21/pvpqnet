@@ -1,27 +1,22 @@
-import React, {useEffect, useState} from 'react';
-import {useParams} from 'react-router-dom';
-import {Box} from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { Box } from '@mui/material';
 
 import Header from '../../components/Header';
 import ActivityTabs from '../../components/Tabs';
 import DataTable from '../../components/DataTable';
 import Footer from '../../components/Footer';
 
-import {REGIONS} from '../../constants/region';
-import {BRACKETS} from '../../constants/pvp-activity';
-import {getActivityFromUrl} from "../../utils/urlparts";
-
-export const capitalizeFirstLetter = (str) => {
-  return str.charAt(0).toUpperCase() + str.slice(1);
-};
+import { REGIONS } from '../../constants/region';
+import { BRACKETS } from '../../constants/pvp-activity';
+import { getActivityFromUrl } from '../../utils/urlparts';
+import { capitalizeFirstLetter } from '../../utils/common';
 
 function Activity() {
-  const {
-    region = REGIONS.eu,
-    bracket = BRACKETS.shuffle,
-  } = useParams();
+  const { region = REGIONS.eu, bracket = BRACKETS.shuffle } = useParams();
   const activity = getActivityFromUrl();
   const [width, setWidth] = useState(window.innerWidth);
+
   useEffect(() => {
     window.addEventListener('resize', function () {
       setWidth(window.innerWidth);
@@ -30,7 +25,7 @@ function Activity() {
       window.removeEventListener('resize', function () {
         setWidth(window.innerWidth);
       });
-    }
+    };
   }, []);
   const isMobile = width <= 900;
 
@@ -40,16 +35,18 @@ function Activity() {
     )} on ${region.toUpperCase()}`;
     document.title = title;
   }, [region, activity, bracket]);
+
   let realw = isMobile ? '100%' : '85%';
   let margin = '95px auto 45px auto';
+
   return (
     <>
-      <Header/>
-      <Box sx={{width: realw, margin: margin}}>
-        <ActivityTabs/>
-        <DataTable/>
+      <Header />
+      <Box sx={{ width: realw, margin: margin }}>
+        <ActivityTabs />
+        <DataTable />
       </Box>
-      <Footer/>
+      <Footer />
     </>
   );
 }
