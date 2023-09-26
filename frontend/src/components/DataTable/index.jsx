@@ -1,24 +1,21 @@
-import React, {useCallback, useEffect, useState} from 'react';
-import {useParams, useSearchParams} from 'react-router-dom';
+import React, { useCallback, useEffect, useState } from 'react';
+import { useParams, useSearchParams } from 'react-router-dom';
 
 import Table from '../Table';
 
 import useColumns from './useColumns';
-import {getStatistic} from '../../services/stats.service';
-import {REGIONS} from '../../constants/region';
-import {BRACKETS} from '../../constants/pvp-activity';
-import {getActivityFromUrl} from "../../utils/urlparts";
+import { getStatistic } from '../../services/stats.service';
+import { REGIONS } from '../../constants/region';
+import { BRACKETS } from '../../constants/pvp-activity';
+import { getActivityFromUrl } from '../../utils/urlparts';
 
 const DataList = () => {
-  const {
-    region = REGIONS.eu,
-    bracket = BRACKETS.shuffle,
-  } = useParams();
+  const { region = REGIONS.eu, bracket = BRACKETS.shuffle } = useParams();
   const activity = getActivityFromUrl();
 
   let [searchParams, setSearchParams] = useSearchParams();
-  var initSpecs = []
-  if (searchParams.get('specs') != null){
+  var initSpecs = [];
+  if (searchParams.get('specs') != null) {
     initSpecs = searchParams.get('specs').split(',');
   }
   const [contractors, setData] = useState([]);
@@ -35,7 +32,7 @@ const DataList = () => {
       window.removeEventListener('resize', function () {
         setWidth(window.innerWidth);
       });
-    }
+    };
   }, []);
   const isMobile = width <= 900;
 
@@ -44,7 +41,7 @@ const DataList = () => {
   };
 
   const getDataFilter = useCallback(() => {
-    return {page, region, activity, bracket, specs};
+    return { page, region, activity, bracket, specs };
   }, [page, region, activity, bracket, specs]);
 
   const getData = async () => {
@@ -66,7 +63,7 @@ const DataList = () => {
     getData();
   }, [page, region, activity, bracket, specs]);
 
-  const includeLastSeen = activity === 'activity'
+  const includeLastSeen = activity === 'activity';
   const columns = useColumns(includeLastSeen, region, isMobile);
   return (
     <Table

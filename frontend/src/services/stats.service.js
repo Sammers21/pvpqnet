@@ -1,6 +1,6 @@
-import {urls} from '../config';
-import {BRACKETS} from '../constants/pvp-activity';
-import {REGIONS} from '../constants/region';
+import { urls } from '../config';
+import { BRACKETS } from '../constants/pvp-activity';
+import { REGIONS } from '../constants/region';
 import request from './request.service';
 
 export const statsMap = {
