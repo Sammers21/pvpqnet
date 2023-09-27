@@ -18,7 +18,7 @@ interface IActivityDiff {
   lost: number;
   rating_diff: number;
   rank_diff: number;
-  last_seen: string;
+  last_seen?: string;
 }
 
 export interface IActivityRecord extends IAcitivityCharacter {

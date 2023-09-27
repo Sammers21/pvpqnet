@@ -36,9 +36,9 @@ const TableFilter = ({ selectedSpecs, onSpecsChange }: IProps) => {
   };
 
   return (
-    <div className="px-8">
-      <div className="flex justify-end pt-4 pb-0">
-        <Button className="!px-6 bg-[#1f2937]" onClick={toggleFilterShown}>
+    <div className="bg-[#030303e6] px-8">
+      <div className="flex justify-end pt-8 pb-0">
+        <Button className="!px-8 !bg-[#1F2937]" onClick={toggleFilterShown}>
           Filters
           {!isEmpty(selectedSpecs) && (
             <div className="flex justify-center items-center absolute w-6 h-6 -top-2 -right-2 bg-[#1769aa] text-[#fff] rounded-full text-xs">
@@ -65,7 +65,7 @@ const TableFilter = ({ selectedSpecs, onSpecsChange }: IProps) => {
 
           <div className="flex justify-end py-4">
             <Button
-              className="!px-8 bg-[#1f2937]"
+              className="!px-8 !bg-[#1f2937]"
               disabled={isEmpty(selectedSpecs)}
               onClick={resetFilters}
             >

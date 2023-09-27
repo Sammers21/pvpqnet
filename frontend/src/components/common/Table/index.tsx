@@ -102,7 +102,8 @@ const Table = ({
           <col key={index} />
         ))}
       </colgroup>
-      {!records.length && !loading ? renderNoRowsOverlay() : renderBody()}
+      {!records.length && !loading && renderNoRowsOverlay()}
+      {records.length && renderBody()}
     </StyledTable>
   );
 

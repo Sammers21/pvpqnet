@@ -1,6 +1,3 @@
-import { Typography } from '@mui/material';
-import { IActivityRecord } from '../../types';
-
 import {
   getProfileUrl,
   getClassNameColor,
@@ -13,6 +10,7 @@ import {
   getWonAndLossColors,
   getRatingColor,
 } from '../../utils/table';
+import type { IActivityRecord } from '../../types';
 
 const getTableColumns = (activity: string, isMobile: boolean, region: string) => {
   const rank = {
@@ -143,11 +141,13 @@ const getTableColumns = (activity: string, isMobile: boolean, region: string) =>
 
       return (
         <div className="flex">
-          <Typography className={`font-light mr-1 text-[${ratingColor}]`}>{rating}</Typography>
+          <span className="text-base font-light mr-1" style={{ color: ratingColor }}>
+            {rating}
+          </span>
           {Number.isInteger(ratingDiff) && (
-            <Typography color={getDiffColor(ratingDiff)} className="ml-1 font-light">
+            <span className="text-base font-light" style={{ color: getDiffColor(ratingDiff) }}>
               {getDiffCell(ratingDiff)}
-            </Typography>
+            </span>
           )}
         </div>
       );
@@ -162,10 +162,11 @@ const getTableColumns = (activity: string, isMobile: boolean, region: string) =>
     field: 'lastSeen',
     label: isMobile ? 'LS' : 'LAST SEEN',
     render: ({ record }: { record: IActivityRecord }) => {
+      if (!record?.diff?.last_seen) return <></>;
       const split = record.diff.last_seen.split(' ');
       const content = isMobile ? `${split[0]} ${split[1].charAt(0)}.` : record.diff.last_seen;
 
-      return <Typography>{content}</Typography>;
+      return <span className="text-base font-light">{content}</span>;
     },
   };
 
