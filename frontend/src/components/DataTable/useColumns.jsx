@@ -1,8 +1,8 @@
 import React from 'react';
 
-import {Box, Link, Typography} from '@mui/material';
-import {baseUrl} from "../../config";
-import {winRateGreyColor} from "../../theme";
+import { Box, Link, Typography } from '@mui/material';
+import { baseUrl } from '../../config';
+import { winRateGreyColor } from '../../theme';
 
 const TABLE_FIELDS = {
   rank: 'pos',
@@ -16,7 +16,7 @@ const TABLE_FIELDS = {
 
 export const getRealmColor = (fraction) => {
   if (fraction === undefined) {
-    return '#FFFFFF'
+    return '#FFFFFF';
   }
   return fraction.toUpperCase() === 'ALLIANCE' ? '#3FC7EB' : '#ff0000';
 };
@@ -27,7 +27,7 @@ export const specNameFromFullSpec = (wowSpec) => {
 
 export const classIcon = (wowClass) => {
   return require('../../assets/classicons/' + wowClass.replaceAll(' ', '').toLowerCase() + '.png');
-}
+};
 
 const getDetails = (wowClass, wowSpec, wowRace, wowGender) => {
   const classSrc = classIcon(wowClass);
@@ -36,18 +36,19 @@ const getDetails = (wowClass, wowSpec, wowRace, wowGender) => {
   try {
     specSrc = require('../../assets/specicons/' + specIcon);
   } catch (e) {
-    console.log(`SpecIcon: ${specIcon} was not found`)
     specSrc = require('../../assets/unknown.png');
   }
   let raceSrc;
-  let raceIcon = wowGender.toLowerCase().charAt(0) + wowRace.replaceAll(' ', '').replaceAll("'", '').toLowerCase() + '.webp';
+  let raceIcon =
+    wowGender.toLowerCase().charAt(0) +
+    wowRace.replaceAll(' ', '').replaceAll("'", '').toLowerCase() +
+    '.webp';
   try {
     raceSrc = require('../../assets/raceicons/' + raceIcon);
   } catch (e) {
-    console.log(`RaceIcon: ${raceIcon} was not found`)
     raceSrc = require('../../assets/unknown.png');
   }
-  return {classSrc, specSrc, raceSrc};
+  return { classSrc, specSrc, raceSrc };
 };
 
 export const getClassNameColor = (wowClass) => {
@@ -101,7 +102,7 @@ export const profileUrl = (record, region) => {
   const name = record?.character?.name || record?.name;
   const realm = record?.character?.realm || record?.realm;
   return window.location.origin + `/${region}/${realm}/${name}`;
-}
+};
 
 const useColumns = (includeLastSeen, region, isMobile) => {
   let rank = {
@@ -136,25 +137,29 @@ const useColumns = (includeLastSeen, region, isMobile) => {
       const details = getDetails(wowClass, wowSpec, wowRace, wowGender);
       return (
         <Box sx={{ display: 'flex' }}>
-          {window.innerWidth > 600 && <img
-            style={{
-              border: '1px #37415180 solid',
-              borderRadius: '4px',
-              marginLeft: '5px',
-              height: '20px',
-              width: '20px',
-            }}
-            src={details.raceSrc}
-          />}
-          {window.innerWidth > 700 && <img
-            style={{
-              border: '1px #37415180 solid',
-              borderRadius: '4px',
-              height: '20px',
-              width: '20px',
-            }}
-            src={details.classSrc}
-          />}
+          {window.innerWidth > 600 && (
+            <img
+              style={{
+                border: '1px #37415180 solid',
+                borderRadius: '4px',
+                marginLeft: '5px',
+                height: '20px',
+                width: '20px',
+              }}
+              src={details.raceSrc}
+            />
+          )}
+          {window.innerWidth > 700 && (
+            <img
+              style={{
+                border: '1px #37415180 solid',
+                borderRadius: '4px',
+                height: '20px',
+                width: '20px',
+              }}
+              src={details.classSrc}
+            />
+          )}
           <img
             style={{
               border: '1px #37415180 solid',
@@ -175,16 +180,23 @@ const useColumns = (includeLastSeen, region, isMobile) => {
     render: ({ record }) => {
       const wowClass = record?.character?.class || record?.class;
       let name = record?.character?.name || record?.name;
-      if(isMobile){
+      if (isMobile) {
         // const cut = name.length > 6 ? '..' : '';
-        let max = Math.round(Math.max(6, 6 + ((window.innerWidth - 500) / 30)))
-        console.log("Max ", max)
+        let max = Math.round(Math.max(6, 6 + (window.innerWidth - 500) / 30));
         name = name.substring(0, max);
       }
       const url = profileUrl(record, region);
-      return <Typography color={getClassNameColor(wowClass)}>
-        <Link sx={{textDecoration: "none", boxShadow: "none"}}  href={url} color={getClassNameColor(wowClass)}>{name}</Link>
-      </Typography>;
+      return (
+        <Typography color={getClassNameColor(wowClass)}>
+          <Link
+            sx={{ textDecoration: 'none', boxShadow: 'none' }}
+            href={url}
+            color={getClassNameColor(wowClass)}
+          >
+            {name}
+          </Link>
+        </Typography>
+      );
     },
   };
   let realm = {
@@ -197,7 +209,7 @@ const useColumns = (includeLastSeen, region, isMobile) => {
     },
   };
   let wonLostLabel = 'WON / LOST';
-  if(isMobile){
+  if (isMobile) {
     wonLostLabel = 'W/L';
   }
   let wonLost = {
@@ -245,7 +257,9 @@ const useColumns = (includeLastSeen, region, isMobile) => {
       const ratingColor = record?.character?.in_cutoff ?? record?.in_cutoff ? '#fb7e00' : 'white';
       return (
         <Box sx={{ display: 'flex' }}>
-          <Typography color={ratingColor} sx={{ fontWeight: 300, marginRight: '4px' }}>{rating}</Typography>
+          <Typography color={ratingColor} sx={{ fontWeight: 300, marginRight: '4px' }}>
+            {rating}
+          </Typography>
           {Number.isInteger(record?.diff?.rating_diff) && (
             <Typography
               color={getDiffColor(record.diff.rating_diff)}
@@ -259,14 +273,14 @@ const useColumns = (includeLastSeen, region, isMobile) => {
     },
   };
   let lastSeenLabel = 'LAST SEEN';
-  if(isMobile){
+  if (isMobile) {
     lastSeenLabel = 'LS';
   }
   let lastSeen = {
     field: TABLE_FIELDS.lastSeen,
     label: lastSeenLabel,
-    render: ({record}) => {
-      let content = record?.diff?.last_seen
+    render: ({ record }) => {
+      let content = record?.diff?.last_seen;
       if (isMobile) {
         const split = content.split(' ');
         content = split[0] + ' ' + split[1].substring(0, 1) + '.';
@@ -274,24 +288,11 @@ const useColumns = (includeLastSeen, region, isMobile) => {
       return <Typography>{content}</Typography>;
     },
   };
-  let res = [
-    rank,
-    details,
-    name,
-    realm,
-    wonLost,
-    rating
-  ];
-  if(isMobile) {
-    res = [
-      rank,
-      details,
-      name,
-      wonLost,
-      rating
-    ];
+  let res = [rank, details, name, realm, wonLost, rating];
+  if (isMobile) {
+    res = [rank, details, name, wonLost, rating];
   }
-  if(includeLastSeen) {
+  if (includeLastSeen) {
     res.push(lastSeen);
   }
   return res;

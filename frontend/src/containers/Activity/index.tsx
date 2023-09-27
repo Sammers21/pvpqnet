@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 
-import Header from '../../components/Header';
+import Header from '../../components/AppHeader';
 import ActivityTabs from './Tabs';
 import DataTable from '../../components/DataTable';
 import Footer from '../../components/common/Footer';

@@ -1,4 +1,4 @@
-import Header from '../Header';
+import Header from '../AppHeader';
 import React from 'react';
 import Footer from '../common/Footer';
 import Grid from './Grid';
