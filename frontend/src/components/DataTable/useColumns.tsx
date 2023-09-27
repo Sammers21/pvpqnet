@@ -50,16 +50,21 @@ const getTableColumns = (activity: string, isMobile: boolean, region: string) =>
 
       return (
         <div className="flex">
-          <img
-            className="mr-1 h-5 w-5 rounded border border-solid border-[#37415180]"
-            src={icons.raceIcon}
-            alt="race icon"
-          />
-          <img
-            className="mr-1 h-5 w-5 rounded border border-solid border-[#37415180]"
-            src={icons.classIcon}
-            alt="class icon"
-          />
+          {window.innerWidth > 600 && (
+            <img
+              className="mr-1 h-5 w-5 rounded border border-solid border-[#37415180]"
+              src={icons.raceIcon}
+              alt="race icon"
+            />
+          )}
+          {window.innerWidth > 700 && (
+            <img
+              className="mr-1 h-5 w-5 rounded border border-solid border-[#37415180]"
+              src={icons.classIcon}
+              alt="class icon"
+            />
+          )}
+
           <img
             className=" h-5 w-5 rounded border border-solid border-[#37415180]"
             src={icons.specIcon}
@@ -141,7 +146,7 @@ const getTableColumns = (activity: string, isMobile: boolean, region: string) =>
 
       return (
         <div className="flex">
-          <span className="text-base font-light mr-1" style={{ color: ratingColor }}>
+          <span className="text-base font-light mr-2" style={{ color: ratingColor }}>
             {rating}
           </span>
           {Number.isInteger(ratingDiff) && (
@@ -166,7 +171,7 @@ const getTableColumns = (activity: string, isMobile: boolean, region: string) =>
       const split = record.diff.last_seen.split(' ');
       const content = isMobile ? `${split[0]} ${split[1].charAt(0)}.` : record.diff.last_seen;
 
-      return <span className="text-base font-light">{content}</span>;
+      return <span className="text-base">{content}</span>;
     },
   };
 

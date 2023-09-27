@@ -33,9 +33,14 @@ const MobileView = ({ menuItems, host, region, setRegion }: IProps) => {
 
       <PlayersSearch />
 
-      <Drawer open={drawerOpen} onClose={() => setDrawerOpen(false)} className="w-60">
-        <div onClick={() => setDrawerOpen((state) => !state)}>
-          <h6 className="my-2">{host}</h6>
+      <Drawer
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        className="!w-60"
+        sx={{ '& .MuiDrawer-paper': { boxSizing: 'border-box', width: 240 } }}
+      >
+        <div className="text-center" onClick={() => setDrawerOpen((state) => !state)}>
+          <h6 className="my-4 text-xl font-semibold	">{host}</h6>
           <Divider />
 
           <RegionButtons region={region} setRegion={setRegion} />

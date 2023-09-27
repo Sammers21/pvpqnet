@@ -12,7 +12,7 @@ const TablePagination = ({ page, totalPages, pagination, onPageChange, recordsLe
   const visible = pagination && !!recordsLength;
 
   return visible ? (
-    <div className="flex justify-end mb-4 mt-4">
+    <div className="flex justify-end mb-4 mt-2">
       <Pagination
         count={totalPages}
         page={page}

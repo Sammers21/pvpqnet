@@ -17,7 +17,7 @@ import Row from './Row';
 import { IActivityRecord, ITableColumn } from '../../../types';
 
 const StyledTable = styled(TableMui)({
-  '& tr:nth-child(even)': {
+  'tbody tr:nth-of-type(odd)': {
     backgroundColor: '#0e1216',
   },
   '& tr td,th': {
@@ -126,7 +126,7 @@ const Table = ({
   );
 
   return (
-    <div className="relative pt-3 pb-8 px-8 bg-[#030303e6]">
+    <div className="relative pt-3 pb-8 px-2 md:px-8 bg-[#030303e6]" style={{ minHeight: '250px' }}>
       {renderFooter()}
       {<TableContainer>{renderTable()}</TableContainer>}
       {renderLoading()}

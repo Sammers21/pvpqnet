@@ -27,7 +27,7 @@ const StyledToolbar = styled(Toolbar)({
   minHeight: '48px !important',
 });
 
-const useBreakpoint = createBreakpoint({ S: 758, L: 1024, XL: 1280 });
+const useBreakpoint = createBreakpoint({ S: 758, L: 900, XL: 1280 });
 
 const Header = () => {
   let navigate = useNavigate();

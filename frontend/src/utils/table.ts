@@ -19,31 +19,31 @@ export const specNameFromFullSpec = (spec: string) => {
 export const getClassNameColor = (wowClass: string) => {
   wowClass = wowClass.toUpperCase();
 
-  if (wowClass === WOW_CLASS.WARRIOR) {
+  if (wowClass.includes(WOW_CLASS.WARRIOR)) {
     return '#C69B6D';
-  } else if (wowClass === WOW_CLASS.PALADIN) {
+  } else if (wowClass.includes(WOW_CLASS.PALADIN)) {
     return '#F48CBA';
-  } else if (wowClass === WOW_CLASS.HUNTER) {
+  } else if (wowClass.includes(WOW_CLASS.HUNTER)) {
     return '#8EBA43';
-  } else if (wowClass === WOW_CLASS.ROGUE) {
+  } else if (wowClass.includes(WOW_CLASS.ROGUE)) {
     return '#FFF468';
-  } else if (wowClass === WOW_CLASS.PRIEST) {
+  } else if (wowClass.includes(WOW_CLASS.PRIEST)) {
     return '#FFFFFF';
-  } else if (wowClass === WOW_CLASS['DEATH KNIGHT']) {
+  } else if (wowClass.includes(WOW_CLASS['DEATH KNIGHT'])) {
     return '#C41E3A';
-  } else if (wowClass === WOW_CLASS.SHAMAN) {
+  } else if (wowClass.includes(WOW_CLASS.SHAMAN)) {
     return '#0070DD';
-  } else if (wowClass === WOW_CLASS.MAGE) {
+  } else if (wowClass.includes(WOW_CLASS.MAGE)) {
     return '#3FC7EB';
-  } else if (wowClass === WOW_CLASS.WARLOCK) {
+  } else if (wowClass.includes(WOW_CLASS.WARLOCK)) {
     return '#8788EE';
-  } else if (wowClass === WOW_CLASS.MONK) {
+  } else if (wowClass.includes(WOW_CLASS.MONK)) {
     return '#00FF98';
-  } else if (wowClass === WOW_CLASS.DRUID) {
+  } else if (wowClass.includes(WOW_CLASS.DRUID)) {
     return '#FF7C0A';
-  } else if (wowClass === WOW_CLASS['DEMON HUNTER']) {
+  } else if (wowClass.includes(WOW_CLASS['DEMON HUNTER'])) {
     return '#A330C9';
-  } else if (wowClass === WOW_CLASS.EVOKER) {
+  } else if (wowClass.includes(WOW_CLASS.EVOKER)) {
     return '#33937F';
   } else {
     return '#FFFFFF';

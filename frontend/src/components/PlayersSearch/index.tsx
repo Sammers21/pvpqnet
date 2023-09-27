@@ -20,7 +20,7 @@ interface ISearchResults {
 }
 
 const renderSearchOption = (props: React.HTMLAttributes<HTMLLIElement>, option: ISearchResults) => {
-  const icon = require(getClassIcon(option.class));
+  const icon = getClassIcon(option.class);
 
   const RegionIcon = option.region === 'us' || option.region === 'en-us' ? UsIcon : EuIcon;
 

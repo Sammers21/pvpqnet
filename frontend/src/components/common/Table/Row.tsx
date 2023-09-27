@@ -13,7 +13,7 @@ interface IProps {
 }
 
 const Row = ({ record, columns, shouldHighlight, onRowOver }: IProps) => {
-  const bgClass = shouldHighlight ? '#0e1216' : '';
+  const bgClass = shouldHighlight ? 'rgb(21, 128, 61, 0.25)' : '';
 
   const renderDefaultCell = (value: string) => {
     return <Typography variant="h6">{value}</Typography>;

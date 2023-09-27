@@ -17,7 +17,7 @@ export function getFromSearchParams(searchParams: URLSearchParams, name: string)
   return searchParams?.get(name)?.split(',') || [];
 }
 
-const useBreakpoint = createBreakpoint({ S: 758, L: 1024, XL: 1280 });
+const useBreakpoint = createBreakpoint({ S: 758, L: 900, XL: 1280 });
 
 const DataList = () => {
   const { region = REGIONS.eu, bracket = BRACKETS.shuffle } = useParams();
@@ -44,7 +44,7 @@ const DataList = () => {
     async function getData() {
       setLoading(true);
 
-      const filter = { page, region, activity, bracket, selectedSpecs };
+      const filter = { page, region, activity, bracket, specs: selectedSpecs };
       const { records, totalPages } = await getStatistic(filter as any);
 
       setData(records);

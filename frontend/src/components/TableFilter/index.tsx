@@ -37,7 +37,7 @@ const TableFilter = ({ selectedSpecs, onSpecsChange }: IProps) => {
 
   return (
     <div className="bg-[#030303e6] px-8">
-      <div className="flex justify-end pt-8 pb-0">
+      <div className="flex justify-end pt-6 pb-0">
         <Button className="!px-8 !bg-[#1F2937]" onClick={toggleFilterShown}>
           Filters
           {!isEmpty(selectedSpecs) && (
