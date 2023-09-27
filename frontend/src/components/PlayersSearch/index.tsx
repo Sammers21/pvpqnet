@@ -6,7 +6,7 @@ import { uniqBy } from 'lodash';
 import { Autocomplete, InputAdornment, TextField, Typography } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 
-import { classIcon, getClassNameColor } from '../DataTable/useColumns';
+import { getClassIcon, getClassNameColor } from '../../utils/table';
 import { EuIcon, UsIcon } from '../icons';
 
 import { searchPlayers } from '../../services/stats.service';
@@ -20,7 +20,7 @@ interface ISearchResults {
 }
 
 const renderSearchOption = (props: React.HTMLAttributes<HTMLLIElement>, option: ISearchResults) => {
-  const icon = classIcon(option.class);
+  const icon = require(getClassIcon(option.class));
 
   const RegionIcon = option.region === 'us' || option.region === 'en-us' ? UsIcon : EuIcon;
 

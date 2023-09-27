@@ -21,7 +21,7 @@ export const getStatistic = async ({
     const data = JSON.parse(response.body);
     return { records: data?.characters ?? [], totalPages: data?.total_pages ?? 0 };
   } catch (error) {
-    return null;
+    return { records: [], totalPages: 0 };
   }
 };
 

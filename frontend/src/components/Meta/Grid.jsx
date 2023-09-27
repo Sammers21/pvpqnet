@@ -3,7 +3,7 @@ import Box from '@mui/material/Box';
 import { DataGrid, gridClasses } from '@mui/x-data-grid';
 import { aroundColor, borderRadius, containerBg } from '../../theme';
 import { LinearProgress, Select, Tooltip, Typography } from '@mui/material';
-import { getClassNameColor, specNameFromFullSpec } from '../DataTable/useColumns';
+import { getClassNameColor, specNameFromFullSpec } from '../../utils/table';
 import { styled, alpha } from '@mui/material/styles';
 import InputLabel from '@mui/material/InputLabel';
 import FormControl from '@mui/material/FormControl';
