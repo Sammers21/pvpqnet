@@ -16,7 +16,7 @@ import Pagination from './Pagination';
 import Row from './Row';
 
 import { containerBg } from '../../theme';
-import SpecFilter from '../SpecFilter';
+import TableFilter from '../TableFilter';
 import { useSearchParams } from 'react-router-dom';
 
 const StyledTable = styled(TableMui)({
@@ -137,7 +137,7 @@ const Table = ({
   };
 
   const renderSpecFilters = () => {
-    return <SpecFilter specs={specs} onSpecsChange={onSpecsChange} />;
+    return <TableFilter selectedSpecs={specs} onSpecsChange={onSpecsChange} />;
   };
 
   const renderTable = () => (
