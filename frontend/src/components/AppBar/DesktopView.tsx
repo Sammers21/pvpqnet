@@ -11,7 +11,7 @@ interface IProps {
   setRegion: (r: REGIONS) => void;
 }
 
-const LaptopView = ({ menuItems, host, region, setRegion }: IProps) => {
+const DesktopView = ({ menuItems, host, region, setRegion }: IProps) => {
   return (
     <div className="flex items-center justify-between w-full">
       <div className="flex items-center justify-between w-5/6">
@@ -39,4 +39,4 @@ const LaptopView = ({ menuItems, host, region, setRegion }: IProps) => {
   );
 };
 
-export default LaptopView;
+export default DesktopView;

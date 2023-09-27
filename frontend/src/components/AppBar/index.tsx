@@ -14,7 +14,7 @@ import { getRegion } from '../../utils/urlparts';
 import { BRACKETS } from '../../constants/pvp-activity';
 
 import MobileView from './MobileView';
-import LaptopView from './LaptopView';
+import DesktopView from './DesktopView';
 
 const StyledAppBar = styled(AppBar)({
   backgroundImage: 'none',
@@ -79,7 +79,7 @@ const Header = () => {
     { label: 'Coaching', onClick: redirectToShop },
   ];
 
-  const View = breakpoint === 'S' ? MobileView : LaptopView;
+  const View = breakpoint === 'S' ? MobileView : DesktopView;
   return (
     <StyledAppBar position="fixed">
       <Container maxWidth="xl">

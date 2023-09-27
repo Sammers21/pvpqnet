@@ -121,7 +121,7 @@ const Table = ({
         ))}
       </colgroup>
       {!records.length && !loading && renderNoRowsOverlay()}
-      {records.length && renderBody()}
+      {records.length ? renderBody() : null}
     </StyledTable>
   );
 
