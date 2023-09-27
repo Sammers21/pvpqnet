@@ -33,6 +33,8 @@ interface IProps {
   pagination: boolean;
   page: number;
   onPageChange: (_: unknown, page: number) => void;
+  onRowOver: (record: IActivityRecord | null) => void;
+  diff: IActivityRecord | null;
 }
 
 const Table = ({
@@ -43,14 +45,30 @@ const Table = ({
   pagination,
   page,
   onPageChange,
+  onRowOver,
+  diff,
 }: IProps) => {
   const rowsComponent = useMemo(() => {
     function renderRow(record: IActivityRecord, index: number) {
-      return <Row key={index} record={record} columns={columns} />;
+      const shouldHighlight = diff
+        ? record.diff.last_seen === diff.diff.last_seen &&
+          record.diff.won === diff.diff.won &&
+          record.diff.lost === diff.diff.lost
+        : false;
+
+      return (
+        <Row
+          key={index}
+          record={record}
+          columns={columns}
+          shouldHighlight={shouldHighlight}
+          onRowOver={onRowOver}
+        />
+      );
     }
 
     return records.map((record, index) => renderRow(record, index));
-  }, [columns, records]);
+  }, [columns, records, diff, onRowOver]);
 
   const renderLoading = () => {
     return loading && <BlizzardLoader />;

@@ -11,6 +11,7 @@ import { getActivityFromUrl } from '../../utils/urlparts';
 
 import { BRACKETS } from '../../constants/pvp-activity';
 import { REGIONS } from '../../constants/region';
+import { IActivityRecord } from '../../types';
 
 export function getFromSearchParams(searchParams: URLSearchParams, name: string): string[] {
   return searchParams?.get(name)?.split(',') || [];
@@ -24,11 +25,12 @@ const DataList = () => {
   const [searchParams] = useSearchParams();
   const breakpoint = useBreakpoint();
 
-  const [data, setData] = useState([]);
+  const [data, setData] = useState<IActivityRecord[]>([]);
   const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [selectedSpecs, setSelectedSpecs] = useState(getFromSearchParams(searchParams, 'specs'));
+  const [diff, setDiff] = useState<IActivityRecord | null>(null);
 
   function handlePageChange(_: unknown, value: number) {
     setPage(value);
@@ -69,6 +71,8 @@ const DataList = () => {
         pagination
         page={page}
         onPageChange={handlePageChange}
+        onRowOver={(record) => setDiff(record)}
+        diff={diff}
       />
     </>
   );
