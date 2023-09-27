@@ -12,7 +12,7 @@ import {
 import MenuIcon from '@mui/icons-material/Menu';
 
 import { REGIONS } from '../../constants/region';
-import SearchBar from '../SearchBar';
+import PlayersSearch from '../PlayersSearch';
 import RegionButtons from './RegionButtons';
 
 interface IProps {
@@ -31,7 +31,7 @@ const MobileView = ({ menuItems, host, region, setRegion }: IProps) => {
         <MenuIcon />
       </IconButton>
 
-      <SearchBar />
+      <PlayersSearch />
 
       <Drawer open={drawerOpen} onClose={() => setDrawerOpen(false)} className="w-60">
         <div onClick={() => setDrawerOpen((state) => !state)}>

@@ -8,6 +8,9 @@ module.exports = {
     getStatistic: (region) => {
       return `/api/${region}/activity/stats`;
     },
+    searchPlayers: (search) => {
+      return `/api/search?q=${search}`;
+    },
   },
 
   publicUrls: {

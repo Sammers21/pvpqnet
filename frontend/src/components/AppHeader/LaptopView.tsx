@@ -1,6 +1,6 @@
 import { Button } from '@mui/material';
 
-import SearchBar from '../SearchBar';
+import PlayersSearch from '../PlayersSearch';
 import RegionButtons from './RegionButtons';
 import { REGIONS } from '../../constants/region';
 
@@ -28,7 +28,7 @@ const LaptopView = ({ menuItems, host, region, setRegion }: IProps) => {
         </div>
 
         <div className="flex items-center justify-end w-80">
-          <SearchBar />
+          <PlayersSearch />
         </div>
       </div>
 

@@ -37,3 +37,12 @@ export async function fetchStatistic(region: REGIONS) {
     return { '2v2': 0, '3v3': 0, rbg: 0, shuffle: 0 };
   }
 }
+
+export async function searchPlayers(search: string) {
+  try {
+    const response = await request(urls.searchPlayers(search), { method: 'GET' });
+    return response.body;
+  } catch (error) {
+    return [];
+  }
+}
