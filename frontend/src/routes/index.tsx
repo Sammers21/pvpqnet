@@ -8,7 +8,7 @@ const { page } = publicUrls;
 const ActivityScreen = loadable(() => import('../containers/Activity'), {
   fallback: <Loading />,
 });
-const MetaScreen = loadable(() => import('../components/Meta'), {
+const MetaScreen = loadable(() => import('../containers/Meta'), {
   fallback: <Loading />,
 });
 const ProfileScreen = loadable(() => import('../components/Profile'), {

@@ -1,7 +1,9 @@
-import { urls } from '../config';
+import axios from 'axios';
+import { baseUrl, urls } from '../config';
 import { BRACKETS } from '../constants/pvp-activity';
 import { REGIONS } from '../constants/region';
 import request from './request.service';
+import { IMeta } from '../types';
 
 export const statsMap = {
   [REGIONS.us]: 'en-us',
@@ -46,3 +48,13 @@ export async function searchPlayers(search: string) {
     return [];
   }
 }
+
+export const getMeta = async (params: Record<string, string>): Promise<IMeta> => {
+  try {
+    const response = await axios.get(baseUrl + `/api/meta`, { params });
+
+    return response.data;
+  } catch (error) {
+    return { specs: [] };
+  }
+};

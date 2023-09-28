@@ -11,6 +11,9 @@ module.exports = {
     searchPlayers: (search) => {
       return `/api/search?q=${search}`;
     },
+    getMeta: (page, region, activity, bracket, specs) => {
+      return `/api/${region}/${activity}/${bracket}?page=${page}&specs=${specs.join(',')}`;
+    },
   },
 
   publicUrls: {

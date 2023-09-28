@@ -21,7 +21,7 @@ const DesktopView = ({ menuItems, host, region, setRegion }: IProps) => {
           </a>
 
           {menuItems.map((item) => (
-            <Button className="!text-[#60a5fa]" onClick={item.onClick}>
+            <Button key={item.label} className="!text-[#60a5fa]" onClick={item.onClick}>
               {item.label}
             </Button>
           ))}
