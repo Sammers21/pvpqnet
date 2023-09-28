@@ -255,6 +255,7 @@ public class Calculator {
             if (value == null) {
                 value = new TreeSet<>(Comparator.comparing(WowAPICharacter::id));
             }
+            value.remove(character);
             value.add(character);
             return value;
         });
