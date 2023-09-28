@@ -50,11 +50,12 @@ const Table = ({
 }: IProps) => {
   const rowsComponent = useMemo(() => {
     function renderRow(record: IActivityRecord, index: number) {
-      const shouldHighlight = diff
-        ? record.diff.last_seen === diff.diff.last_seen &&
-          record.diff.won === diff.diff.won &&
-          record.diff.lost === diff.diff.lost
-        : false;
+      const shouldHighlight =
+        diff && record.diff
+          ? record.diff.last_seen === diff.diff?.last_seen &&
+            record.diff.won === diff.diff.won &&
+            record.diff.lost === diff.diff.lost
+          : false;
 
       return (
         <Row
