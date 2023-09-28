@@ -52,6 +52,10 @@ public record Cutoffs(String region, String season, Map<String, Long> cutoffs,
         return cutoffs.get("BATTLEGROUNDS/" + faction.toLowerCase());
     }
 
+    public Long battlegrounds() {
+        return battlegrounds("alliance");
+    }
+
     public Long shuffle(String specialization) {
         return cutoffs.get("SHUFFLE/" + specialization.toLowerCase());
     }
@@ -62,5 +66,16 @@ public record Cutoffs(String region, String season, Map<String, Long> cutoffs,
                 .put("region", region)
                 .put("season", season)
                 .put("rewards", new JsonObject(cutoffs.entrySet().stream().map(x -> Map.entry(x.getKey(), x.getValue())).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))));
+    }
+
+    public Long cutoffByBracketType(String btype) {
+        if (btype.equals("ARENA_2v2")) {
+            return Long.MAX_VALUE;
+        } else if (btype.equals("BATTLEGROUNDS")) {
+            return battlegrounds();
+        } else if (btype.equals("ARENA_3v3")) {
+            return cutoffs.get(btype);
+        }
+        return cutoffs.get(btype);
     }
 }

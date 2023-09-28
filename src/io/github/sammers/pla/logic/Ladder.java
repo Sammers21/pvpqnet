@@ -23,9 +23,6 @@ import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.time.Duration;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -35,125 +32,32 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static io.github.sammers.pla.Main.VTHREAD_SCHEDULER;
+import static io.github.sammers.pla.blizzard.BlizzardAPI.oldRegion;
 import static io.github.sammers.pla.blizzard.BlizzardAPI.realRegion;
 import static io.github.sammers.pla.logic.Calculator.minutesTill5am;
-import static io.github.sammers.pla.logic.Calculator.minutesTillNextHour;
+import static io.github.sammers.pla.logic.Conts.*;
 
 public class Ladder {
 
     private static final Logger log = LoggerFactory.getLogger(Ladder.class);
     private final WebClient web;
-    public static String EU = "en-gb";
-    public static String US = "en-us";
-    public static String TWO_V_TWO = "2v2";
-    public static String THREE_V_THREE = "3v3";
-    public static String RBG = "battlegrounds";
-    public static String SHUFFLE = "shuffle";
-    private final Random rnd = new Random();
-    public static List<String> BRACKETS = List.of(TWO_V_TWO, THREE_V_THREE, RBG, SHUFFLE);
-
-    public static final List<String> shuffleSpecs = new ArrayList<>() {{
-        add("shuffle/deathknight/blood");
-        add("shuffle/deathknight/frost");
-        add("shuffle/deathknight/unholy");
-        add("shuffle/demonhunter/havoc");
-        add("shuffle/demonhunter/vengeance");
-        add("shuffle/druid/balance");
-        add("shuffle/druid/feral");
-        add("shuffle/druid/guardian");
-        add("shuffle/druid/restoration");
-        add("shuffle/evoker/devastation");
-        add("shuffle/evoker/preservation");
-        add("shuffle/evoker/augmentation");
-        add("shuffle/hunter/beastmastery");
-        add("shuffle/hunter/marksmanship");
-        add("shuffle/hunter/survival");
-        add("shuffle/mage/arcane");
-        add("shuffle/mage/fire");
-        add("shuffle/mage/frost");
-        add("shuffle/monk/brewmaster");
-        add("shuffle/monk/mistweaver");
-        add("shuffle/monk/windwalker");
-        add("shuffle/paladin/holy");
-        add("shuffle/paladin/protection");
-        add("shuffle/paladin/retribution");
-        add("shuffle/priest/discipline");
-        add("shuffle/priest/holy");
-        add("shuffle/priest/shadow");
-        add("shuffle/rogue/assassination");
-        add("shuffle/rogue/outlaw");
-        add("shuffle/rogue/subtlety");
-        add("shuffle/shaman/elemental");
-        add("shuffle/shaman/enhancement");
-        add("shuffle/shaman/restoration");
-        add("shuffle/warlock/affliction");
-        add("shuffle/warlock/demonology");
-        add("shuffle/warlock/destruction");
-        add("shuffle/warrior/arms");
-        add("shuffle/warrior/fury");
-        add("shuffle/warrior/protection");
-    }};
-
-    public static Map<String, String> SHUFFLE_SPEC_TO_SPEC = new HashMap<>() {
-        {
-            put("shuffle/deathknight/blood", "Blood Death Knight");
-            put("shuffle/deathknight/frost", "Frost Death Knight");
-            put("shuffle/deathknight/unholy", "Unholy Death Knight");
-            put("shuffle/demonhunter/havoc", "Havoc Demon Hunter");
-            put("shuffle/demonhunter/vengeance", "Vengeance Demon Hunter");
-            put("shuffle/druid/balance", "Balance Druid");
-            put("shuffle/druid/feral", "Feral Druid");
-            put("shuffle/druid/guardian", "Guardian Druid");
-            put("shuffle/druid/restoration", "Restoration Druid");
-            put("shuffle/evoker/devastation", "Devastation Evoker");
-            put("shuffle/evoker/preservation", "Preservation Evoker");
-            put("shuffle/evoker/augmentation", "Augmentation Evoker");
-            put("shuffle/hunter/beastmastery", "Beast Mastery Hunter");
-            put("shuffle/hunter/marksmanship", "Marksmanship Hunter");
-            put("shuffle/hunter/survival", "Survival Hunter");
-            put("shuffle/mage/arcane", "Arcane Mage");
-            put("shuffle/mage/fire", "Fire Mage");
-            put("shuffle/mage/frost", "Frost Mage");
-            put("shuffle/monk/brewmaster", "Brewmaster Monk");
-            put("shuffle/monk/mistweaver", "Mistweaver Monk");
-            put("shuffle/monk/windwalker", "Windwalker Monk");
-            put("shuffle/paladin/holy", "Holy Paladin");
-            put("shuffle/paladin/protection", "Protection Paladin");
-            put("shuffle/paladin/retribution", "Retribution Paladin");
-            put("shuffle/priest/discipline", "Discipline Priest");
-            put("shuffle/priest/holy", "Holy Priest");
-            put("shuffle/priest/shadow", "Shadow Priest");
-            put("shuffle/rogue/assassination", "Assassination Rogue");
-            put("shuffle/rogue/outlaw", "Outlaw Rogue");
-            put("shuffle/rogue/subtlety", "Subtlety Rogue");
-            put("shuffle/shaman/elemental", "Elemental Shaman");
-            put("shuffle/shaman/enhancement", "Enhancement Shaman");
-            put("shuffle/shaman/restoration", "Restoration Shaman");
-            put("shuffle/warlock/affliction", "Affliction Warlock");
-            put("shuffle/warlock/demonology", "Demonology Warlock");
-            put("shuffle/warlock/destruction", "Destruction Warlock");
-            put("shuffle/warrior/arms", "Arms Warrior");
-            put("shuffle/warrior/fury", "Fury Warrior");
-            put("shuffle/warrior/protection", "Protection Warrior");
-        }
-    };
-
-    private final Map<String, AtomicReference<Snapshot>> refs = new ConcurrentHashMap<>();
-    private final Map<String, AtomicReference<SnapshotDiff>> refDiffs = new ConcurrentHashMap<>();
-    public final Map<String, WowAPICharacter> characterCache = new ConcurrentHashMap<>();
-    public final Map<Integer, Set<WowAPICharacter>> alts = new ConcurrentHashMap<>();
+    private final Refs refs;
+    public final CharacterCache characterCache;
     private final Map<String, AtomicReference<Meta>> meta = new ConcurrentHashMap<>();
     private final NickNameSearchIndex charSearchIndex = new NickNameSearchIndex();
-    private final Map<String, Cutoffs> regionCutoff = new ConcurrentHashMap<>();
+    public final Map<String, Cutoffs> regionCutoff;
     public final CharUpdater charUpdater;
     private final DB db;
     private final BlizzardAPI blizzardAPI;
 
-    public Ladder(WebClient web, DB db, BlizzardAPI blizzardAPI) {
+    public Ladder(WebClient web, DB db, BlizzardAPI blizzardAPI, CharacterCache characterCache, Refs refs, Map<String, Cutoffs> regionCutoff) {
         this.web = web;
         this.db = db;
         this.blizzardAPI = blizzardAPI;
-        this.charUpdater = new CharUpdater(blizzardAPI, characterCache, refs, alts, charSearchIndex, db);
+        this.refs = refs;
+        this.characterCache = characterCache;
+        this.regionCutoff = regionCutoff;
+        this.charUpdater = new CharUpdater(blizzardAPI, characterCache, refs, charSearchIndex, db);
     }
 
     public void start() {
@@ -226,7 +130,7 @@ public class Ladder {
     }
 
     public Optional<WowAPICharacter> wowChar(String realm, String name) {
-        return Optional.ofNullable(characterCache.get(Character.fullNameByRealmAndName(name, realm)));
+        return Optional.ofNullable(characterCache.getByFullName(Character.fullNameByRealmAndName(name, realm)));
     }
 
     public List<SearchResult> search(String name) {
@@ -246,7 +150,7 @@ public class Ladder {
                 String specForBlizApi = shuffleSpec.replaceAll("/", "-");
                 sh = sh.flatMap(thisSpecChars -> blizzardAPI.pvpLeaderboard(specForBlizApi, region)
                     .flatMapSingle(leaderboard -> {
-                            Set<Character> chrs = leaderboard.toCharacters(characterCache, shuffleSpec);
+                            Set<Character> chrs = leaderboard.toCharacters(characterCache.nameCache(), shuffleSpec);
                             thisSpecChars.addAll(chrs);
                             return Single.just(thisSpecChars);
                         }
@@ -266,7 +170,7 @@ public class Ladder {
             Single<List<Character>> res = Single.just(new ArrayList<>(5000));
             resCharList = res.flatMap(s -> blizzardAPI.pvpLeaderboard(bracket, region)
                 .flatMapSingle(leaderboard -> {
-                        Set<Character> chrs = leaderboard.toCharacters(characterCache, bracket);
+                        Set<Character> chrs = leaderboard.toCharacters(characterCache.nameCache(), bracket);
                         s.addAll(chrs);
                         return Single.just(s);
                     }
@@ -363,23 +267,6 @@ public class Ladder {
         return resCharList;
     }
 
-    private Completable updateChar(String region, String name, String realm) {
-        String fullName = Character.fullNameByRealmAndName(name, realm);
-        return blizzardAPI.character(region, realm, name).flatMap(c -> {
-            characterCache.put(fullName, c);
-            charSearchIndex.insertNickNames(new SearchResult(fullName, region, c.clazz()));
-            return db.upsertCharacter(c);
-        }).subscribeOn(VTHREAD_SCHEDULER)
-            .doOnSuccess(d -> log.debug("Updated character: " + fullName))
-            .doOnError(e -> {
-                if (rnd.nextLong() % 1000 == 0) {
-                    log.error("Failed to update character: " + fullName);
-                }
-            })
-            .ignoreElement()
-            .onErrorComplete();
-    }
-
     private HttpRequest<Buffer> ladderRequest(String bracket, Integer page, String region) {
         String url = String.format("https://worldofwarcraft.blizzard.com/%s/game/pvp/leaderboards/%s", region, bracket);
         HttpRequest<Buffer> request = web.getAbs(url).addQueryParam("page", page.toString());
@@ -419,7 +306,7 @@ public class Ladder {
     }
 
     private Character enrichWithSpecialData(Character character, String region, String bracket) {
-        Optional<WowAPICharacter> apiCharacter = Optional.ofNullable(characterCache.get(character.fullName()));
+        Optional<WowAPICharacter> apiCharacter = Optional.ofNullable(characterCache.getByFullName(character.fullName()));
         String gender = apiCharacter.map(WowAPICharacter::gender).orElse("unknown");
         String race = apiCharacter.map(WowAPICharacter::race).orElse("unknown");
         Cutoffs cutoffs = regionCutoff.get(region);
@@ -506,7 +393,7 @@ public class Ladder {
         return Completable.defer(() -> {
             List<Completable> res = List.of(TWO_V_TWO, THREE_V_THREE, RBG, SHUFFLE).stream().flatMap(bracket -> {
                 log.info("Calculating meta for bracket=" + bracket + " region=" + region);
-                Snapshot now = refByBracket(bracket, region).get();
+                Snapshot now = refs.refByBracket(bracket, region).get();
                 if (now == null) {
                     log.info("No data for bracket=" + bracket + " region=" + region);
                     return Stream.empty();
@@ -560,7 +447,8 @@ public class Ladder {
         return Completable.defer(() -> {
             log.info("Load cutoffs for region " + region);
             return blizzardAPI.cutoffs(region).map(cutoffs -> {
-                    regionCutoff.put(region, cutoffs);
+                    regionCutoff.put(oldRegion(region), cutoffs);
+                    regionCutoff.put(realRegion(region), cutoffs);
                     return cutoffs;
                 }).doAfterSuccess(cutoffs -> log.info("Cutoffs for region={} has been loaded", region))
                 .ignoreElement()
@@ -582,10 +470,7 @@ public class Ladder {
                     VTHREAD_SCHEDULER.scheduleDirect(() -> {
                         log.info("Character data size={} for region={} is being loaded to cache", characters.size(), region);
                         long tick = System.nanoTime();
-                        characters.forEach(character -> {
-                            Calculator.indexCharAlts(alts, character);
-                            characterCache.put(character.fullName(), character);
-                        });
+                        characters.forEach(characterCache::upsert);
                         List<SearchResult> list = characters.stream().map(charz -> new SearchResult(charz.fullName(), charz.region(), charz.clazz())).toList();
                         charSearchIndex.insertNickNames(list);
                         log.info("Character data size={} for region={} has been loaded to cache in {} ms", characters.size(), region, (System.nanoTime() - tick) / 1000000);
@@ -605,7 +490,7 @@ public class Ladder {
                     return Maybe.empty();
                 }))
                 .flatMapCompletable(characters -> {
-                    refByBracket(bracket, region).set(characters);
+                    refs.refByBracket(bracket, region).set(characters);
                     log.info("Data for bracket {}-{} has been loaded from DB in {} ms", region, bracket, (System.nanoTime() - tick) / 1000000);
                     return calcDiffs(bracket, region);
                 });
@@ -620,10 +505,10 @@ public class Ladder {
             db.getMinsAgo(bracket, region, 60 * 3),
             db.getMinsAgo(bracket, region, 60 * 2),
             db.getMinsAgo(bracket, region, 60),
-            Maybe.just(refByBracket(bracket, region).get()));
+            Maybe.just(refs.refByBracket(bracket, region).get()));
         return Calculator.calcDiffAndCombine(bracket, region, maybes)
             .flatMapCompletable(res -> {
-                diffsByBracket(bracket, region).set(res);
+                refs.diffsByBracket(bracket, region).set(res);
                 return Completable.complete();
             });
     }
@@ -632,138 +517,8 @@ public class Ladder {
         return meta.computeIfAbsent(bracket + "_" + role + "_" + region + "_" + period, k -> new AtomicReference<>());
     }
 
-    public static String bucketRef(String bracket, String region) {
-        return bracket + "_" + region;
-    }
-
-    public AtomicReference<Snapshot> refByBracket(String bracket, String region) {
-        return refs.compute(bucketRef(bracket, region), (k, v) -> {
-            if (v == null) {
-                return new AtomicReference<>();
-            } else {
-                v.lazySet(applyCutoffs(bracket, region, v.get()));
-                return v;
-            }
-        });
-    }
-
-    public AtomicReference<SnapshotDiff> diffsByBracket(String bracket, String region) {
-        return refDiffs.compute(bucketRef(bracket, region), (k, v) -> {
-            if (v == null) {
-                return new AtomicReference<>();
-            } else {
-                v.lazySet(applyCutoffs(bracket, region, v.get()));
-                return v;
-            }
-        });
-    }
-
-    private SnapshotDiff applyCutoffs(String bracket, String region, SnapshotDiff diff) {
-        Cutoffs cutoffs = regionCutoff.get(region);
-        if (cutoffs == null) {
-            return diff;
-        }
-        if (diff == null) {
-            return null;
-        }
-        if (bracket.equals(THREE_V_THREE)) {
-            Long cutoff = cutoffs.threeVThree();
-            return new SnapshotDiff(diff.chars().stream().map(charAndDiff -> {
-                if (charAndDiff.character().rating() >= cutoff) {
-                    return new CharAndDiff(charAndDiff.character().changeCutoff(true), charAndDiff.diff());
-                } else {
-                    return charAndDiff;
-                }
-            }).collect(Collectors.toList()), diff.timestamp());
-        } else if (bracket.equals(RBG)) {
-            Long cutoff = cutoffs.battlegrounds("ALLIANCE");
-            return new SnapshotDiff(diff.chars().stream().map(charAndDiff -> {
-                if (charAndDiff.character().rating() >= cutoff) {
-                    return new CharAndDiff(charAndDiff.character().changeCutoff(true), charAndDiff.diff());
-                } else {
-                    return charAndDiff;
-                }
-            }).collect(Collectors.toList()), diff.timestamp());
-        } else if (bracket.equals(SHUFFLE)) {
-            return new SnapshotDiff(diff.chars().stream().map(charAndDiff -> {
-                String fullSpec = charAndDiff.character().fullSpec();
-                String spec = fullSpec.toLowerCase().split(" ")[0];
-                if (fullSpec.equals("Frost Mage")) {
-                    spec = "frostm";
-                } else if (fullSpec.equals("Frost Death Knight")) {
-                    spec = "frostd";
-                } else if (fullSpec.equals("Beast Mastery Hunter")) {
-                    spec = "beastmastery";
-                }
-                Long cutoff = cutoffs.shuffle(spec);
-                if(cutoff == null) {
-                    log.warn("No cutoff for spec {} in shuffle", spec + " " + fullSpec);
-                    return charAndDiff;
-                }
-                if (charAndDiff.character().rating() >= cutoff) {
-                    return new CharAndDiff(charAndDiff.character().changeCutoff(true), charAndDiff.diff());
-                } else {
-                    return charAndDiff;
-                }
-            }).collect(Collectors.toList()), diff.timestamp());
-        }
-        return diff;
-    }
-
-    private Snapshot applyCutoffs(String bracket, String region, Snapshot diff) {
-        Cutoffs cutoffs = regionCutoff.get(region);
-        if (cutoffs == null) {
-            return diff;
-        }
-        if (diff == null) {
-            return null;
-        }
-        if (bracket.equals(THREE_V_THREE)) {
-            Long cutoff = cutoffs.threeVThree();
-            return new Snapshot(diff.characters().stream().map(ch -> {
-                if (ch.rating() >= cutoff) {
-                    return ch.changeCutoff(true);
-                } else {
-                    return ch;
-                }
-            }).collect(Collectors.toList()), diff.timestamp(), diff.region(), diff.dateTime());
-        } else if (bracket.equals(RBG)) {
-            Long cutoff = cutoffs.battlegrounds("ALLIANCE");
-            return new Snapshot(diff.characters().stream().map(ch -> {
-                if (ch.rating() >= cutoff) {
-                    return ch.changeCutoff(true);
-                } else {
-                    return ch;
-                }
-            }).collect(Collectors.toList()), diff.timestamp(), diff.region(), diff.dateTime());
-        } else if (bracket.equals(SHUFFLE)) {
-            return new Snapshot(diff.characters().stream().map(ch -> {
-                String fullSpec = ch.fullSpec();
-                String spec = fullSpec.toLowerCase().split(" ")[0];
-                if (fullSpec.equals("Frost Mage")) {
-                    spec = "frostm";
-                } else if (fullSpec.equals("Frost Death Knight")) {
-                    spec = "frostd";
-                } else if (fullSpec.equals("Beast Mastery Hunter")) {
-                    spec = "beastmastery";
-                }
-                Long cutoff = cutoffs.shuffle(spec);
-                if(cutoff == null) {
-                    log.warn("No cutoff for spec {} in shuffle", spec + " " + fullSpec);
-                    return ch;
-                }
-                if (ch.rating() >= cutoff) {
-                    return ch.changeCutoff(true);
-                } else {
-                    return ch;
-                }
-            }).collect(Collectors.toList()), diff.timestamp(), diff.region(), diff.dateTime());
-        }
-        return diff;
-    }
-
     public Completable newDataOnBracket(String bracket, String region, Snapshot newCharacters) {
-        AtomicReference<Snapshot> current = refByBracket(bracket, region);
+        AtomicReference<Snapshot> current = refs.refByBracket(bracket, region);
         Snapshot curVal = current.get();
         String newChars = newCharacters.toJson().getJsonArray("characters").encode();
         String currentCharacters = curVal == null ? null : curVal.toJson().getJsonArray("characters").encode();

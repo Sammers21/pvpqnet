@@ -11,6 +11,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static io.github.sammers.pla.logic.Conts.SHUFFLE_SPEC_TO_SPEC;
+
 public record PvpLeaderBoard(
     JsonObject links,
     JsonObject season,
@@ -79,7 +81,7 @@ public record PvpLeaderBoard(
                 } else {
                     String fullSpec = wowAPICharacter.activeSpec() + " " + wowAPICharacter.clazz();
                     if(bracket.getString("type").equals("SHUFFLE")) {
-                        fullSpec = Ladder.SHUFFLE_SPEC_TO_SPEC.get(bracketId);
+                        fullSpec = SHUFFLE_SPEC_TO_SPEC.get(bracketId);
                     }
                     return Stream.of(new Character(
                         rank,

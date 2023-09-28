@@ -238,29 +238,6 @@ public class Calculator {
         return new Meta(Map.of(), sizing, specs);
     }
 
-    public static void calculateAlts(Iterable<WowAPICharacter> characters, Map<Integer, Set<WowAPICharacter>> alts) {
-        long start = System.currentTimeMillis();
-        for (WowAPICharacter character : characters) {
-            indexCharAlts(alts, character);
-        }
-        log.info("Alts calculated in {} ms", System.currentTimeMillis() - start);
-    }
-
-    public static void indexCharAlts(Map<Integer, Set<WowAPICharacter>> alts, WowAPICharacter character) {
-        int hash = character.petHash();
-        alts.compute(hash, (key, value) -> {
-            if (key == -1) {
-                return null;
-            }
-            if (value == null) {
-                value = new TreeSet<>(Comparator.comparing(WowAPICharacter::id));
-            }
-            value.remove(character);
-            value.add(character);
-            return value;
-        });
-    }
-
     public static Long totalPages(long itemsTotal, long pageSize) {
         long result;
         if (itemsTotal % pageSize == 0) {

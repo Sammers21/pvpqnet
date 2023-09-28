@@ -3,10 +3,8 @@ package io.github.sammers.pla.http;
 import io.github.sammers.pla.blizzard.WowAPICharacter;
 import io.github.sammers.pla.db.Character;
 import io.github.sammers.pla.db.Meta;
-import io.github.sammers.pla.logic.Ladder;
+import io.github.sammers.pla.logic.*;
 import io.github.sammers.pla.db.Snapshot;
-import io.github.sammers.pla.logic.SearchResult;
-import io.github.sammers.pla.logic.SnapshotDiff;
 import io.reactivex.Single;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.json.JsonArray;
@@ -22,17 +20,18 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import static io.github.sammers.pla.Main.VTHREAD_EXECUTOR;
-import static io.github.sammers.pla.logic.Ladder.EU;
-import static io.github.sammers.pla.logic.Ladder.RBG;
-import static io.github.sammers.pla.logic.Ladder.SHUFFLE;
-import static io.github.sammers.pla.logic.Ladder.THREE_V_THREE;
-import static io.github.sammers.pla.logic.Ladder.TWO_V_TWO;
+import static io.github.sammers.pla.logic.Conts.*;
+
 
 public class Http {
     private final Ladder ladder;
+    private final Refs refs;
+    private final CharacterCache characterCache;
 
-    public Http(Ladder ladder) {
+    public Http(Ladder ladder, Refs refs, CharacterCache characterCache) {
         this.ladder = ladder;
+        this.refs = refs;
+        this.characterCache = characterCache;
     }
 
     public void start() {
@@ -83,16 +82,16 @@ public class Http {
                 if (bracket.equals("rbg")) {
                     bracket = RBG;
                 }
-                ladder(ctx, applySpecFilter(ctx, ladder.refByBracket(bracket, region).get()));
+                ladder(ctx, applySpecFilter(ctx, refs.refByBracket(bracket, region).get().applyCutoffs(bracket, ladder.regionCutoff.get(region))));
             });
         });
         router.get("/api/:region/activity/stats").handler(ctx -> {
             VTHREAD_EXECUTOR.execute(() -> {
                 String region = ctx.pathParam("region");
-                Integer twos = Optional.ofNullable(ladder.diffsByBracket(TWO_V_TWO, region).get()).map(diff -> diff.chars().size()).orElse(0);
-                Integer threes = Optional.ofNullable(ladder.diffsByBracket(THREE_V_THREE, region).get()).map(diff -> diff.chars().size()).orElse(0);
-                Integer rbgs = Optional.ofNullable(ladder.diffsByBracket(RBG, region).get()).map(diff -> diff.chars().size()).orElse(0);
-                Integer shuffle = Optional.ofNullable(ladder.diffsByBracket(SHUFFLE, region).get()).map(diff -> diff.chars().size()).orElse(0);
+                Integer twos = Optional.ofNullable(refs.diffsByBracket(TWO_V_TWO, region).get()).map(diff -> diff.chars().size()).orElse(0);
+                Integer threes = Optional.ofNullable(refs.diffsByBracket(THREE_V_THREE, region).get()).map(diff -> diff.chars().size()).orElse(0);
+                Integer rbgs = Optional.ofNullable(refs.diffsByBracket(RBG, region).get()).map(diff -> diff.chars().size()).orElse(0);
+                Integer shuffle = Optional.ofNullable(refs.diffsByBracket(SHUFFLE, region).get()).map(diff -> diff.chars().size()).orElse(0);
                 ctx.response().end(new JsonObject().put("2v2", twos).put("3v3", threes).put("rbg", rbgs).put("shuffle", shuffle).encode());
             });
         });
@@ -103,7 +102,7 @@ public class Http {
                 if (bracket.equals("rbg")) {
                     bracket = RBG;
                 }
-                ladder(ctx, applySpecFilter(ctx, ladder.diffsByBracket(bracket, region).get()));
+                ladder(ctx, applySpecFilter(ctx, refs.diffsByBracket(bracket, region).get().applyCutoffs(bracket, ladder.regionCutoff.get(region))));
             });
         });
         router.get("/api/:region/:realm/:name").handler(ctx -> {
@@ -143,7 +142,7 @@ public class Http {
     }
 
     private JsonObject wowCharToJson(WowAPICharacter character) {
-        Set<WowAPICharacter> alts = ladder.alts.get(character.petHash());
+        Set<WowAPICharacter> alts = characterCache.altsFor(character);
         JsonObject res = character.toJson();
         if (alts != null) {
             res.put("alts", new JsonArray(alts.stream().filter(c -> c.id() != character.id()).map(WowAPICharacter::toJson).toList()));

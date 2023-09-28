@@ -1,7 +1,12 @@
 package io.github.sammers.pla.blizzard;
 
 import io.github.sammers.pla.Main;
+import io.github.sammers.pla.db.Character;
+import io.github.sammers.pla.db.Snapshot;
+import io.github.sammers.pla.logic.CharUpdater;
+import io.github.sammers.pla.logic.CharacterCache;
 import io.github.sammers.pla.logic.RateLimiter;
+import io.github.sammers.pla.logic.Refs;
 import io.reactivex.Completable;
 import io.reactivex.Maybe;
 import io.reactivex.Single;
@@ -15,7 +20,12 @@ import org.slf4j.LoggerFactory;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
+
+import static io.github.sammers.pla.logic.Conts.EU;
+import static io.github.sammers.pla.logic.Conts.US;
 
 /**
  * Blizzard API.
@@ -28,14 +38,20 @@ public class BlizzardAPI {
     private static final Logger log = LoggerFactory.getLogger(BlizzardAPI.class);
     private final String clientSecret;
     private final WebClient webClient;
+    private final Refs refs;
+    private final CharacterCache characterCache;
+    private final Map<String, Cutoffs> cutoffs;
     private final String clientId;
     private final AtomicReference<BlizzardAuthToken> token = new AtomicReference<>();
     private final RateLimiter rateLimiter = new RateLimiter(5, Main.VTHREAD_SCHEDULER);
 
-    public BlizzardAPI(String clientId, String clientSecret, WebClient webClient) {
+    public BlizzardAPI(String clientId, String clientSecret, WebClient webClient, Refs refs, CharacterCache characterCache, Map<String, Cutoffs> cutoffs) {
         this.clientId = clientId;
         this.clientSecret = clientSecret;
         this.webClient = webClient;
+        this.refs = refs;
+        this.characterCache = characterCache;
+        this.cutoffs = cutoffs;
     }
 
     public Completable rpsToken() {
@@ -105,7 +121,14 @@ public class BlizzardAPI {
                                                         maybeResponse(realNamespace, absoluteURI + "/collections/pets")
                                                             .flatMap(pets ->
                                                                 maybeResponse(realNamespace, absoluteURI + "/specializations")
-                                                                    .flatMap(specs -> Maybe.just(WowAPICharacter.parse(json, pvp, brackets, achievements, media, specs, pets, realRegion))))))
+                                                                    .flatMap(specs -> {
+                                                                        Optional<WowAPICharacter> prev = Optional.ofNullable(characterCache.getByFullName(Character.fullNameByRealmAndName(name, realm)));
+                                                                        Cutoffs ctfs = cutoffs.get(realRegion);
+                                                                        if (ctfs == null) {
+                                                                            return Maybe.error(new IllegalStateException("No cutoffs for region " + region));
+                                                                        }
+                                                                        return Maybe.just(WowAPICharacter.parse(prev, refs, ctfs, json, pvp, brackets, achievements, media, specs, pets, realRegion));
+                                                                    }))))
                                     );
                             })
                             .doOnError(e -> log.error("Error parsing character: " + name + " on " + realm + " in " + realRegion, e))
@@ -149,6 +172,18 @@ public class BlizzardAPI {
             realRegion = region;
         }
         return realRegion;
+    }
+
+    public static String oldRegion(String region) {
+        String oldRegion;
+        if (region.equals("eu")) {
+            oldRegion = EU;
+        } else if (region.equals("us")) {
+            oldRegion = US;
+        } else {
+            oldRegion = region;
+        }
+        return oldRegion;
     }
 
     public Maybe<PvpLeaderBoard> pvpLeaderboard(String region, String pvpSeasonId, String pvpBracket, String namespace) {

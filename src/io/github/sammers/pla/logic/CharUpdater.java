@@ -17,29 +17,27 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
+import static io.github.sammers.pla.logic.Conts.*;
 import static io.github.sammers.pla.logic.Ladder.*;
+import static io.github.sammers.pla.logic.Refs.bucketRef;
 
 public class CharUpdater {
 
     private static final Logger log = LoggerFactory.getLogger(CharUpdater.class);
-
     private final BlizzardAPI api;
-    private final Map<String, WowAPICharacter> characterCache;
-    private final Map<Integer, Set<WowAPICharacter>> altsCache;
+    private final CharacterCache characterCache;
     private final NickNameSearchIndex charSearchIndex;
     private final DB db;
-    private final Map<String, AtomicReference<Snapshot>> refs;
+    private final Refs refs;
 
     public CharUpdater(BlizzardAPI api,
-                       Map<String, WowAPICharacter> characterCache,
-                       Map<String, AtomicReference<Snapshot>> refs,
-                       Map<Integer, Set<WowAPICharacter>> altsCache,
+                       CharacterCache characterCache,
+                       Refs refs,
                        NickNameSearchIndex charSearchIndex,
                        DB db) {
         this.api = api;
         this.refs = refs;
         this.characterCache = characterCache;
-        this.altsCache = altsCache;
         this.charSearchIndex = charSearchIndex;
         this.db = db;
     }
@@ -48,14 +46,14 @@ public class CharUpdater {
         return Completable.defer(() -> {
             log.info("Updating chars in region " + region);
             List<Snapshot> snapshots = new ArrayList<>(Stream.of(TWO_V_TWO, THREE_V_THREE, RBG, SHUFFLE)
-                .map(bracket -> refs.get(bucketRef(bracket, region)).get()).toList());
+                .map(bracket -> refs.refByBracket(bracket, region).get()).toList());
             Map<String, Long> nickAndMaxRating = new ConcurrentHashMap<>();
             return Maybe.just(snapshots)
                 .map((List<Snapshot> list) -> {
                     Set<String> charsToUpdate = new HashSet<>();
                     for (Snapshot board : list) {
                         for (Character charOnLeaderBoard : board.characters()) {
-                            if (characterCache.get(charOnLeaderBoard.fullName()) == null) {
+                            if (characterCache.getByFullName(charOnLeaderBoard.fullName()) == null) {
                                 charsToUpdate.add(charOnLeaderBoard.fullName());
                                 nickAndMaxRating.compute(charOnLeaderBoard.fullName(), (nick, maxRating) -> {
                                     if (maxRating == null) {
@@ -112,8 +110,7 @@ public class CharUpdater {
 
     public Completable updateChar(String region, String nickName) {
         return Completable.defer(() -> api.character(region, nickName).flatMapCompletable(wowAPICharacter -> {
-                Calculator.indexCharAlts(altsCache, wowAPICharacter);
-                characterCache.put(nickName, wowAPICharacter);
+                characterCache.upsert(wowAPICharacter);
                 charSearchIndex.insertNickNames(new SearchResult(nickName, region, wowAPICharacter.clazz()));
                 return db.upsertCharacter(wowAPICharacter).ignoreElement();
             }).onErrorComplete()

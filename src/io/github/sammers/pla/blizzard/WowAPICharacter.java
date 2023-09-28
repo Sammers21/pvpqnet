@@ -1,8 +1,10 @@
 package io.github.sammers.pla.blizzard;
 
 import io.github.sammers.pla.db.Character;
+import io.github.sammers.pla.db.Snapshot;
 import io.github.sammers.pla.http.JsonConvertable;
 import io.github.sammers.pla.logic.Calculator;
+import io.github.sammers.pla.logic.Refs;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
@@ -10,8 +12,10 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -128,11 +132,23 @@ import java.util.stream.Collectors;
  * }
  * }
  */
-public record WowAPICharacter(long id, String name, String realm, String gender, String fraction, String race,
-                              String activeSpec, int level, String clazz, int itemLevel, String region,
-                              List<PvpBracket> brackets, Long lastUpdatedUTCms, Achievements achievements,
+public record WowAPICharacter(long id,
+                              String name,
+                              String realm,
+                              String gender,
+                              String fraction,
+                              String race,
+                              String activeSpec,
+                              int level,
+                              String clazz,
+                              int itemLevel,
+                              String region,
+                              List<PvpBracket> brackets,
+                              Long lastUpdatedUTCms,
+                              Achievements achievements,
                               int petHash,
-                              CharacterMedia media, String talents) implements JsonConvertable {
+                              CharacterMedia media,
+                              String talents) implements JsonConvertable {
 
     private static MessageDigest md;
 
@@ -145,6 +161,9 @@ public record WowAPICharacter(long id, String name, String realm, String gender,
     }
 
     public static WowAPICharacter parse(
+            Optional<WowAPICharacter> previous,
+            Refs refs,
+            Cutoffs cutoffs,
             JsonObject entries,
             JsonObject pvpSummary,
             List<JsonObject> brackets,
@@ -160,11 +179,32 @@ public record WowAPICharacter(long id, String name, String realm, String gender,
             .map(s -> s.getJsonArray("loadouts").getJsonObject(0).getString("talent_loadout_code"))
             .findFirst()
             .orElse("");
-        List<PvpBracket> list = brackets.stream().map(PvpBracket::parse).toList();
-        CharacterMedia media = CharacterMedia.parse(characterMedia);
-        Long lastUpdatedUTCms = Instant.now().toEpochMilli();
+        Map<String, PvpBracket> prevBrackets = previous.map(wowAPICharacter -> wowAPICharacter.brackets.stream().collect(Collectors.toMap(PvpBracket::bracketType, Function.identity()))).orElse(Map.of());
         String name = entries.getString("name").substring(0, 1).toUpperCase() + entries.getString("name").substring(1);
         String realm = Calculator.realmCalc(entries.getJsonObject("realm").getString("name"));
+        List<PvpBracket> list = brackets.stream().map((JsonObject wowApiBracket) -> {
+            String btype = wowApiBracket.getJsonObject("bracket").getString("type");
+            Snapshot latest = refs.snapshotByBracketType(btype, BlizzardAPI.oldRegion(region));
+            Long rank = Optional.ofNullable(latest).flatMap(s -> s.findChar(Character.fullNameByRealmAndName(name, realm)))
+                .map(Character::pos)
+                .orElse(-1L);
+            Long cutoffByBracketType;
+            if (btype.equals("SHUFFLE")) {
+                String spec = wowApiBracket.getJsonObject("specialization").getString("name");
+                if (spec.equals("Frost") && wowApiBracket.getJsonObject("specialization").getInteger("id") == 251) {
+                    spec = "Frostd";
+                } else {
+                    spec = "Frostm";
+                }
+                cutoffByBracketType = cutoffs.shuffle(spec);
+            } else {
+                cutoffByBracketType = cutoffs.cutoffByBracketType(btype);
+            }
+            Optional<PvpBracket> prevBracket = Optional.ofNullable(prevBrackets.get(btype));
+            return PvpBracket.parse(wowApiBracket, prevBracket, rank, Optional.ofNullable(cutoffByBracketType).orElse(-1L));
+        }).toList();
+        CharacterMedia media = CharacterMedia.parse(characterMedia);
+        Long lastUpdatedUTCms = Instant.now().toEpochMilli();
         Achievements parsedAchievements = Achievements.parse(achievements);
         return new WowAPICharacter(
             entries.getInteger("id"),

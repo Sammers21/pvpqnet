@@ -13,6 +13,17 @@ public record Diff(Long won, Long lost, Long ratingDiff, Long rankDiff, Long tim
             .put("lost", lost)
             .put("rating_diff", ratingDiff)
             .put("rank_diff", rankDiff)
+            .put("timestamp", timestamp)
             .put("last_seen", Main.PRETTY_TIME.format(new Date(timestamp)));
+    }
+
+    public static Diff fromJson(JsonObject entries) {
+        return new Diff(
+            entries.getLong("won"),
+            entries.getLong("lost"),
+            entries.getLong("rating_diff"),
+            entries.getLong("rank_diff"),
+            entries.getLong("timestamp")
+        );
     }
 }

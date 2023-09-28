@@ -1,9 +1,12 @@
 package io.github.sammers.pla;
 
 import io.github.sammers.pla.blizzard.BlizzardAPI;
+import io.github.sammers.pla.blizzard.Cutoffs;
 import io.github.sammers.pla.db.DB;
 import io.github.sammers.pla.http.Http;
+import io.github.sammers.pla.logic.CharacterCache;
 import io.github.sammers.pla.logic.Ladder;
+import io.github.sammers.pla.logic.Refs;
 import io.reactivex.Scheduler;
 import io.reactivex.schedulers.Schedulers;
 import io.vertx.core.VertxOptions;
@@ -15,6 +18,8 @@ import org.ocpsoft.prettytime.PrettyTime;
 
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -46,10 +51,13 @@ public class Main {
             .put("connection_string", dbUri)
             .put("maxPoolSize", 10)
         );
-        final BlizzardAPI blizzardAPI = new BlizzardAPI(clientId, clientSecret, webClient);
+        final CharacterCache characterCache = new CharacterCache();
+        final Refs refs = new Refs();
+        final Map<String, Cutoffs> cutoffsMap = new ConcurrentHashMap<>();
+        final BlizzardAPI blizzardAPI = new BlizzardAPI(clientId, clientSecret, webClient, refs, characterCache, cutoffsMap);
         DB db = new DB(mongoClient);
-        Ladder ladder = new Ladder(webClient, db, blizzardAPI);
+        Ladder ladder = new Ladder(webClient, db, blizzardAPI, characterCache, refs, cutoffsMap);
         ladder.start();
-        new Http(ladder).start();
+        new Http(ladder, refs, characterCache).start();
     }
 }
