@@ -5,6 +5,12 @@ module.exports = {
     getData: (page, region, activity, bracket, specs) => {
       return `/api/${region}/${activity}/${bracket}?page=${page}&specs=${specs.join(',')}`;
     },
+    getStatistic: (region) => {
+      return `/api/${region}/activity/stats`;
+    },
+    searchPlayers: (search) => {
+      return `/api/search?q=${search}`;
+    },
   },
 
   publicUrls: {
