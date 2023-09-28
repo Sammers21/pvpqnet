@@ -72,7 +72,7 @@ export const getClassIcon = (wowClass: string) => {
     : require('../assets/unknown.png');
 };
 
-const getSpecIcon = (wowSpec: string) => {
+export const getSpecIcon = (wowSpec: string) => {
   const specName = specNameFromFullSpec(wowSpec) as WOW_SPEC;
 
   return Object.values(WOW_SPEC).includes(specName)

@@ -29,9 +29,11 @@ const FilterSelect = ({ onChange, filter, value }: ISelectProps) => {
         label={filter.title}
         onChange={(evt) => onChange(evt, filter.name)}
       >
-        {filter.options.map((option) => {
-          return <MenuItem value={option}>{option}</MenuItem>;
-        })}
+        {filter.options.map((option) => (
+          <MenuItem key={option} value={option}>
+            {option}
+          </MenuItem>
+        ))}
       </Select>
     </FormControl>
   );
@@ -50,9 +52,14 @@ const Filters = ({ onChange, filters, values }: IFiltersProps) => {
 
   return (
     <div className="mx-2 my-2 px-4 py-4 rounded">
-      {filters.map((filter) => {
-        return <FilterSelect filter={filter} onChange={handleChange} value={values[filter.name]} />;
-      })}
+      {filters.map((filter) => (
+        <FilterSelect
+          key={filter.name}
+          filter={filter}
+          onChange={handleChange}
+          value={values[filter.name]}
+        />
+      ))}
     </div>
   );
 };
