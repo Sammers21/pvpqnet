@@ -68,7 +68,7 @@ export function specNameColumn(isMobile: boolean): GridColDef {
         <div className="flex justify-start items-center">
           <img src={specIcon} className="w-6 h-6" alt="spec-icon" />
           {!isMobile && (
-            <span className="pl-2" style={{ color: getClassNameColor(params.value) }}>
+            <span className="pl-2 text-base" style={{ color: getClassNameColor(params.value) }}>
               {params.value}
             </span>
           )}

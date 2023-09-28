@@ -58,6 +58,7 @@ export enum WOW_SPEC {
   'vengeancedemonhunter' = 'vengeancedemonhunter',
   'devastationevoker' = 'devastationevoker',
   'preservationevoker' = 'preservationevoker',
+  'augmentationevoker' = 'augmentationevoker',
 }
 
 export enum WOW_RACE {

@@ -3,13 +3,7 @@ import { Select, InputLabel, FormControl, MenuItem } from '@mui/material';
 import type { SelectChangeEvent } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 
-export type IFilterValue = Record<string, string>;
-
-export interface IMetaFilter {
-  title: string;
-  name: string;
-  options: string[];
-}
+import type { IFilterValue, IMetaFilter } from '../types';
 
 interface ISelectProps {
   filter: IMetaFilter;

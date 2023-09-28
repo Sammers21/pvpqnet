@@ -21,6 +21,8 @@ export const getClassNameColor = (wowClass: string) => {
 
   if (wowClass.includes(WOW_CLASS.WARRIOR)) {
     return '#C69B6D';
+  } else if (wowClass.includes(WOW_CLASS['DEMON HUNTER'])) {
+    return '#A330C9';
   } else if (wowClass.includes(WOW_CLASS.PALADIN)) {
     return '#F48CBA';
   } else if (wowClass.includes(WOW_CLASS.HUNTER)) {
@@ -41,8 +43,6 @@ export const getClassNameColor = (wowClass: string) => {
     return '#00FF98';
   } else if (wowClass.includes(WOW_CLASS.DRUID)) {
     return '#FF7C0A';
-  } else if (wowClass.includes(WOW_CLASS['DEMON HUNTER'])) {
-    return '#A330C9';
   } else if (wowClass.includes(WOW_CLASS.EVOKER)) {
     return '#33937F';
   } else {

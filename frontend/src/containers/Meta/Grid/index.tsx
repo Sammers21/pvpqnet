@@ -1,26 +1,23 @@
 import { useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
-import axios from 'axios';
+import { createBreakpoint } from 'react-use';
 
 import { DataGrid, gridClasses } from '@mui/x-data-grid';
 import { styled, alpha } from '@mui/material/styles';
 
 import Header from './Header';
-import Filters, { IFilterValue } from './Filters';
+import Filters from './Filters';
 import { getColumnGroup, specNameColumn } from './columnGroup';
 
-import { baseUrl } from '../../../config';
 import { REGIONS } from '../../../constants/region';
+import { columnGroups, defaultFilters, metaFilter } from '../../../constants/meta';
+
 import type { IMeta } from '../../../types';
 import type { GridColDef, GridColumnGroup, GridValidRowModel } from '@mui/x-data-grid';
+import type { IFilterValue } from '../types';
+import { getMeta } from '../../../services/stats.service';
 
 const ODD_OPACITY = 0.2;
-
-const columnGroups = [
-  { field: '0.850', icons: ['rank_2.png', 'rank_4.png', 'rank_6.png'] },
-  { field: '0.100', icons: ['rank_7.png', 'rank_8.png'] },
-  { field: '0.050', icons: ['rank_9.png', 'rank_10.png'] },
-];
 
 const StripedDataGrid = styled(DataGrid)(({ theme }) => ({
   [`& .${gridClasses.row}.even`]: {
@@ -53,58 +50,16 @@ const StripedDataGrid = styled(DataGrid)(({ theme }) => ({
   },
 }));
 
-type TFilterName = 'bracket' | 'period' | 'role';
-
-interface IMetaFilter {
-  title: string;
-  name: TFilterName;
-  options: string[];
+function paramFromString(str: string) {
+  return str.toLowerCase().replace(' ', '_');
 }
 
-const metaFilter: IMetaFilter[] = [
-  {
-    title: 'Bracket',
-    name: 'bracket',
-    options: ['Shuffle', '2v2', '3v3', 'Battlegrounds'],
-  },
-  {
-    title: 'Period',
-    name: 'period',
-    options: ['Last month', 'Last week', 'Last day', 'This season'],
-  },
-  {
-    title: 'Role',
-    name: 'role',
-    options: ['All', 'Melee', 'Ranged', 'Dps', 'Healer', 'Tank'],
-  },
-];
-
-const defaultFilters: Record<TFilterName, string> = {
-  bracket: 'Shuffle',
-  period: 'This season',
-  role: 'All',
-};
-
-const paramFromString = (str: string) => {
-  return str.toLowerCase().replace(' ', '_');
-};
+const useBreakpoint = createBreakpoint({ S: 758, L: 900, XL: 1280 });
 
 const Grid = () => {
   const { region = REGIONS.eu } = useParams();
-  let [data, setData] = useState<IMeta | null>(null);
-
-  const [width, setWidth] = useState(window.innerWidth);
-  useEffect(() => {
-    window.addEventListener('resize', function () {
-      setWidth(window.innerWidth);
-    });
-    return () => {
-      window.removeEventListener('resize', function () {
-        setWidth(window.innerWidth);
-      });
-    };
-  }, []);
-  const isMobile = width <= 900;
+  const [data, setData] = useState<IMeta | null>(null);
+  const breakpoint = useBreakpoint();
 
   let [searchParams, setSearchParams] = useSearchParams();
   const [filterValues, setFilterValues] = useState<IFilterValue>(valuesFromSearch());
@@ -127,7 +82,7 @@ const Grid = () => {
       newGroups.push(columnGroup);
     });
 
-    return { columns: [specNameColumn(isMobile), ...newColumns], groups: newGroups };
+    return { columns: [specNameColumn(breakpoint === 'S'), ...newColumns], groups: newGroups };
   }
 
   const handleFilterChange = (value: string, filterName: string) => {
@@ -161,7 +116,7 @@ const Grid = () => {
         params[filter.name] = paramFromString(filterValues[filter.name]);
       });
 
-      const data = (await axios.get(baseUrl + `/api/meta`, { params })).data;
+      const data = await getMeta(params);
       setData(data);
     }
 
@@ -178,9 +133,9 @@ const Grid = () => {
       newGroups.push(columnGroup);
     });
 
-    setColumns([specNameColumn(isMobile), ...newColumns]);
+    setColumns([specNameColumn(breakpoint === 'S'), ...newColumns]);
     setColorGroupModel(newGroups);
-  }, [data, isMobile]);
+  }, [data, breakpoint]);
 
   return (
     <div className="flex w-full justify-center bg-[#030303e6] pt-24 pb-11">
@@ -202,12 +157,6 @@ const Grid = () => {
             rowHeight={33.5}
             hideFooter={true}
             sx={{ '&, [class^=MuiDataGrid]': { border: 'none' } }}
-            // sortModel={sortModel}
-            // onSortModelChange={(newSortModel) => {
-            //   console.log(newSortModel);
-            //   if (!newSortModel.length) return;
-            //   setSortModel(newSortModel);
-            // }}
             initialState={{ sorting: { sortModel: [{ field: '0.050_presence', sort: 'desc' }] } }}
             getRowClassName={(params) =>
               params.indexRelativeToCurrentPage % 2 === 0 ? 'even' : 'odd'
