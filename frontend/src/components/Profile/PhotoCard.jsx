@@ -26,6 +26,7 @@ const PhotoCard = ({ isMobile, data, update, loading }) => {
     '/' +
     data.name;
   const ago = dayjs().to(dayjs(data.lastUpdatedUTCms ?? 0));
+
   let charInfoTypog = (
     <Box
       display="flex"
@@ -80,6 +81,7 @@ const PhotoCard = ({ isMobile, data, update, loading }) => {
 
   let upd = () => update();
   let updButton = <UpdateButton loading={loading} update={upd} />;
+
   return (
     <Box
       width={isMobile ? '100%' : 'auto'}

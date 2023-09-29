@@ -11,7 +11,7 @@ const ActivityScreen = loadable(() => import('../containers/Activity'), {
 const MetaScreen = loadable(() => import('../containers/Meta'), {
   fallback: <Loading />,
 });
-const ProfileScreen = loadable(() => import('../components/Profile'), {
+const ProfileScreen = loadable(() => import('../containers/Profile'), {
   fallback: <Loading />,
 });
 

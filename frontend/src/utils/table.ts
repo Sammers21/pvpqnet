@@ -7,7 +7,13 @@ export const getProfileUrl = (record: IActivityRecord, region: string) => {
   return window.location.origin + `/${region}/${realm}/${name}`;
 };
 
-export const getRealmColor = (fraction: string) => {
+export const getFractionIcon = (fraction: string) => {
+  return fraction.toUpperCase() === FRACTION.ALLIANCE
+    ? require(`../assets/fraction/alliance.png`)
+    : require('../assets/fraction/horde.png');
+};
+
+export const getRealmColor = (fraction?: string) => {
   if (!fraction) return '#FFFFFF';
   return fraction.toUpperCase() === FRACTION.ALLIANCE ? '#3FC7EB' : '#ff0000';
 };
@@ -16,7 +22,8 @@ export const specNameFromFullSpec = (spec: string) => {
   return spec.trim().replaceAll(' ', '').toLowerCase();
 };
 
-export const getClassNameColor = (wowClass: string) => {
+export const getClassNameColor = (wowClass?: string) => {
+  if (!wowClass) return '#FFFFFF';
   wowClass = wowClass.toUpperCase();
 
   if (wowClass.includes(WOW_CLASS.WARRIOR)) {
@@ -74,6 +81,7 @@ export const getClassIcon = (wowClass: string) => {
 
 export const getSpecIcon = (wowSpec: string) => {
   const specName = specNameFromFullSpec(wowSpec) as WOW_SPEC;
+  console.log('wowSpec', wowSpec);
 
   return Object.values(WOW_SPEC).includes(specName)
     ? require(`../assets/specicons/${specNameFromFullSpec(wowSpec)}.png`)

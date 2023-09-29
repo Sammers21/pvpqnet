@@ -60,3 +60,25 @@ export interface IMeta {
   specs: IMetaSpec[];
   specs_sizing?: IMetaSpecSizing;
 }
+
+interface IPlayerMedia {
+  avatar: string;
+  insert: string;
+  main_raw: string;
+}
+
+export interface IPlayer {
+  id: number;
+  name: string;
+  class: string;
+  fraction: string;
+  realm: string;
+  gender: string;
+  itemLevel: number;
+  lastUpdatedUTCms: number;
+  activeSpec: string;
+  race: string;
+  region: string;
+
+  media?: IPlayerMedia;
+}
