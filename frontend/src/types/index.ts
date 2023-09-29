@@ -83,6 +83,25 @@ export interface IPlayerBracket {
   max_rating_achieved_timestamp: number;
 }
 
+interface ISeasons {
+  name: string;
+  highest_achievement: { id: number; name: string; completed_timestamp: number };
+  rank: string;
+}
+
+export interface IExpansion {
+  name: string;
+  seasons: ISeasons[];
+}
+
+interface ITitleHistory {
+  expansions: IExpansion[];
+}
+
+interface IPlayerAchievements {
+  titles_history: ITitleHistory;
+}
+
 export interface IPlayer {
   id: number;
   name: string;
@@ -98,4 +117,5 @@ export interface IPlayer {
 
   brackets?: IPlayerBracket[];
   media?: IPlayerMedia;
+  achievements: IPlayerAchievements;
 }

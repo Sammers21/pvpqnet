@@ -115,7 +115,7 @@ const PlayerCard = ({ player }: IProps) => {
   return (
     <div
       className="relative flex rounded-xl self-start border border-solid border-[#37415180]"
-      style={{ minHeight: 415, maxWidth: 300, minWidth: 275 }}
+      style={{ minHeight: 415 }}
     >
       <PlayerImage player={player} />
       <PlayerNameAndFraction player={player} openArmory={openArmory} />

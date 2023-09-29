@@ -148,3 +148,38 @@ export const ratingToColor = (bracket: IPlayerBracket) => {
   }
   return '#ffffff';
 };
+
+const getRankImageName = (rank: string): string => {
+  if (rank === 'r1_3s') {
+    return 'rank_10.png';
+  } else if (rank === 'r1_shuffle') {
+    return 'rank_10.png';
+  } else if (rank === 'Gladiator') {
+    return 'rank_9.png';
+  } else if (rank === 'Legend') {
+    return 'rank_legend.png';
+  } else if (rank === 'Elite') {
+    return 'rank_8.png';
+  } else if (rank === 'Duelist') {
+    return 'rank_7.png';
+  } else if (rank === 'Rival') {
+    return 'rank_6.png';
+  } else if (rank === 'Challenger') {
+    return 'rank_4.png';
+  } else if (rank === 'Combatant') {
+    return 'rank_2.png';
+  } else {
+    return 'rank_2.png';
+  }
+};
+
+export const getSeasonRankImage = (rank: string) => {
+  return require('../assets/ranks/' + getRankImageName(rank));
+};
+
+export const getSeasonAndTitle = (achievement: string) => {
+  return {
+    title: achievement.split(':')[0],
+    season: `Season ${parseInt(achievement.slice(-1), 10)}`,
+  };
+};

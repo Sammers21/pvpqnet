@@ -3,6 +3,7 @@ import PlayerCard from './PlayerCard';
 import PvpBrackets from './PvpBrackets';
 
 import type { IPlayer } from '../../types';
+import TitlesHistory from './TitlesHistory';
 
 interface IProps {
   player: IPlayer;
@@ -13,7 +14,10 @@ interface IProps {
 const Armory = ({ player, loading, updatePlayer }: IProps) => {
   return (
     <div className="flex gap-4 rounded-lg">
-      <PlayerCard player={player} />
+      <div className="flex flex-col gap-4" style={{ maxWidth: 300, minWidth: 275 }}>
+        <PlayerCard player={player} />
+        <TitlesHistory player={player} />
+      </div>
 
       <div className="flex flex-col gap-2 grow rounded-lg">
         <LastUpdated player={player} updatePlayer={updatePlayer} loading={loading} />
