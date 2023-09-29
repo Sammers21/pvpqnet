@@ -76,6 +76,7 @@ const Profile = () => {
       />
     );
   });
+
   var shuffle;
   if (data.class) {
     let classAndSpec = CLASS_AND_SPECS[data.class];

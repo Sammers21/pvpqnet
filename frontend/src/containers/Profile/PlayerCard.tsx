@@ -14,7 +14,7 @@ interface IProps {
 const PlayerNameAndFraction = ({ player, openArmory }: IProps) => (
   <div className="flex flex-col justify-start absolute left-0 top-0 pt-2 pl-3">
     <span
-      className="text-2xl font-semibold cursor-pointer"
+      className="text-xl font-semibold cursor-pointer"
       style={{ color: getClassNameColor(player?.class) }}
       onClick={openArmory}
     >
@@ -23,7 +23,7 @@ const PlayerNameAndFraction = ({ player, openArmory }: IProps) => (
 
     <div className="flex items-center">
       {player?.fraction && (
-        <img className="w-5 h-7 mr-1" src={getFractionIcon(player.fraction)} alt="fraction" />
+        <img className="w-4 h-6 mr-1" src={getFractionIcon(player.fraction)} alt="fraction" />
       )}
       <span className="text-sm" style={{ color: getRealmColor(player?.fraction) }}>
         {player?.realm}
@@ -65,7 +65,7 @@ const PlayerIcons = ({ player }: IProps) => {
   );
 };
 
-const PlayerLinks = ({ player, openArmory }: IProps) => {
+export const PlayerLinks = ({ player, openArmory }: IProps) => {
   const RegionIcon = player.region === REGIONS.eu ? EuIcon : UsIcon;
 
   return (
@@ -90,25 +90,23 @@ const PlayerImage = ({ player }: IProps) => (
     />
     <img
       className="object-cover"
-      style={{ transform: 'scaleX(-1) scale(1.25) translateY(-5%)' }}
+      style={{ transform: 'scaleX(-1)' }}
       alt="Profile-pic"
       src={player?.media?.main_raw}
     />
   </>
 );
 
-const PlayerItemLvl = ({ player }: IProps) => (
+export const PlayerItemLvl = ({ player }: IProps) => (
   <div className="flex flex-col items-center absolute right-0 top-0 pt-2 pr-3">
-    <span className="text-[#c6a669] text-base">
-      Item Level
-      <span className="text-[#ffffff] text-lg font-bold ml-2">{player.itemLevel}</span>
+    <span className="text-[#60A5FACC] text-base">
+      <span className="text-[#ffffff] text-lg font-bold mr-2">{player.itemLevel}</span>
+      ILVL
     </span>
   </div>
 );
 
 const PlayerCard = ({ player }: IProps) => {
-  console.log('player', player);
-
   const openArmory = () => {
     const url = `https://worldofwarcraft.blizzard.com/en-gb/character/${player.region}/${player.realm}/${player.name}`;
     window.open(url, '_blank');
@@ -116,13 +114,12 @@ const PlayerCard = ({ player }: IProps) => {
 
   return (
     <div
-      className="relative flex rounded-xl border border-solid border-[#37415180]"
-      style={{ minHeight: 450, maxWidth: 375 }}
+      className="relative flex rounded-xl self-start border border-solid border-[#37415180]"
+      style={{ minHeight: 415, maxWidth: 300, minWidth: 275 }}
     >
       <PlayerImage player={player} />
       <PlayerNameAndFraction player={player} openArmory={openArmory} />
       <PlayerIcons player={player} />
-      <PlayerLinks player={player} openArmory={openArmory} />
 
       <PlayerItemLvl player={player} />
     </div>

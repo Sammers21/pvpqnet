@@ -33,10 +33,13 @@ const Profile = () => {
     <>
       <Header />
       <div className="flex justify-center w-full min-h-screen pt-24 pb-11 bg-[#030303e6]">
-        <div className="w-4/5 h-full rounded-lg">
-          {player && (
-            <Armory player={player} loading={loading} updatePlayer={() => loadProfile(true)} />
-          )}
+        <div className="w-full px-14 xl:px-0 xl:w-5/6 h-full rounded-lg">
+          <div className="w-10/12">
+            {player && (
+              <Armory player={player} loading={loading} updatePlayer={() => loadProfile(true)} />
+            )}
+          </div>
+          <div className="grow"></div>
         </div>
       </div>
       <Footer />

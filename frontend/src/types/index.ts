@@ -67,6 +67,22 @@ interface IPlayerMedia {
   main_raw: string;
 }
 
+export interface IPlayerBracket {
+  bracket_type: string;
+  rating: number;
+
+  won: number;
+  lost: number;
+  rank: number;
+
+  is_rank_one_range: boolean;
+  season_max_rating: number;
+  season_max_rating_achieved_timestamp: number;
+
+  max_rating: number;
+  max_rating_achieved_timestamp: number;
+}
+
 export interface IPlayer {
   id: number;
   name: string;
@@ -80,5 +96,6 @@ export interface IPlayer {
   race: string;
   region: string;
 
+  brackets?: IPlayerBracket[];
   media?: IPlayerMedia;
 }

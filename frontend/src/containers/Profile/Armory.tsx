@@ -1,5 +1,7 @@
 import LastUpdated from './LastUpdated';
 import PlayerCard from './PlayerCard';
+import PvpBrackets from './PvpBrackets';
+
 import type { IPlayer } from '../../types';
 
 interface IProps {
@@ -9,16 +11,14 @@ interface IProps {
 }
 
 const Armory = ({ player, loading, updatePlayer }: IProps) => {
-  console.log('player', player);
-
   return (
     <div className="flex gap-4 rounded-lg">
       <PlayerCard player={player} />
 
-      <div className="flex flex-col grow rounded-lg">
+      <div className="flex flex-col gap-2 grow rounded-lg">
         <LastUpdated player={player} updatePlayer={updatePlayer} loading={loading} />
 
-        <div>Seaction content</div>
+        <PvpBrackets player={player} />
       </div>
     </div>
   );
