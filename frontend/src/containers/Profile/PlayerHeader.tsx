@@ -40,7 +40,7 @@ const LastUpdated = ({ player, loading, updatePlayer }: IProps) => {
   const relativeTime = (dayjs() as any).to(dayjs(player.lastUpdatedUTCms || 0));
 
   return (
-    <div className="flex grow items-center justify-end">
+    <div className="flex grow items-center justify-start md:justify-end">
       <span className="text-[#60A5FACC] text-sm mr-4">Last updated {relativeTime}</span>
 
       {loading ? (
@@ -67,7 +67,7 @@ const LastUpdated = ({ player, loading, updatePlayer }: IProps) => {
 };
 
 export const PlayerHeader = ({ player, loading, updatePlayer }: IProps) => (
-  <div className="flex justify-between border border-solid rounded-lg border-[#37415180] px-3 py-1 bg-[#030303e6]">
+  <div className="flex gap-2 md:gap-0 flex-col-reverse md:flex-row justify-between border border-solid rounded-lg border-[#37415180] px-3 py-1 bg-[#030303e6]">
     <TalentsButtons talents={player.talents} />
 
     <LastUpdated player={player} loading={loading} updatePlayer={updatePlayer} />

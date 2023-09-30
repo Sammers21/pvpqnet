@@ -1,8 +1,15 @@
-import { getAltProfileUrl, getClassNameColor, getSpecIcon, ratingToColor } from '../../utils/table';
-import type { IPlayer } from '../../types';
-import type { GridColDef } from '@mui/x-data-grid';
-import { CLASS_AND_SPECS } from '../../constants/filterSchema';
 import { Avatar, Chip } from '@mui/material';
+import type { GridColDef } from '@mui/x-data-grid';
+
+import {
+  getAltProfileUrl,
+  getClassNameColor,
+  getSpecIcon,
+  ratingToColor,
+} from '../../../utils/table';
+import { CLASS_AND_SPECS } from '../../../constants/filterSchema';
+
+import type { IPlayer } from '../../../types';
 
 interface IParams {
   row: IPlayer;
@@ -79,6 +86,13 @@ export const tableColumns: GridColDef<IPlayer>[] = [
     renderHeader: () => renderHeader('Name'),
   },
   {
+    field: 'SHUFFLE',
+    headerName: 'Shuffle',
+    renderCell: (params: IParams) => renderShuffle(params),
+    width: 300,
+    renderHeader: () => renderHeader('Shuffle'),
+  },
+  {
     field: 'ARENA_2v2',
     headerName: '2v2',
     width: 80,
@@ -98,12 +112,5 @@ export const tableColumns: GridColDef<IPlayer>[] = [
     width: 80,
     renderCell: (params: IParams) => renderBracket(params, 'rbg'),
     renderHeader: () => renderHeader('RBG'),
-  },
-  {
-    field: 'SHUFFLE',
-    headerName: 'Shuffle',
-    renderCell: (params: IParams) => renderShuffle(params),
-    width: 300,
-    renderHeader: () => renderHeader('Shuffle'),
   },
 ];

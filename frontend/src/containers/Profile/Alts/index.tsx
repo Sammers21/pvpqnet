@@ -1,15 +1,14 @@
 import { Divider } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 
-import { tableColumns } from './columnGroup';
-
-import type { IPlayer } from '../../types';
+import { tableColumns } from './columns';
+import type { IPlayer } from '../../../types';
 
 const Alts = ({ alts }: { alts?: IPlayer[] }) => {
   if (!alts || !alts.length) return null;
 
   return (
-    <div className="flex self-start flex-col border border-solid rounded-lg border-[#37415180] px-3 py-4 bg-[#030303e6]">
+    <div className="flex flex-col border border-solid rounded-lg border-[#37415180] px-3 py-4 bg-[#030303e6]">
       <span className="text-2xl">Alts</span>
 
       <Divider className="!my-2" />
