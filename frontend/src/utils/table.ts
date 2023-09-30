@@ -1,5 +1,5 @@
 import { FRACTION, WOW_CLASS, WOW_CLASS_ICON, WOW_RACE, WOW_SPEC } from '../constants/table';
-import type { IActivityRecord, IPlayerBracket } from '../types';
+import type { IActivityRecord, IPlayer, IPlayerBracket } from '../types';
 
 export const getProfileUrl = (record: IActivityRecord, region: string) => {
   const name = record?.character?.name || record?.name;
@@ -131,8 +131,8 @@ export const getRatingColor = (in_cutoff: boolean) => {
   return in_cutoff ? '#fb7e00' : '#FFFFFF';
 };
 
-export const ratingToColor = (bracket: IPlayerBracket) => {
-  const { rating, is_rank_one_range } = bracket;
+export const ratingToColor = (bracket: Partial<IPlayerBracket>) => {
+  const { rating = 0, is_rank_one_range = false } = bracket;
 
   if (is_rank_one_range) return '#fb7e00';
   else if (rating >= 2100) {
@@ -182,4 +182,8 @@ export const getSeasonAndTitle = (achievement: string) => {
     title: achievement.split(':')[0],
     season: `Season ${parseInt(achievement.slice(-1), 10)}`,
   };
+};
+
+export const getAltProfileUrl = (alt: IPlayer) => {
+  return window.location.origin + `/${alt.region}/${alt.realm}/${alt.name}`;
 };

@@ -118,4 +118,5 @@ export interface IPlayer {
   brackets?: IPlayerBracket[];
   media?: IPlayerMedia;
   achievements: IPlayerAchievements;
+  alts?: IPlayer[];
 }
