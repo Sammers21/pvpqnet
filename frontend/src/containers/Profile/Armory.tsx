@@ -21,15 +21,15 @@ const Armory = ({ player, loading, updatePlayer }: IProps) => {
   const breakpoint = useBreakpoint();
 
   return (
-    <div className="flex flex-col lg:flex-row gap-4 rounded-lg">
+    <div className="flex flex-col lg:flex-row gap-2 md:gap-4 rounded-lg">
       {breakpoint === 'lg' && (
-        <div className="flex flex-col gap-4 lg:max-w-[300px] lg:min-w-[250px]">
+        <div className="flex flex-col gap-2 md:gap-4 lg:max-w-[300px] lg:min-w-[250px]">
           <PlayerDesktop player={player} />
           <TitlesHistory player={player} />
         </div>
       )}
 
-      <div className="flex flex-col gap-4 grow lg:self-start rounded-lg">
+      <div className="flex flex-col gap-2 md:gap-4 grow lg:self-start rounded-lg">
         {breakpoint === 'md' && <PlayerMobile player={player} />}
         <PlayerHeader player={player} updatePlayer={updatePlayer} loading={loading} />
         <PvpBrackets player={player} />

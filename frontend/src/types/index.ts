@@ -120,4 +120,9 @@ export interface IPlayer {
   media?: IPlayerMedia;
   achievements: IPlayerAchievements;
   alts?: IPlayer[];
+
+  SHUFFLE?: number;
+  ARENA_2v2?: number;
+  ARENA_3v3?: number;
+  BATTLEGROUNDS?: number;
 }

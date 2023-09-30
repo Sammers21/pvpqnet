@@ -51,7 +51,11 @@ export const PlayerImages = ({ player, desktop }: IProps) => {
   }, [player]);
 
   return (
-    <div className={`flex gap-1 justify-start ${desktop && 'absolute left-0 bottom-0 mb-3 ml-3'}`}>
+    <div
+      className={`flex gap-1 items-end md:items-start justify-start ${
+        desktop && 'absolute left-0 bottom-0 mb-3 ml-3'
+      }`}
+    >
       <img
         className="h-9 w-9 rounded border border-solid border-[#37415180]"
         src={playerImages.raceIcon}
