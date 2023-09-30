@@ -6,7 +6,7 @@ import { faDiscord } from '@fortawesome/free-brands-svg-icons';
 
 const Footer = () => {
   return (
-    <div className="flex justify-between flex-wrap py-1 px-8 fixed bottom-0 left-0 bg-zinc-950 w-full border-solid border-t border-[#2f384de6]">
+    <div className="flex justify-between flex-wrap py-1 px-4 md:px-8 fixed bottom-0 left-0 bg-zinc-950 w-full border-solid border-t border-[#2f384de6]">
       <div className="pr-4">
         Made by<span> </span>
         <Link underline="none" href="https://github.com/Sammers21">

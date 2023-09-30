@@ -139,7 +139,7 @@ const Grid = () => {
 
   return (
     <div className="flex w-full justify-center bg-[#030303e6] pt-24 pb-11">
-      <div className="w-4/5">
+      <div className="w-full md:w-4/5">
         <Header />
 
         <Filters filters={metaFilter} onChange={handleFilterChange} values={filterValues} />

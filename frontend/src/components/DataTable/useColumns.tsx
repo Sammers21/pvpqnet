@@ -80,8 +80,13 @@ const getTableColumns = (activity: string, isMobile: boolean, region: string) =>
     label: 'NAME',
     render: ({ record }: { record: IActivityRecord }) => {
       const wowClass = record?.character?.class || record?.class;
-      const name = record?.character?.name || record?.name;
       const url = getProfileUrl(record, region);
+
+      let name = record?.character?.name || record?.name;
+      if (isMobile) {
+        const max = Math.round(Math.max(6, 6 + (window.innerWidth - 500) / 30));
+        name = `${name.substring(0, max)}...`;
+      }
 
       return (
         <a
