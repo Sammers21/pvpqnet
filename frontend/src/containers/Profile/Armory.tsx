@@ -1,10 +1,10 @@
-import LastUpdated from './LastUpdated';
+import PlayerHeader from './PlayerHeader';
 import PlayerCard from './PlayerCard';
 import PvpBrackets from './PvpBrackets';
 
 import type { IPlayer } from '../../types';
 import TitlesHistory from './TitlesHistory';
-import AltsTable from './AltsTable';
+// import AltsTable from './AltsTable';
 
 interface IProps {
   player: IPlayer;
@@ -21,11 +21,11 @@ const Armory = ({ player, loading, updatePlayer }: IProps) => {
       </div>
 
       <div className="flex self-start flex-col gap-2 grow rounded-lg">
-        <LastUpdated player={player} updatePlayer={updatePlayer} loading={loading} />
+        <PlayerHeader player={player} updatePlayer={updatePlayer} loading={loading} />
 
         <PvpBrackets player={player} />
 
-        <AltsTable alts={player.alts} />
+        {/* <AltsTable alts={player.alts} /> */}
       </div>
     </div>
   );

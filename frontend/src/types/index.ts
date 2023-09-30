@@ -114,6 +114,7 @@ export interface IPlayer {
   activeSpec: string;
   race: string;
   region: string;
+  talents: string;
 
   brackets?: IPlayerBracket[];
   media?: IPlayerMedia;
