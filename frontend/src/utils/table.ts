@@ -98,7 +98,7 @@ const getRaceIcon = (wowGender: string, wowRace: string) => {
     : require('../assets/unknown.png');
 };
 
-export const getImages = ({
+export const getDetaisImages = ({
   wowClass,
   wowSpec,
   wowRace,

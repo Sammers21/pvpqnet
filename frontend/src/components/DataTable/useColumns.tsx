@@ -5,7 +5,7 @@ import {
   getRealmColor,
   getDiffColor,
   getDiffCell,
-  getImages,
+  getDetaisImages,
   getWinRate,
   getWonAndLossColors,
   getRatingColor,
@@ -46,7 +46,7 @@ const getTableColumns = (activity: string, isMobile: boolean, region: string) =>
       const wowRace = record?.character?.race || record?.race;
       const wowGender = record?.character?.gender || record?.gender;
 
-      const icons = getImages({ wowClass, wowSpec, wowRace, wowGender });
+      const icons = getDetaisImages({ wowClass, wowSpec, wowRace, wowGender });
 
       return (
         <div className="flex">
