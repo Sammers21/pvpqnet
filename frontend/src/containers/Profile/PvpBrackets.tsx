@@ -128,7 +128,7 @@ const PvpBrackets = ({ player }: IProps) => {
   const classAndSpec = CLASS_AND_SPECS[player.class] as string[];
 
   return (
-    <div className="flex justify-start flex-col border border-solid rounded-lg border-[#37415180] px-3 py-4 bg-[#030303e6]">
+    <div className="flex gap-4 justify-start flex-col">
       <div className="flex gap-4 justify-start">
         {arenaAndRbg.map(({ title, name }) => {
           const playerBracket = (player?.brackets || []).find((b) => b.bracket_type === name);
@@ -136,7 +136,7 @@ const PvpBrackets = ({ player }: IProps) => {
         })}
       </div>
 
-      <div className="flex flex-wrap gap-4 justify-start mt-6">
+      <div className="flex flex-wrap gap-4 justify-start">
         {classAndSpec.map((spec) => {
           const playerBracket = (player?.brackets || []).find((b) => b.bracket_type.includes(spec));
           return (

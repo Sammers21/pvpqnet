@@ -20,7 +20,7 @@ const Armory = ({ player, loading, updatePlayer }: IProps) => {
         <TitlesHistory player={player} />
       </div>
 
-      <div className="flex self-start flex-col gap-2 grow rounded-lg">
+      <div className="flex self-start flex-col gap-4 grow rounded-lg">
         <PlayerHeader player={player} updatePlayer={updatePlayer} loading={loading} />
 
         <PvpBrackets player={player} />
