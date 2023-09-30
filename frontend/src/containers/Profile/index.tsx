@@ -5,6 +5,7 @@ import axios from 'axios';
 import { Alert, Snackbar as MuiSnackbar, styled } from '@mui/material';
 import Header from '../../components/AppBar';
 import Armory from './Armory';
+import PlayerNotFound from './PlayerNotFound';
 import Footer from '../../components/common/Footer';
 
 import { baseUrl } from '../../config';
@@ -26,6 +27,7 @@ const Profile = () => {
   let { region, realm, name } = useParams();
   const [openSnackbar, setOpenSnakbar] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [playerStatus, setPlayerStatus] = useState(200);
   const [player, setPlayer] = useState<IPlayer | null>(null);
 
   useEffect(() => {
@@ -39,8 +41,9 @@ const Profile = () => {
     const response = await axios.get(url, { validateStatus: (status) => status < 500 });
 
     const data = response.data as IPlayer;
-    if (update) setOpenSnakbar(true);
+    if (update && response.status !== 404) setOpenSnakbar(true);
 
+    setPlayerStatus(response.status);
     setLoading(false);
     setPlayer(data);
   }
@@ -48,24 +51,28 @@ const Profile = () => {
   return (
     <>
       <Header />
-      <div className="flex justify-center w-full min-h-screen pt-24 pb-11 bg-[#030303e6]">
-        <div className="w-full px-4 xl:px-0 xl:w-10/12 h-full rounded-lg">
-          {player && (
-            <Armory player={player} loading={loading} updatePlayer={() => loadProfile(true)} />
-          )}
+      {playerStatus === 404 ? (
+        <PlayerNotFound loading={loading} updatePlayer={() => loadProfile(true)} />
+      ) : (
+        <div className="flex justify-center w-full min-h-screen pt-24 pb-11 bg-[#030303e6]">
+          <div className="w-full px-4 xl:px-0 xl:w-10/12 h-full rounded-lg">
+            {player && (
+              <Armory player={player} loading={loading} updatePlayer={() => loadProfile(true)} />
+            )}
+          </div>
         </div>
+      )}
 
-        <Snackbar
-          anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-          autoHideDuration={2000}
-          open={openSnackbar}
-          onClose={() => setOpenSnakbar(false)}
-        >
-          <Alert onClose={() => setOpenSnakbar(false)} severity="success">
-            Player profile successfully updated!
-          </Alert>
-        </Snackbar>
-      </div>
+      <Snackbar
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+        autoHideDuration={2000}
+        open={openSnackbar}
+        onClose={() => setOpenSnakbar(false)}
+      >
+        <Alert onClose={() => setOpenSnakbar(false)} severity="success">
+          Player profile successfully updated!
+        </Alert>
+      </Snackbar>
       <Footer />
     </>
   );
