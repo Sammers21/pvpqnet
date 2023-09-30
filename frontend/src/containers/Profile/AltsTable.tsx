@@ -9,7 +9,7 @@ const Alts = ({ alts }: { alts?: IPlayer[] }) => {
   if (!alts || !alts.length) return null;
 
   return (
-    <div className="flex flex-col border border-solid rounded-lg border-[#37415180] px-3 py-4 bg-[#030303e6]">
+    <div className="flex self-start flex-col border border-solid rounded-lg border-[#37415180] px-3 py-4 bg-[#030303e6]">
       <span className="text-2xl">Alts</span>
 
       <Divider className="!my-2" />
@@ -22,6 +22,7 @@ const Alts = ({ alts }: { alts?: IPlayer[] }) => {
         sx={{ '&, [class^=MuiDataGrid]': { border: 'none' } }}
         hideFooter
         disableColumnMenu
+        onSortModelChange={(value) => console.log(value)}
         disableRowSelectionOnClick
       />
     </div>

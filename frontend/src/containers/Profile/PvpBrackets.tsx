@@ -1,8 +1,9 @@
 import { useMemo } from 'react';
-import type { IPlayerBracket, IPlayer } from '../../types';
+import { Chip } from '@mui/material';
+
 import { getSpecIcon, ratingToColor } from '../../utils/table';
 import { CLASS_AND_SPECS } from '../../constants/filterSchema';
-import { Chip } from '@mui/material';
+import type { IPlayerBracket, IPlayer } from '../../types';
 
 interface IProps {
   player: IPlayer;

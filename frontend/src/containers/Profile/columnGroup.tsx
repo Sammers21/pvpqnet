@@ -74,9 +74,30 @@ export const tableColumns: GridColDef<IPlayer>[] = [
   {
     field: 'id',
     headerName: 'Name',
-    renderCell: renderName,
     width: 200,
+    renderCell: renderName,
     renderHeader: () => renderHeader('Name'),
+  },
+  {
+    field: 'ARENA_2v2',
+    headerName: '2v2',
+    width: 80,
+    renderCell: (params: IParams) => renderBracket(params, '2v2'),
+    renderHeader: () => renderHeader('2v2'),
+  },
+  {
+    field: 'ARENA_3v3',
+    headerName: '3v3',
+    width: 80,
+    renderCell: (params: IParams) => renderBracket(params, '3v3'),
+    renderHeader: () => renderHeader('3v3'),
+  },
+  {
+    field: 'BATTLEGROUNDS',
+    headerName: 'RBG',
+    width: 80,
+    renderCell: (params: IParams) => renderBracket(params, 'rbg'),
+    renderHeader: () => renderHeader('RBG'),
   },
   {
     field: 'SHUFFLE',
@@ -84,23 +105,5 @@ export const tableColumns: GridColDef<IPlayer>[] = [
     renderCell: (params: IParams) => renderShuffle(params),
     width: 300,
     renderHeader: () => renderHeader('Shuffle'),
-  },
-  {
-    field: 'ARENA_2v2',
-    headerName: '2v2',
-    renderCell: (params: IParams) => renderBracket(params, '2v2'),
-    renderHeader: () => renderHeader('2v2'),
-  },
-  {
-    field: 'ARENA_3v3',
-    headerName: '3v3',
-    renderCell: (params: IParams) => renderBracket(params, '3v3'),
-    renderHeader: () => renderHeader('3v3'),
-  },
-  {
-    field: 'BATTLEGROUNDS',
-    headerName: 'RBG',
-    renderCell: (params: IParams) => renderBracket(params, 'rbg'),
-    renderHeader: () => renderHeader('RBG'),
   },
 ];
