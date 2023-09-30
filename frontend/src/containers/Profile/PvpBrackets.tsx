@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import type { IPlayerBracket, IPlayer } from '../../types';
 import { getSpecIcon, ratingToColor } from '../../utils/table';
 import { CLASS_AND_SPECS } from '../../constants/filterSchema';
+import { Chip } from '@mui/material';
 
 interface IProps {
   player: IPlayer;
@@ -52,28 +53,29 @@ const PvpBracket = ({
       style={{ minWidth: 185 }}
       className="relative flex grow flex-col items-center border border-solid rounded-lg border-[#37415180] px-3 py-2 bg-[#030303e6]"
     >
-      <div className="absolute top-2 left-3">
-        {specIcon ? (
-          <img
-            className="h-9 w-9 rounded border border-solid border-[#37415180]"
-            src={specIcon}
-            alt="spec icon"
-          />
-        ) : (
-          <span className="text-xl">{title}</span>
-        )}
-      </div>
+      <div className="flex justify-center items-center mx-2">
+        <span
+          className="flex items-center gap-3 pb-1 text-4xl font-semibold"
+          style={{ color: ratingColor }}
+        >
+          {specIcon ? (
+            <img
+              className="h-6 w-6 rounded border border-solid border-[#37415180]"
+              src={specIcon}
+              alt="spec icon"
+            />
+          ) : (
+            <span className="text-xl text-white mt-2">{title}</span>
+          )}
 
-      <div className="flex justify-center">
-        <span className="pb-1 text-4xl font-semibold" style={{ color: ratingColor }}>
           {bracket?.rating || 0}
-        </span>
 
-        {bracket?.rank && bracket.rank !== -1 && (
-          <div className="flex ml-1 items-center justify-between">
-            <span className="text-white">#{bracket.rank}</span>
-          </div>
-        )}
+          {bracket?.rank && bracket.rank !== -1 && (
+            <div className="flex items-center justify-between">
+              <Chip label={`#${bracket.rank}`} size="small" />
+            </div>
+          )}
+        </span>
       </div>
 
       <div className="pt-1 flex flex-col w-full border-t border-solid border-[#60A5FA50]">
@@ -102,14 +104,14 @@ const PvpBracket = ({
 
         <div className="flex gap-4 text-[#60A5FACC] pt-1 text-sm border-t border-solid border-[#60A5FA50]">
           {bracket?.season_max_rating && bracket.season_max_rating !== -1 && (
-            <div className="py-1 gap-2 grow flex justify-center items-center border-r border-solid border-[#60A5FA50]">
+            <div className="px-1 py-1 gap-1 grow flex justify-center items-center border-r border-solid border-[#60A5FA50]">
               <span>Season</span>
               <span className="text-white">{bracket.season_max_rating}</span>
             </div>
           )}
 
           {bracket?.max_rating && bracket.max_rating !== -1 && (
-            <div className="py-1 gap-2 grow flex justify-center items-center">
+            <div className="px-1 py-1 gap-1 grow flex justify-center items-center">
               <span>Record</span>
               <span className="text-white">{bracket.max_rating}</span>
             </div>

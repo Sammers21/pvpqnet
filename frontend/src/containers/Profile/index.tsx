@@ -49,7 +49,7 @@ const Profile = () => {
     <>
       <Header />
       <div className="flex justify-center w-full min-h-screen pt-24 pb-11 bg-[#030303e6]">
-        <div className="w-full px-6 xl:px-0 xl:w-10/12 h-full rounded-lg">
+        <div className="w-full px-4 xl:px-0 xl:w-10/12 h-full rounded-lg">
           {player && (
             <Armory player={player} loading={loading} updatePlayer={() => loadProfile(true)} />
           )}

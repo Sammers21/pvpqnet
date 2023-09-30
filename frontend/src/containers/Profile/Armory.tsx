@@ -15,7 +15,7 @@ interface IProps {
 const Armory = ({ player, loading, updatePlayer }: IProps) => {
   return (
     <div className="flex gap-4 rounded-lg">
-      <div className="flex flex-col gap-4" style={{ maxWidth: 300, minWidth: 275 }}>
+      <div className="flex flex-col gap-4" style={{ maxWidth: 300, minWidth: 250 }}>
         <PlayerCard player={player} />
         <TitlesHistory player={player} />
       </div>
