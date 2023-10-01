@@ -17,7 +17,7 @@ const CopyButton = ({ content, children }: { content: string; children?: React.R
   return (
     <>
       {showCopied ? (
-        <Button className="!text-xs" size="small" variant="outlined" color="success">
+        <Button className="!text-xs" size="small" variant="text" color="success">
           Copied!
         </Button>
       ) : (
@@ -25,7 +25,7 @@ const CopyButton = ({ content, children }: { content: string; children?: React.R
           className="!text-xs"
           style={{ color: '#60A5FACC' }}
           size="small"
-          variant="outlined"
+          variant="text"
           onClick={onCopyClick}
         >
           <ContentCopyIcon fontSize="small" className="!w-4 !h-4 mr-1" />

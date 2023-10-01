@@ -1,7 +1,7 @@
 import dayjs from 'dayjs-ext';
 
 import LoadingButton from '@mui/lab/LoadingButton';
-import { Button, IconButton, Tooltip } from '@mui/material';
+import { Button } from '@mui/material';
 import RestoreIcon from '@mui/icons-material/Restore';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 
@@ -25,7 +25,7 @@ const TalentsButtons = ({ talents }: { talents: string }) => {
         className="!text-xs"
         style={{ color: '#60A5FACC' }}
         size="small"
-        variant="outlined"
+        variant="text"
         onClick={openTalentsTree}
       >
         <OpenInNewIcon fontSize="small" className="!w-4 !h-4 mr-1" />
@@ -40,37 +40,29 @@ const LastUpdated = ({ player, loading, updatePlayer }: IProps) => {
   const relativeTime = (dayjs() as any).to(dayjs(player.lastUpdatedUTCms || 0));
 
   return (
-    <div className="flex grow items-center justify-start md:justify-end">
-      <span className="text-[#60A5FACC] text-sm mr-4">Last updated {relativeTime}</span>
+    <div className="flex grow items-center md:justify-start">
+      <span className="text-white leading-4 text-sm mr-2">Last updated {relativeTime}</span>
 
-      {loading ? (
-        <LoadingButton
-          style={{ color: '#60A5FACC', backgroundColor: '#60A5FA35', padding: 13, minWidth: 26 }}
-          loading
-          variant="outlined"
-        />
-      ) : (
-        <Tooltip title="Update player" placement="top">
-          <IconButton
-            className="!rounded-md"
-            onClick={updatePlayer}
-            style={{ color: '#60A5FACC', backgroundColor: '#60A5FA35', padding: 2 }}
-            edge="start"
-            size="small"
-          >
-            <RestoreIcon />
-          </IconButton>
-        </Tooltip>
-      )}
+      <LoadingButton
+        className="!text-xs"
+        loadingPosition="start"
+        startIcon={<RestoreIcon fontSize="small" />}
+        onClick={updatePlayer}
+        size="small"
+        style={{ color: '#60A5FACC' }}
+        loading={loading}
+        variant="text"
+      >
+        Update now
+      </LoadingButton>
     </div>
   );
 };
 
 export const PlayerHeader = ({ player, loading, updatePlayer }: IProps) => (
-  <div className="flex gap-2 md:gap-0 flex-col-reverse md:flex-row justify-between border border-solid rounded-lg border-[#37415180] px-3 py-1 bg-[#030303e6]">
-    <TalentsButtons talents={player.talents} />
-
+  <div className="flex gap-2 md:gap-0 flex-col md:flex-row justify-between border border-solid rounded-lg border-[#37415180] px-3 py-1 bg-[#030303e6]">
     <LastUpdated player={player} loading={loading} updatePlayer={updatePlayer} />
+    <TalentsButtons talents={player.talents} />
   </div>
 );
 

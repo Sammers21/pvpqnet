@@ -29,7 +29,7 @@ const Armory = ({ player, loading, updatePlayer }: IProps) => {
         </div>
       )}
 
-      <div className="flex flex-col gap-2 md:gap-4 grow lg:self-start rounded-lg">
+      <div className="flex flex-col gap-2 grow lg:self-start rounded-lg">
         {breakpoint === 'md' && <PlayerMobile player={player} />}
         <PlayerHeader player={player} updatePlayer={updatePlayer} loading={loading} />
         <PvpBrackets player={player} />
