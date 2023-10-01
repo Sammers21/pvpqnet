@@ -1,7 +1,9 @@
 package io.github.sammers.pla.logic;
 
 import io.github.sammers.pla.Main;
-import io.github.sammers.pla.blizzard.*;
+import io.github.sammers.pla.blizzard.BlizzardAPI;
+import io.github.sammers.pla.blizzard.PvpBracket;
+import io.github.sammers.pla.blizzard.WowAPICharacter;
 import io.github.sammers.pla.db.Character;
 import io.github.sammers.pla.db.DB;
 import io.github.sammers.pla.db.Snapshot;
@@ -14,12 +16,10 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
 import static io.github.sammers.pla.logic.Conts.*;
-import static io.github.sammers.pla.logic.Ladder.*;
-import static io.github.sammers.pla.logic.Refs.bucketRef;
 
 public class CharUpdater {
 
@@ -27,15 +27,17 @@ public class CharUpdater {
     private final BlizzardAPI api;
     private final CharacterCache characterCache;
     private final NickNameSearchIndex charSearchIndex;
+    private final AtomicBoolean charsLoaded;
     private final DB db;
     private final Refs refs;
 
     public CharUpdater(BlizzardAPI api,
                        CharacterCache characterCache,
-                       Refs refs,
+                       AtomicBoolean charsLoaded, Refs refs,
                        NickNameSearchIndex charSearchIndex,
                        DB db) {
         this.api = api;
+        this.charsLoaded = charsLoaded;
         this.refs = refs;
         this.characterCache = characterCache;
         this.charSearchIndex = charSearchIndex;
@@ -109,11 +111,18 @@ public class CharUpdater {
     }
 
     public Completable updateChar(String region, String nickName) {
-        return Completable.defer(() -> api.character(region, nickName).flatMapCompletable(wowAPICharacter -> {
-                characterCache.upsert(wowAPICharacter);
-                charSearchIndex.insertNickNames(new SearchResult(nickName, region, wowAPICharacter.clazz()));
-                return db.upsertCharacter(wowAPICharacter).ignoreElement();
-            }).onErrorComplete()
+        return Completable.defer(() -> {
+                if (charsLoaded.get()) {
+                    return api.character(region, nickName).flatMapCompletable(wowAPICharacter -> {
+                        characterCache.upsert(wowAPICharacter);
+                        charSearchIndex.insertNickNames(new SearchResult(nickName, region, wowAPICharacter.clazz()));
+                        return db.upsertCharacter(wowAPICharacter).ignoreElement();
+                    }).onErrorComplete();
+                } else {
+                    log.warn("Not allowing char updates before char load from db");
+                    return Completable.complete();
+                }
+            }
         );
     }
 }

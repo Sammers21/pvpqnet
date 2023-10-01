@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -50,6 +51,8 @@ public class Ladder {
     private final DB db;
     private final BlizzardAPI blizzardAPI;
 
+    private final AtomicBoolean charsLoaded = new AtomicBoolean(false);
+
     public Ladder(WebClient web, DB db, BlizzardAPI blizzardAPI, CharacterCache characterCache, Refs refs, Map<String, Cutoffs> regionCutoff) {
         this.web = web;
         this.db = db;
@@ -57,12 +60,13 @@ public class Ladder {
         this.refs = refs;
         this.characterCache = characterCache;
         this.regionCutoff = regionCutoff;
-        this.charUpdater = new CharUpdater(blizzardAPI, characterCache, refs, charSearchIndex, db);
+        this.charUpdater = new CharUpdater(blizzardAPI, characterCache, charsLoaded, refs, charSearchIndex, db);
     }
 
     public void start() {
         loadRegionData(EU)
             .andThen(loadRegionData(US))
+            .andThen(charsAreLoaded())
             .andThen(
                 runDataUpdater(US,
                     runDataUpdater(EU,
@@ -78,6 +82,13 @@ public class Ladder {
             .doOnError(e -> log.error("Error fetching ladder", e))
             .onErrorReturnItem(Snapshot.empty(EU))
             .subscribe();
+    }
+
+    private Completable charsAreLoaded() {
+        return Completable.fromAction(() -> {
+            charsLoaded.set(true);
+            log.info("Chars are loaded. Updates are allowed now");
+        });
     }
 
     private <R> Observable<Snapshot> runDataUpdater(String region, Observable<R> tickObservable) {
