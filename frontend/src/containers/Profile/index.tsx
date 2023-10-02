@@ -55,7 +55,7 @@ const Profile = () => {
         <PlayerNotFound loading={loading} updatePlayer={() => loadProfile(true)} />
       ) : (
         <div className="flex justify-center w-full min-h-screen pt-20 md:pt-24 pb-11 bg-[#030303e6]">
-          <div className="w-full px-4 xl:px-0 xl:w-10/12 h-full rounded-lg">
+          <div className="w-full px-4 xl:px-0 xl:w-10/12 2xl:w-9/12 3xl:w-8/12 h-full rounded-lg">
             {player && (
               <Armory player={player} loading={loading} updatePlayer={() => loadProfile(true)} />
             )}

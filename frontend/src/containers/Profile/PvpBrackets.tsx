@@ -50,95 +50,72 @@ const PvpBracket = ({
   }, [bracket]);
 
   return (
-    <div className="relative flex w-1/3 flex-col items-center px-1">
-      <div className="flex flex-col w-full rounded-lg border pb-2 border-solid border-[#37415180] bg-[#030303e6]">
-        <div className="relative flex flex-col w-full justify-start gap-0 px-3 py-2">
+    <div className="flex w-1/3 flex-col items-center pr-2 last:pr-0">
+      <div className="flex flex-col w-full rounded-lg border pb-4 px-3 border-solid border-[#37415180] bg-[#030303e6]">
+        <div className="flex flex-col w-full justify-start py-2">
           <div className="flex w-full justify-between">
             {specIcon ? (
-              <div className="flex items-center gap-2 my-2">
-                <img
-                  className="h-8 w-8 rounded border border-solid border-[#37415180]"
-                  src={specIcon}
-                  alt="spec icon"
-                />
-              </div>
+              <img
+                className="h-8 w-8 rounded border border-solid border-[#37415180]"
+                src={specIcon}
+                alt={title}
+              />
             ) : (
-              <span className="text-base md:text-2xl text-white">{title}</span>
+              <span className="text-base sm:text-2xl text-white">{title}</span>
             )}
+
             {bracket?.max_rating && bracket.max_rating !== -1 ? (
               <div className="flex gap-2 flex-row justify-center items-center text-[#60A5FACC] text-sm">
-                <span className="text-sm">Highest</span>
-                <span className="text-white text-xs md:text-lg">{bracket.max_rating}</span>
+                <span className="text-sm hidden sm:flex">Highest</span>
+                <span className="text-white text-xs sm:text-lg">{bracket.max_rating}</span>
               </div>
             ) : null}
           </div>
 
           <div className="flex gap-2 mt-1 pt-1 border-t border-solid border-[#37415180]">
             <span
-              className="flex flex-col md:flex-row items-center gap-0 md:gap-2 text-xl md:text-4xl font-semibold"
+              className="flex flex-col md:flex-row items-center gap-2 text-3xl md:text-4xl font-semibold"
               style={{ color: ratingColor }}
             >
               {bracket?.rating || 0}
             </span>
             {bracket?.rank && bracket.rank !== -1 ? (
-              <div className="flex items-center justify-between absolute top-1 right-0 md:relative">
-                <Chip className="!text-[8px] md:!text-sm" label={`#${bracket.rank}`} size="small" />
+              <div className="hidden sm:flex items-center justify-between relative">
+                <Chip className="!text-xs md:!text-sm" label={`#${bracket.rank}`} size="small" />
               </div>
             ) : null}
           </div>
         </div>
 
-        <div className="px-4 pb-2">
-          <div className="pb-1 gap-2 flex md:flex-row flex-col text-[#60A5FACC] text-sm">
-            <div className="flex">
-              <span className="text-sm md:text-base text-white">
-                {bracket?.won || 0}
-                <span className="ml-[1px] text-[#008000]">W</span>
-              </span>
+        <div className="pb-1 gap-0 sm:gap-2 flex md:flex-row flex-col text-[#60A5FACC] text-sm">
+          <div className="flex">
+            <span className="text-sm md:text-base text-white">
+              {bracket?.won || 0}
+              <span className="ml-[1px] text-[#008000]">W</span>
+            </span>
 
-              <span className="text-sm md:text-base text-white pl-2">
-                {bracket?.lost || 0}
-                <span className="ml-[1px] text-[#ff0000]">L</span>
-              </span>
-            </div>
-
-            {stats.showWinRate && (
-              <div className="flex pl-2 md:border-l border-solid border-[#37415180]">
-                <span style={{ color: stats.winRateColor }} className="text-sm md:text-base">
-                  {stats.winRate}%
-                </span>
-              </div>
-            )}
+            <span className="text-sm md:text-base text-white pl-2">
+              {bracket?.lost || 0}
+              <span className="ml-[1px] text-[#ff0000]">L</span>
+            </span>
           </div>
-          <LinearProgress
-            variant="determinate"
-            value={parseInt(stats.winRate, 10)}
-            sx={{
-              '& .MuiLinearProgress-bar': { backgroundColor: '#008000' },
-              '&.MuiLinearProgress-root': { backgroundColor: '#ff0000' },
-            }}
-          />
+
+          {stats.showWinRate && (
+            <div className="flex pl-0 sm:pl-2 md:border-l border-solid border-[#37415180]">
+              <span style={{ color: stats.winRateColor }} className="text-sm md:text-base">
+                {stats.winRate}%
+              </span>
+            </div>
+          )}
         </div>
-
-        {/* <div className="flex w-full flex-col md:flex-row md:gap-1 text-[#60A5FACC] text-sm border-t border-solid border-[#37415180]">
-          {bracket?.season_max_rating && bracket.season_max_rating !== -1 ? (
-            <div className="px-1 md:py-1 w-1/2 flex flex-col justify-center items-center">
-              <span className="text-xs">Season</span>
-              <span className="text-white font-semibold text-xs md:text-xl">
-                {bracket.season_max_rating}
-              </span>
-            </div>
-          ) : null}
-
-          {bracket?.max_rating && bracket.max_rating !== -1 ? (
-            <div className="px-1 md:py-1 w-1/2 flex flex-col justify-center items-center">
-              <span className="text-xs">Record</span>
-              <span className="text-white font-semibold text-xs md:text-xl">
-                {bracket.max_rating}
-              </span>
-            </div>
-          ) : null}
-        </div> */}
+        <LinearProgress
+          variant="determinate"
+          value={parseInt(stats.winRate, 10)}
+          sx={{
+            '& .MuiLinearProgress-bar': { backgroundColor: '#008000' },
+            '&.MuiLinearProgress-root': { backgroundColor: '#ff0000' },
+          }}
+        />
       </div>
     </div>
   );
