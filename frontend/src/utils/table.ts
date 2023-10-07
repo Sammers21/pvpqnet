@@ -195,6 +195,9 @@ export const getTitleDescription = (title: string) => {
   if (title.includes('Gladiator')) {
     return 'End PvP Season in the top 0.1% of the 3v3 arena ladder.';
   }
+  if (title.includes('Legend')) {
+    return 'Win 100 Rated Solo Shuffle rounds while at Elite rank during the Pvp Season.';
+  }
   if (title.includes('Elite')) {
     return 'Earn 2400 rating during the PvP Season.';
   }
