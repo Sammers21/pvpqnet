@@ -60,7 +60,7 @@ const LastUpdated = ({ player, loading, updatePlayer }: IProps) => {
 };
 
 export const PlayerHeader = ({ player, loading, updatePlayer }: IProps) => (
-  <div className="flex gap-2 md:gap-0 flex-col md:flex-row justify-between border border-solid rounded-lg border-[#37415180] px-3 py-1 bg-[#030303e6]">
+  <div className="flex gap-2 md:gap-0 mr-2 flex-col md:flex-row justify-between border border-solid rounded-lg border-[#37415180] px-3 py-1 bg-[#030303e6]">
     <LastUpdated player={player} loading={loading} updatePlayer={updatePlayer} />
     <TalentsButtons talents={player.talents} />
   </div>

@@ -1,57 +1,50 @@
+import { useMemo } from 'react';
 import { createBreakpoint } from 'react-use';
 
-import { Divider } from '@mui/material';
-import { DataGrid } from '@mui/x-data-grid';
-
+import Table from './Table';
 import { tableColumns } from './columns';
-import type { IPlayer } from '../../../types';
+import type { IAlt } from '../../../types';
+
+type TPvpBracket = 'SHUFFLE' | 'ARENA_2v2' | 'ARENA_3v3' | 'BATTLEGROUNDS';
+const bracketsList: TPvpBracket[] = ['SHUFFLE', 'ARENA_2v2', 'ARENA_3v3', 'BATTLEGROUNDS'];
 
 const useBreakpoint = createBreakpoint({ sm: 640, md: 768, lg: 1024 });
 
-const Alts = ({ alts }: { alts?: IPlayer[] }) => {
+const Alts = ({ alts }: { alts?: IAlt[] }) => {
   const breakpoints = useBreakpoint();
 
-  if (!alts || !alts.length) return null;
+  const sortableAlts = useMemo(() => {
+    if (!alts) return [];
 
-  const explodedAlts = alts?.map((alt) => {
-    alt.brackets?.forEach((bracket) => {
-      if (bracket.bracket_type.startsWith('SHUFFLE')) {
-        const cur = alt['SHUFFLE'] || 0;
-        alt['SHUFFLE'] = Math.max(cur, bracket.rating);
-      } else {
-        // @ts-ignore
-        alt[bracket.bracket_type] = bracket.rating;
-      }
+    return alts.map((alt) => {
+      const altCopy = structuredClone(alt);
+
+      altCopy.brackets?.forEach((bracket) => {
+        const isShuffle = bracket.bracket_type.startsWith('SHUFFLE');
+
+        if (isShuffle) altCopy['SHUFFLE'] = Math.max(altCopy['SHUFFLE'] || 0, bracket.rating);
+        else altCopy[bracket.bracket_type as TPvpBracket] = bracket.rating;
+      });
+
+      bracketsList.forEach((bracket) => {
+        if (!altCopy[bracket]) altCopy[bracket] = 0;
+      });
+      return altCopy;
     });
-    ['SHUFFLE', 'ARENA_2v2', 'ARENA_3v3', 'BATTLEGROUNDS'].forEach((bracket) => {
-      // @ts-ignore
-      if (!alt[bracket]) alt[bracket] = 0;
-    });
-    return alt;
-  });
+  }, [alts]);
+
+  if (!sortableAlts.length) return null;
 
   return (
-    <div className="flex flex-col border border-solid rounded-lg border-[#37415180] md:px-3 py-4 bg-[#030303e6]">
+    <div className="flex flex-col md:px-3 py-4 border border-solid border-[#37415180] rounded-lg bg-[#030303e6]">
       <span className="text-2xl px-3 md:px-0">Alts</span>
 
-      <Divider className="md:!my-2" />
-      <DataGrid
-        rows={explodedAlts}
+      <hr className="h-px md:my-2 bg-[#37415180] border-0" />
+
+      <Table
         columns={tableColumns(breakpoints === 'sm')}
-        getRowId={(row) => {
-          return row.id;
-        }}
-        sx={{
-          '&, [class^=MuiDataGrid]': { border: 'none' },
-          '& .MuiDataGrid-iconButtonContainer': {
-            display: breakpoints === 'sm' ? 'none' : 'block',
-          },
-        }}
-        hideFooter
-        autoHeight={false}
-        disableColumnMenu
-        onSortModelChange={(value) => console.log(value)}
-        disableRowSelectionOnClick
+        records={sortableAlts}
+        isMobile={breakpoints === 'sm'}
       />
     </div>
   );

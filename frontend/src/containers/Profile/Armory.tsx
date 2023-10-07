@@ -23,7 +23,7 @@ const Armory = ({ player, loading, updatePlayer }: IProps) => {
   return (
     <div className="flex flex-col lg:flex-row gap-2 md:gap-4 rounded-lg">
       {breakpoint === 'lg' && (
-        <div className="flex flex-col gap-2 md:gap-4 lg:max-w-[300px] lg:min-w-[250px]">
+        <div className="flex flex-col gap-2 md:gap-4 lg:w-[320px]">
           <PlayerDesktop player={player} />
           <TitlesHistory player={player} />
         </div>

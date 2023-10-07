@@ -1,5 +1,4 @@
 import { Avatar, Chip } from '@mui/material';
-import type { GridColDef } from '@mui/x-data-grid';
 
 import {
   getAltProfileUrl,
@@ -9,13 +8,13 @@ import {
 } from '../../../utils/table';
 import { CLASS_AND_SPECS } from '../../../constants/filterSchema';
 
-import type { IPlayer, IPlayerBracket } from '../../../types';
+import type { IAlt, IPlayerBracket, ITableColumn } from '../../../types';
 
 interface IParams {
-  row: IPlayer;
+  record: IAlt;
 }
 
-const renderName = ({ row: alt }: IParams, isMobile: boolean) => {
+const renderName = ({ record: alt }: IParams, isMobile: boolean) => {
   const realm = alt.realm;
   const url = getAltProfileUrl(alt);
 
@@ -47,14 +46,14 @@ const bracketTypeTitleMap = {
   rbg: 'BATTLEGROUNDS',
 };
 
-const renderBracket = ({ row: alt }: IParams, bracketName: keyof typeof bracketTypeTitleMap) => {
+const renderBracket = ({ record: alt }: IParams, bracketName: keyof typeof bracketTypeTitleMap) => {
   const bracket = alt?.brackets?.find((br) => br.bracket_type === bracketTypeTitleMap[bracketName]);
   if (!bracket) return <span>0</span>;
 
   return <span style={{ color: ratingToColor(bracket) }}>{bracket.rating}</span>;
 };
 
-const renderShuffle = ({ row: alt }: IParams, isMobile: boolean) => {
+const renderShuffle = ({ record: alt }: IParams, isMobile: boolean) => {
   // @ts-ignore
   const classAndSpec = CLASS_AND_SPECS[alt.class] as string[];
 
@@ -70,7 +69,7 @@ const renderShuffle = ({ row: alt }: IParams, isMobile: boolean) => {
         bracket = altBracket;
       }
     });
-    if (!bracket) return null;
+    if (!bracket) return <></>;
 
     const specIcon = getSpecIcon(`${spec} ${alt.class}` || '');
     const ratingColor = ratingToColor(bracket);
@@ -88,7 +87,7 @@ const renderShuffle = ({ row: alt }: IParams, isMobile: boolean) => {
     <div className="flex md:gap-2">
       {classAndSpec.map((spec) => {
         const altBracket = alt?.brackets?.find((b) => b.bracket_type.includes(spec));
-        if (!altBracket?.rating) return null;
+        if (!altBracket?.rating) return <></>;
 
         const specIcon = getSpecIcon(`${spec} ${alt.class}` || '');
         const ratingColor = ratingToColor(altBracket);
@@ -105,44 +104,30 @@ const renderShuffle = ({ row: alt }: IParams, isMobile: boolean) => {
   );
 };
 
-const renderHeader = (title: string) => {
-  return <span className="text-base text-center">{title}</span>;
-};
-
-export const tableColumns = (isMobile: boolean): GridColDef<IPlayer>[] => [
+export const tableColumns = (isMobile: boolean): ITableColumn[] => [
   {
-    field: 'id',
-    headerName: 'Name',
-    width: isMobile ? 80 : 200,
-    renderCell: (params: IParams) => renderName(params, isMobile),
-    renderHeader: () => renderHeader('Name'),
+    field: 'name',
+    label: 'Name',
+    render: (params: IParams) => renderName(params, isMobile),
   },
   {
     field: 'SHUFFLE',
-    headerName: 'Shuffle',
-    renderCell: (params: IParams) => renderShuffle(params, isMobile),
-    width: isMobile ? 100 : 300,
-    renderHeader: () => renderHeader('Shuffle'),
+    label: 'Shuffle',
+    render: (params: IParams) => renderShuffle(params, isMobile),
   },
   {
     field: 'ARENA_2v2',
-    headerName: '2v2',
-    width: isMobile ? 50 : 80,
-    renderCell: (params: IParams) => renderBracket(params, '2v2'),
-    renderHeader: () => renderHeader('2v2'),
+    label: '2v2',
+    render: (params: IParams) => renderBracket(params, '2v2'),
   },
   {
     field: 'ARENA_3v3',
-    headerName: '3v3',
-    width: isMobile ? 50 : 80,
-    renderCell: (params: IParams) => renderBracket(params, '3v3'),
-    renderHeader: () => renderHeader('3v3'),
+    label: '3v3',
+    render: (params: IParams) => renderBracket(params, '3v3'),
   },
   {
     field: 'BATTLEGROUNDS',
-    headerName: 'RBG',
-    width: isMobile ? 50 : 80,
-    renderCell: (params: IParams) => renderBracket(params, 'rbg'),
-    renderHeader: () => renderHeader('RBG'),
+    label: 'RBG',
+    render: (params: IParams) => renderBracket(params, 'rbg'),
   },
 ];
