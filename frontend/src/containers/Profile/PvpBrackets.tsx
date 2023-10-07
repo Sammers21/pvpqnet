@@ -1,6 +1,8 @@
 import { useMemo } from 'react';
-import { Chip, LinearProgress } from '@mui/material';
+import dayjs from 'dayjs-ext';
 
+import { Chip, LinearProgress, Tooltip } from '@mui/material';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import { getSpecIcon, getWonAndLossColors, ratingToColor } from '../../utils/table';
 import { CLASS_AND_SPECS } from '../../constants/filterSchema';
 import type { IPlayerBracket, IPlayer } from '../../types';
@@ -50,26 +52,54 @@ const PvpBracket = ({
   }, [bracket]);
 
   return (
-    <div className="flex w-1/3 flex-col items-center pr-2 last:pr-0">
-      <div className="flex flex-col w-full rounded-lg border pb-4 px-3 border-solid border-[#37415180] bg-[#030303e6]">
+    <div className="flex w-1/3 self-stretch flex-col items-center pr-2 last:pr-0">
+      <div className="relative flex flex-col w-full h-full rounded-lg border pb-4 px-3 border-solid border-[#37415180] bg-[#030303e6]">
         <div className="flex flex-col w-full justify-start py-2">
-          <div className="flex w-full justify-between">
+          <div className="flex w-full justify-between items-center">
             {specIcon ? (
               <img
-                className="h-8 w-8 rounded border border-solid border-[#37415180]"
+                className="h-9 w-9 rounded border border-solid border-[#37415180]"
                 src={specIcon}
                 alt={title}
               />
             ) : (
-              <span className="text-base sm:text-2xl text-white">{title}</span>
+              <span className="text-base sm:text-3xl text-white">{title}</span>
             )}
 
-            {bracket?.max_rating && bracket.max_rating !== -1 ? (
-              <div className="flex gap-2 flex-row justify-center items-center text-[#60A5FACC] text-sm">
-                <span className="text-sm hidden sm:flex">Highest</span>
-                <span className="text-white text-xs sm:text-lg">{bracket.max_rating}</span>
-              </div>
-            ) : null}
+            <div className="flex flex-col absolute top-0 right-0 px-2 py-2 bg-[#030303e6]">
+              {bracket?.season_max_rating && bracket.season_max_rating !== -1 ? (
+                <Tooltip
+                  placement="right"
+                  title={`Season highest achieved at ${dayjs(
+                    bracket.season_max_rating_achieved_timestamp
+                  ).format('MM.DD.YY')}`}
+                >
+                  <div className="flex gap-2 flex-row justify-center items-center text-[#60A5FACC]">
+                    <span className="items-center text-xs hidden sm:flex">Season</span>
+                    <span className="text-white text-xs sm:text-base flex items-end">
+                      {bracket.season_max_rating}
+                      <InfoOutlinedIcon fontSize="small" className="mb-2 !ml-1 !w-4 !h-4" />
+                    </span>
+                  </div>
+                </Tooltip>
+              ) : null}
+              {bracket?.max_rating && bracket.max_rating !== -1 ? (
+                <Tooltip
+                  placement="right"
+                  title={`Highest achieved at ${dayjs(bracket.max_rating_achieved_timestamp).format(
+                    'MM.DD.YY'
+                  )}`}
+                >
+                  <div className="flex gap-2 flex-row justify-center items-center text-[#60A5FACC]">
+                    <span className="items-center text-xs hidden sm:flex">Highest</span>
+                    <span className="text-white text-xs sm:text-base flex items-end">
+                      {bracket.max_rating}
+                      <InfoOutlinedIcon fontSize="small" className="mb-2 !ml-1 !w-4 !h-4" />
+                    </span>
+                  </div>
+                </Tooltip>
+              ) : null}
+            </div>
           </div>
 
           <div className="flex gap-2 mt-1 pt-1 border-t border-solid border-[#37415180]">
@@ -88,16 +118,10 @@ const PvpBracket = ({
         </div>
 
         <div className="pb-1 gap-0 sm:gap-2 flex md:flex-row flex-col text-[#60A5FACC] text-sm">
-          <div className="flex">
-            <span className="text-sm md:text-base text-white">
-              {bracket?.won || 0}
-              <span className="ml-[1px] text-[#008000]">W</span>
-            </span>
-
-            <span className="text-sm md:text-base text-white pl-2">
-              {bracket?.lost || 0}
-              <span className="ml-[1px] text-[#ff0000]">L</span>
-            </span>
+          <div className="flex text-sm md:text-base">
+            <span className="text-[#008000]">{bracket?.won || 0}</span>
+            <span className="text-[#374151E6] mx-[2px]">/</span>
+            <span className="text-[#ff0000]">{bracket?.lost || 0}</span>
           </div>
 
           {stats.showWinRate && (
@@ -127,7 +151,7 @@ const PvpBrackets = ({ player }: IProps) => {
 
   return (
     <div className="flex gap-2 justify-start flex-col">
-      <div className="flex flex-nowrap justify-start">
+      <div className="flex flex-nowrap flex-row items-stretch justify-start">
         {arenaAndRbg.map(({ title, name }) => {
           const playerBracket = (player?.brackets || []).find((b) => b.bracket_type === name);
           return <PvpBracket key={name} title={title} bracket={playerBracket} />;

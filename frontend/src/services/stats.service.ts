@@ -1,9 +1,10 @@
 import axios from 'axios';
-import { baseUrl, urls } from '../config';
+
 import { BRACKETS } from '../constants/pvp-activity';
 import { REGIONS } from '../constants/region';
-import request from './request.service';
-import { IMeta } from '../types';
+
+import { urls } from '../config';
+import type { IMeta } from '../types';
 
 export const statsMap = {
   [REGIONS.us]: 'en-us',
@@ -18,9 +19,11 @@ export const getStatistic = async ({
   specs = [],
 }) => {
   try {
-    const url = urls.getData(page, statsMap[region], activity, bracket, specs);
-    const response = await request(url, { method: 'GET' });
-    const data = JSON.parse(response.body);
+    const response = await axios.get(
+      urls.getData(page, statsMap[region], activity, bracket, specs)
+    );
+
+    const data = response.data;
     return { records: data?.characters ?? [], totalPages: data?.total_pages ?? 0 };
   } catch (error) {
     return { records: [], totalPages: 0 };
@@ -29,12 +32,8 @@ export const getStatistic = async ({
 
 export async function fetchStatistic(region: REGIONS) {
   try {
-    const url = urls.getStatistic(statsMap[region]);
-
-    const response = await request(url, { method: 'GET', isJson: true });
-    const statistic = JSON.parse(response.body);
-
-    return statistic;
+    const response = await axios.get(urls.getStatistic(statsMap[region]));
+    return response.data;
   } catch (error) {
     return { '2v2': 0, '3v3': 0, rbg: 0, shuffle: 0 };
   }
@@ -42,19 +41,14 @@ export async function fetchStatistic(region: REGIONS) {
 
 export async function searchPlayers(search: string) {
   try {
-    const response = await request(urls.searchPlayers(search), { method: 'GET' });
-    return response.body;
+    const response = await axios.get(urls.searchPlayers(search));
+    return response.data;
   } catch (error) {
     return [];
   }
 }
 
-export const getMeta = async (params: Record<string, string>): Promise<IMeta> => {
-  try {
-    const response = await axios.get(baseUrl + `/api/meta`, { params });
-
-    return response.data;
-  } catch (error) {
-    return { specs: [] };
-  }
-};
+export async function getMeta(params: Record<string, string>): Promise<IMeta> {
+  const response = await axios.get(urls.currentMeta, { params });
+  return response.data;
+}

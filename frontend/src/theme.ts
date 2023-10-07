@@ -4,16 +4,15 @@ export const headerButtonColor = 'rgb(96 165 250)';
 export const containerBg = '#030303e6';
 export const borderColor = '#2f384de6';
 export const aroundColor = 'rgb(47,56,77)';
-export const borderRadius = 4
+export const borderRadius = 4;
 
-export const winRateGreyColor = 'rgb(75, 85, 99)'
+export const winRateGreyColor = 'rgb(75, 85, 99)';
 
 const appTheme = createTheme({
   palette: {
     primary: {
       light: '#757ce8',
       main: '#3f50b5',
-      green: '#4caf50',
       dark: '#002884',
       contrastText: '#fff',
     },
