@@ -12,7 +12,7 @@ import {
 } from '../../utils/table';
 import type { IActivityRecord } from '../../types';
 
-const getTableColumns = (activity: string, isMobile: boolean, region: string) => {
+const getTableColumns = (activity: string, isMobile: boolean, region: string): any[] => {
   const rank = {
     field: 'pos',
     label: 'RANK',

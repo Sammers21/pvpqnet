@@ -1,8 +1,8 @@
 import { createBreakpoint } from 'react-use';
 
 import { Divider } from '@mui/material';
-import { DataGrid } from '@mui/x-data-grid';
 
+import Table from './Table';
 import { tableColumns } from './columns';
 import type { IPlayer } from '../../../types';
 
@@ -35,23 +35,11 @@ const Alts = ({ alts }: { alts?: IPlayer[] }) => {
       <span className="text-2xl px-3 md:px-0">Alts</span>
 
       <Divider className="md:!my-2" />
-      <DataGrid
-        rows={explodedAlts}
+
+      <Table
         columns={tableColumns(breakpoints === 'sm')}
-        getRowId={(row) => {
-          return row.id;
-        }}
-        sx={{
-          '&, [class^=MuiDataGrid]': { border: 'none' },
-          '& .MuiDataGrid-iconButtonContainer': {
-            display: breakpoints === 'sm' ? 'none' : 'block',
-          },
-        }}
-        hideFooter
-        autoHeight={false}
-        disableColumnMenu
-        onSortModelChange={(value) => console.log(value)}
-        disableRowSelectionOnClick
+        records={explodedAlts}
+        isMobile={breakpoints === 'sm'}
       />
     </div>
   );

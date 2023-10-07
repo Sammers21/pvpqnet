@@ -52,7 +52,7 @@ const PvpBracket = ({
   }, [bracket]);
 
   return (
-    <div className="flex w-1/3 self-stretch flex-col items-center pr-2 last:pr-0">
+    <div className="flex w-1/3 self-stretch flex-col items-center pr-2">
       <div className="relative flex flex-col w-full h-full rounded-lg border pb-4 px-3 border-solid border-[#37415180] bg-[#030303e6]">
         <div className="flex flex-col w-full justify-start py-2">
           <div className="flex w-full justify-between items-center">
