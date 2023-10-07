@@ -85,7 +85,7 @@ const getTableColumns = (activity: string, isMobile: boolean, region: string): a
       let name = record?.character?.name || record?.name;
       if (isMobile) {
         const max = Math.round(Math.max(6, 6 + (window.innerWidth - 500) / 30));
-        name = `${name.substring(0, max)}...`;
+        name = `${name.substring(0, max)}`;
       }
 
       return (
