@@ -29,7 +29,7 @@ const renderSearchOption = (props: React.HTMLAttributes<HTMLLIElement>, option: 
     <li className="flex items-center" {...props}>
       <div className="flex justify-between w-full h-6">
         <div className="flex justify-start w-full">
-          <img className="mr-3" src={icon} alt={option.region} />
+          <img className="w-6 h-6 mr-3" src={icon} alt={option.region} />
           <Typography color={getClassNameColor(option.class)}>{fullNick}</Typography>
         </div>
 
