@@ -124,13 +124,14 @@ const PvpBracket = ({
             <span className="text-[#ff0000]">{bracket?.lost || 0}</span>
           </div>
 
-          {stats.showWinRate && (
-            <div className="flex pl-0 sm:pl-2 sm:border-l border-solid border-[#37415180]">
-              <span style={{ color: stats.winRateColor }} className="text-sm md:text-base">
-                {stats.winRate}%
-              </span>
-            </div>
-          )}
+          <div className="flex pl-0 sm:pl-2 sm:border-l border-solid border-[#37415180]">
+            <span
+              className="text-sm md:text-base text-[#4B5563]"
+              style={{ opacity: stats.showWinRate ? 1 : 0 }}
+            >
+              {stats.showWinRate ? `${stats.winRate}%` : '-'}
+            </span>
+          </div>
         </div>
         <LinearProgress
           variant="determinate"

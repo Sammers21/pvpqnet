@@ -73,7 +73,9 @@ const TitlesHistory = ({ player }: IProps) => {
                       <div className="flex flex-col">
                         <span className="text-xs text-[#60A5FACC]">{name}</span>
                         <span>{title}</span>
-                        <span className="text-xs mt-1">{getSeasonTitleDescription(title)}</span>
+                        <span className="text-xs mt-1">
+                          {getSeasonTitleDescription(title, season.highest_achievement.name)}
+                        </span>
                       </div>
                     </div>
                   );

@@ -72,15 +72,17 @@ const AltsTable = ({ columns, records = [], isMobile }: IProps) => {
   };
 
   const renderTable = () => (
-    <Table padding={isMobile ? 'none' : 'normal'}>
-      {renderHeader()}
-      <colgroup>
-        {columns.map((_col, index) => (
-          <col key={index} />
-        ))}
-      </colgroup>
-      {records.length ? renderBody() : null}
-    </Table>
+    <div className="px-2 md:px-0">
+      <Table padding={isMobile ? 'none' : 'normal'}>
+        {renderHeader()}
+        <colgroup>
+          {columns.map((_col, index) => (
+            <col key={index} />
+          ))}
+        </colgroup>
+        {records.length ? renderBody() : null}
+      </Table>
+    </div>
   );
 
   return <TableContainer>{renderTable()}</TableContainer>;
