@@ -31,11 +31,14 @@ function getSeasonTitleDescription(title: string, seasonName: string): string {
   if (title === 'Gladiator') {
     return 'Win 50 games with more than 2400 arena rating during the PvP Season.';
   }
+  if (title === 'Legend') {
+    return 'Win 100 Rated Solo Shuffle rounds while at Elite rank during the PvP Season.';
+  }
   if (title.includes('Gladiator')) {
     return 'End PvP Season in the top 0.1% of the 3v3 arena ladder.';
   }
   if (title.includes('Legend')) {
-    return 'Win 100 Rated Solo Shuffle rounds while at Elite rank during the PvP Season.';
+    return 'End PvP Season in the top 0.1% of the Solo Shuffle ladder.';
   }
   if (title.includes('Elite')) {
     return 'Earn 2400 rating during the PvP Season.';
