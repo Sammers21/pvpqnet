@@ -67,7 +67,9 @@ const PvpBracket = ({
             )}
 
             <div className="hidden sm:flex sm:flex-col rounded-lg absolute top-0 right-0 px-2 pt-2 bg-[#030303e6]">
-              {bracket?.season_max_rating && bracket.season_max_rating !== -1 ? (
+              {bracket?.season_max_rating &&
+              bracket.season_max_rating !== -1 &&
+              bracket?.season_max_rating !== bracket?.max_rating ? (
                 <Tooltip
                   placement="right"
                   title={`Season highest achieved at ${dayjs(
@@ -76,9 +78,9 @@ const PvpBracket = ({
                 >
                   <div className="flex gap-2 flex-row justify-center items-center text-[#60A5FACC]">
                     <span className="text-base">Season</span>
-                    <span className="text-white text-xs sm:text-base flex items-end">
+                    <span className="text-white text-xs sm:text-base flex items-center">
                       {bracket.season_max_rating}
-                      <InfoOutlinedIcon fontSize="small" className="mb-2 !ml-1 !w-4 !h-4" />
+                      <InfoOutlinedIcon fontSize="small" className="!ml-1 !w-4 !h-4" />
                     </span>
                   </div>
                 </Tooltip>
@@ -91,10 +93,10 @@ const PvpBracket = ({
                   )}`}
                 >
                   <div className="flex gap-2 flex-row justify-center items-center text-[#60A5FACC]">
-                    <span className="text-base">Highest</span>
-                    <span className="text-white text-xs sm:text-base flex items-end">
+                    <span className="text-base">Record</span>
+                    <span className="text-white text-xs sm:text-base flex items-center">
                       {bracket.max_rating}
-                      <InfoOutlinedIcon fontSize="small" className="mb-2 !ml-1 !w-4 !h-4" />
+                      <InfoOutlinedIcon fontSize="small" className="!ml-1 !w-4 !h-4" />
                     </span>
                   </div>
                 </Tooltip>
