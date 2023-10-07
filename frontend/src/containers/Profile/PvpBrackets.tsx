@@ -72,7 +72,7 @@ const PvpBracket = ({
               bracket?.season_max_rating !== bracket?.max_rating ? (
                 <Tooltip
                   placement="right"
-                  title={`Season highest achieved at ${dayjs(
+                  title={`Season record achieved at ${dayjs(
                     bracket.season_max_rating_achieved_timestamp
                   ).format('MM.DD.YY')}`}
                 >
@@ -88,7 +88,7 @@ const PvpBracket = ({
               {bracket?.max_rating && bracket.max_rating !== -1 ? (
                 <Tooltip
                   placement="right"
-                  title={`Highest achieved at ${dayjs(bracket.max_rating_achieved_timestamp).format(
+                  title={`Record achieved at ${dayjs(bracket.max_rating_achieved_timestamp).format(
                     'MM.DD.YY'
                   )}`}
                 >
