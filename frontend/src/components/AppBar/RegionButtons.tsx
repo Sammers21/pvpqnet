@@ -25,7 +25,7 @@ const RegionButtons = ({
         disableRipple
         onClick={() => setRegion(REGIONS.us)}
       >
-        <UsIcon color="red" />
+        <UsIcon />
       </IconButton>
     </>
   );
