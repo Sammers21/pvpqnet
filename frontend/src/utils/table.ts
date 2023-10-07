@@ -177,13 +177,6 @@ export const getSeasonRankImage = (rank: string) => {
   return require('../assets/ranks/' + getRankImageName(rank));
 };
 
-export const getSeasonAndTitle = (achievement: string) => {
-  return {
-    title: achievement.split(':')[0],
-    season: `Season ${parseInt(achievement.slice(-1), 10)}`,
-  };
-};
-
 export const getAltProfileUrl = (alt: IPlayer) => {
   return window.location.origin + `/${alt.region}/${alt.realm}/${alt.name}`;
 };

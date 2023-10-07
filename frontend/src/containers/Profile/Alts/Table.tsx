@@ -5,14 +5,16 @@ import { styled } from '@mui/system';
 import HeaderCell from '../../../components/common/Table/SortableHeaderCell';
 import Row from '../../../components/common/Table/Row';
 
-import { IPlayer, ITableColumn } from '../../../types';
+import type { IAlt, ITableColumn } from '../../../types';
 
 const Table = styled(TableMui)({
   width: '100%',
   tableLayout: 'auto',
+
   '& tbody tr:hover': {
     backgroundColor: 'rgb(21, 128, 61, 0.25)',
   },
+
   '& tr td,th': {
     borderBottom: 'none',
   },
@@ -20,22 +22,22 @@ const Table = styled(TableMui)({
 
 interface IProps {
   columns: ITableColumn[];
-  records: IPlayer[];
+  records: IAlt[];
   isMobile: boolean;
 }
 
 const AltsTable = ({ columns, records = [], isMobile }: IProps) => {
-  const [sort, setSort] = useState<{ field: keyof IPlayer; sort: 'asc' | 'desc' }>({
+  const [sort, setSort] = useState<{ field: keyof IAlt; sort: 'asc' | 'desc' }>({
     field: 'SHUFFLE',
     sort: 'desc',
   });
 
   const rowsComponent = useMemo(() => {
-    function renderRow(record: IPlayer, index: number) {
+    function renderRow(record: IAlt, index: number) {
       return <Row key={index} record={record} columns={columns} />;
     }
 
-    function sortRecords(records: IPlayer[], sort: { field: keyof IPlayer; sort: 'asc' | 'desc' }) {
+    function sortRecords(records: IAlt[], sort: { field: keyof IAlt; sort: 'asc' | 'desc' }) {
       return records.sort((a, b) => {
         if (sort.sort === 'desc') {
           return (a[sort.field] as number) > (b[sort.field] as number) ? -1 : 1;

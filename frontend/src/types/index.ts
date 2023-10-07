@@ -102,6 +102,8 @@ interface IPlayerAchievements {
   titles_history: ITitleHistory;
 }
 
+export type IAlt = Exclude<IPlayer, 'alts'>;
+
 export interface IPlayer {
   id: number;
   name: string;
@@ -119,7 +121,7 @@ export interface IPlayer {
   brackets?: IPlayerBracket[];
   media?: IPlayerMedia;
   achievements: IPlayerAchievements;
-  alts?: IPlayer[];
+  alts?: IAlt[];
 
   SHUFFLE?: number;
   ARENA_2v2?: number;

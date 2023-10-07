@@ -8,10 +8,10 @@ import {
 } from '../../../utils/table';
 import { CLASS_AND_SPECS } from '../../../constants/filterSchema';
 
-import type { IPlayer, IPlayerBracket, ITableColumn } from '../../../types';
+import type { IAlt, IPlayerBracket, ITableColumn } from '../../../types';
 
 interface IParams {
-  record: IPlayer;
+  record: IAlt;
 }
 
 const renderName = ({ record: alt }: IParams, isMobile: boolean) => {

@@ -10,7 +10,8 @@ import {
 } from '@mui/material';
 import { IPlayer } from '../../types';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { getSeasonAndTitle, getSeasonRankImage, getTitleDescription } from '../../utils/table';
+import { getSeasonRankImage } from '../../utils/table';
+import { getSeasonTitleDescription, getSeasonTitle } from '../../utils/profile';
 
 interface IProps {
   player: IPlayer;
@@ -54,7 +55,7 @@ const TitlesHistory = ({ player }: IProps) => {
 
       {expansions.map((expansion) => {
         return (
-          <Accordion defaultExpanded>
+          <Accordion key={expansion.name} defaultExpanded>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
               <Typography>{expansion.name}</Typography>
             </AccordionSummary>
@@ -64,17 +65,15 @@ const TitlesHistory = ({ player }: IProps) => {
                 .reverse()
                 .map((season) => {
                   const imageSrc = getSeasonRankImage(season.rank);
-                  const { season: seasonName, title } = getSeasonAndTitle(
-                    season.highest_achievement.name
-                  );
+                  const { name, title } = getSeasonTitle(season.highest_achievement.name);
 
                   return (
-                    <div className="flex items-start mb-4">
+                    <div key={name} className="flex items-start mb-4">
                       <img className="w-12 h-12 mr-4" src={imageSrc} alt="achievement" />
                       <div className="flex flex-col">
-                        <span className="text-xs text-[#60A5FACC]">{seasonName}</span>
+                        <span className="text-xs text-[#60A5FACC]">{name}</span>
                         <span>{title}</span>
-                        <span className="text-xs mt-1">{getTitleDescription(title)}</span>
+                        <span className="text-xs mt-1">{getSeasonTitleDescription(title)}</span>
                       </div>
                     </div>
                   );

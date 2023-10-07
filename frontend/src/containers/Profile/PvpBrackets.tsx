@@ -66,7 +66,7 @@ const PvpBracket = ({
               <span className="text-base sm:text-3xl text-white">{title}</span>
             )}
 
-            <div className="flex flex-col absolute top-0 right-0 px-2 py-2 bg-[#030303e6]">
+            <div className="hidden sm:flex sm:flex-col rounded-lg absolute top-0 right-0 px-2 pt-2 bg-[#030303e6]">
               {bracket?.season_max_rating && bracket.season_max_rating !== -1 ? (
                 <Tooltip
                   placement="right"
@@ -75,7 +75,7 @@ const PvpBracket = ({
                   ).format('MM.DD.YY')}`}
                 >
                   <div className="flex gap-2 flex-row justify-center items-center text-[#60A5FACC]">
-                    <span className="items-center text-xs hidden sm:flex">Season</span>
+                    <span className="text-base">Season</span>
                     <span className="text-white text-xs sm:text-base flex items-end">
                       {bracket.season_max_rating}
                       <InfoOutlinedIcon fontSize="small" className="mb-2 !ml-1 !w-4 !h-4" />
@@ -91,7 +91,7 @@ const PvpBracket = ({
                   )}`}
                 >
                   <div className="flex gap-2 flex-row justify-center items-center text-[#60A5FACC]">
-                    <span className="items-center text-xs hidden sm:flex">Highest</span>
+                    <span className="text-base">Highest</span>
                     <span className="text-white text-xs sm:text-base flex items-end">
                       {bracket.max_rating}
                       <InfoOutlinedIcon fontSize="small" className="mb-2 !ml-1 !w-4 !h-4" />
@@ -117,7 +117,7 @@ const PvpBracket = ({
           </div>
         </div>
 
-        <div className="pb-1 gap-0 sm:gap-2 flex md:flex-row flex-col text-[#60A5FACC] text-sm">
+        <div className="pb-1 gap-0 sm:gap-2 flex sm:flex-row flex-col text-[#60A5FACC] text-sm">
           <div className="flex text-sm md:text-base">
             <span className="text-[#008000]">{bracket?.won || 0}</span>
             <span className="text-[#374151E6] mx-[2px]">/</span>
@@ -125,7 +125,7 @@ const PvpBracket = ({
           </div>
 
           {stats.showWinRate && (
-            <div className="flex pl-0 sm:pl-2 md:border-l border-solid border-[#37415180]">
+            <div className="flex pl-0 sm:pl-2 sm:border-l border-solid border-[#37415180]">
               <span style={{ color: stats.winRateColor }} className="text-sm md:text-base">
                 {stats.winRate}%
               </span>
