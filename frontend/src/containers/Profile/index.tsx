@@ -10,6 +10,7 @@ import Footer from '../../components/common/Footer';
 
 import { baseUrl } from '../../config';
 import type { IPlayer } from '../../types';
+import { capitalizeFirstLetter } from '../../utils/common';
 
 const Snackbar = styled(MuiSnackbar)({
   borderRadius: 4,
@@ -29,6 +30,12 @@ const Profile = () => {
   const [loading, setLoading] = useState(false);
   const [playerStatus, setPlayerStatus] = useState(200);
   const [player, setPlayer] = useState<IPlayer | null>(null);
+
+  useEffect(() => {
+    document.title = `${capitalizeFirstLetter(name)}-${capitalizeFirstLetter(
+      realm
+    )} on ${region?.toUpperCase()}`;
+  }, [name, realm, region]);
 
   useEffect(() => {
     loadProfile(false);
