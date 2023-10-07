@@ -15,17 +15,17 @@ export const CRESTS_AND_SPECS = {
 };
 
 export const CLASS_AND_SPECS = {
-  "Warrior": ['Arms', 'Fury', 'Protection'],
-  "Paladin": ['Holy', 'Protection', 'Retribution'],
-  "Hunter": ['Beast Mastery', 'Marksmanship', 'Survival'],
-  "Rogue": ['Assassination', 'Outlaw', 'Subtlety'],
-  "Priest": ['Discipline', 'Holy', 'Shadow'],
-  "Death Knight": ['Blood', 'Frost', 'Unholy'],
-  "Shaman": ['Elemental', 'Enhancement', 'Restoration'],
-  "Mage": ['Arcane', 'Fire', 'Frost'],
-  "Warlock": ['Affliction', 'Demonology', 'Destruction'],
-  "Monk": ['Brewmaster', 'Windwalker', 'Mistweaver'],
-  "Druid": ['Balance', 'Feral', 'Guardian', 'Restoration'],
-  "Demon Hunter": ['Havoc', 'Vengeance'],
-  "Evoker": ['Devastation', 'Preservation', 'Augmentation'],
-}
+  Warrior: ['Arms', 'Fury', 'Protection'],
+  Paladin: ['Holy', 'Protection', 'Retribution'],
+  Hunter: ['Beast Mastery', 'Marksmanship', 'Survival'],
+  Rogue: ['Assassination', 'Outlaw', 'Subtlety'],
+  Priest: ['Discipline', 'Holy', 'Shadow'],
+  'Death Knight': ['Blood', 'Frost', 'Unholy'],
+  Shaman: ['Elemental', 'Enhancement', 'Restoration'],
+  Mage: ['Arcane', 'Fire', 'Frost'],
+  Warlock: ['Affliction', 'Demonology', 'Destruction'],
+  Monk: ['Brewmaster', 'Windwalker', 'Mistweaver'],
+  Druid: ['Balance', 'Feral', 'Guardian', 'Restoration'],
+  'Demon Hunter': ['Havoc', 'Vengeance'],
+  Evoker: ['Devastation', 'Preservation', 'Augmentation'],
+};
