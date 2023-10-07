@@ -57,12 +57,19 @@ const renderShuffle = ({ record: alt }: IParams, isMobile: boolean) => {
   // @ts-ignore
   const classAndSpec = CLASS_AND_SPECS[alt.class] as string[];
 
+  const sortedSpec = [...classAndSpec].sort((a, b) => {
+    const ratingA = alt?.brackets?.find((bracket) => bracket.bracket_type.includes(a))?.rating || 0;
+    const ratingB = alt?.brackets?.find((bracket) => bracket.bracket_type.includes(b))?.rating || 0;
+
+    return ratingA > ratingB ? -1 : 1;
+  });
+
   if (isMobile) {
     let max = 0;
-    let spec = classAndSpec[0];
+    let spec = sortedSpec[0];
     let bracket: IPlayerBracket | null = null;
 
-    classAndSpec.forEach((spec) => {
+    sortedSpec.forEach((spec) => {
       const altBracket = alt?.brackets?.find((b) => b.bracket_type.includes(spec));
       if (altBracket?.rating && altBracket.rating > max) {
         max = altBracket.rating;
@@ -85,7 +92,7 @@ const renderShuffle = ({ record: alt }: IParams, isMobile: boolean) => {
 
   return (
     <div className="flex md:gap-2">
-      {classAndSpec.map((spec) => {
+      {sortedSpec.map((spec) => {
         const altBracket = alt?.brackets?.find((b) => b.bracket_type.includes(spec));
         if (!altBracket?.rating) return <></>;
 

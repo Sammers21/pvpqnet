@@ -7,7 +7,7 @@ function getSeasonTitle(achievement: string): { title: string; name: string } {
 }
 
 function getSeasonTitleDescription(title: string, seasonName: string): string {
-  const expansions = ['Dragonflight', 'Legion', 'Battle for Azeroth', 'Shadowlands'];
+  const expansions = ['Dragonflight', 'Battle for Azeroth', 'Shadowlands'];
   const afterDraenor = expansions.some((e) => seasonName.includes(e));
 
   if (!afterDraenor) {
