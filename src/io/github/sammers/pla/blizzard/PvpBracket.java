@@ -47,7 +47,8 @@ public record PvpBracket(String bracketType,
             maxRatingAchievedTimestamp = prevBracket.map(PvpBracket::maxRatingAchievedTimestamp).orElse(-1L);
         }
         Boolean isRankOneRange = rating >= bracketRankOneCutoff;
-        return new PvpBracket(type, rating, won, lost, rank, seasonMaxRating, seasonMaxRatingAchievedTimestamp, maxRating, maxRatingAchievedTimestamp, isRankOneRange, new GamingHistory(List.of()));
+        GamingHistory gamingHistory = prevBracket.map(PvpBracket::gamingHistory).orElse(new GamingHistory(List.of()));
+        return new PvpBracket(type, rating, won, lost, rank, seasonMaxRating, seasonMaxRatingAchievedTimestamp, maxRating, maxRatingAchievedTimestamp, isRankOneRange, gamingHistory);
     }
 
     public static PvpBracket fromJson(JsonObject entries) {

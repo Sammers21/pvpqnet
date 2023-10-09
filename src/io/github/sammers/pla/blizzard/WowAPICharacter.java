@@ -185,9 +185,20 @@ public record WowAPICharacter(long id,
         List<PvpBracket> list = brackets.stream().map((JsonObject wowApiBracket) -> {
             String btype = wowApiBracket.getJsonObject("bracket").getString("type");
             Snapshot latest = refs.snapshotByBracketType(btype, BlizzardAPI.oldRegion(region));
-            Long rank = Optional.ofNullable(latest).flatMap(s -> s.findChar(Character.fullNameByRealmAndName(name, realm)))
-                .map(Character::pos)
-                .orElse(-1L);
+            Long rank = Optional.ofNullable(latest).map(s -> s.findChar(Character.fullNameByRealmAndName(name, realm))).map(foundChars -> {
+                if (foundChars.isEmpty()) {
+                    return -1L;
+                } else if (foundChars.size() == 1) {
+                    return foundChars.get(0).pos();
+                } else {
+                    Long finalPos = -1L;
+                    if (btype.equals("SHUFFLE")) {
+                        String spec = wowApiBracket.getJsonObject("specialization").getString("name");
+                        finalPos = foundChars.stream().filter(c -> c.fullSpec().contains(spec)).findFirst().map(Character::pos).orElse(-1L);
+                    }
+                    return finalPos;
+                }
+            }).orElse(-1L);
             Long cutoffByBracketType;
             if (btype.equals("SHUFFLE")) {
                 String spec = wowApiBracket.getJsonObject("specialization").getString("name");

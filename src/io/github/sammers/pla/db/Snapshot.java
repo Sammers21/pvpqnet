@@ -25,8 +25,8 @@ import static java.time.ZoneOffset.UTC;
 
 public record Snapshot(List<Character> characters, Long timestamp, String region, String dateTime) implements Resp {
 
-    public Optional<Character> findChar(String fullName) {
-        return Optional.ofNullable(characters.stream().filter(c -> c.fullName().equals(fullName)).findFirst().orElse(null));
+    public List<Character> findChar(String fullName) {
+        return characters.stream().filter(c -> c.fullName().equals(fullName)).toList();
     }
 
     public static Snapshot empty(String region) {
