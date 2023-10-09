@@ -535,6 +535,8 @@ public class Ladder {
         String currentCharacters = curVal == null ? null : curVal.toJson().getJsonArray("characters").encode();
         boolean same = newChars.equals(currentCharacters);
         if (!same) {
+            SnapshotDiff diff = Calculator.calculateDiff(curVal, newCharacters, bracket, false);
+            diff.chars().forEach(characterCache::upsertDiff);
             current.set(newCharacters);
             log.info("Data for bracket {} is different performing update", bracket);
             return db.insertOnlyIfDifferent(bracket, region, newCharacters)

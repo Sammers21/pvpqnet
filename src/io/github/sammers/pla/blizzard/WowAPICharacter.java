@@ -4,6 +4,7 @@ import io.github.sammers.pla.db.Character;
 import io.github.sammers.pla.db.Snapshot;
 import io.github.sammers.pla.http.JsonConvertable;
 import io.github.sammers.pla.logic.Calculator;
+import io.github.sammers.pla.logic.Diff;
 import io.github.sammers.pla.logic.Refs;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -289,6 +290,17 @@ public record WowAPICharacter(long id,
                         .toList()
         ).encode();
         return String.valueOf(encoded.hashCode());
+    }
+
+    public WowAPICharacter updatePvpBracketData(Diff diff, String bracket) {
+        List<PvpBracket> newBrackets = brackets.stream().map(pvpBracket -> {
+            if (pvpBracket.bracketType().equals(bracket)) {
+                return pvpBracket.update(diff);
+            } else {
+                return pvpBracket;
+            }
+        }).toList();
+        return new WowAPICharacter(id, name, realm, gender, fraction, race, activeSpec, level, clazz, itemLevel, region, newBrackets, lastUpdatedUTCms, achievements, petHash, media, talents);
     }
 
     @Override

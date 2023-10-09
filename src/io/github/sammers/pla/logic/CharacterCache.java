@@ -1,6 +1,7 @@
 package io.github.sammers.pla.logic;
 
 import io.github.sammers.pla.blizzard.WowAPICharacter;
+import io.github.sammers.pla.db.Character;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -30,6 +31,13 @@ public class CharacterCache {
         nameCache.put(character.fullName(), character);
         idCache.put(character.id(), character);
         indexCharAlts(alts, character);
+    }
+
+    public void upsertDiff(CharAndDiff diff) {
+        Character character = diff.character();
+        character.fullName();
+        WowAPICharacter wowAPICharacter = nameCache.get(character.fullName());
+
     }
 
     public Collection<WowAPICharacter> values() {
