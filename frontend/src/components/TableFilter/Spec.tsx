@@ -38,6 +38,7 @@ const Spec = ({ crestId, specs, selectedSpecs, handleSpecsSelect }: IProps) => {
         className={`${crestStyles} w-28 h-28 cursor-pointer`}
         src={require(`../../assets/crests/${crestId}.png`)}
         onClick={onCrestSelect}
+        loading="lazy"
         alt="crestId"
       />
 
