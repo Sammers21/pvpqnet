@@ -48,32 +48,30 @@ const TableFilter = ({ selectedSpecs, onSpecsChange }: IProps) => {
         </Button>
       </div>
 
-      {filtersShown && (
-        <div className="pt-4">
-          <div className="flex flex-wrap justify-center gap-8">
-            {Object.entries(CRESTS_AND_SPECS).map(([crestId, specs]) => {
-              return (
-                <Spec
-                  crestId={crestId}
-                  specs={specs}
-                  handleSpecsSelect={handleSpecsSelect}
-                  selectedSpecs={selectedSpecs}
-                />
-              );
-            })}
-          </div>
-
-          <div className="flex justify-end py-4">
-            <Button
-              className="!px-8 !bg-[#1f2937]"
-              disabled={isEmpty(selectedSpecs)}
-              onClick={resetFilters}
-            >
-              Reset Filters
-            </Button>
-          </div>
+      <div className={filtersShown ? 'visible pt-4' : 'invisible h-0 min-h-0 overflow-hidden'}>
+        <div className="flex flex-wrap justify-center gap-8">
+          {Object.entries(CRESTS_AND_SPECS).map(([crestId, specs]) => {
+            return (
+              <Spec
+                crestId={crestId}
+                specs={specs}
+                handleSpecsSelect={handleSpecsSelect}
+                selectedSpecs={selectedSpecs}
+              />
+            );
+          })}
         </div>
-      )}
+
+        <div className="flex justify-end py-4">
+          <Button
+            className="!px-8 !bg-[#1f2937]"
+            disabled={isEmpty(selectedSpecs)}
+            onClick={resetFilters}
+          >
+            Reset Filters
+          </Button>
+        </div>
+      </div>
     </div>
   );
 };
