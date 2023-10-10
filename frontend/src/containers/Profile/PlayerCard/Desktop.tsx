@@ -1,5 +1,4 @@
 import { PlayerItemLvl, PlayerImages, PlayerName } from './common';
-import smokeBg from '../../../assets/smoke-bg.jpg';
 
 import type { IPlayer } from '../../../types';
 
@@ -10,10 +9,7 @@ interface IProps {
 
 const PlayerImage = ({ player }: IProps) => (
   <>
-    <div
-      className="absolute left-0 top-0 w-full h-full bg-cover bg-no-repeat rounded-xl opacity-50"
-      style={{ backgroundImage: `url(${smokeBg})`, backgroundPosition: '50%' }}
-    />
+    <div className="smoke-bg absolute left-0 top-0 w-full h-full bg-cover bg-no-repeat rounded-xl opacity-50" />
 
     {player.media?.main_raw && (
       <img
