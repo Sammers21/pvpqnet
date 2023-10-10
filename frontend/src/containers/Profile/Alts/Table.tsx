@@ -2,10 +2,10 @@ import { useMemo, useState } from 'react';
 import { Table as TableMui, TableBody, TableContainer, TableHead, TableRow } from '@mui/material';
 import { styled } from '@mui/system';
 
-import HeaderCell from '../../../components/common/Table/SortableHeaderCell';
-import Row from '../../../components/common/Table/Row';
+import HeaderCell from '@/components/common/Table/SortableHeaderCell';
+import Row from '@/components/common/Table/Row';
 
-import type { IAlt, ITableColumn } from '../../../types';
+import type { IAlt, ITableColumn } from '@/types';
 
 const Table = styled(TableMui)({
   width: '100%',

@@ -4,10 +4,10 @@ import { generatePath } from 'react-router';
 import { Button } from '@mui/material';
 import { styled } from '@mui/system';
 
-import { getActivityFromUrl, getBracket, getRegion } from '../../utils/urlparts';
-import { publicUrls } from '../../config';
-import { BRACKETS } from '../../constants/pvp-activity';
-import { borderColor } from '../../theme';
+import { getActivityFromUrl, getBracket, getRegion } from '@/utils/urlparts';
+import { publicUrls } from '@/config';
+import { BRACKETS } from '@/constants/pvp-activity';
+import { borderColor } from '@/theme';
 
 interface IProps {
   statistic: Record<BRACKETS, string> | undefined;

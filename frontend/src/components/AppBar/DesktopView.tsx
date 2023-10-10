@@ -1,8 +1,8 @@
 import { Button } from '@mui/material';
-
-import PlayersSearch from '../PlayersSearch';
+import PlayersSearch from '@/components/PlayersSearch';
 import RegionButtons from './RegionButtons';
-import { REGIONS } from '../../constants/region';
+
+import { REGIONS } from '@/constants/region';
 
 interface IProps {
   host: string;

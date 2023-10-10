@@ -3,14 +3,14 @@ import { useParams } from 'react-router-dom';
 import axios from 'axios';
 
 import { Alert, Snackbar as MuiSnackbar, styled } from '@mui/material';
-import Header from '../../components/AppBar';
+import Header from '@/components/AppBar';
 import Armory from './Armory';
 import PlayerNotFound from './PlayerNotFound';
-import Footer from '../../components/common/Footer';
+import Footer from '@/components/common/Footer';
 
-import { baseUrl } from '../../config';
-import type { IPlayer } from '../../types';
-import { capitalizeFirstLetter } from '../../utils/common';
+import { baseUrl } from '@/config';
+import { capitalizeFirstLetter } from '@/utils/common';
+import type { IPlayer } from '@/types';
 
 const Snackbar = styled(MuiSnackbar)({
   borderRadius: 4,

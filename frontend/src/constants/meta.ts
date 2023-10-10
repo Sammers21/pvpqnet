@@ -1,4 +1,4 @@
-import type { TFilterName, IMetaFilter } from '../containers/Meta/types';
+import type { TFilterName, IMetaFilter } from '@/containers/Meta/types';
 
 export const columnGroups = [
   { field: '0.850', icons: ['rank_2.png', 'rank_4.png', 'rank_6.png'] },

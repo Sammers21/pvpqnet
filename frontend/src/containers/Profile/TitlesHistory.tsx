@@ -8,10 +8,10 @@ import {
   AccordionProps,
   AccordionSummaryProps,
 } from '@mui/material';
-import { IPlayer } from '../../types';
+import { IPlayer } from '@/types';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { getSeasonRankImage } from '../../utils/table';
-import { getSeasonTitleDescription, getSeasonTitle } from '../../utils/profile';
+import { getSeasonRankImage } from '@/utils/table';
+import { getSeasonTitleDescription, getSeasonTitle } from '@/utils/profile';
 
 interface IProps {
   player: IPlayer;
