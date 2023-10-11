@@ -1,17 +1,17 @@
 import loadable from '@loadable/component';
 import { BrowserRouter, Routes as ReactRouterDomRoutes, Route } from 'react-router-dom';
 
-import Loading from '../components/common/Loading';
-import { publicUrls } from '../config';
+import Loading from '@/components/common/Loading';
+import { publicUrls } from '@/config';
 
 const { page } = publicUrls;
-const ActivityScreen = loadable(() => import('../containers/Activity'), {
+const ActivityScreen = loadable(() => import('@/containers/Activity'), {
   fallback: <Loading />,
 });
-const MetaScreen = loadable(() => import('../containers/Meta'), {
+const MetaScreen = loadable(() => import('@/containers/Meta'), {
   fallback: <Loading />,
 });
-const ProfileScreen = loadable(() => import('../containers/Profile'), {
+const ProfileScreen = loadable(() => import('@/containers/Profile'), {
   fallback: <Loading />,
 });
 

@@ -9,8 +9,8 @@ import {
   getWinRate,
   getWonAndLossColors,
   getRatingColor,
-} from '../../utils/table';
-import type { IActivityRecord } from '../../types';
+} from '@/utils/table';
+import type { IActivityRecord } from '@/types';
 
 const getTableColumns = (activity: string, isMobile: boolean, region: string): any[] => {
   const rank = {

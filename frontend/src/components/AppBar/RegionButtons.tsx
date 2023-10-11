@@ -1,6 +1,7 @@
 import { IconButton } from '@mui/material';
-import { EuIcon, UsIcon } from '../icons';
-import { REGIONS } from '../../constants/region';
+import { EuIcon, UsIcon } from '@/components/icons';
+
+import { REGIONS } from '@/constants/region';
 
 const RegionButtons = ({
   region,

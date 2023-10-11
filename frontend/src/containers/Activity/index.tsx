@@ -1,16 +1,16 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 
-import Header from '../../components/AppBar';
+import Header from '@/components/AppBar';
 import ActivityTabs from './Tabs';
-import DataTable from '../../components/DataTable';
-import Footer from '../../components/common/Footer';
+import DataTable from '@/components/DataTable';
+import Footer from '@/components/common/Footer';
 
-import { REGIONS } from '../../constants/region';
-import { BRACKETS } from '../../constants/pvp-activity';
-import { getActivityFromUrl } from '../../utils/urlparts';
-import { capitalizeFirstLetter } from '../../utils/common';
-import { fetchStatistic } from '../../services/stats.service';
+import { REGIONS } from '@/constants/region';
+import { BRACKETS } from '@/constants/pvp-activity';
+import { getActivityFromUrl } from '@/utils/urlparts';
+import { capitalizeFirstLetter } from '@/utils/common';
+import { fetchStatistic } from '@/services/stats.service';
 
 function Activity() {
   const { region = REGIONS.eu, bracket = BRACKETS.shuffle } = useParams();
