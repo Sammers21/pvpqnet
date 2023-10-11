@@ -536,7 +536,13 @@ public class Ladder {
         boolean same = newChars.equals(currentCharacters);
         if (!same) {
             SnapshotDiff diff = Calculator.calculateDiff(curVal, newCharacters, bracket, false);
-            diff.chars().forEach(df -> characterCache.upsertDiff(df, bracket));
+            diff.chars().forEach(df -> {
+                try {
+                    characterCache.upsertDiff(df, bracket);
+                } catch (Exception e) {
+                    log.warn("Error upserting diff", e);
+                }
+            });
             current.set(newCharacters);
             log.info("Data for bracket {} is different[diffs={}] performing update", bracket, diff.chars().size());
             return db.insertOnlyIfDifferent(bracket, region, newCharacters)

@@ -17,7 +17,7 @@ public enum BracketType {
 
     public static BracketType fromType(String type) {
         for (BracketType bracketType : values()) {
-            if (bracketType.types.contains(type)) {
+            if (bracketType.types.contains(type.toUpperCase())) {
                 return bracketType;
             }
         }
