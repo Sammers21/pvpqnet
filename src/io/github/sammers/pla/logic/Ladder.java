@@ -536,9 +536,9 @@ public class Ladder {
         boolean same = newChars.equals(currentCharacters);
         if (!same) {
             SnapshotDiff diff = Calculator.calculateDiff(curVal, newCharacters, bracket, false);
-            diff.chars().forEach(characterCache::upsertDiff);
+            diff.chars().forEach(df -> characterCache.upsertDiff(df, bracket));
             current.set(newCharacters);
-            log.info("Data for bracket {} is different performing update", bracket);
+            log.info("Data for bracket {} is different[diffs={}] performing update", bracket, diff.chars().size());
             return db.insertOnlyIfDifferent(bracket, region, newCharacters)
                 .andThen(db.deleteOlderThanHours(bracket, 24 * 30)
                     .ignoreElement()

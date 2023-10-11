@@ -1,12 +1,12 @@
 package io.github.sammers.pla.logic;
 
+import io.github.sammers.pla.blizzard.BracketType;
+import io.github.sammers.pla.blizzard.PvpBracket;
 import io.github.sammers.pla.blizzard.WowAPICharacter;
 import io.github.sammers.pla.db.Character;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 public class CharacterCache {
 
@@ -33,11 +33,11 @@ public class CharacterCache {
         indexCharAlts(alts, character);
     }
 
-    public void upsertDiff(CharAndDiff diff) {
+    public void upsertDiff(CharAndDiff diff, String bracket) {
         Character character = diff.character();
-        character.fullName();
         WowAPICharacter wowAPICharacter = nameCache.get(character.fullName());
-
+        WowAPICharacter updated = wowAPICharacter.updatePvpBracketData(diff.diff(), BracketType.fromType(bracket));
+        upsert(updated);
     }
 
     public Collection<WowAPICharacter> values() {
