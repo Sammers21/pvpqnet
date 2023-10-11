@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import {
   getProfileUrl,
   getClassNameColor,
@@ -89,13 +90,13 @@ const getTableColumns = (activity: string, isMobile: boolean, region: string): a
       }
 
       return (
-        <a
+        <Link
           className="text-base no-underline"
-          href={url}
           style={{ color: getClassNameColor(wowClass) }}
+          to={url}
         >
           {name}
-        </a>
+        </Link>
       );
     },
   };

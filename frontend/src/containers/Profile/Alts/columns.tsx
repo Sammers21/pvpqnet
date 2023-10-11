@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { Avatar, Chip } from '@mui/material';
 
 import { getAltProfileUrl, getClassNameColor, getSpecIcon, ratingToColor } from '@/utils/table';
@@ -22,14 +23,14 @@ const renderName = ({ record: alt }: IParams, isMobile: boolean) => {
   return (
     <div className="flex items-center">
       <span color={getClassNameColor(alt.class)}>
-        <a
+        <Link
           className="text-base no-underline"
-          href={url}
           style={{ color: getClassNameColor(alt.class) }}
+          to={url}
         >
           {name}
           {!isMobile && `-${realm}`}
-        </a>
+        </Link>
       </span>
     </div>
   );

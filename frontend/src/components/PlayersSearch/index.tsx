@@ -64,8 +64,8 @@ const PlayersSearch = () => {
     [inputValue]
   );
 
-  const redirectToProfile = (option: string | ISearchResults) => {
-    if (typeof option === 'string') return;
+  const redirectToProfile = (option: string | null | ISearchResults) => {
+    if (!option || typeof option === 'string') return;
 
     const nicknameSplit = option.nick.split(/-(.*)/s);
     const realm = capitalizeFirstLetter(nicknameSplit[1]);
@@ -81,6 +81,9 @@ const PlayersSearch = () => {
       freeSolo
       loading={loading}
       options={searchResults}
+      inputValue={inputValue}
+      value={null}
+      blurOnSelect
       getOptionLabel={(option) => {
         return capitalizeNickname(typeof option === 'string' ? option : option.nick);
       }}
@@ -88,10 +91,9 @@ const PlayersSearch = () => {
       onChange={(_evt, newValue) => {
         redirectToProfile(newValue);
       }}
-      onInputChange={(_evt, newInputValue) => {
-        setInputValue(newInputValue);
+      onInputChange={(_evt, newInputValue, reason) => {
+        setInputValue(reason === 'reset' ? '' : newInputValue);
       }}
-      disableClearable
       renderInput={(params) => {
         return (
           <TextField

@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { Button } from '@mui/material';
 import PlayersSearch from '@/components/PlayersSearch';
 import RegionButtons from './RegionButtons';
@@ -16,9 +17,9 @@ const DesktopView = ({ menuItems, host, region, setRegion }: IProps) => {
     <div className="flex items-center justify-between w-full">
       <div className="flex items-center justify-between w-5/6 xl:w-4/6">
         <div className="flex items-center justify-start">
-          <a href="/" className="sm:flex hidden mr-5 font-bold tracking-wider text-xl">
+          <Link to="/" className="sm:flex hidden mr-5 font-bold tracking-wider text-xl">
             {host}
-          </a>
+          </Link>
 
           {menuItems.map((item) => (
             <Button key={item.label} className="!text-[#60a5fa]" onClick={item.onClick}>

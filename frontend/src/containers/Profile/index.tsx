@@ -3,10 +3,8 @@ import { useParams } from 'react-router-dom';
 import axios from 'axios';
 
 import { Alert, Snackbar as MuiSnackbar, styled } from '@mui/material';
-import Header from '@/components/AppBar';
 import Armory from './Armory';
 import PlayerNotFound from './PlayerNotFound';
-import Footer from '@/components/common/Footer';
 
 import { baseUrl } from '@/config';
 import { capitalizeFirstLetter } from '@/utils/common';
@@ -57,7 +55,6 @@ const Profile = () => {
 
   return (
     <>
-      <Header />
       {playerStatus === 404 ? (
         <PlayerNotFound loading={loading} updatePlayer={() => loadProfile(true)} />
       ) : (
@@ -80,7 +77,6 @@ const Profile = () => {
           Player profile successfully updated!
         </Alert>
       </Snackbar>
-      <Footer />
     </>
   );
 };
