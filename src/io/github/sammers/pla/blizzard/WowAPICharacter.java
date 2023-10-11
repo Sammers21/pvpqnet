@@ -278,24 +278,23 @@ public record WowAPICharacter(long id,
         );
     }
 
-    public String achieventsHash() {
-        String encoded = new JsonArray(
-                achievements
-                        .achievements()
-                        .stream()
-                        .filter(a -> a.completedTimestamp() != null)
-                        .sorted((a, b) -> a.completedTimestamp().compareTo(b.completedTimestamp()))
-                        .limit(3)
-                        .map(Achievement::toJson)
-                        .toList()
-        ).encode();
-        return String.valueOf(encoded.hashCode());
-    }
-
-    public WowAPICharacter updatePvpBracketData(Diff diff, String bracket) {
+    public WowAPICharacter updatePvpBracketData(Diff diff, BracketType bracket) {
         List<PvpBracket> newBrackets = brackets.stream().map(pvpBracket -> {
-            if (pvpBracket.bracketType().equals(bracket)) {
-                return pvpBracket.update(diff);
+            if (BracketType.fromType(pvpBracket.bracketType()).equals(bracket) &&
+                (bracket.equals(BracketType.TWO_V_TWO) || bracket.equals(BracketType.THREE_V_THREE))) {
+                return new PvpBracket(
+                    pvpBracket.bracketType(),
+                    pvpBracket.rating(),
+                    pvpBracket.won(),
+                    pvpBracket.lost(),
+                    pvpBracket.rank(),
+                    pvpBracket.seasonMaxRating(),
+                    pvpBracket.seasonMaxRatingAchievedTimestamp(),
+                    pvpBracket.maxRating(),
+                    pvpBracket.maxRatingAchievedTimestamp(),
+                    pvpBracket.isRankOneRange(),
+                    pvpBracket.gamingHistory().addDiff(diff, List.of())
+                );
             } else {
                 return pvpBracket;
             }

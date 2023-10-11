@@ -5,6 +5,7 @@ import io.github.sammers.pla.http.JsonConvertable;
 import io.github.sammers.pla.logic.Diff;
 import io.vertx.core.json.JsonObject;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -47,7 +48,7 @@ public record PvpBracket(String bracketType,
             maxRatingAchievedTimestamp = prevBracket.map(PvpBracket::maxRatingAchievedTimestamp).orElse(-1L);
         }
         Boolean isRankOneRange = rating >= bracketRankOneCutoff;
-        GamingHistory gamingHistory = prevBracket.map(PvpBracket::gamingHistory).orElse(new GamingHistory(List.of()));
+        GamingHistory gamingHistory = prevBracket.map(PvpBracket::gamingHistory).orElse(new GamingHistory(new ArrayList<>()));
         return new PvpBracket(type, rating, won, lost, rank, seasonMaxRating, seasonMaxRatingAchievedTimestamp, maxRating, maxRatingAchievedTimestamp, isRankOneRange, gamingHistory);
     }
 
@@ -63,7 +64,7 @@ public record PvpBracket(String bracketType,
             Optional.ofNullable(entries.getLong("max_rating")).orElse(-1L),
             Optional.ofNullable(entries.getLong("max_rating_achieved_timestamp")).orElse(-1L),
             Optional.ofNullable(entries.getBoolean("is_rank_one_range")).orElse(false),
-            Optional.ofNullable(entries.getJsonObject("gaming_history")).map(GamingHistory::fromJson).orElse(new GamingHistory(List.of()))
+            Optional.ofNullable(entries.getJsonObject("gaming_history")).map(GamingHistory::fromJson).orElse(new GamingHistory(new ArrayList<>()))
         );
     }
 
@@ -79,6 +80,7 @@ public record PvpBracket(String bracketType,
             .put("season_max_rating", seasonMaxRating)
             .put("season_max_rating_achieved_timestamp", seasonMaxRatingAchievedTimestamp)
             .put("max_rating", maxRating)
-            .put("max_rating_achieved_timestamp", maxRatingAchievedTimestamp);
+            .put("max_rating_achieved_timestamp", maxRatingAchievedTimestamp)
+            .put("gaming_history", gamingHistory.toJson());
     }
 }
