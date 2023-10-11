@@ -1,4 +1,4 @@
-import { aroundColor } from '../../../theme';
+import { aroundColor } from '@/theme';
 import { Select, InputLabel, FormControl, MenuItem } from '@mui/material';
 import type { SelectChangeEvent } from '@mui/material';
 import { alpha } from '@mui/material/styles';

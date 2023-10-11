@@ -1,4 +1,4 @@
-import Pagination from '@mui/material/Pagination';
+import { Pagination } from '@mui/material';
 
 interface IProps {
   page: number;

@@ -1,6 +1,6 @@
 import { PlayerItemLvl, PlayerImages, PlayerName } from './common';
 
-import type { IPlayer } from '../../../types';
+import type { IPlayer } from '@/types';
 
 interface IProps {
   player: IPlayer;

@@ -10,10 +10,10 @@ import {
   ListItemText,
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
-
-import { REGIONS } from '../../constants/region';
-import PlayersSearch from '../PlayersSearch';
+import PlayersSearch from '@/components/PlayersSearch';
 import RegionButtons from './RegionButtons';
+
+import { REGIONS } from '@/constants/region';
 
 interface IProps {
   host: string;

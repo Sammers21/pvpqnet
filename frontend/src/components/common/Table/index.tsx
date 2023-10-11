@@ -8,13 +8,13 @@ import {
   Typography,
 } from '@mui/material';
 import { styled } from '@mui/system';
+import BlizzardLoader from '@/components/common/BlizzardLoader';
 
 import HeaderCell from './HeaderCell';
-import BlizzardLoader from '../BlizzardLoader';
 import Pagination from './Pagination';
 import Row from './Row';
 
-import { IActivityRecord, ITableColumn } from '../../../types';
+import type { IActivityRecord, ITableColumn } from '@/types';
 
 const StyledTable = styled(TableMui)({
   'tbody tr:nth-of-type(odd)': {

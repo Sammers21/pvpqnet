@@ -1,6 +1,6 @@
-import TableCell from '@mui/material/TableCell';
+import { TableCell } from '@mui/material';
 
-import type { ITableColumn } from '../../../types';
+import type { ITableColumn } from '@/types';
 
 interface IProps {
   column: ITableColumn;

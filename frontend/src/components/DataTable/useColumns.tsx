@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import {
   getProfileUrl,
   getClassNameColor,
@@ -9,8 +10,8 @@ import {
   getWinRate,
   getWonAndLossColors,
   getRatingColor,
-} from '../../utils/table';
-import type { IActivityRecord } from '../../types';
+} from '@/utils/table';
+import type { IActivityRecord } from '@/types';
 
 const getTableColumns = (activity: string, isMobile: boolean, region: string): any[] => {
   const rank = {
@@ -89,13 +90,13 @@ const getTableColumns = (activity: string, isMobile: boolean, region: string): a
       }
 
       return (
-        <a
+        <Link
           className="text-base no-underline"
-          href={url}
           style={{ color: getClassNameColor(wowClass) }}
+          to={url}
         >
           {name}
-        </a>
+        </Link>
       );
     },
   };

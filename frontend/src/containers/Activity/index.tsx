@@ -1,16 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 
-import Header from '../../components/AppBar';
 import ActivityTabs from './Tabs';
-import DataTable from '../../components/DataTable';
-import Footer from '../../components/common/Footer';
+import DataTable from '@/components/DataTable';
 
-import { REGIONS } from '../../constants/region';
-import { BRACKETS } from '../../constants/pvp-activity';
-import { getActivityFromUrl } from '../../utils/urlparts';
-import { capitalizeFirstLetter } from '../../utils/common';
-import { fetchStatistic } from '../../services/stats.service';
+import { REGIONS } from '@/constants/region';
+import { BRACKETS } from '@/constants/pvp-activity';
+import { getActivityFromUrl } from '@/utils/urlparts';
+import { capitalizeFirstLetter } from '@/utils/common';
+import { fetchStatistic } from '@/services/stats.service';
 
 function Activity() {
   const { region = REGIONS.eu, bracket = BRACKETS.shuffle } = useParams();
@@ -39,14 +37,10 @@ function Activity() {
   }, [activity, region]);
 
   return (
-    <>
-      <Header />
-      <div className="mt-24 mx-auto mb-11 w-full lg:w-[85%]">
-        <ActivityTabs statistic={statistic} />
-        <DataTable />
-      </div>
-      <Footer />
-    </>
+    <div className="mt-24 mx-auto mb-11 w-full lg:w-[85%]">
+      <ActivityTabs statistic={statistic} />
+      <DataTable />
+    </div>
   );
 }
 

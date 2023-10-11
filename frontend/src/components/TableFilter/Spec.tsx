@@ -36,7 +36,7 @@ const Spec = ({ crestId, specs, selectedSpecs, handleSpecsSelect }: IProps) => {
     <div className="flex flex-col items-center justify-center">
       <img
         className={`${crestStyles} w-28 h-28 cursor-pointer`}
-        src={require(`../../assets/crests/${crestId}.png`)}
+        src={async () => await import(`../../assets/crests/${crestId}.png`)}
         onClick={onCrestSelect}
         loading="lazy"
         alt="crestId"
@@ -50,7 +50,7 @@ const Spec = ({ crestId, specs, selectedSpecs, handleSpecsSelect }: IProps) => {
 
           return (
             <img
-              src={require(`../../assets/specicons/${spec}.png`)}
+              src={import(`../../assets/specicons/${spec}.png`)}
               className={`${styles} h-8 w-8 mx-1 cursor-pointer`}
               onClick={() => onSpecSelect(spec)}
               alt="spec"

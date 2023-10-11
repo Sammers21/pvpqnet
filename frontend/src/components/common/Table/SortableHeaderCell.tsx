@@ -2,7 +2,7 @@ import { TableCell } from '@mui/material';
 import ArrowUpwardOutlinedIcon from '@mui/icons-material/ArrowUpwardOutlined';
 import ArrowDownwardOutlinedIcon from '@mui/icons-material/ArrowDownwardOutlined';
 
-import type { ITableColumn } from '../../../types';
+import type { ITableColumn } from '@/types';
 
 interface IProps {
   column: ITableColumn;

@@ -1,15 +1,10 @@
 import { useMemo } from 'react';
 import { Tooltip } from '@mui/material';
-import {
-  getClassNameColor,
-  getFractionIcon,
-  getDetaisImages,
-  getRealmColor,
-} from '../../../utils/table';
+import { getClassNameColor, getFractionIcon, getDetaisImages, getRealmColor } from '@/utils/table';
 
-import wowIcon from '../../../assets/wow-icon.png';
+import wowIcon from '@/assets/wow-icon.png';
 
-import type { IPlayer } from '../../../types';
+import type { IPlayer } from '@/types';
 
 interface IProps {
   player: IPlayer;

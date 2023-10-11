@@ -1,7 +1,7 @@
 import { LinearProgress, Tooltip } from '@mui/material';
-import { getClassNameColor, getSpecIcon } from '../../../utils/table';
+import { getClassNameColor, getSpecIcon } from '@/utils/table';
 
-import type { IMetaSpec, IMetaSpecSizing, IMeta } from '../../../types';
+import type { IMetaSpec, IMetaSpecSizing, IMeta } from '@/types';
 import type {
   GridAlignment,
   GridColDef,

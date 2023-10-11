@@ -1,5 +1,4 @@
 function getSeasonTitle(achievement: string): { title: string; name: string } {
-  console.log('achievement :>> ', achievement);
   return {
     title: achievement.split(':')[0],
     name: `Season ${parseInt(achievement.slice(-1), 10)}`,

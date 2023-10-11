@@ -2,16 +2,16 @@ import { useCallback, useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { createBreakpoint } from 'react-use';
 
-import Table from '../common/Table';
-import TableFilter from '../TableFilter';
+import Table from '@/components/common/Table';
+import TableFilter from '@/components/TableFilter';
 
 import getTableColumns from './useColumns';
-import { getStatistic } from '../../services/stats.service';
-import { getActivityFromUrl } from '../../utils/urlparts';
+import { getStatistic } from '@/services/stats.service';
+import { getActivityFromUrl } from '@/utils/urlparts';
 
-import { BRACKETS } from '../../constants/pvp-activity';
-import { REGIONS } from '../../constants/region';
-import { IActivityRecord } from '../../types';
+import { BRACKETS } from '@/constants/pvp-activity';
+import { REGIONS } from '@/constants/region';
+import type { IActivityRecord } from '@/types';
 
 export function getFromSearchParams(searchParams: URLSearchParams, name: string): string[] {
   return searchParams?.get(name)?.split(',') || [];

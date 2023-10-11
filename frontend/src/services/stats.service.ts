@@ -1,10 +1,10 @@
 import axios from 'axios';
 
-import { BRACKETS } from '../constants/pvp-activity';
-import { REGIONS } from '../constants/region';
+import { BRACKETS } from '@/constants/pvp-activity';
+import { REGIONS } from '@/constants/region';
 
-import { urls } from '../config';
-import type { IMeta } from '../types';
+import { urls } from '@/config';
+import type { IMeta } from '@/types';
 
 export const statsMap = {
   [REGIONS.us]: 'en-us',
