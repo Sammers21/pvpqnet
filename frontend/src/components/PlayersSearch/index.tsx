@@ -6,12 +6,12 @@ import { uniqBy } from 'lodash';
 import { Autocomplete, InputAdornment, TextField, Typography } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 
-import { getClassIcon, getClassNameColor } from '../../utils/table';
+import { getClassIcon, getClassNameColor } from '@/utils/table';
 import { EuIcon, UsIcon } from '../icons';
 
-import { searchPlayers } from '../../services/stats.service';
-import { capitalizeNickname } from '../../utils/urlparts';
-import { capitalizeFirstLetter } from '../../utils/common';
+import { searchPlayers } from '@/services/stats.service';
+import { capitalizeNickname } from '@/utils/urlparts';
+import { capitalizeFirstLetter } from '@/utils/common';
 
 interface ISearchResults {
   nick: string;

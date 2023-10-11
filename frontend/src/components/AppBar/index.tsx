@@ -5,16 +5,14 @@ import { createBreakpoint } from 'react-use';
 
 import { AppBar, Container, Toolbar } from '@mui/material';
 import { styled } from '@mui/system';
-
-import { borderColor, containerBg } from '../../theme';
-import { metaUrls, publicUrls } from '../../config';
-
-import { REGIONS } from '../../constants/region';
-import { getRegion } from '../../utils/urlparts';
-import { BRACKETS } from '../../constants/pvp-activity';
-
 import MobileView from './MobileView';
 import DesktopView from './DesktopView';
+
+import { borderColor, containerBg } from '@/theme';
+import { metaUrls, publicUrls } from '@/config';
+import { REGIONS } from '@/constants/region';
+import { BRACKETS } from '@/constants/pvp-activity';
+import { getRegion } from '@/utils/urlparts';
 
 const StyledAppBar = styled(AppBar)({
   backgroundImage: 'none',

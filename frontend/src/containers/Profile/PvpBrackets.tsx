@@ -3,9 +3,9 @@ import dayjs from 'dayjs-ext';
 
 import { Chip, LinearProgress, Tooltip } from '@mui/material';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
-import { getSpecIcon, getWonAndLossColors, ratingToColor } from '../../utils/table';
-import { CLASS_AND_SPECS } from '../../constants/filterSchema';
-import type { IPlayerBracket, IPlayer } from '../../types';
+import { getSpecIcon, getWonAndLossColors, ratingToColor } from '@/utils/table';
+import { CLASS_AND_SPECS } from '@/constants/filterSchema';
+import type { IPlayerBracket, IPlayer } from '@/types';
 
 interface IProps {
   player: IPlayer;

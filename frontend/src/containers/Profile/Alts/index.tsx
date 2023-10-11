@@ -3,7 +3,7 @@ import { createBreakpoint } from 'react-use';
 
 import Table from './Table';
 import { tableColumns } from './columns';
-import type { IAlt } from '../../../types';
+import type { IAlt } from '@/types';
 
 type TPvpBracket = 'SHUFFLE' | 'ARENA_2v2' | 'ARENA_3v3' | 'BATTLEGROUNDS';
 const bracketsList: TPvpBracket[] = ['SHUFFLE', 'ARENA_2v2', 'ARENA_3v3', 'BATTLEGROUNDS'];

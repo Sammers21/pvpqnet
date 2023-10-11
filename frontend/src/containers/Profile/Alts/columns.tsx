@@ -1,14 +1,9 @@
 import { Avatar, Chip } from '@mui/material';
 
-import {
-  getAltProfileUrl,
-  getClassNameColor,
-  getSpecIcon,
-  ratingToColor,
-} from '../../../utils/table';
-import { CLASS_AND_SPECS } from '../../../constants/filterSchema';
+import { getAltProfileUrl, getClassNameColor, getSpecIcon, ratingToColor } from '@/utils/table';
+import { CLASS_AND_SPECS } from '@/constants/filterSchema';
 
-import type { IAlt, IPlayerBracket, ITableColumn } from '../../../types';
+import type { IAlt, IPlayerBracket, ITableColumn } from '@/types';
 
 interface IParams {
   record: IAlt;

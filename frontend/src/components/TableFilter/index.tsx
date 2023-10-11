@@ -3,9 +3,8 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { isEmpty } from 'lodash';
 
 import { Button } from '@mui/material';
-import { CRESTS_AND_SPECS } from '../../constants/filterSchema';
-
 import Spec from './Spec';
+import { CRESTS_AND_SPECS } from '@/constants/filterSchema';
 
 interface IProps {
   selectedSpecs: string[];

@@ -15,10 +15,10 @@ jobs:
         env:
           ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
         run: echo ::set-env name=RELEASE_VERSION::${GITHUB_REF:10}
-      - name: Use Node.js 19.x
+      - name: Use Node.js 18.x
         uses: actions/setup-node@v3
         with:
-          node-version: 19.x
+          node-version: 18.x
       - run: npm install
         working-directory: ./frontend
       - run: REACT_APP_BASE_API_URL=https://pvpq.net npm run build
@@ -29,8 +29,8 @@ jobs:
           host: ${{ secrets.APP_HOST }}
           username: ${{ secrets.SSH_HOST_USERNAME }}
           key: ${{ secrets.SSH_KEY }}
-          source: "./frontend/build/*"
-          target: "/var/www/citest"
+          source: './frontend/build/*'
+          target: '/var/www/citest'
       - name: Copy frontend to ngnix
         uses: appleboy/ssh-action@master
         with:

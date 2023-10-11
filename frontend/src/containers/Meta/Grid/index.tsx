@@ -9,13 +9,13 @@ import Header from './Header';
 import Filters from './Filters';
 import { getColumnGroup, specNameColumn } from './columnGroup';
 
-import { REGIONS } from '../../../constants/region';
-import { columnGroups, defaultFilters, metaFilter } from '../../../constants/meta';
+import { REGIONS } from '@/constants/region';
+import { columnGroups, defaultFilters, metaFilter } from '@/constants/meta';
+import { getMeta } from '@/services/stats.service';
 
-import type { IMeta } from '../../../types';
+import type { IMeta } from '@/types';
 import type { GridColDef, GridColumnGroup, GridValidRowModel } from '@mui/x-data-grid';
 import type { IFilterValue } from '../types';
-import { getMeta } from '../../../services/stats.service';
 
 const ODD_OPACITY = 0.2;
 
