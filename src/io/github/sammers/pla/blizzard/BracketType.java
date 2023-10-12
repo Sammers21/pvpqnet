@@ -1,6 +1,7 @@
 package io.github.sammers.pla.blizzard;
 
 import java.util.List;
+import java.util.Optional;
 
 public enum BracketType {
     TWO_V_TWO("2v2", "ARENA_2v2"),
@@ -17,7 +18,10 @@ public enum BracketType {
 
     public static BracketType fromType(String type) {
         for (BracketType bracketType : values()) {
-            if (bracketType.types.contains(type.toUpperCase())) {
+            Optional<String> first = bracketType.types.stream()
+                .filter(t -> t.equals(type))
+                .findFirst();
+            if (first.isPresent()) {
                 return bracketType;
             }
         }
