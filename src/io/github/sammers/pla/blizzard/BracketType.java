@@ -17,9 +17,10 @@ public enum BracketType {
     }
 
     public static BracketType fromType(String type) {
+        String lowerCase = type.toLowerCase();
         for (BracketType bracketType : values()) {
             Optional<String> first = bracketType.types.stream()
-                .filter(t -> t.equals(type))
+                .filter(t -> t.toLowerCase().equals(lowerCase) || lowerCase.contains(t.toLowerCase()))
                 .findFirst();
             if (first.isPresent()) {
                 return bracketType;

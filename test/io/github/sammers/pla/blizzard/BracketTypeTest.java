@@ -14,5 +14,10 @@ public class BracketTypeTest {
         assertEquals(BracketType.fromType("ARENA_2v2"), BracketType.TWO_V_TWO);
         assertEquals(BracketType.fromType("3v3"), BracketType.THREE_V_THREE);
         assertEquals(BracketType.fromType("ARENA_3v3"), BracketType.THREE_V_THREE);
+        assertEquals(BracketType.fromType("BATTLEGROUNDS"), BracketType.RBG);
+        assertEquals(BracketType.fromType("RBG"), BracketType.RBG);
+        assertEquals(BracketType.fromType("rbg"), BracketType.RBG);
+        assertEquals(BracketType.fromType("SHUFFLE"), BracketType.SHUFFLE);
+        assertEquals(BracketType.fromType("shuffle"), BracketType.SHUFFLE);
     }
 }
