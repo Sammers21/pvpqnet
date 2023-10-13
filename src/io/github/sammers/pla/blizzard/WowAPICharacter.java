@@ -4,10 +4,12 @@ import io.github.sammers.pla.db.Character;
 import io.github.sammers.pla.db.Snapshot;
 import io.github.sammers.pla.http.JsonConvertable;
 import io.github.sammers.pla.logic.Calculator;
+import io.github.sammers.pla.logic.CharAndDiff;
 import io.github.sammers.pla.logic.Diff;
 import io.github.sammers.pla.logic.Refs;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.slf4j.Logger;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -151,6 +153,8 @@ public record WowAPICharacter(long id,
                               CharacterMedia media,
                               String talents) implements JsonConvertable {
 
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(WowAPICharacter.class);
+
     private static MessageDigest md;
 
     static {
@@ -278,7 +282,7 @@ public record WowAPICharacter(long id,
         );
     }
 
-    public WowAPICharacter updatePvpBracketData(Diff diff, BracketType bracket) {
+    public WowAPICharacter updatePvpBracketData(CharAndDiff diff, BracketType bracket) {
         List<PvpBracket> newBrackets = brackets.stream().map(pvpBracket -> {
             if (BracketType.fromType(pvpBracket.bracketType()).equals(bracket) &&
                 (bracket.equals(BracketType.TWO_V_TWO) || bracket.equals(BracketType.THREE_V_THREE))) {
@@ -293,8 +297,28 @@ public record WowAPICharacter(long id,
                     pvpBracket.maxRating(),
                     pvpBracket.maxRatingAchievedTimestamp(),
                     pvpBracket.isRankOneRange(),
-                    pvpBracket.gamingHistory().addDiff(diff, List.of())
+                    pvpBracket.gamingHistory().addDiff(diff.diff(), List.of())
                 );
+            } else if (BracketType.fromType(pvpBracket.bracketType()).equals(bracket) && bracket.equals(BracketType.SHUFFLE)) {
+                String fullSpec = diff.character().fullSpec();
+                if (pvpBracket.bracketType().split("-")[1].contains(fullSpec)) {
+                    return new PvpBracket(
+                        pvpBracket.bracketType(),
+                        pvpBracket.rating(),
+                        pvpBracket.won(),
+                        pvpBracket.lost(),
+                        pvpBracket.rank(),
+                        pvpBracket.seasonMaxRating(),
+                        pvpBracket.seasonMaxRatingAchievedTimestamp(),
+                        pvpBracket.maxRating(),
+                        pvpBracket.maxRatingAchievedTimestamp(),
+                        pvpBracket.isRankOneRange(),
+                        pvpBracket.gamingHistory().addDiff(diff.diff(), List.of())
+                    );
+                } else {
+                    log.warn("Not updating bracket " + pvpBracket.bracketType() + " because it does not match " + fullSpec);
+                    return pvpBracket;
+                }
             } else {
                 return pvpBracket;
             }

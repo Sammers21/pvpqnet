@@ -36,7 +36,7 @@ public class CharacterCache {
     public void upsertDiff(CharAndDiff diff, String bracket) {
         Character character = diff.character();
         WowAPICharacter wowAPICharacter = nameCache.get(character.fullName());
-        WowAPICharacter updated = wowAPICharacter.updatePvpBracketData(diff.diff(), BracketType.fromType(bracket));
+        WowAPICharacter updated = wowAPICharacter.updatePvpBracketData(diff, BracketType.fromType(bracket));
         upsert(updated);
     }
 
