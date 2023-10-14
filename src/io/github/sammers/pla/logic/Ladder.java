@@ -536,13 +536,15 @@ public class Ladder {
         boolean same = newChars.equals(currentCharacters);
         if (!same) {
             SnapshotDiff diff = Calculator.calculateDiff(curVal, newCharacters, bracket, false);
-            diff.chars().forEach(df -> {
+            List<WowAPICharacter> upserted = diff.chars().stream().flatMap(df -> {
                 try {
-                    characterCache.upsertDiff(df, bracket);
+                    return Stream.of(characterCache.upsertDiff(df, bracket));
                 } catch (Exception e) {
                     log.warn("Error upserting diff", e);
+                    return Stream.empty();
                 }
-            });
+            }).toList();
+            log.info("Upserted {} characters", upserted.size());
             current.set(newCharacters);
             log.info("Data for bracket {} is different[diffs={}] performing update", bracket, diff.chars().size());
             return db.insertOnlyIfDifferent(bracket, region, newCharacters)

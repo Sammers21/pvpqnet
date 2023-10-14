@@ -6,6 +6,8 @@ import io.github.sammers.pla.db.Meta;
 import io.github.sammers.pla.db.Snapshot;
 import io.github.sammers.pla.db.Spec;
 import io.reactivex.Maybe;
+import org.javatuples.Triplet;
+import org.javatuples.Tuple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,6 +72,36 @@ public class Calculator {
 
     public static SnapshotDiff calculateDiff(Snapshot oldChars, Snapshot newChars, String bracket) {
         return calculateDiff(oldChars, newChars, bracket, true);
+    }
+
+    public static List<List<Character>> whoPlayedWithWho(SnapshotDiff diff, int pplInTheGroup, CharacterCache cache) {
+        Map<Triplet<Long, Long, Long>, List<List<Character>>> playedWith = new HashMap<>();
+        for (CharAndDiff charAndDiff : diff.chars()) {
+            Character character = charAndDiff.character();
+            Diff df = charAndDiff.diff();
+            Triplet<Long, Long, Long> key = Triplet.with(df.won(), df.lost(), df.timestamp());
+            playedWith.compute(key, (k, v) -> {
+                if (v == null) {
+                    v = new ArrayList<>();
+                }
+                if(v.isEmpty()) {
+                    ArrayList<Character> group = new ArrayList<>();
+                    group.add(character);
+                    v.add(group);
+                } else {
+                    List<Character> group = v.get(v.size() - 1);
+                    if(group.size() < pplInTheGroup) {
+                        group.add(character);
+                    } else {
+                        ArrayList<Character> newGroup = new ArrayList<>();
+                        newGroup.add(character);
+                        v.add(newGroup);
+                    }
+                }
+                return v;
+            });
+        }
+        return playedWith.values().stream().flatMap(Collection::stream).filter(group -> group.size() >= 2).toList();
     }
 
     public static SnapshotDiff calculateDiff(Snapshot oldChars, Snapshot newChars, String bracket, boolean newIsZero) {

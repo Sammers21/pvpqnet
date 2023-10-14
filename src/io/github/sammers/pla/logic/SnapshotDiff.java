@@ -97,4 +97,11 @@ public record SnapshotDiff(List<CharAndDiff> chars, Long timestamp) implements R
         }
         return this;
     }
+
+    public static SnapshotDiff fromJson(JsonObject entries) {
+        return new SnapshotDiff(
+            entries.getJsonArray("characters").stream().map(JsonObject.class::cast).map(CharAndDiff::fromJson).toList(),
+            entries.getLong("timestamp")
+        );
+    }
 }
