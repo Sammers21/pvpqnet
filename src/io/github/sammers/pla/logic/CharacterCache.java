@@ -36,9 +36,25 @@ public class CharacterCache {
     public WowAPICharacter upsertDiff(CharAndDiff diff, String bracket) {
         Character character = diff.character();
         WowAPICharacter wowAPICharacter = nameCache.get(character.fullName());
-        WowAPICharacter updated = wowAPICharacter.updatePvpBracketData(diff, BracketType.fromType(bracket));
+        WowAPICharacter updated = wowAPICharacter.updatePvpBracketData(diff, BracketType.fromType(bracket), List.of());
         upsert(updated);
         return updated;
+    }
+
+    public List<WowAPICharacter> upsertGroupDiff(List<CharAndDiff> groupDiff, String bracket) {
+        List<WowAPICharacter> res = new ArrayList<>();
+        for (int i = 0; i < groupDiff.size(); i++) {
+            CharAndDiff diff = groupDiff.get(i);
+            Character character = diff.character();
+            WowAPICharacter wowAPICharacter = nameCache.get(character.fullName());
+            List<CharAndDiff> withWho = groupDiff.subList(0, i);
+            withWho.addAll(groupDiff.subList(i + 1, groupDiff.size()));
+            List<String> wWhoNicks = withWho.stream().map(charAndDiff -> charAndDiff.character().fullName()).toList();
+            WowAPICharacter updated = wowAPICharacter.updatePvpBracketData(diff, BracketType.fromType(bracket), wWhoNicks);
+            upsert(updated);
+            res.add(updated);
+        }
+        return res;
     }
 
     public Collection<WowAPICharacter> values() {

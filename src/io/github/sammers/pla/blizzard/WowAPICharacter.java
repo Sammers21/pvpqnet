@@ -282,7 +282,7 @@ public record WowAPICharacter(long id,
         );
     }
 
-    public WowAPICharacter updatePvpBracketData(CharAndDiff diff, BracketType bracket) {
+    public WowAPICharacter updatePvpBracketData(CharAndDiff diff, BracketType bracket, List<String> withWho) {
         List<PvpBracket> newBrackets = brackets.stream().map(pvpBracket -> {
             if (BracketType.fromType(pvpBracket.bracketType()).equals(bracket) &&
                 (bracket.equals(BracketType.TWO_V_TWO) || bracket.equals(BracketType.THREE_V_THREE))) {
@@ -298,7 +298,7 @@ public record WowAPICharacter(long id,
                     pvpBracket.maxRating(),
                     pvpBracket.maxRatingAchievedTimestamp(),
                     pvpBracket.isRankOneRange(),
-                    pvpBracket.gamingHistory().addDiff(diff.diff(), List.of())
+                    pvpBracket.gamingHistory().addDiff(diff.diff(), withWho)
                 );
             } else if (BracketType.fromType(pvpBracket.bracketType()).equals(bracket) && bracket.equals(BracketType.SHUFFLE)) {
                 String fullSpec = diff.character().fullSpec();
@@ -315,7 +315,7 @@ public record WowAPICharacter(long id,
                         pvpBracket.maxRating(),
                         pvpBracket.maxRatingAchievedTimestamp(),
                         pvpBracket.isRankOneRange(),
-                        pvpBracket.gamingHistory().addDiff(diff.diff(), List.of())
+                        pvpBracket.gamingHistory().addDiff(diff.diff(), withWho)
                     );
                 } else {
                     log.warn("Not updating bracket " + pvpBracket.bracketType() + " because it does not match " + fullSpec);

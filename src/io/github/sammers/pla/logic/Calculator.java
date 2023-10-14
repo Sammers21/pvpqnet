@@ -74,10 +74,10 @@ public class Calculator {
         return calculateDiff(oldChars, newChars, bracket, true);
     }
 
-    public static List<List<Character>> whoPlayedWithWho(SnapshotDiff diff, int pplInTheGroup, CharacterCache cache) {
-        Map<Triplet<Long, Long, Long>, List<List<Character>>> playedWith = new HashMap<>();
-        for (CharAndDiff charAndDiff : diff.chars()) {
-            Character character = charAndDiff.character();
+    public static List<List<CharAndDiff>> whoPlayedWithWho(SnapshotDiff diff, int pplInTheGroup, CharacterCache cache) {
+        Map<Triplet<Long, Long, Long>, List<List<CharAndDiff>>> playedWith = new HashMap<>();
+        for (var charAndDiff : diff.chars()) {
+
             Diff df = charAndDiff.diff();
             Triplet<Long, Long, Long> key = Triplet.with(df.won(), df.lost(), df.timestamp());
             playedWith.compute(key, (k, v) -> {
@@ -85,23 +85,23 @@ public class Calculator {
                     v = new ArrayList<>();
                 }
                 if(v.isEmpty()) {
-                    ArrayList<Character> group = new ArrayList<>();
-                    group.add(character);
+                    ArrayList<CharAndDiff> group = new ArrayList<>();
+                    group.add(charAndDiff);
                     v.add(group);
                 } else {
-                    List<Character> group = v.get(v.size() - 1);
+                    List<CharAndDiff> group = v.get(v.size() - 1);
                     if(group.size() < pplInTheGroup) {
-                        group.add(character);
+                        group.add(charAndDiff);
                     } else {
-                        ArrayList<Character> newGroup = new ArrayList<>();
-                        newGroup.add(character);
+                        ArrayList<CharAndDiff> newGroup = new ArrayList<>();
+                        newGroup.add(charAndDiff);
                         v.add(newGroup);
                     }
                 }
                 return v;
             });
         }
-        return playedWith.values().stream().flatMap(Collection::stream).filter(group -> group.size() >= 2).toList();
+        return playedWith.values().stream().flatMap(Collection::stream).filter(group -> group.size() >= 1).toList();
     }
 
     public static SnapshotDiff calculateDiff(Snapshot oldChars, Snapshot newChars, String bracket, boolean newIsZero) {

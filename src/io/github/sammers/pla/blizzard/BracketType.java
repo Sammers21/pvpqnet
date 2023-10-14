@@ -4,16 +4,22 @@ import java.util.List;
 import java.util.Optional;
 
 public enum BracketType {
-    TWO_V_TWO("2v2", "ARENA_2v2"),
-    THREE_V_THREE("3v3", "ARENA_3v3"),
-    RBG("BATTLEGROUNDS", "RBG"),
+    TWO_V_TWO(2, "2v2", "ARENA_2v2"),
+    THREE_V_THREE(3, "3v3", "ARENA_3v3"),
+    RBG(10, "BATTLEGROUNDS", "RBG"),
 
-    SHUFFLE("SHUFFLE");
+    SHUFFLE(1, "SHUFFLE");
 
     private final List<String> types;
+    private final Integer partySize;
 
-    private BracketType(String... types) {
+    private BracketType(Integer partySize, String... types) {
+        this.partySize = partySize;
         this.types = List.of(types);
+    }
+
+    public Integer partySize() {
+        return partySize;
     }
 
     public static BracketType fromType(String type) {

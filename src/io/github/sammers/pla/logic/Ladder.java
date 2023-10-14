@@ -1,9 +1,6 @@
 package io.github.sammers.pla.logic;
 
-import io.github.sammers.pla.blizzard.BlizzardAPI;
-import io.github.sammers.pla.blizzard.Cutoffs;
-import io.github.sammers.pla.blizzard.PvpLeaderBoard;
-import io.github.sammers.pla.blizzard.WowAPICharacter;
+import io.github.sammers.pla.blizzard.*;
 import io.github.sammers.pla.db.Character;
 import io.github.sammers.pla.db.DB;
 import io.github.sammers.pla.db.Meta;
@@ -536,15 +533,34 @@ public class Ladder {
         boolean same = newChars.equals(currentCharacters);
         if (!same) {
             SnapshotDiff diff = Calculator.calculateDiff(curVal, newCharacters, bracket, false);
-            List<WowAPICharacter> upserted = diff.chars().stream().flatMap(df -> {
-                try {
-                    return Stream.of(characterCache.upsertDiff(df, bracket));
-                } catch (Exception e) {
-                    log.warn("Error upserting diff", e);
-                    return Stream.empty();
-                }
-            }).toList();
-            log.info("Upserted {} characters", upserted.size());
+            BracketType bracketType = BracketType.fromType(bracket);
+            List<WowAPICharacter> upserted;
+            if (bracketType.partySize() == 1) {
+                upserted = diff.chars().stream().flatMap(df -> {
+                    try {
+                        return Stream.of(characterCache.upsertDiff(df, bracket));
+                    } catch (Exception e) {
+                        log.warn("Error upserting diff", e);
+                        return Stream.empty();
+                    }
+                }).toList();
+            } else {
+                int partySize = bracketType.partySize();
+                List<List<CharAndDiff>> whoWWho = Calculator.whoPlayedWithWho(diff, partySize, characterCache);
+                upserted = whoWWho.stream().flatMap(list -> {
+                    try {
+                        return characterCache.upsertGroupDiff(list, bracket).stream();
+                    } catch (Exception e) {
+                        log.warn("Error upserting diff", e);
+                        return Stream.empty();
+                    }
+                }).toList();
+            }
+            long tick = System.nanoTime();
+            log.info("Bulk updating {} characters", upserted.size());
+            db.bulkUpdateChars(upserted).subscribe(ok -> {
+                log.info("Bulk update has been finished in {} ms", (System.nanoTime() - tick) / 1000000);
+            });
             current.set(newCharacters);
             log.info("Data for bracket {} is different[diffs={}] performing update", bracket, diff.chars().size());
             return db.insertOnlyIfDifferent(bracket, region, newCharacters)
