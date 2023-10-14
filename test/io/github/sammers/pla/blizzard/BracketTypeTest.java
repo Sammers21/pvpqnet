@@ -19,5 +19,6 @@ public class BracketTypeTest {
         assertEquals(BracketType.fromType("rbg"), BracketType.RBG);
         assertEquals(BracketType.fromType("SHUFFLE"), BracketType.SHUFFLE);
         assertEquals(BracketType.fromType("shuffle"), BracketType.SHUFFLE);
+        assertEquals(BracketType.fromType("SHUFFLE-Arms"), BracketType.SHUFFLE);
     }
 }

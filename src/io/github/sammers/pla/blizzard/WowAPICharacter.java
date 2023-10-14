@@ -286,6 +286,7 @@ public record WowAPICharacter(long id,
         List<PvpBracket> newBrackets = brackets.stream().map(pvpBracket -> {
             if (BracketType.fromType(pvpBracket.bracketType()).equals(bracket) &&
                 (bracket.equals(BracketType.TWO_V_TWO) || bracket.equals(BracketType.THREE_V_THREE))) {
+                log.info("Updating bracket " + pvpBracket.bracketType() + " with diff " + diff);
                 return new PvpBracket(
                     pvpBracket.bracketType(),
                     pvpBracket.rating(),
@@ -301,7 +302,8 @@ public record WowAPICharacter(long id,
                 );
             } else if (BracketType.fromType(pvpBracket.bracketType()).equals(bracket) && bracket.equals(BracketType.SHUFFLE)) {
                 String fullSpec = diff.character().fullSpec();
-                if (pvpBracket.bracketType().split("-")[1].contains(fullSpec)) {
+                if (fullSpec.contains(pvpBracket.bracketType().split("-")[1])) {
+                    log.info("Updating bracket " + pvpBracket.bracketType() + " with diff " + diff.toJson().encodePrettily());
                     return new PvpBracket(
                         pvpBracket.bracketType(),
                         pvpBracket.rating(),
