@@ -569,7 +569,8 @@ public class Ladder {
             int partySize = bracketType.partySize();
             long tick = System.nanoTime();
             List<List<CharAndDiff>> whoWWho = Calculator.whoPlayedWithWho(diff, partySize, characterCache);
-            log.info("Who played with who for bracket {} partySize={} has been calculated in {} ms", bracket, partySize, (System.nanoTime() - tick) / 1000000);
+            log.info("Who played with who for bracket {} partySize={} has been calculated in {} ms, {} groups", bracket, partySize, (System.nanoTime() - tick) / 1000000, whoWWho.size());
+
 //            upserted = whoWWho.stream().flatMap(list -> {
 //                try {
 //                    return characterCache.upsertGroupDiff(list, bracket).stream();
