@@ -510,15 +510,19 @@ public class Ladder {
     public Completable calcDiffs(String bracket, String region) {
         List<Maybe<Snapshot>> maybes = List.of(
 //            db.getMinsAgo(bracket, region, 60 * 24),
-            db.getMinsAgo(bracket, region, 60 * 12),
-            db.getMinsAgo(bracket, region, 60 * 8),
-            db.getMinsAgo(bracket, region, 60 * 6),
-            db.getMinsAgo(bracket, region, 60 * 3),
-            db.getMinsAgo(bracket, region, 60 * 2),
-            db.getMinsAgo(bracket, region, 60),
-            Maybe.just(refs.refByBracket(bracket, region).get()));
+                db.getMinsAgo(bracket, region, 60 * 12),
+                db.getMinsAgo(bracket, region, 60 * 8),
+                db.getMinsAgo(bracket, region, 60 * 6),
+                db.getMinsAgo(bracket, region, 60 * 3),
+                db.getMinsAgo(bracket, region, 60 * 2),
+                db.getMinsAgo(bracket, region, 60),
+                db.getMinsAgo(bracket, region, 30),
+                db.getMinsAgo(bracket, region, 15),
+                db.getMinsAgo(bracket, region, 10),
+                db.getMinsAgo(bracket, region, 5),
+                Maybe.just(refs.refByBracket(bracket, region).get()));
         return Calculator.calcDiffAndCombine(bracket, region, maybes)
-            .flatMapCompletable(res -> {
+                .flatMapCompletable(res -> {
                 refs.diffsByBracket(bracket, region).set(res);
                 return Completable.complete();
             });
@@ -534,9 +538,9 @@ public class Ladder {
         String newChars = newCharacters.toJson().getJsonArray("characters").encode();
         String currentCharacters = curVal == null ? null : curVal.toJson().getJsonArray("characters").encode();
         boolean same = newChars.equals(currentCharacters);
+        SnapshotDiff diff = Calculator.calculateDiff(curVal, newCharacters, bracket, false);
         if (!same) {
-            SnapshotDiff diff = Calculator.calculateDiff(curVal, newCharacters, bracket, false);
-//            upsertGamingHistory(bracket, diff);
+            upsertGamingHistory(bracket, diff);
             current.set(newCharacters);
             log.info("Data for bracket {} is different[diffs={}] performing update", bracket, diff.chars().size());
             return db.insertOnlyIfDifferent(bracket, region, newCharacters)

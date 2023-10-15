@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class DB {
     private static final Logger log = LoggerFactory.getLogger(DB.class);
@@ -75,7 +76,13 @@ public class DB {
                     return op;
                 }
             ).toList();
-        return mongoClient.rxBulkWrite("profile", operations);
+        AtomicLong tick = new AtomicLong(System.nanoTime());
+        return mongoClient.rxBulkWrite("profile", operations)
+                .doOnSubscribe(sub -> log.info("Start bulk update of {} characters", characters.size()))
+                .doOnSuccess(res -> {
+                    long elapsed = System.nanoTime() - tick.get();
+                    log.info("Updated {} characters in {} ms", characters.size(), elapsed / 1000000);
+                });
     }
 
     public Completable insertOnlyIfDifferent(String bracket, String region, Snapshot snapshot) {
