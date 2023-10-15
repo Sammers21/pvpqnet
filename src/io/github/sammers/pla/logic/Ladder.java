@@ -533,34 +533,7 @@ public class Ladder {
         boolean same = newChars.equals(currentCharacters);
         if (!same) {
             SnapshotDiff diff = Calculator.calculateDiff(curVal, newCharacters, bracket, false);
-            BracketType bracketType = BracketType.fromType(bracket);
-            List<WowAPICharacter> upserted;
-            if (bracketType.partySize() == 1) {
-                upserted = diff.chars().stream().flatMap(df -> {
-                    try {
-                        return Stream.of(characterCache.upsertDiff(df, bracket));
-                    } catch (Exception e) {
-                        log.warn("Error upserting diff", e);
-                        return Stream.empty();
-                    }
-                }).toList();
-            } else {
-                int partySize = bracketType.partySize();
-                List<List<CharAndDiff>> whoWWho = Calculator.whoPlayedWithWho(diff, partySize, characterCache);
-                upserted = whoWWho.stream().flatMap(list -> {
-                    try {
-                        return characterCache.upsertGroupDiff(list, bracket).stream();
-                    } catch (Exception e) {
-                        log.warn("Error upserting diff", e);
-                        return Stream.empty();
-                    }
-                }).toList();
-            }
-            long tick = System.nanoTime();
-            log.info("Bulk updating {} characters", upserted.size());
-            db.bulkUpdateChars(upserted).subscribe(ok -> {
-                log.info("Bulk update has been finished in {} ms", (System.nanoTime() - tick) / 1000000);
-            });
+//            upsertGamingHistory(bracket, diff);
             current.set(newCharacters);
             log.info("Data for bracket {} is different[diffs={}] performing update", bracket, diff.chars().size());
             return db.insertOnlyIfDifferent(bracket, region, newCharacters)
@@ -571,5 +544,36 @@ public class Ladder {
             log.info("Data for bracket {} are equal, not updating", bracket);
             return Completable.complete();
         }
+    }
+
+    private void upsertGamingHistory(String bracket, SnapshotDiff diff) {
+        BracketType bracketType = BracketType.fromType(bracket);
+        List<WowAPICharacter> upserted;
+        if (bracketType.partySize() == 1) {
+            upserted = diff.chars().stream().flatMap(df -> {
+                try {
+                    return Stream.of(characterCache.upsertDiff(df, bracket));
+                } catch (Exception e) {
+                    log.warn("Error upserting diff", e);
+                    return Stream.empty();
+                }
+            }).toList();
+        } else {
+            int partySize = bracketType.partySize();
+            List<List<CharAndDiff>> whoWWho = Calculator.whoPlayedWithWho(diff, partySize, characterCache);
+            upserted = whoWWho.stream().flatMap(list -> {
+                try {
+                    return characterCache.upsertGroupDiff(list, bracket).stream();
+                } catch (Exception e) {
+                    log.warn("Error upserting diff", e);
+                    return Stream.empty();
+                }
+            }).toList();
+        }
+        long tick = System.nanoTime();
+        log.info("Bulk updating {} characters", upserted.size());
+        db.bulkUpdateChars(upserted).subscribe(ok -> {
+            log.info("Bulk update has been finished in {} ms", (System.nanoTime() - tick) / 1000000);
+        });
     }
 }
