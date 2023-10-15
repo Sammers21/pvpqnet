@@ -4,6 +4,7 @@ import io.github.sammers.pla.http.JsonConvertable;
 import io.github.sammers.pla.logic.Diff;
 import io.vertx.core.json.JsonObject;
 
+import java.util.ArrayList;
 import java.util.List;
 
 record GamingHistory(List<DiffAndWithWho> hist) implements JsonConvertable {
@@ -15,8 +16,9 @@ record GamingHistory(List<DiffAndWithWho> hist) implements JsonConvertable {
     }
 
     public GamingHistory addDiff(Diff diff, List<String> withWho) {
-        hist.add(new DiffAndWithWho(diff, withWho));
-        return this;
+        ArrayList<DiffAndWithWho> newC = new ArrayList<>(hist);
+        newC.add(new DiffAndWithWho(diff, withWho));
+        return new GamingHistory(newC);
     }
 
     public static GamingHistory fromJson(JsonObject entries) {
