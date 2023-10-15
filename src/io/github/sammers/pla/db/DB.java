@@ -66,6 +66,10 @@ public class DB {
     }
 
     public Maybe<MongoClientBulkWriteResult> bulkUpdateChars(List<WowAPICharacter> characters) {
+        if (characters.isEmpty()) {
+            log.warn("Empty list of characters to update, skipping");
+            return Maybe.empty();
+        }
         List<BulkOperation> operations = characters.stream()
             .map(character -> {
                     BulkOperation op = BulkOperation.createUpdate(

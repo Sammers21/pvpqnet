@@ -535,8 +535,6 @@ public class Ladder {
     public Completable newDataOnBracket(String bracket, String region, Snapshot newCharacters) {
         AtomicReference<Snapshot> current = refs.refByBracket(bracket, region);
         Snapshot curVal = current.get();
-        String newChars = newCharacters.toJson().getJsonArray("characters").encode();
-        String currentCharacters = curVal == null ? null : curVal.toJson().getJsonArray("characters").encode();
         SnapshotDiff diff = Calculator.calculateDiff(curVal, newCharacters, bracket, false);
         boolean same = diff.chars().isEmpty();
         if (!same) {
@@ -581,6 +579,10 @@ public class Ladder {
         log.info("Bulk updating {} characters", upserted.size());
         db.bulkUpdateChars(upserted).subscribe(ok -> {
             log.info("Bulk update has been finished in {} ms", (System.nanoTime() - tick) / 1000000);
+        }, err -> {
+            log.error("Error bulk updating", err);
+        }, () -> {
+            log.info("Bulk update has been finished");
         });
     }
 }
