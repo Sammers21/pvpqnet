@@ -555,34 +555,37 @@ public class Ladder {
         BracketType bracketType = BracketType.fromType(bracket);
         List<WowAPICharacter> upserted;
         if (bracketType.partySize() == 1) {
-            upserted = diff.chars().stream().flatMap(df -> {
-                try {
-                    return Stream.of(characterCache.upsertDiff(df, bracket));
-                } catch (Exception e) {
-                    log.warn("Error upserting diff", e);
-                    return Stream.empty();
-                }
-            }).toList();
+            log.info("Not upserting gaming history for bracket " + bracket);
+//            upserted = diff.chars().stream().flatMap(df -> {
+//                try {
+//                    return Stream.of(characterCache.upsertDiff(df, bracket));
+//                } catch (Exception e) {
+//                    log.warn("Error upserting diff", e);
+//                    return Stream.empty();
+//                }
+//            }).toList();
         } else {
+            log.info("Not upserting gaming history for bracket " + bracket);
             int partySize = bracketType.partySize();
+            log.info("Calculating who played with who for bracket {} partySize={}", bracket, partySize);
             List<List<CharAndDiff>> whoWWho = Calculator.whoPlayedWithWho(diff, partySize, characterCache);
-            upserted = whoWWho.stream().flatMap(list -> {
-                try {
-                    return characterCache.upsertGroupDiff(list, bracket).stream();
-                } catch (Exception e) {
-                    log.warn("Error upserting diff", e);
-                    return Stream.empty();
-                }
-            }).toList();
+//            upserted = whoWWho.stream().flatMap(list -> {
+//                try {
+//                    return characterCache.upsertGroupDiff(list, bracket).stream();
+//                } catch (Exception e) {
+//                    log.warn("Error upserting diff", e);
+//                    return Stream.empty();
+//                }
+//            }).toList();
         }
-        long tick = System.nanoTime();
-        log.info("Bulk updating {} characters", upserted.size());
-        db.bulkUpdateChars(upserted).subscribe(ok -> {
-            log.info("Bulk update has been finished in {} ms", (System.nanoTime() - tick) / 1000000);
-        }, err -> {
-            log.error("Error bulk updating", err);
-        }, () -> {
-            log.info("Bulk update has been finished");
-        });
+//        long tick = System.nanoTime();
+//        log.info("Bulk updating {} characters", upserted.size());
+//        db.bulkUpdateChars(upserted).subscribe(ok -> {
+//            log.info("Bulk update has been finished in {} ms", (System.nanoTime() - tick) / 1000000);
+//        }, err -> {
+//            log.error("Error bulk updating", err);
+//        }, () -> {
+//            log.info("Bulk update has been finished");
+//        });
     }
 }
