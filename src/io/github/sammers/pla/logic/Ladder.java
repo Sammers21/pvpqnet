@@ -537,8 +537,8 @@ public class Ladder {
         Snapshot curVal = current.get();
         String newChars = newCharacters.toJson().getJsonArray("characters").encode();
         String currentCharacters = curVal == null ? null : curVal.toJson().getJsonArray("characters").encode();
-        boolean same = newChars.equals(currentCharacters);
         SnapshotDiff diff = Calculator.calculateDiff(curVal, newCharacters, bracket, false);
+        boolean same = diff.chars().isEmpty();
         if (!same) {
             upsertGamingHistory(bracket, diff);
             current.set(newCharacters);
