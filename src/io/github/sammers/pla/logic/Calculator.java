@@ -285,11 +285,13 @@ public class Calculator {
         return withCapFirst.replace(" ", "-");
     }
 
-    public static int minutesTillNextHour() {
+    public static int minutesTillNextMins(int mins) {
         ZoneId zone = ZoneId.systemDefault();
         ZonedDateTime now = ZonedDateTime.now(zone);
-        ZonedDateTime nextHour = now.withMinute(0).withSecond(0).withNano(0).plusHours(1).plusMinutes(1);
-        Duration duration = Duration.between(now, nextHour);
+        int minutes = now.getMinute();
+        int minutesTillNext = minutes % mins;
+        ZonedDateTime nextTime = now.plusMinutes(minutesTillNext);
+        Duration duration = Duration.between(now, nextTime);
         return (int) duration.toMinutes();
     }
 

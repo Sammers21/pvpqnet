@@ -61,24 +61,26 @@ public class Ladder {
     }
 
     public void start() {
+        boolean updatesEnabled = true;
+        int euPeriod = 5;
+        int usPeriod = 30;
+        Observable<Snapshot> updates;
+        if (updatesEnabled) {
+            updates = Observable.mergeArray(runDataUpdater(EU, Observable.defer(() -> {
+                int initialDelay = Calculator.minutesTillNextMins(euPeriod);
+                return Observable.interval(initialDelay, euPeriod, TimeUnit.MINUTES);
+            })), runDataUpdater(US, Observable.defer(() -> {
+                int initialDelay = Calculator.minutesTillNextMins(usPeriod);
+                return Observable.interval(initialDelay, usPeriod, TimeUnit.MINUTES);
+            })));
+        } else {
+            updates = Observable.never();
+        }
         loadRegionData(EU)
-            .andThen(loadRegionData(US))
-            .andThen(charsAreLoaded())
-            .andThen(
-                runDataUpdater(US,
-                    runDataUpdater(EU,
-                        Observable.defer(() -> {
-                            int initialDelay = Calculator.minutesTillNextHour();
-                            return Observable.interval(initialDelay, 60, TimeUnit.MINUTES)
-                                    .observeOn(VTHREAD_SCHEDULER)
-                                    .subscribeOn(VTHREAD_SCHEDULER);
-                        })
-                    )
-                )
-            )
-            .doOnError(e -> log.error("Error fetching ladder", e))
-            .onErrorReturnItem(Snapshot.empty(EU))
-            .subscribe();
+                .andThen(loadRegionData(US)).andThen(charsAreLoaded())
+                .andThen(updates)
+                .doOnError(e -> log.error("Error fetching ladder", e)).onErrorReturnItem(Snapshot.empty(EU))
+                .subscribe();
     }
 
     private Completable charsAreLoaded() {
