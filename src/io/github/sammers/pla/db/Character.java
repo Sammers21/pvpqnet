@@ -4,6 +4,8 @@ package io.github.sammers.pla.db;
 import io.github.sammers.pla.http.JsonConvertable;
 import io.vertx.core.json.JsonObject;
 
+import static io.github.sammers.pla.logic.Conts.*;
+
 public record Character(Long pos, Long rating, boolean inCutoff, String name, String clazz, String fullSpec,
                         String fraction,
                         String gender, String race,
@@ -26,12 +28,12 @@ public record Character(Long pos, Long rating, boolean inCutoff, String name, St
     }
 
     public static String fullNameByRealmAndName(String name, String realm) {
-        String realmReplaced = realm.replaceAll(" ", "-").replaceAll("'", "");
-        return (name.trim() + "-" + realmReplaced.trim()).toLowerCase();
+        String realmReplaced = TIRE.matcher(SPACE.matcher(realm).replaceAll("-")).replaceAll("");
+        return String.format("%s-%s", name.trim(), realmReplaced.trim()).toLowerCase();
     }
 
     public String fullNameWSpec() {
-        return fullName() + " " + fullSpec().replaceAll(" ", "").toLowerCase();
+        return String.format("%s %s", fullName(), SPACE.matcher(fullSpec()).replaceAll("")).toLowerCase();
     }
 
     public JsonObject toJson() {

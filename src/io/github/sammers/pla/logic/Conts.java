@@ -4,9 +4,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 public class Conts {
 
+    public static Pattern SPACE = Pattern.compile(" +");
+    public static Pattern TIRE = Pattern.compile("'");
     public static String EU = "en-gb";
     public static String US = "en-us";
     public static String TWO_V_TWO = "2v2";

@@ -6,6 +6,7 @@ import io.vertx.core.json.JsonObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 record GamingHistory(List<DiffAndWithWho> hist) implements JsonConvertable {
 
@@ -16,17 +17,26 @@ record GamingHistory(List<DiffAndWithWho> hist) implements JsonConvertable {
     }
 
     public GamingHistory addDiff(Diff diff, List<String> withWho) {
-        ArrayList<DiffAndWithWho> newC = new ArrayList<>(hist);
-        newC.add(new DiffAndWithWho(diff, withWho));
-        return new GamingHistory(newC);
+        if (hist instanceof ArrayList) {
+            hist.add(new DiffAndWithWho(diff, withWho));
+            return this;
+        } else {
+            List<DiffAndWithWho> newHist = new ArrayList<>(hist);
+            newHist.add(new DiffAndWithWho(diff, withWho));
+            if(newHist.size() > 10){
+                newHist.remove(0);
+            }
+            return new GamingHistory(newHist);
+        }
     }
 
     public static GamingHistory fromJson(JsonObject entries) {
         return new GamingHistory(
-            entries.getJsonArray("history").stream()
+            new ArrayList<>(entries.getJsonArray("history").stream()
                 .map(JsonObject.class::cast)
                 .map(DiffAndWithWho::fromJson)
-                .toList()
+                .collect(Collectors.toList())
+            )
         );
     }
 }

@@ -42,6 +42,7 @@ public class CharacterCache {
     }
 
     public List<WowAPICharacter> upsertGroupDiff(List<CharAndDiff> groupDiff, String bracket) {
+
         List<WowAPICharacter> res = new ArrayList<>();
         for (int i = 0; i < groupDiff.size(); i++) {
             CharAndDiff diff = groupDiff.get(i);
