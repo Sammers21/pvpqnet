@@ -315,7 +315,7 @@ public record WowAPICharacter(long id,
                         pvpBracket.maxRating(),
                         pvpBracket.maxRatingAchievedTimestamp(),
                         pvpBracket.isRankOneRange(),
-                        pvpBracket.gamingHistory().addDiff(diff.diff(), withWho)
+                        pvpBracket.gamingHistory().addDiff(diff.diff(), List.of())
                     );
                 } else {
                     log.warn("Not updating bracket " + pvpBracket.bracketType() + " because it does not match " + fullSpec);

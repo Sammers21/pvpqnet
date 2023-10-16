@@ -539,12 +539,12 @@ public class Ladder {
         boolean same = diff.chars().isEmpty();
         if (!same) {
             current.set(newCharacters);
-            upsertGamingHistory(bracket, diff);
             log.info("Data for bracket {} is different[diffs={}] performing update", bracket, diff.chars().size());
             return db.insertOnlyIfDifferent(bracket, region, newCharacters)
                 .andThen(db.deleteOlderThanHours(bracket, 24 * 30)
                     .ignoreElement()
-                    .andThen(calcDiffs(bracket, region)));
+                    .andThen(calcDiffs(bracket, region)))
+                    .andThen(Completable.fromAction(() -> upsertGamingHistory(bracket, diff)));
         } else {
             log.info("Data for bracket {} are equal, not updating", bracket);
             return Completable.complete();
@@ -552,6 +552,7 @@ public class Ladder {
     }
 
     private void upsertGamingHistory(String bracket, SnapshotDiff diff) {
+        log.info("Upserting gaming history for bracket " + bracket);
         BracketType bracketType = BracketType.fromType(bracket);
         List<WowAPICharacter> upserted;
         int limit = 10;
@@ -582,10 +583,10 @@ public class Ladder {
             }).toList();
         }
         log.info("Upserting gaming history for bracket {} has been finished in {} ms, {} chars", bracket, (System.nanoTime() - upsertTotalTick) / 1000000, upserted.size());
-        db.bulkUpdateChars(upserted).subscribe(
-                ok -> log.info("Bulk update has been finished"),
-                err -> log.error("Error bulk updating", err),
-                () -> log.info("Bulk update has been finished")
-        );
+//        db.bulkUpdateChars(upserted).subscribe(
+//                ok -> log.info("Bulk update has been finished"),
+//                err -> log.error("Error bulk updating", err),
+//                () -> log.info("Bulk update has been finished")
+//        );
     }
 }
