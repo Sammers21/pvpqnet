@@ -3,7 +3,8 @@ import dayjs from 'dayjs-ext';
 // @ts-ignore
 import relativeTime from 'dayjs-ext/plugin/relativeTime';
 
-import AppRoutes from './routes';
+import { router } from './routes';
+import { RouterProvider } from 'react-router-dom';
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import appTheme from './theme';
@@ -17,7 +18,7 @@ function App() {
     <ThemeProvider theme={appTheme}>
       <CssBaseline />
       <QueryClientProvider client={queryClient}>
-        <AppRoutes />
+        <RouterProvider router={router} />
       </QueryClientProvider>
     </ThemeProvider>
   );
