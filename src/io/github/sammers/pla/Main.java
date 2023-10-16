@@ -34,14 +34,15 @@ public class Main {
     public static DateTimeFormatter DATA_TIME = ISO_DATE_TIME;
 
     public static void main(String[] args) {
-        final Vertx vertx =
-            Vertx.vertx(new VertxOptions()
+        final Vertx vertx = Vertx.vertx(new VertxOptions()
                 .setBlockedThreadCheckInterval(10)
                 .setBlockedThreadCheckIntervalUnit(TimeUnit.SECONDS)
-                .setWarningExceptionTime(100)
-                .setWarningExceptionTimeUnit(TimeUnit.MILLISECONDS)
+                .setWarningExceptionTime(10)
+                .setWarningExceptionTimeUnit(TimeUnit.SECONDS)
+                .setMaxEventLoopExecuteTime(10)
+                .setMaxEventLoopExecuteTimeUnit(TimeUnit.SECONDS)
                 .setEventLoopPoolSize(32)
-            );
+        );
         final WebClient webClient = WebClient.create(vertx);
         final String dbUri = System.getenv("DB_URI");
         final String clientId = System.getenv("CLIENT_ID");
