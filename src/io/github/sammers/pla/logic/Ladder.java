@@ -535,7 +535,7 @@ public class Ladder {
     public Completable newDataOnBracket(String bracket, String region, Snapshot newCharacters) {
         AtomicReference<Snapshot> current = refs.refByBracket(bracket, region);
         Snapshot curVal = current.get();
-        SnapshotDiff diff = Calculator.calculateDiff(curVal, newCharacters, bracket, false);
+        SnapshotDiff diff = Calculator.calculateDiff(curVal, newCharacters, bracket);
         boolean same = diff.chars().isEmpty();
         if (!same) {
             current.set(newCharacters);
