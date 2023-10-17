@@ -11,6 +11,10 @@ const Table = styled(TableMui)({
   width: '100%',
   tableLayout: 'auto',
 
+  'tbody tr:nth-of-type(odd)': {
+    backgroundColor: '#0e1216',
+  },
+
   '& tbody tr:hover': {
     backgroundColor: 'rgb(21, 128, 61, 0.25)',
   },
@@ -34,7 +38,7 @@ const AltsTable = ({ columns, records = [], isMobile }: IProps) => {
 
   const rowsComponent = useMemo(() => {
     function renderRow(record: IAlt, index: number) {
-      return <Row key={index} record={record} columns={columns} shouldHighlight={!!record.alts} />;
+      return <Row key={index} record={record} columns={columns} />;
     }
 
     function sortRecords(records: IAlt[], sort: { field: keyof IAlt; sort: 'asc' | 'desc' }) {

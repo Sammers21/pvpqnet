@@ -50,7 +50,7 @@ const Alts = ({ player }: { player: IPlayer }) => {
           control={
             <Switch checked={showCurrent} onChange={handleChange} style={{ color: '#60A5FACC' }} />
           }
-          label="Show Current Profile"
+          label="Include Current Character"
           labelPlacement="start"
         />
       </div>
