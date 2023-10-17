@@ -134,19 +134,16 @@ export const getRatingColor = (in_cutoff: boolean) => {
 export const ratingToColor = (bracket: Partial<IPlayerBracket>) => {
   const { rating = 0, is_rank_one_range = false } = bracket;
 
-  if (is_rank_one_range) return '#fb7e00';
-  else if (rating >= 2100) {
+  if (is_rank_one_range) {
+    return '#fb7e00';
+  } else if (rating >= 2400) {
     return '#a335ee';
-  } else if (rating >= 1800) {
+  } else if (rating >= 2100) {
     return '#0d47a1';
-  } else if (rating >= 1500) {
-    return '#1976d2';
-  } else if (rating >= 1200) {
-    return '#4caf50';
   } else if (rating >= 900) {
-    return '#d2d2d2';
+    return '#FFFFFF';
   }
-  return '#ffffff';
+  return '#FFFFFF';
 };
 
 const getRankImageName = (rank: string): string => {
