@@ -34,7 +34,7 @@ const AltsTable = ({ columns, records = [], isMobile }: IProps) => {
 
   const rowsComponent = useMemo(() => {
     function renderRow(record: IAlt, index: number) {
-      return <Row key={index} record={record} columns={columns} />;
+      return <Row key={index} record={record} columns={columns} shouldHighlight={!!record.alts} />;
     }
 
     function sortRecords(records: IAlt[], sort: { field: keyof IAlt; sort: 'asc' | 'desc' }) {

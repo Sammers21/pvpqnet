@@ -1,22 +1,29 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { createBreakpoint } from 'react-use';
 
 import Table from './Table';
 import { tableColumns } from './columns';
-import type { IAlt } from '@/types';
+import type { IPlayer } from '@/types';
+import { FormControlLabel, Switch } from '@mui/material';
 
 type TPvpBracket = 'SHUFFLE' | 'ARENA_2v2' | 'ARENA_3v3' | 'BATTLEGROUNDS';
 const bracketsList: TPvpBracket[] = ['SHUFFLE', 'ARENA_2v2', 'ARENA_3v3', 'BATTLEGROUNDS'];
 
 const useBreakpoint = createBreakpoint({ sm: 640, md: 768, lg: 1024 });
 
-const Alts = ({ alts }: { alts?: IAlt[] }) => {
+const Alts = ({ player }: { player: IPlayer }) => {
+  const [showCurrent, setShowCurrent] = useState(true);
+
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setShowCurrent(event.target.checked);
+  };
+
   const breakpoints = useBreakpoint();
 
   const sortableAlts = useMemo(() => {
-    if (!alts) return [];
+    const records = showCurrent ? [player, ...(player?.alts ?? [])] : player?.alts ?? [];
 
-    return alts.map((alt) => {
+    return records.map((alt) => {
       const altCopy = structuredClone(alt);
 
       altCopy.brackets?.forEach((bracket) => {
@@ -31,13 +38,22 @@ const Alts = ({ alts }: { alts?: IAlt[] }) => {
       });
       return altCopy;
     });
-  }, [alts]);
+  }, [player, showCurrent]);
 
   if (!sortableAlts.length) return null;
 
   return (
     <div className="flex flex-col md:px-3 py-4 border border-solid border-[#37415180] rounded-lg bg-[#030303e6]">
-      <span className="text-2xl px-3 md:px-0">Alts</span>
+      <div className="flex justify-between items-center px-3 md:px-0">
+        <span className="text-2xl">Alts</span>
+        <FormControlLabel
+          control={
+            <Switch checked={showCurrent} onChange={handleChange} style={{ color: '#60A5FACC' }} />
+          }
+          label="Show Current Profile"
+          labelPlacement="start"
+        />
+      </div>
 
       <hr className="h-px md:my-2 bg-[#37415180] border-0" />
 
