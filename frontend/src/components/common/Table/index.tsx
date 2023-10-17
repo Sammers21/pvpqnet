@@ -78,7 +78,7 @@ const Table = ({
   const renderNoRowsOverlay = useCallback(() => {
     return (
       !loading && (
-        <div className="absolute left-2/4 top-2/4">
+        <div className="absolute inset-x-0 top-1/2 flex justify-center">
           <Typography variant="h5">No data currently available</Typography>
         </div>
       )
@@ -121,7 +121,6 @@ const Table = ({
           <col key={index} />
         ))}
       </colgroup>
-      {!records.length && !loading && renderNoRowsOverlay()}
       {records.length ? renderBody() : null}
     </StyledTable>
   );
@@ -130,6 +129,7 @@ const Table = ({
     <div className="relative pt-3 pb-8 px-2 md:px-8 bg-[#030303e6]" style={{ minHeight: '250px' }}>
       {renderFooter()}
       {<TableContainer>{renderTable()}</TableContainer>}
+      {!records.length && !loading && renderNoRowsOverlay()}
       {renderLoading()}
       {renderFooter()}
     </div>
