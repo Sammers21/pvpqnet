@@ -33,12 +33,15 @@ public class CharacterCache {
         indexCharAlts(alts, character);
     }
 
-    public WowAPICharacter upsertDiff(CharAndDiff diff, String bracket) {
+    public Optional<WowAPICharacter> upsertDiff(CharAndDiff diff, String bracket) {
         Character character = diff.character();
         WowAPICharacter wowAPICharacter = nameCache.get(character.fullName());
+        if(wowAPICharacter == null) {
+            return Optional.empty();
+        }
         WowAPICharacter updated = wowAPICharacter.updatePvpBracketData(diff, BracketType.fromType(bracket), List.of());
         upsert(updated);
-        return updated;
+        return Optional.of(updated);
     }
 
     public List<WowAPICharacter> upsertGroupDiff(List<CharAndDiff> groupDiff, String bracket) {

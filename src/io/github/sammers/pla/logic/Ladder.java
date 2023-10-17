@@ -77,7 +77,8 @@ public class Ladder {
             updates = Observable.never();
         }
         loadRegionData(EU)
-                .andThen(loadRegionData(US)).andThen(charsAreLoaded())
+                .andThen(loadRegionData(US))
+                .andThen(charsAreLoaded())
                 .andThen(updates)
                 .doOnError(e -> log.error("Error fetching ladder", e)).onErrorReturnItem(Snapshot.empty(EU))
                 .subscribe();
@@ -509,7 +510,6 @@ public class Ladder {
 
     public Completable calcDiffs(String bracket, String region) {
         List<Maybe<Snapshot>> maybes = List.of(
-//            db.getMinsAgo(bracket, region, 60 * 24),
                 db.getMinsAgo(bracket, region, 60 * 12),
                 db.getMinsAgo(bracket, region, 60 * 8),
                 db.getMinsAgo(bracket, region, 60 * 6),
@@ -561,7 +561,7 @@ public class Ladder {
                 if (bracketType.partySize() == 1) {
                     upserted.set(diff.chars().stream().flatMap(df -> {
                         try {
-                            return Stream.of(characterCache.upsertDiff(df, bracket));
+                            return characterCache.upsertDiff(df, bracket).stream();
                         } catch (Exception e) {
                             log.warn("Error upserting diff", e);
                             return Stream.empty();
