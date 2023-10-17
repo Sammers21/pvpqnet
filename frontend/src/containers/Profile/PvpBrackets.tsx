@@ -156,6 +156,18 @@ const PvpBrackets = ({ player }: IProps) => {
   // @ts-ignore
   const classAndSpec = CLASS_AND_SPECS[player.class] as string[];
   const hasFourSpecs = classAndSpec.length === 4;
+
+  console.log('classAndSpec :>> ', classAndSpec);
+
+  const shuffleBrackets = classAndSpec
+    .map((spec) => {
+      const bracket = player?.brackets?.find(({ bracket_type }) => bracket_type.includes(spec));
+      const noRender = player.class === 'Druid' && spec === 'Guardian' && !bracket;
+
+      return { bracket, spec, noRender };
+    })
+    .sort((a, b) => (b.bracket?.rating ?? 0) - (a.bracket?.rating ?? 0));
+
   const hasDruidTank =
     player.class === 'Druid' &&
     !!(player?.brackets || []).find((b) => b.bracket_type.includes('Guardian'));
@@ -172,14 +184,13 @@ const PvpBrackets = ({ player }: IProps) => {
       </div>
 
       <div className="flex flex-wrap justify-start">
-        {classAndSpec.map((spec) => {
-          const playerBracket = (player?.brackets || []).find((b) => b.bracket_type.includes(spec));
-          if (player.class === 'Druid' && spec === 'Guardian' && !playerBracket) return null;
+        {shuffleBrackets.map(({ bracket, spec, noRender }) => {
+          if (noRender) return null;
 
           return (
             <PvpBracket
               key={spec}
-              bracket={playerBracket}
+              bracket={bracket}
               title={spec}
               isShuffle
               playerClass={player.class}
