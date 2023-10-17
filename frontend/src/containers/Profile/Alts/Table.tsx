@@ -11,6 +11,10 @@ const Table = styled(TableMui)({
   width: '100%',
   tableLayout: 'auto',
 
+  'tbody tr:nth-of-type(odd)': {
+    backgroundColor: '#0e1216',
+  },
+
   '& tbody tr:hover': {
     backgroundColor: 'rgb(21, 128, 61, 0.25)',
   },

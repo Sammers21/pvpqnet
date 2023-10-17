@@ -33,7 +33,7 @@ const Armory = ({ player, loading, updatePlayer }: IProps) => {
         {breakpoint === 'md' && <PlayerMobile player={player} />}
         <PlayerHeader player={player} updatePlayer={updatePlayer} loading={loading} />
         <PvpBrackets player={player} />
-        <AltsTable alts={player.alts} />
+        <AltsTable player={player} />
         {breakpoint === 'md' && <TitlesHistory player={player} />}
       </div>
     </div>
