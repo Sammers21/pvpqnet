@@ -157,8 +157,6 @@ const PvpBrackets = ({ player }: IProps) => {
   const classAndSpec = CLASS_AND_SPECS[player.class] as string[];
   const hasFourSpecs = classAndSpec.length === 4;
 
-  console.log('classAndSpec :>> ', classAndSpec);
-
   const shuffleBrackets = classAndSpec
     .map((spec) => {
       const bracket = player?.brackets?.find(({ bracket_type }) => bracket_type.includes(spec));
