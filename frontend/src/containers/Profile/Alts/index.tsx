@@ -12,7 +12,7 @@ const bracketsList: TPvpBracket[] = ['SHUFFLE', 'ARENA_2v2', 'ARENA_3v3', 'BATTL
 const useBreakpoint = createBreakpoint({ sm: 640, md: 768, lg: 1024 });
 
 const Alts = ({ player }: { player: IPlayer }) => {
-  const [showCurrent, setShowCurrent] = useState(true);
+  const [showCurrent, setShowCurrent] = useState(false);
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setShowCurrent(event.target.checked);
@@ -47,9 +47,7 @@ const Alts = ({ player }: { player: IPlayer }) => {
       <div className="flex justify-between items-center px-3 md:px-0">
         <span className="text-2xl">Alts</span>
         <FormControlLabel
-          control={
-            <Switch checked={showCurrent} onChange={handleChange} style={{ color: '#60A5FACC' }} />
-          }
+          control={<Switch checked={showCurrent} onChange={handleChange} />}
           label="Include Current Character"
           labelPlacement="start"
         />
