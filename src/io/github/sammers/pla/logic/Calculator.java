@@ -77,7 +77,6 @@ public class Calculator {
     public static List<List<CharAndDiff>> whoPlayedWithWho(SnapshotDiff diff, int pplInTheGroup, CharacterCache cache) {
         Map<Triplet<Long, Long, Long>, List<List<CharAndDiff>>> playedWith = new HashMap<>();
         for (var charAndDiff : diff.chars()) {
-
             Diff df = charAndDiff.diff();
             Triplet<Long, Long, Long> key = Triplet.with(df.won(), df.lost(), df.timestamp());
             playedWith.compute(key, (k, v) -> {

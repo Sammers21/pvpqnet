@@ -284,10 +284,11 @@ public record WowAPICharacter(long id,
 
     public WowAPICharacter updatePvpBracketData(CharAndDiff diff, BracketType bracket, List<String> withWho) {
         List<PvpBracket> newBrackets = brackets.stream().map(pvpBracket -> {
+            PvpBracket res;
             if (BracketType.fromType(pvpBracket.bracketType()).equals(bracket) &&
                 (bracket.equals(BracketType.TWO_V_TWO) || bracket.equals(BracketType.THREE_V_THREE))) {
                 log.info("Updating bracket " + pvpBracket.bracketType() + " with diff " + diff);
-                return new PvpBracket(
+                res = new PvpBracket(
                     pvpBracket.bracketType(),
                     pvpBracket.rating(),
                     pvpBracket.won(),
@@ -304,7 +305,7 @@ public record WowAPICharacter(long id,
                 String fullSpec = diff.character().fullSpec();
                 if (fullSpec.contains(pvpBracket.bracketType().split("-")[1])) {
                     log.info("Updating bracket " + pvpBracket.bracketType() + " with diff " + diff.toJson().encodePrettily());
-                    return new PvpBracket(
+                    res = new PvpBracket(
                         pvpBracket.bracketType(),
                         pvpBracket.rating(),
                         pvpBracket.won(),
@@ -319,11 +320,12 @@ public record WowAPICharacter(long id,
                     );
                 } else {
                     log.warn("Not updating bracket " + pvpBracket.bracketType() + " because it does not match " + fullSpec);
-                    return pvpBracket;
+                    res = pvpBracket;
                 }
             } else {
-                return pvpBracket;
+                res = pvpBracket;
             }
+            return res;
         }).toList();
         return new WowAPICharacter(id, name, realm, gender, fraction, race, activeSpec, level, clazz, itemLevel, region, newBrackets, lastUpdatedUTCms, achievements, petHash, media, talents);
     }
