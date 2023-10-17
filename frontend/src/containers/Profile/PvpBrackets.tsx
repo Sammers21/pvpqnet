@@ -22,11 +22,13 @@ const PvpBracket = ({
   bracket,
   isShuffle,
   playerClass,
+  hasFourSpecs,
 }: {
   title?: string;
   bracket?: IPlayerBracket;
   isShuffle?: boolean;
   playerClass?: string;
+  hasFourSpecs: boolean;
 }) => {
   const specIcon = useMemo(() => {
     if (!isShuffle || !title) return;
@@ -52,7 +54,9 @@ const PvpBracket = ({
   }, [bracket]);
 
   return (
-    <div className="flex w-1/3 self-stretch flex-col items-center pr-2">
+    <div
+      className={`flex self-stretch flex-col items-center pr-2 ${hasFourSpecs ? 'w-1/4' : 'w-1/3'}`}
+    >
       <div className="relative flex flex-col w-full h-full rounded-lg border pb-4 px-3 border-solid border-[#37415180] bg-[#030303e6]">
         <div className="flex flex-col w-full justify-start py-2">
           <div className="flex w-full justify-between items-center">
@@ -151,26 +155,44 @@ const PvpBracket = ({
 const PvpBrackets = ({ player }: IProps) => {
   // @ts-ignore
   const classAndSpec = CLASS_AND_SPECS[player.class] as string[];
+  const hasFourSpecs = classAndSpec.length === 4;
+
+  const shuffleBrackets = classAndSpec
+    .map((spec) => {
+      const bracket = player?.brackets?.find(({ bracket_type }) => bracket_type.includes(spec));
+      const noRender = player.class === 'Druid' && spec === 'Guardian' && !bracket;
+
+      return { bracket, spec, noRender };
+    })
+    .sort((a, b) => (b.bracket?.rating ?? 0) - (a.bracket?.rating ?? 0));
+
+  const hasDruidTank =
+    player.class === 'Druid' &&
+    !!(player?.brackets || []).find((b) => b.bracket_type.includes('Guardian'));
 
   return (
     <div className="flex gap-2 justify-start flex-col">
       <div className="flex flex-nowrap flex-row items-stretch justify-start">
         {arenaAndRbg.map(({ title, name }) => {
           const playerBracket = (player?.brackets || []).find((b) => b.bracket_type === name);
-          return <PvpBracket key={name} title={title} bracket={playerBracket} />;
+          return (
+            <PvpBracket key={name} title={title} bracket={playerBracket} hasFourSpecs={false} />
+          );
         })}
       </div>
 
       <div className="flex flex-wrap justify-start">
-        {classAndSpec.map((spec) => {
-          const playerBracket = (player?.brackets || []).find((b) => b.bracket_type.includes(spec));
+        {shuffleBrackets.map(({ bracket, spec, noRender }) => {
+          if (noRender) return null;
+
           return (
             <PvpBracket
               key={spec}
-              bracket={playerBracket}
+              bracket={bracket}
               title={spec}
               isShuffle
               playerClass={player.class}
+              hasFourSpecs={hasFourSpecs && hasDruidTank}
             />
           );
         })}
