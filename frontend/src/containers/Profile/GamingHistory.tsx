@@ -163,7 +163,7 @@ const GamingHistory = ({ player }: { player: IPlayer }) => {
   return (
     <div className="flex flex-col md:px-3 py-4 border border-solid border-[#37415180] rounded-lg bg-[#030303e6]">
       <div className="flex justify-between items-center px-3 md:px-0">
-        <span className="text-2xl">Gaming History</span>
+        <span className="text-2xl">βeta Gaming History</span>
       </div>
       <hr className="h-px md:my-2 bg-[#37415180] border-0" />
       <div className="gaming-history-bg">
