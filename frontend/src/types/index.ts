@@ -91,6 +91,8 @@ export interface IGamingHistory {
 export interface IGamingHistoryEntry {
   diff: IDiff;
   with_who: string[];
+  rating?: number;
+  rank?: number;
 }
 
 export interface IDiff {

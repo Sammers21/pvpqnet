@@ -1,10 +1,15 @@
-import { IPlayer, IPlayerBracket } from "@/types";
+import {
+  IGamingHistory,
+  IGamingHistoryEntry,
+  IPlayer,
+  IPlayerBracket,
+} from "@/types";
 import { useState } from "react";
 import { DataGrid, GridColDef, GridValueGetterParams } from "@mui/x-data-grid";
 import { gridClasses } from "@mui/x-data-grid";
 import { styled } from "@mui/material";
 import moment from "moment-timezone";
-import { getDiffCell, getDiffColor, getWonAndLossColors } from "@/utils/table";
+import { getDiffCell, getDiffColor, getRankDiffColor, getWonAndLossColors } from "@/utils/table";
 
 const GamingHistoryDataGripd = styled(DataGrid)(({ theme }) => ({
   [`& .${gridClasses.row}.green`]: {
@@ -41,12 +46,29 @@ const GamingHistory = ({ player }: { player: IPlayer }) => {
     {
       field: "RANK",
       headerName: "RANK",
-      width: 90,
+      width: 120,
       sortable: false,
+      renderCell: (params: GridValueGetterParams) => {
+        const pos = params.row.RANK.rank;
+        const rankDiff = params.row.RANK.diff.rank_diff;
+        return (
+          <div className="flex">
+            <span className="text-base font-light">{`#${pos}`}</span>
+            {Number.isInteger(rankDiff) && (
+              <span
+                className="text-base font-light ml-1"
+                style={{ color: getRankDiffColor(rankDiff) }}
+              >
+                {getDiffCell(rankDiff)}
+              </span>
+            )}
+          </div>
+        );
+      },
     },
     {
       field: "WL",
-      headerName: "WON/LOST",
+      headerName: "W/L",
       width: 90,
       valueGetter: (params: GridValueGetterParams) => {
         return params.row.WL.won + "/" + params.row.WL.lost;
@@ -78,22 +100,21 @@ const GamingHistory = ({ player }: { player: IPlayer }) => {
       headerName: "Rating",
       width: 90,
       renderCell: (params: GridValueGetterParams) => {
-     const rating = record?.character?.rating ?? record?.rating;
-      const ratingColor = getRatingColor(record?.character?.in_cutoff ?? record?.in_cutoff);
-      const ratingDiff = record?.diff?.rating_diff;
-
-      return (
-        <div className="flex">
-          <span className="text-base font-light mr-2" style={{ color: ratingColor }}>
-            {rating}
-          </span>
-          {Number.isInteger(ratingDiff) && (
-            <span className="text-base font-light" style={{ color: getDiffColor(ratingDiff) }}>
-              {getDiffCell(ratingDiff)}
-            </span>
-          )}
-        </div>
-      );
+        const rating = params.row.RATING.rating;
+        const ratingDiff = params.row.RATING.diff.rating_diff;
+        return (
+          <div className="flex">
+            <span className="text-base font-light mr-2">{rating}</span>
+            {Number.isInteger(ratingDiff) && (
+              <span
+                className="text-base font-light"
+                style={{ color: getDiffColor(ratingDiff) }}
+              >
+                {getDiffCell(ratingDiff)}
+              </span>
+            )}
+          </div>
+        );
       },
     },
     {
@@ -109,20 +130,31 @@ const GamingHistory = ({ player }: { player: IPlayer }) => {
       field: "id",
       headerName: "SERVER TIME " + player.region.toUpperCase(),
       width: 200,
-      valueGetter: (params: GridValueGetterParams) => {
-        return timeStampToString(params.row.id);
+      valueFormatter(params) {
+        return timeStampToString(params.value);
       },
     },
   ];
+  var rating = bracket.rating; 
+  var rank = bracket.rank;
+  bracket.gaming_history.history
+    .toReversed()
+    .forEach((gamingHist: IGamingHistoryEntry) => {
+      gamingHist.rating = rating;
+      gamingHist.rank = rank;
+      rating -= gamingHist.diff.rating_diff;
+      rank -= gamingHist.diff.rank_diff;
+    });
   const gamingHistoryRows = bracket.gaming_history.history.map((gamingHist) => {
     return {
-      RANK: gamingHist.diff.rank_diff,
+      RANK: gamingHist,
       WL: gamingHist.diff,
-      RATING: gamingHist.diff.rating_diff,
+      RATING: gamingHist,
       id: gamingHist.diff.timestamp,
       WWHO: gamingHist.with_who,
     };
   });
+
   return (
     <div className="flex flex-col md:px-3 py-4 border border-solid border-[#37415180] rounded-lg bg-[#030303e6]">
       <div className="flex justify-between items-center px-3 md:px-0">
@@ -142,10 +174,10 @@ const GamingHistory = ({ player }: { player: IPlayer }) => {
           }}
           getRowClassName={(params) => {
             var res = "";
-            if (params.row.RATING === 0) {
+            if (params.row.RATING.diff.rating_diff === 0) {
               res = "black";
             }
-            res = params.row.RATING > 0 ? "green" : "red";
+            res = params.row.RATING.diff.rating_diff > 0 ? "green" : "red";
             // res += " " + gridClasses.
             return res;
           }}
