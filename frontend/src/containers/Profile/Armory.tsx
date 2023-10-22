@@ -9,6 +9,7 @@ import TitlesHistory from './TitlesHistory';
 import AltsTable from './Alts';
 
 import type { IPlayer } from '@/types';
+import GamingHistory from './GamingHistory';
 
 interface IProps {
   player: IPlayer;
@@ -34,6 +35,7 @@ const Armory = ({ player, loading, updatePlayer }: IProps) => {
         <PlayerHeader player={player} updatePlayer={updatePlayer} loading={loading} />
         <PvpBrackets player={player} />
         <AltsTable player={player} />
+        <GamingHistory player={player} />
         {breakpoint === 'md' && <TitlesHistory player={player} />}
       </div>
     </div>

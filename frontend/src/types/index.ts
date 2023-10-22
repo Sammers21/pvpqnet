@@ -81,6 +81,25 @@ export interface IPlayerBracket {
 
   max_rating: number;
   max_rating_achieved_timestamp: number;
+  gaming_history: IGamingHistory;
+}
+
+export interface IGamingHistory {
+  history: IGamingHistoryEntry[];
+}
+
+export interface IGamingHistoryEntry {
+  diff: IDiff;
+  with_who: string[];
+}
+
+export interface IDiff {
+  won: number;
+  lost: number;
+  rating_diff: number;
+  rank_diff: number;
+  timestamp: number;
+  last_seen?: string;
 }
 
 interface ISeasons {

@@ -27,6 +27,10 @@ body {
   background-position: 50%;
 }
 
+.gaming-history-bg {
+  background-image: url(./assets/background/arena-scoreboard-bg.png);
+}
+
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }
