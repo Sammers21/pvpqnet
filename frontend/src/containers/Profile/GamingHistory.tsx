@@ -9,7 +9,12 @@ import { DataGrid, GridColDef, GridValueGetterParams } from "@mui/x-data-grid";
 import { gridClasses } from "@mui/x-data-grid";
 import { styled } from "@mui/material";
 import moment from "moment-timezone";
-import { getDiffCell, getDiffColor, getRankDiffColor, getWonAndLossColors } from "@/utils/table";
+import {
+  getDiffCell,
+  getDiffColor,
+  getRankDiffColor,
+  getWonAndLossColors,
+} from "@/utils/table";
 
 const GamingHistoryDataGripd = styled(DataGrid)(({ theme }) => ({
   [`& .${gridClasses.row}.green`]: {
@@ -122,7 +127,7 @@ const GamingHistory = ({ player }: { player: IPlayer }) => {
       headerName: "WWHO",
       width: 300,
       valueGetter: (params: GridValueGetterParams) => {
-        return params.row.WWHO.join(", ");
+        return params.row.WWHO.map((w) => w.name).join(", ");
       },
       sortable: false,
     },
@@ -135,7 +140,7 @@ const GamingHistory = ({ player }: { player: IPlayer }) => {
       },
     },
   ];
-  var rating = bracket.rating; 
+  var rating = bracket.rating;
   var rank = bracket.rank;
   bracket.gaming_history.history
     .toReversed()
