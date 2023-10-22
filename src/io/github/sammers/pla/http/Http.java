@@ -12,6 +12,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.ext.web.Router;
 import io.vertx.reactivex.ext.web.RoutingContext;
+import io.vertx.reactivex.ext.web.handler.CorsHandler;
 
 import java.util.Arrays;
 import java.util.List;
@@ -37,13 +38,7 @@ public class Http {
     public void start() {
         Vertx vertx = Vertx.vertx(new VertxOptions().setEventLoopPoolSize(4));
         Router router = Router.router(vertx);
-        router.route().handler(ctx -> {
-            ctx.response().putHeader("Access-Control-Allow-Origin", "*").putHeader("Access-Control-Allow-Credentials", "true").putHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS").putHeader("Access-Control-Max-Age", "86400");
-            if (!(ctx.request().path().contains("df.img") || ctx.request().path().contains(".png"))) {
-                ctx.response().putHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-            }
-            ctx.next();
-        });
+        router.route().handler(CorsHandler.create());
         router.routeWithRegex(".*main.js").handler(ctx -> ctx.response().sendFile("main.js"));
         router.routeWithRegex(".*main.css").handler(ctx -> ctx.response().sendFile("main.css"));
         router.routeWithRegex(".*df.img").handler(ctx -> ctx.response().sendFile("df.img"));
