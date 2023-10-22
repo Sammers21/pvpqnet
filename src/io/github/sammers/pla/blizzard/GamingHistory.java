@@ -1,5 +1,6 @@
 package io.github.sammers.pla.blizzard;
 
+import io.github.sammers.pla.db.Character;
 import io.github.sammers.pla.http.JsonConvertable;
 import io.github.sammers.pla.logic.Diff;
 import io.vertx.core.json.JsonObject;
@@ -16,13 +17,13 @@ record GamingHistory(List<DiffAndWithWho> hist) implements JsonConvertable {
             .put("history", hist.stream().map(JsonConvertable::toJson).toList());
     }
 
-    public GamingHistory addDiff(Diff diff, List<String> withWho) {
+    public GamingHistory addDiff(DiffAndWithWho diff) {
         if (hist instanceof ArrayList) {
-            hist.add(new DiffAndWithWho(diff, withWho));
+            hist.add(diff);
             return this;
         } else {
             List<DiffAndWithWho> newHist = new ArrayList<>(hist);
-            newHist.add(new DiffAndWithWho(diff, withWho));
+            newHist.add(diff);
             if(newHist.size() > 500){
                 newHist.remove(0);
             }

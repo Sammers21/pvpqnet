@@ -55,8 +55,11 @@ public class CharacterCache {
             }
             List<CharAndDiff> withWho = new ArrayList<>(groupDiff.subList(0, i));
             withWho.addAll(groupDiff.subList(i + 1, groupDiff.size()));
-            List<String> wWhoNicks = withWho.stream().map(charAndDiff -> charAndDiff.character().fullName()).toList();
-            WowAPICharacter updated = wowAPICharacter.updatePvpBracketData(diff, BracketType.fromType(bracket), wWhoNicks);
+            WowAPICharacter updated = wowAPICharacter.updatePvpBracketData(
+                    diff,
+                    BracketType.fromType(bracket),
+                    withWho.stream().map(CharAndDiff::character).toList()
+            );
             upsert(updated);
             res.add(updated);
         }

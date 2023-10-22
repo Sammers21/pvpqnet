@@ -11,6 +11,11 @@ public record Character(Long pos, Long rating, boolean inCutoff, String name, St
                         String gender, String race,
                         String realm, Long wins, Long losses) implements JsonConvertable {
 
+    public static Character emptyFromFullNickname(String fullNickname) {
+        String[] split = fullNickname.split("-");
+        return new Character(-1L, -1L, false, split[0], "", "", "", "", "", split[1], -1L, -1L);
+    }
+
     public Character changeCutoff(boolean inCutoff) {
         return new Character(pos, rating, inCutoff, name, clazz, fullSpec, fraction, gender, race, realm, wins, losses);
     }
