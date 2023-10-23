@@ -15,6 +15,7 @@ import {
   getRankDiffColor,
   getWonAndLossColors,
 } from "@/utils/table";
+import CharacterChip from "./CharacterChip";
 
 const GamingHistoryDataGripd = styled(DataGrid)(({ theme }) => ({
   [`& .${gridClasses.row}.green`]: {
@@ -54,7 +55,12 @@ const GamingHistory = ({ player }: { player: IPlayer }) => {
       width: 120,
       sortable: false,
       renderCell: (params: GridValueGetterParams) => {
-        const pos = params.row.RANK.rank;
+        var pos;
+        if (params.row.RANK.character?.pos === undefined) {
+          pos = params.row.RANK.rank;
+        } else {
+          pos = params.row.RANK.character.pos;
+        }
         const rankDiff = params.row.RANK.diff.rank_diff;
         return (
           <div className="flex">
@@ -104,8 +110,14 @@ const GamingHistory = ({ player }: { player: IPlayer }) => {
       field: "RATING",
       headerName: "Rating",
       width: 90,
+      sortable: false,
       renderCell: (params: GridValueGetterParams) => {
-        const rating = params.row.RATING.rating;
+        var rating;
+        if (params.row.RATING.character?.rating === undefined) {
+          rating = params.row.RATING.rating;
+        } else {
+          rating = params.row.RATING.character.rating;
+        }
         const ratingDiff = params.row.RATING.diff.rating_diff;
         return (
           <div className="flex">
@@ -126,8 +138,10 @@ const GamingHistory = ({ player }: { player: IPlayer }) => {
       field: "WWHO",
       headerName: "WWHO",
       width: 300,
-      valueGetter: (params: GridValueGetterParams) => {
-        return params.row.WWHO.map((w) => w.name).join(", ");
+      renderCell: (params: GridValueGetterParams) => {
+        return params.row.WWHO.map((who) => {
+          return <CharacterChip char={who} show_nick={true} />;
+        });
       },
       sortable: false,
     },
@@ -183,7 +197,6 @@ const GamingHistory = ({ player }: { player: IPlayer }) => {
               res = "black";
             }
             res = params.row.RATING.diff.rating_diff > 0 ? "green" : "red";
-            // res += " " + gridClasses.
             return res;
           }}
         />

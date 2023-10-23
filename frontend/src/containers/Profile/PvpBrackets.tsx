@@ -3,7 +3,7 @@ import dayjs from 'dayjs-ext';
 
 import { Chip, LinearProgress, Tooltip } from '@mui/material';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
-import { getSpecIcon, getWonAndLossColors, ratingToColor } from '@/utils/table';
+import { getSpecIcon, getWonAndLossColors, bracketToColor } from '@/utils/table';
 import { CLASS_AND_SPECS } from '@/constants/filterSchema';
 import type { IPlayerBracket, IPlayer } from '@/types';
 
@@ -38,7 +38,7 @@ const PvpBracket = ({
 
   const ratingColor = useMemo(() => {
     if (!bracket) return '#ffffff';
-    return ratingToColor(bracket);
+    return bracketToColor(bracket);
   }, [bracket]);
 
   const stats = useMemo(() => {

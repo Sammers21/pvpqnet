@@ -1,6 +1,6 @@
 import { Avatar, Chip } from '@mui/material';
 
-import { getAltProfileUrl, getClassNameColor, getSpecIcon, ratingToColor } from '@/utils/table';
+import { getAltProfileUrl, getClassNameColor, getSpecIcon, bracketToColor } from '@/utils/table';
 import { CLASS_AND_SPECS } from '@/constants/filterSchema';
 
 import type { IAlt, IPlayerBracket, ITableColumn } from '@/types';
@@ -45,7 +45,7 @@ const renderBracket = ({ record: alt }: IParams, bracketName: keyof typeof brack
   const bracket = alt?.brackets?.find((br) => br.bracket_type === bracketTypeTitleMap[bracketName]);
   if (!bracket) return <span>0</span>;
 
-  return <span style={{ color: ratingToColor(bracket) }}>{bracket.rating}</span>;
+  return <span style={{ color: bracketToColor(bracket) }}>{bracket.rating}</span>;
 };
 
 const renderShuffle = ({ record: alt }: IParams, isMobile: boolean) => {
@@ -74,7 +74,7 @@ const renderShuffle = ({ record: alt }: IParams, isMobile: boolean) => {
     if (!bracket) return <></>;
 
     const specIcon = getSpecIcon(`${spec} ${alt.class}` || '');
-    const ratingColor = ratingToColor(bracket);
+    const ratingColor = bracketToColor(bracket);
     return (
       <Chip
         avatar={<Avatar alt="class" src={specIcon} />}
@@ -92,7 +92,7 @@ const renderShuffle = ({ record: alt }: IParams, isMobile: boolean) => {
         if (!altBracket?.rating) return <></>;
 
         const specIcon = getSpecIcon(`${spec} ${alt.class}` || '');
-        const ratingColor = ratingToColor(altBracket);
+        const ratingColor = bracketToColor(altBracket);
         return (
           <Chip
             avatar={<Avatar alt="class" src={specIcon} />}
