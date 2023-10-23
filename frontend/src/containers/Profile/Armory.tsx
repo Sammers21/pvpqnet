@@ -7,9 +7,9 @@ import PvpBrackets from './PvpBrackets';
 
 import TitlesHistory from './TitlesHistory';
 import AltsTable from './Alts';
+import GamingHistory from './History';
 
 import type { IPlayer } from '@/types';
-import GamingHistory from './GamingHistory';
 
 interface IProps {
   player: IPlayer;

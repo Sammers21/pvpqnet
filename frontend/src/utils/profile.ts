@@ -1,3 +1,5 @@
+import { IGamingHistoryEntry, IPlayerBracket } from '@/types';
+
 function getSeasonTitle(achievement: string): { title: string; name: string } {
   return {
     title: achievement.split(':')[0],
@@ -53,5 +55,28 @@ function getSeasonTitleDescription(title: string, seasonName: string): string {
   }
   return '';
 }
+
+export const getGamingHistoryRows = (bracket: IPlayerBracket) => {
+  let rating = bracket?.rating;
+  let rank = bracket?.rank;
+
+  const populatedHistory = (bracket?.gaming_history?.history ?? [])
+    .reverse()
+    .map((history: IGamingHistoryEntry) => {
+      const result = { ...history, rating, rank };
+
+      rating -= history.diff.rating_diff;
+      rank -= history.diff.rank_diff;
+      return result;
+    });
+
+  return populatedHistory.map((history: IGamingHistoryEntry) => ({
+    RANK: history,
+    WL: history.diff,
+    RATING: history,
+    WWHO: history.with_who,
+    timestamp: history.diff.timestamp,
+  }));
+};
 
 export { getSeasonTitle, getSeasonTitleDescription };

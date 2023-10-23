@@ -1,6 +1,12 @@
 import { Avatar, Chip } from '@mui/material';
 
-import { getAltProfileUrl, getClassNameColor, getSpecIcon, bracketToColor, getRankImageName, getSeasonRankImage, getSeasonRankImageFromRating } from '@/utils/table';
+import {
+  getAltProfileUrl,
+  getClassNameColor,
+  getSpecIcon,
+  bracketToColor,
+  getSeasonRankImageFromRating,
+} from '@/utils/table';
 import { CLASS_AND_SPECS } from '@/constants/filterSchema';
 
 import type { IAlt, IPlayerBracket, ITableColumn } from '@/types';
@@ -41,32 +47,29 @@ const bracketTypeTitleMap = {
   rbg: 'BATTLEGROUNDS',
 };
 
-const renderBracket = (
-  { record: alt }: IParams,
-  bracketName: keyof typeof bracketTypeTitleMap
-) => {
-  const bracket = alt?.brackets?.find(
-    (br) => br.bracket_type === bracketTypeTitleMap[bracketName]
-  );
-  var rating; 
+const renderBracket = ({ record: alt }: IParams, bracketName: keyof typeof bracketTypeTitleMap) => {
+  const bracket = alt?.brackets?.find((br) => br.bracket_type === bracketTypeTitleMap[bracketName]);
+  var rating;
   var is_rank_one_range;
   var color;
+
   if (!bracket) {
-      rating = 0;
-      is_rank_one_range = false;
-      color = "#FFFFFF";
+    rating = 0;
+    is_rank_one_range = false;
+    color = '#FFFFFF';
   } else {
-      rating = bracket.rating;
-      is_rank_one_range = bracket.is_rank_one_range;
-      color = bracketToColor(bracket);
+    rating = bracket.rating;
+    is_rank_one_range = bracket.is_rank_one_range;
+    color = bracketToColor(bracket);
   }
   return (
     <div className="flex">
       <img
         className="w-5 h-5 mx-1"
         src={getSeasonRankImageFromRating(rating, is_rank_one_range)}
-      ></img>
-      <span style={{ color: color}}>{rating}</span>
+        alt="rating"
+      />
+      <span style={{ color: color }}>{rating}</span>
     </div>
   );
 };
