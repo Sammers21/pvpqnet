@@ -30,6 +30,7 @@ export interface ITableColumn {
   field: string;
   label: string;
   align?: 'right' | 'left';
+  sortable?: boolean;
   render: (record: any) => JSX.Element;
 }
 
@@ -90,9 +91,18 @@ export interface IGamingHistory {
 
 export interface IGamingHistoryEntry {
   diff: IDiff;
-  with_who: string[];
+  with_who: any[];
   rating?: number;
   rank?: number;
+  character: any;
+}
+
+export interface IHistoryRow {
+  RANK: IGamingHistoryEntry;
+  WL: IDiff;
+  RATING: IGamingHistoryEntry;
+  WWHO: Array<string>;
+  timestamp: number;
 }
 
 export interface IDiff {

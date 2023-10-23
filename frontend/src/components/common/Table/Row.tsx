@@ -6,10 +6,11 @@ interface IProps {
   columns: ITableColumn[];
   record: any;
   onRowOver?: (record: any | null) => void;
+  bgColor?: string;
   shouldHighlight?: boolean;
 }
 
-const Row = ({ record, columns, shouldHighlight, onRowOver }: IProps) => {
+const Row = ({ record, columns, shouldHighlight, bgColor, onRowOver }: IProps) => {
   const bgClass = shouldHighlight ? 'rgb(21, 128, 61, 0.25)' : '';
 
   const renderDefaultCell = (value: string) => {
@@ -21,7 +22,7 @@ const Row = ({ record, columns, shouldHighlight, onRowOver }: IProps) => {
       onMouseEnter={() => onRowOver && onRowOver(record)}
       onMouseLeave={() => onRowOver && onRowOver(null)}
       className={`${bgClass} !py-2 px-0`}
-      style={{ backgroundColor: bgClass }}
+      style={{ backgroundColor: bgColor ?? bgClass }}
     >
       {columns.map((column, i) => {
         const cellValue = get(record, column.field);
