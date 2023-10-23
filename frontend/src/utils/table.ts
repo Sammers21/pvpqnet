@@ -132,7 +132,7 @@ export const getRatingColor = (in_cutoff: boolean) => {
 };
 
 export const ratingToColor = (rating: number, is_rank_one_range = false) => {
-    if (is_rank_one_range) {
+  if (is_rank_one_range) {
     return '#fb7e00';
   } else if (rating >= 2400) {
     return '#a335ee';
@@ -149,7 +149,7 @@ export const bracketToColor = (bracket: Partial<IPlayerBracket>) => {
   return ratingToColor(rating, is_rank_one_range);
 };
 
-const getRankImageName = (rank: string): string => {
+export const getRankImageName = (rank: string): string => {
   if (rank === 'r1_3s') {
     return 'rank_10.png';
   } else if (rank === 'r1_shuffle') {
@@ -175,6 +175,32 @@ const getRankImageName = (rank: string): string => {
 
 export const getSeasonRankImage = (rank: string) => {
   return require('../assets/ranks/' + getRankImageName(rank));
+};
+
+export const getSeasonRankImageFromRating = (rating: number, is_rank_one_range: boolean) => {
+  // Unranked	0-1000 -- no picture for it yet
+  // Combatant I	1000-1200
+  // Combatant II	1200-1400
+  // Challenger I	1400-1600
+  // Challenger II	1600-1800
+  // Rival I	1800-1950
+  // Rival II	1950-2100
+  // Duelist	2100-2400
+  // Elite	2400+
+  if (is_rank_one_range) {
+    return getSeasonRankImage('r1_3s');
+  } else if (rating >= 2400) {
+    return getSeasonRankImage('Gladiator');
+  } else if (rating >= 2100) {
+    return getSeasonRankImage('Duelist');
+  } else if (rating >= 1800) {
+    return getSeasonRankImage('Rival');
+  } else if (rating >= 1400) {
+    return getSeasonRankImage('Challenger');
+  } else if (rating >= 1000) {
+    return getSeasonRankImage('Combatant');
+  }
+  return getSeasonRankImage('Combatant');
 };
 
 export const getAltProfileUrl = (alt: IPlayer) => {
