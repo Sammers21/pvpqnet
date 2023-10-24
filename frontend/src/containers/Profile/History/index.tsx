@@ -18,7 +18,6 @@ const GamingHistory = ({ player }: { player: IPlayer }) => {
     ? 'ARENA_3v3'
     : 'all';
 
-  console.log('initialBracket :>> ', initialBracket);
   const [value, setValue] = useState(initialBracket);
 
   const bracket = useMemo(() => {
