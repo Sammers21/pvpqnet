@@ -1,7 +1,7 @@
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { generatePath } from 'react-router';
 
-import { Button } from '@mui/material';
+import { Button, Chip } from '@mui/material';
 import { styled } from '@mui/system';
 
 import { getActivityFromUrl, getBracket, getRegion } from '@/utils/urlparts';
@@ -29,6 +29,16 @@ export const TabButton = styled(Button)<{ isActive: boolean }>(({ isActive }) =>
   };
 });
 
+const BracketCount = ({ content }: { content: string | undefined }) => {
+  if (!content) return null;
+
+  return (
+    <div className="flex items-center justify-between ml-2">
+      <Chip className="!text-sm" label={content} size="small" />
+    </div>
+  );
+};
+
 const ActivityTabs = ({ statistic }: IProps) => {
   let navigate = useNavigate();
   const location = useLocation();
@@ -51,26 +61,28 @@ const ActivityTabs = ({ statistic }: IProps) => {
         onClick={() => handleBracketChange(BRACKETS.shuffle)}
         isActive={bracket === BRACKETS.shuffle}
       >
-        Shuffle {statistic?.shuffle && `(${statistic.shuffle})`}
+        Shuffle
+        <BracketCount content={statistic?.shuffle} />
       </TabButton>
       <TabButton
         onClick={() => handleBracketChange(BRACKETS['2v2'])}
         isActive={bracket === BRACKETS['2v2']}
       >
-        2v2 {statistic?.['2v2'] && `(${statistic['2v2']})`}
+        2v2
+        <BracketCount content={statistic?.['2v2']} />
       </TabButton>
       <TabButton
         onClick={() => handleBracketChange(BRACKETS['3v3'])}
         isActive={bracket === BRACKETS['3v3']}
       >
-        3v3 {statistic?.['3v3'] && `(${statistic['3v3']})`}
+        3v3 <BracketCount content={statistic?.['3v3']} />
       </TabButton>
       <TabButton
         sx={{ borderTopRightRadius: 5 }}
         onClick={() => handleBracketChange(BRACKETS.rbg)}
         isActive={bracket === BRACKETS.rbg}
       >
-        RBG {statistic?.rbg && `(${statistic.rbg})`}
+        RBG <BracketCount content={statistic?.rbg} />
       </TabButton>
     </div>
   );

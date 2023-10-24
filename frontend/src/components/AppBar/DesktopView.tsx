@@ -14,7 +14,7 @@ interface IProps {
 const DesktopView = ({ menuItems, host, region, setRegion }: IProps) => {
   return (
     <div className="flex items-center justify-between w-full">
-      <div className="flex items-center justify-between w-5/6 xl:w-4/6">
+      <div className="flex items-center justify-start w-5/6 xl:w-4/6">
         <div className="flex items-center justify-start">
           <a href="/" className="sm:flex hidden mr-5 font-bold tracking-wider text-xl">
             {host}
@@ -27,7 +27,7 @@ const DesktopView = ({ menuItems, host, region, setRegion }: IProps) => {
           ))}
         </div>
 
-        <div className="flex items-center justify-end ml-4 w-80 xl:w-2/5 max-w-md">
+        <div className="flex items-center justify-end ml-4 lg:ml-8 w-80 xl:w-2/5">
           <PlayersSearch />
         </div>
       </div>

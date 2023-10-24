@@ -49,11 +49,16 @@ const BracketTabs = ({
     >
       <Tab label="All" value="all" />
 
-      {arenaAndRbg.map(({ title, name }) => (
-        <Tab key={name} label={title} value={name} />
-      ))}
+      {arenaAndRbg.map(({ title, name }) => {
+        const bracket = player?.brackets?.find(({ bracket_type }) => bracket_type === name);
+        if (!bracket?.gaming_history?.history?.length) return null;
+
+        return <Tab key={name} label={title} value={name} />;
+      })}
       {shuffleBrackets.map(({ bracket, spec }) => {
         const specIcon = getSpecIcon(`${spec} ${player.class}` || '');
+
+        if (!bracket?.gaming_history?.history?.length) return null;
 
         return (
           <Tab

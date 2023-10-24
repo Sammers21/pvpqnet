@@ -13,7 +13,13 @@ const useBreakpoint = createBreakpoint({ sm: 640, md: 768, lg: 1024 });
 const GamingHistory = ({ player }: { player: IPlayer }) => {
   const breakpoints = useBreakpoint();
 
-  const [value, setValue] = useState('ARENA_3v3');
+  const initialBracket = !!player.brackets.find(({ bracket_type }) => bracket_type === 'ARENA_3v3')
+    ?.gaming_history?.history?.length
+    ? 'ARENA_3v3'
+    : 'all';
+
+  console.log('initialBracket :>> ', initialBracket);
+  const [value, setValue] = useState(initialBracket);
 
   const bracket = useMemo(() => {
     const bracketsList = ['ARENA_2v2', 'ARENA_3v3', 'BATTLEGROUNDS'];

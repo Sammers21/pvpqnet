@@ -18,7 +18,7 @@ const Table = styled(TableMui)({
   '& tr': {
     height: '40px !important',
   },
-  '& th': {
+  '& th, td': {
     padding: '4px !important',
   },
   '& tr td,th': {
