@@ -14,7 +14,6 @@ const GamingHistory = ({ player }: { player: IPlayer }) => {
   const breakpoints = useBreakpoint();
 
   const initialBracket = !!player.brackets.find(({ bracket_type }) => bracket_type === 'ARENA_3v3')
-    ?.gaming_history?.history?.length
     ? 'ARENA_3v3'
     : 'all';
 

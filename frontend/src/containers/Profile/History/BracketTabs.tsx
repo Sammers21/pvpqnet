@@ -51,25 +51,35 @@ const BracketTabs = ({
 
       {arenaAndRbg.map(({ title, name }) => {
         const bracket = player?.brackets?.find(({ bracket_type }) => bracket_type === name);
-        if (!bracket?.gaming_history?.history?.length) return null;
+        if (!bracket) return null;
 
-        return <Tab key={name} label={title} value={name} />;
+        return (
+          <Tab
+            key={name}
+            label={`${title} (${bracket?.gaming_history?.history?.length ?? 0})`}
+            value={name}
+          />
+        );
       })}
       {shuffleBrackets.map(({ bracket, spec }) => {
         const specIcon = getSpecIcon(`${spec} ${player.class}` || '');
-
-        if (!bracket?.gaming_history?.history?.length) return null;
+        if (!bracket) return null;
 
         return (
           <Tab
             key={spec}
             value={spec}
             icon={
-              <img
-                className="h-7 w-7 rounded border border-solid border-[#37415180]"
-                src={specIcon}
-                alt={spec}
-              />
+              <div className="flex items-center">
+                <img
+                  className="h-7 w-7 rounded border border-solid border-[#37415180]"
+                  src={specIcon}
+                  alt={spec}
+                />
+                <span className="text-base ml-1">
+                  ({bracket?.gaming_history?.history?.length ?? 0})
+                </span>
+              </div>
             }
           />
         );
