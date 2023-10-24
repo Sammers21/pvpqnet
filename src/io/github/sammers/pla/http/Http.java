@@ -105,7 +105,7 @@ public class Http {
                 String realm = ctx.pathParam("realm");
                 String name = ctx.pathParam("name");
                 Optional<WowAPICharacter> wowAPICharacter = ladder.wowChar(realm, name);
-                if (wowAPICharacter.isEmpty()) {
+                if (wowAPICharacter.isEmpty() || wowAPICharacter.get().hidden()) {
                     ctx.response().setStatusCode(404).end(new JsonObject().put("error", "Character not found").encode());
                 } else {
                     ctx.response().end(wowCharToJson(wowAPICharacter.get()).encode());
@@ -120,7 +120,7 @@ public class Http {
                 ladder.charUpdater.updateChar(region, Character.fullNameByRealmAndName(name, realm))
                     .andThen(Single.fromCallable(() -> ladder.wowChar(realm, name)))
                     .subscribe(wowAPICharacter -> {
-                        if (wowAPICharacter.isEmpty()) {
+                        if (wowAPICharacter.isEmpty() || wowAPICharacter.get().hidden()) {
                             ctx.response().setStatusCode(404).end(new JsonObject().put("error", "Character not found").encode());
                         } else {
                             ctx.response().end(wowCharToJson(wowAPICharacter.get()).encode());

@@ -7,6 +7,7 @@ import io.github.sammers.pla.db.Character;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 public class CharacterCache {
 
@@ -79,7 +80,7 @@ public class CharacterCache {
     }
 
     public Set<WowAPICharacter> altsFor(WowAPICharacter character) {
-        return alts.get(character.petHash());
+        return alts.get(character.petHash()).stream().filter(c -> !c.hidden()).collect(Collectors.toSet());
     }
 
     public static void indexCharAlts(Map<Integer, Set<WowAPICharacter>> alts, WowAPICharacter character) {

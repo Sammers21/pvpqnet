@@ -115,7 +115,7 @@ public class CharUpdater {
                 if (charsLoaded.get()) {
                     return api.character(region, nickName).flatMapCompletable(wowAPICharacter -> {
                         characterCache.upsert(wowAPICharacter);
-                        charSearchIndex.insertNickNames(new SearchResult(nickName, region, wowAPICharacter.clazz()));
+                        charSearchIndex.insertNickNamesWC(List.of(wowAPICharacter));
                         return db.upsertCharacter(wowAPICharacter).ignoreElement();
                     }).onErrorComplete();
                 } else {

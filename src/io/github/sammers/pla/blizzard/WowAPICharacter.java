@@ -263,7 +263,7 @@ public record WowAPICharacter(long id,
         if (entries.getInteger("petHash") == null) {
             entries.put("petHash", -1);
         }
-        if (entries.getJsonObject("hidden") == null) {
+        if (entries.getBoolean("hidden") == null) {
             entries.put("hidden", false);
         }
         return new WowAPICharacter(

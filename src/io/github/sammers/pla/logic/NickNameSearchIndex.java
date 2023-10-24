@@ -1,5 +1,6 @@
 package io.github.sammers.pla.logic;
 
+import io.github.sammers.pla.blizzard.WowAPICharacter;
 import org.apache.lucene.analysis.*;
 import org.apache.lucene.analysis.miscellaneous.ASCIIFoldingFilter;
 import org.apache.lucene.analysis.no.NorwegianAnalyzer;
@@ -40,11 +41,18 @@ public class NickNameSearchIndex {
         };
     }
 
-    public void insertNickNames(List<SearchResult> searchResults) {
+    private void insertNickNames(List<SearchResult> searchResults) {
         insertNickNames(searchResults.toArray(new SearchResult[0]));
     }
 
-    public synchronized void insertNickNames(SearchResult... searchResults) {
+    public void insertNickNamesWC(List<WowAPICharacter> characters) {
+        List<SearchResult> list = characters.stream()
+            .filter(charz -> !charz.hidden())
+            .map(charz -> new SearchResult(charz.fullName(), charz.region(), charz.clazz())).toList();
+        insertNickNames(list);
+    }
+
+    protected synchronized void insertNickNames(SearchResult... searchResults) {
         try {
             IndexWriterConfig config = new IndexWriterConfig(analyzer);
             IndexWriter w = new IndexWriter(index, config);
