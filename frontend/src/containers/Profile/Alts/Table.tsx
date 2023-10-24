@@ -19,6 +19,10 @@ const Table = styled(TableMui)({
     backgroundColor: 'rgb(21, 128, 61, 0.25)',
   },
 
+  '& th': {
+    padding: '8px !important',
+  },
+
   '& tr td,th': {
     borderBottom: 'none',
   },
@@ -59,7 +63,13 @@ const AltsTable = ({ columns, records = [], isMobile }: IProps) => {
 
   const renderHeaderCells = () => {
     return columns.map((column, index) => (
-      <HeaderCell key={index} column={column} sort={sort} onSort={onSort} />
+      <HeaderCell
+        key={index}
+        column={column}
+        sort={sort}
+        onSort={onSort}
+        sortable={column.sortable ?? true}
+      />
     ));
   };
 

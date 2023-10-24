@@ -8,9 +8,10 @@ interface IProps {
   column: ITableColumn;
   onSort: (field: string, sort: 'asc' | 'desc') => void;
   sort: { field: string; sort: 'asc' | 'desc' };
+  sortable: boolean;
 }
 
-const HeaderCell = ({ column, onSort, sort }: IProps) => {
+const HeaderCell = ({ column, onSort, sort, sortable }: IProps) => {
   const { align = 'left', field, label } = column;
 
   const renderButtonHover = () => {
@@ -34,11 +35,13 @@ const HeaderCell = ({ column, onSort, sort }: IProps) => {
   return (
     <TableCell align={align}>
       <div
-        onClick={() => onSort(field, sort.field === field && sort.sort === 'desc' ? 'asc' : 'desc')}
+        onClick={() =>
+          sortable && onSort(field, sort.field === field && sort.sort === 'desc' ? 'asc' : 'desc')
+        }
         className="group gap-2 flex w-full items-center cursor-pointer text-base"
       >
         {label}
-        {renderOrderArrow(field)}
+        {sortable && renderOrderArrow(field)}
       </div>
     </TableCell>
   );
