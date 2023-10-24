@@ -6,13 +6,20 @@ import HeaderCell from '@/components/common/Table/SortableHeaderCell';
 import Row from '@/components/common/Table/Row';
 
 import type { IHistoryRow, ITableColumn } from '@/types';
+import bgImage from '../../../assets/background/smoke-table.jpg';
 
 const Table = styled(TableMui)({
   width: '100%',
   tableLayout: 'auto',
 
+  '& tbody': {
+    backgroundImage: `url(${bgImage})`,
+  },
   '& tr': {
     height: '40px !important',
+  },
+  '& th': {
+    padding: '4px !important',
   },
   '& tr td,th': {
     borderBottom: 'none',
@@ -62,7 +69,13 @@ const HistoryTable = ({ columns, records = [], isMobile }: IProps) => {
 
   const renderHeaderCells = () => {
     return columns.map((column, index) => (
-      <HeaderCell key={index} column={column} sort={sort} onSort={onSort} />
+      <HeaderCell
+        key={index}
+        column={column}
+        sort={sort}
+        onSort={onSort}
+        sortable={column.sortable ?? true}
+      />
     ));
   };
 
@@ -93,10 +106,10 @@ const HistoryTable = ({ columns, records = [], isMobile }: IProps) => {
   );
 
   return (
-    <div className="relative bg-[#030303e6]" style={{ minHeight: '200px' }}>
+    <div className="relative bg-[#030303e6]">
       {<TableContainer>{renderTable()}</TableContainer>}
       {!records.length && (
-        <div className="absolute inset-x-0 top-1/2 flex justify-center">
+        <div className="min-h-[100px] flex justify-center items-center">
           <span className="text-lg">No history data available</span>
         </div>
       )}

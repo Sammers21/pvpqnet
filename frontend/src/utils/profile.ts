@@ -71,6 +71,7 @@ export const getGamingHistoryRows = (bracket: IPlayerBracket) => {
     });
 
   return populatedHistory.map((history: IGamingHistoryEntry) => ({
+    bracket_type: bracket?.bracket_type,
     RANK: history,
     WL: history.diff,
     RATING: history,

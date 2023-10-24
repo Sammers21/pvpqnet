@@ -98,6 +98,7 @@ export interface IGamingHistoryEntry {
 }
 
 export interface IHistoryRow {
+  bracket_type: string;
   RANK: IGamingHistoryEntry;
   WL: IDiff;
   RATING: IGamingHistoryEntry;
