@@ -29,7 +29,7 @@ export const TabButton = styled(Button)<{ isActive: boolean }>(({ isActive }) =>
   };
 });
 
-const BracketCount = ({ content }: { content: string | undefined }) => {
+export const BracketCount = ({ content }: { content: number | string | undefined }) => {
   if (!content) return null;
 
   return (

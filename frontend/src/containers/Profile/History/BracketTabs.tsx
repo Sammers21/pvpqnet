@@ -4,6 +4,7 @@ import { Tabs, Tab as MuiTab, TabProps, styled } from '@mui/material';
 import type { IPlayer } from '@/types';
 import { CLASS_AND_SPECS } from '@/constants/filterSchema';
 import { getSpecIcon } from '@/utils/table';
+import { BracketCount } from '@/containers/Activity/Tabs';
 
 const arenaAndRbg = [
   { name: 'ARENA_2v2', title: '2v2' },
@@ -56,8 +57,13 @@ const BracketTabs = ({
         return (
           <Tab
             key={name}
-            label={`${title} (${bracket?.gaming_history?.history?.length ?? 0})`}
             value={name}
+            icon={
+              <div className="flex items-center">
+                <span className="text-base">{title}</span>
+                <BracketCount content={bracket?.gaming_history?.history?.length ?? 0} />
+              </div>
+            }
           />
         );
       })}
@@ -76,9 +82,7 @@ const BracketTabs = ({
                   src={specIcon}
                   alt={spec}
                 />
-                <span className="text-base ml-1">
-                  ({bracket?.gaming_history?.history?.length ?? 0})
-                </span>
+                <BracketCount content={bracket?.gaming_history?.history?.length ?? 0} />
               </div>
             }
           />
