@@ -136,6 +136,7 @@ import java.util.stream.Collectors;
  * }
  */
 public record WowAPICharacter(long id,
+                              boolean hidden,
                               String name,
                               String realm,
                               String gender,
@@ -224,6 +225,7 @@ public record WowAPICharacter(long id,
         Achievements parsedAchievements = Achievements.parse(achievements);
         return new WowAPICharacter(
             entries.getInteger("id"),
+            previous.map(WowAPICharacter::hidden).orElse(false),
             name,
             realm,
             entries.getJsonObject("gender").getString("name"),
@@ -261,8 +263,12 @@ public record WowAPICharacter(long id,
         if (entries.getInteger("petHash") == null) {
             entries.put("petHash", -1);
         }
+        if (entries.getJsonObject("hidden") == null) {
+            entries.put("hidden", false);
+        }
         return new WowAPICharacter(
             entries.getInteger("id"),
+            entries.getBoolean("hidden"),
             entries.getString("name"),
             entries.getString("realm"),
             entries.getString("gender"),
@@ -327,7 +333,7 @@ public record WowAPICharacter(long id,
             }
             return res;
         }).toList();
-        return new WowAPICharacter(id, name, realm, gender, fraction, race, activeSpec, level, clazz, itemLevel, region, newBrackets, lastUpdatedUTCms, achievements, petHash, media, talents);
+        return new WowAPICharacter(id, hidden, name, realm, gender, fraction, race, activeSpec, level, clazz, itemLevel, region, newBrackets, lastUpdatedUTCms, achievements, petHash, media, talents);
     }
 
     @Override
@@ -339,6 +345,7 @@ public record WowAPICharacter(long id,
     public JsonObject toJson() {
         return new JsonObject()
                 .put("id", id)
+                .put("hidden", hidden)
                 .put("name", name)
                 .put("realm", realm)
                 .put("gender", gender)
