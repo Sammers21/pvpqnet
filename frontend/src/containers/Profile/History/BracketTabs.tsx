@@ -4,6 +4,7 @@ import { Tabs, Tab as MuiTab, TabProps, styled } from '@mui/material';
 import type { IPlayer } from '@/types';
 import { CLASS_AND_SPECS } from '@/constants/filterSchema';
 import { getSpecIcon } from '@/utils/table';
+import { BracketCount } from '@/containers/Activity/Tabs';
 
 const arenaAndRbg = [
   { name: 'ARENA_2v2', title: '2v2' },
@@ -49,22 +50,40 @@ const BracketTabs = ({
     >
       <Tab label="All" value="all" />
 
-      {arenaAndRbg.map(({ title, name }) => (
-        <Tab key={name} label={title} value={name} />
-      ))}
+      {arenaAndRbg.map(({ title, name }) => {
+        const bracket = player?.brackets?.find(({ bracket_type }) => bracket_type === name);
+        if (!bracket) return null;
+
+        return (
+          <Tab
+            key={name}
+            value={name}
+            icon={
+              <div className="flex items-center">
+                <span className="text-base">{title}</span>
+                <BracketCount content={bracket?.gaming_history?.history?.length ?? 0} />
+              </div>
+            }
+          />
+        );
+      })}
       {shuffleBrackets.map(({ bracket, spec }) => {
         const specIcon = getSpecIcon(`${spec} ${player.class}` || '');
+        if (!bracket) return null;
 
         return (
           <Tab
             key={spec}
             value={spec}
             icon={
-              <img
-                className="h-7 w-7 rounded border border-solid border-[#37415180]"
-                src={specIcon}
-                alt={spec}
-              />
+              <div className="flex items-center">
+                <img
+                  className="h-7 w-7 rounded border border-solid border-[#37415180]"
+                  src={specIcon}
+                  alt={spec}
+                />
+                <BracketCount content={bracket?.gaming_history?.history?.length ?? 0} />
+              </div>
             }
           />
         );
