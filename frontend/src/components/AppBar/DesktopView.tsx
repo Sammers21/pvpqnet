@@ -27,7 +27,7 @@ const DesktopView = ({ menuItems, host, region, setRegion }: IProps) => {
           ))}
         </div>
 
-        <div className="flex grow items-center justify-center ml-4 lg:ml-8">
+        <div className="flex grow items-center justify-start ml-10 xl:ml-[8rem]">
           <div className="flex items-center justify-end basis-[25rem]">
             <PlayersSearch />
           </div>
