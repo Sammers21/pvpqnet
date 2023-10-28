@@ -137,7 +137,7 @@ export const ratingToColor = (rating: number, is_rank_one_range = false) => {
   } else if (rating >= 2400) {
     return '#a335ee';
   } else if (rating >= 2100) {
-    return '#0d47a1';
+    return '#2b8cb9';
   } else if (rating >= 900) {
     return '#FFFFFF';
   }

@@ -3,7 +3,7 @@ import dayjs from 'dayjs-ext';
 
 import { Chip, LinearProgress, Tooltip } from '@mui/material';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
-import { getSpecIcon, getWonAndLossColors, bracketToColor } from '@/utils/table';
+import { getSpecIcon, getWonAndLossColors, bracketToColor, getSeasonRankImageFromRating } from '@/utils/table';
 import { CLASS_AND_SPECS } from '@/constants/filterSchema';
 import type { IPlayerBracket, IPlayer } from '@/types';
 
@@ -44,14 +44,24 @@ const PvpBracket = ({
   const stats = useMemo(() => {
     const won = bracket?.won || 0;
     const lost = bracket?.lost || 0;
+    const rating = bracket?.rating || 0;
+    const is_rank_one_range = bracket?.is_rank_one_range || false;
 
     const { wonColor, lossColor } = getWonAndLossColors(won, lost);
     const showWinRate = won > 0 || lost > 0;
     const winRate = ((won * 100) / (won + lost)).toFixed(2);
-    const winRateColor = parseInt(winRate, 10) >= 50 ? 'green' : '#ff0531';
+    const winRateColor = parseInt(winRate, 10) >= 50 ? "green" : "#ff0531";
 
-    return { showWinRate, winRateColor, wonColor, lossColor, winRate };
+    return { rating, is_rank_one_range, showWinRate, winRateColor, wonColor, lossColor, winRate };
   }, [bracket]);
+    // console.log(bracket)
+  const ratingImg = (
+    <img
+      className="w-11 h-11 mx-1"
+      src={getSeasonRankImageFromRating(stats.rating, stats.is_rank_one_range)}
+      alt="rating"
+    />
+  );
 
   return (
     <div
@@ -109,11 +119,12 @@ const PvpBracket = ({
           </div>
 
           <div className="flex gap-2 mt-1 pt-1 border-t border-solid border-[#37415180]">
+            {ratingImg}
             <span
               className="flex flex-col md:flex-row items-center gap-2 text-3xl md:text-4xl font-semibold"
               style={{ color: ratingColor }}
             >
-              {bracket?.rating || 0}
+              {stats.rating}
             </span>
             {bracket?.rank && bracket.rank !== -1 ? (
               <div className="hidden sm:flex items-center justify-between relative">

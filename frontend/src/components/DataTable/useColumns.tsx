@@ -9,6 +9,7 @@ import {
   getWinRate,
   getWonAndLossColors,
   getRatingColor,
+  getSeasonRankImageFromRating,
 } from '@/utils/table';
 import type { IActivityRecord } from '@/types';
 
@@ -148,9 +149,14 @@ const getTableColumns = (activity: string, isMobile: boolean, region: string): a
       const rating = record?.character?.rating ?? record?.rating;
       const ratingColor = getRatingColor(record?.character?.in_cutoff ?? record?.in_cutoff);
       const ratingDiff = record?.diff?.rating_diff;
-
+      const ratingImg =   <img
+        className="w-6 h-6 mx-1"
+        src={getSeasonRankImageFromRating(rating, record?.character?.in_cutoff ?? record?.in_cutoff)}
+        alt="rating"
+      />
       return (
         <div className="flex">
+          {ratingImg}
           <span className="text-base font-light mr-2" style={{ color: ratingColor }}>
             {rating}
           </span>
