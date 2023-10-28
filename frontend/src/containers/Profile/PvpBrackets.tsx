@@ -54,15 +54,13 @@ const PvpBracket = ({
 
     return { rating, is_rank_one_range, showWinRate, winRateColor, wonColor, lossColor, winRate };
   }, [bracket]);
-    // console.log(bracket)
   const ratingImg = (
     <img
-      className="w-11 h-11 mx-1"
+      className="w-7 h-7 md:w-11 md:h-11 md:mx-1"
       src={getSeasonRankImageFromRating(stats.rating, stats.is_rank_one_range)}
       alt="rating"
     />
   );
-
   return (
     <div
       className={`flex self-stretch flex-col items-center pr-2 ${hasFourSpecs ? 'w-1/4' : 'w-1/3'}`}
@@ -119,11 +117,12 @@ const PvpBracket = ({
           </div>
 
           <div className="flex gap-2 mt-1 pt-1 border-t border-solid border-[#37415180]">
-            {ratingImg}
+            {/* {ratingImg} */}
             <span
-              className="flex flex-col md:flex-row items-center gap-2 text-3xl md:text-4xl font-semibold"
+              className="flex flex-row items-center gap-1 text-2xl md:text-4xl font-semibold"
               style={{ color: ratingColor }}
             >
+              {ratingImg}
               {stats.rating}
             </span>
             {bracket?.rank && bracket.rank !== -1 ? (
