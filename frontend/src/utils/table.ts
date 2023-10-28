@@ -168,8 +168,10 @@ export const getRankImageName = (rank: string): string => {
     return 'rank_4.png';
   } else if (rank === 'Combatant') {
     return 'rank_2.png';
+  } else if (rank === 'Unranked') {
+    return 'unranked.png';
   } else {
-    return 'rank_2.png';
+    return 'unranked.png';
   }
 };
 
@@ -200,7 +202,7 @@ export const getSeasonRankImageFromRating = (rating: number, is_rank_one_range: 
   } else if (rating >= 1000) {
     return getSeasonRankImage('Combatant');
   }
-  return getSeasonRankImage('Combatant');
+  return getSeasonRankImage('Unranked');
 };
 
 export const getAltProfileUrl = (alt: IPlayer) => {
