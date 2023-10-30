@@ -72,7 +72,7 @@ const Header = () => {
 
   const menuItems = [
     { label: 'Activity', onClick: redirectToActivity },
-    { label: 'Ladder', onClick: redirectToLadder },
+    { label: 'Leaderboards', onClick: redirectToLadder },
     { label: 'Meta', onClick: redirectToMeta },
     // { label: 'Coaching', onClick: redirectToShop },
   ];
