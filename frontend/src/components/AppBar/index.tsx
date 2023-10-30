@@ -74,7 +74,7 @@ const Header = () => {
     { label: 'Activity', onClick: redirectToActivity },
     { label: 'Ladder', onClick: redirectToLadder },
     { label: 'Meta', onClick: redirectToMeta },
-    { label: 'Coaching', onClick: redirectToShop },
+    // { label: 'Coaching', onClick: redirectToShop },
   ];
 
   const View = breakpoint === 'S' ? MobileView : DesktopView;
