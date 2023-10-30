@@ -12,6 +12,7 @@ import { getActivityFromUrl } from '@/utils/urlparts';
 import { BRACKETS } from '@/constants/pvp-activity';
 import { REGIONS } from '@/constants/region';
 import type { IActivityRecord } from '@/types';
+import { Typography } from '@mui/material';
 
 export function getFromSearchParams(searchParams: URLSearchParams, name: string): string[] {
   return searchParams?.get(name)?.split(',') || [];
@@ -19,7 +20,11 @@ export function getFromSearchParams(searchParams: URLSearchParams, name: string)
 
 const useBreakpoint = createBreakpoint({ S: 758, L: 900, XL: 1280 });
 
-const DataList = () => {
+interface IProps {
+  statistic: Record<BRACKETS, string> | undefined;
+}
+
+const DataList =  ({ statistic }: IProps) => {
   const { region = REGIONS.eu, bracket = BRACKETS.shuffle } = useParams();
   const activity = getActivityFromUrl();
   const [searchParams] = useSearchParams();
@@ -61,7 +66,7 @@ const DataList = () => {
 
   return (
     <>
-      <TableFilter selectedSpecs={selectedSpecs} onSpecsChange={setSelectedSpecs} />
+      <TableFilter selectedSpecs={selectedSpecs} onSpecsChange={setSelectedSpecs} bracket={bracket} statistic={statistic} />
 
       <Table
         loading={loading}

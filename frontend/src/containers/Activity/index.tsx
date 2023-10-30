@@ -22,7 +22,6 @@ function Activity() {
     const data = await fetchStatistic(region);
     setStatistic(data);
   };
-
   useEffect(() => {
     const title = `
     ${capitalizeFirstLetter(bracket)} 
@@ -32,18 +31,20 @@ function Activity() {
   }, [region, activity, bracket]);
 
   useEffect(() => {
-    if (activity === 'activity') {
-      getStatistic(region as REGIONS);
-    }
-    setStatistic(undefined);
+    getStatistic(region as REGIONS);
   }, [activity, region]);
-
+  let tabs;
+  if (activity === "activity") {
+    tabs = <ActivityTabs statistic={statistic} />;
+  } else {
+    tabs = <ActivityTabs statistic={undefined} />;
+  }
   return (
     <>
       <Header />
       <div className="mt-24 mx-auto mb-11 w-full lg:w-[85%]">
-        <ActivityTabs statistic={statistic} />
-        <DataTable />
+        {tabs}
+        <DataTable statistic={statistic} />
       </div>
       <Footer />
     </>

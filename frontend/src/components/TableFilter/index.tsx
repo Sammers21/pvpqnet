@@ -1,17 +1,29 @@
-import { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { isEmpty } from 'lodash';
+import { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { isEmpty } from "lodash";
 
-import { Button } from '@mui/material';
-import Spec from './Spec';
-import { CRESTS_AND_SPECS } from '@/constants/filterSchema';
+import { Button, Typography } from "@mui/material";
+import Spec from "./Spec";
+import { CRESTS_AND_SPECS } from "@/constants/filterSchema";
+import {
+  bracketToColor,
+  getRatingColor,
+  getSeasonRankImageFromRating,
+} from "@/utils/table";
 
 interface IProps {
   selectedSpecs: string[];
   onSpecsChange: (specs: string[]) => void;
+  bracket: string;
+  statistic: any;
 }
 
-const TableFilter = ({ selectedSpecs, onSpecsChange }: IProps) => {
+const TableFilter = ({
+  selectedSpecs,
+  onSpecsChange,
+  bracket,
+  statistic,
+}: IProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [filtersShown, setFiltersShown] = useState(selectedSpecs.length > 0);
@@ -29,14 +41,57 @@ const TableFilter = ({ selectedSpecs, onSpecsChange }: IProps) => {
     if (newSpecs.length === 0) {
       resetFilters();
     } else {
-      navigate(location.pathname + '?specs=' + newSpecs.join(','));
+      navigate(location.pathname + "?specs=" + newSpecs.join(","));
       onSpecsChange(newSpecs);
     }
   };
-
+  let cutoff;
+  let ctRating = 0;
+  const r1TitleColor = getRatingColor(true);
+  const r1Img = (
+    <img
+      className="w-7 h-7 mx-1"
+      src={getSeasonRankImageFromRating(0, true)}
+      alt="rating"
+    />
+  );
+  if (bracket === "3v3") {
+    if (statistic !== undefined) {
+      ctRating = statistic.cutoffs.rewards.ARENA_3v3;
+    }
+    cutoff = (
+      <div className="flex">
+        {r1Img}
+        <span
+          className="text-lg font-light mr-2"
+          style={{ color: r1TitleColor }}
+        >
+          Obsidian Gladiator: Dragonflight Season 2 - Rating: {ctRating}
+        </span>
+      </div>
+    );
+  } else if (bracket === "rbg") {
+    if (statistic !== undefined) {
+      ctRating = statistic.cutoffs.rewards["BATTLEGROUNDS/alliance"];
+    }
+    cutoff = (
+      <div className="flex">
+        {r1Img}
+        <span
+          className="text-lg font-light mr-2"
+          style={{ color: r1TitleColor }}
+        >
+          Hero of the Alliance & Horde: Obsidian - Rating: {ctRating}
+        </span>
+      </div>
+    );
+  } else {
+    cutoff = <div></div>;
+  }
   return (
     <div className="bg-[#030303e6] px-8">
-      <div className="flex justify-end pt-6 pb-0">
+      <div className="flex justify-between pt-6 pb-0">
+        {cutoff}
         <Button className="!px-8 !bg-[#1F2937]" onClick={toggleFilterShown}>
           Filters
           {!isEmpty(selectedSpecs) && (
@@ -47,7 +102,13 @@ const TableFilter = ({ selectedSpecs, onSpecsChange }: IProps) => {
         </Button>
       </div>
 
-      <div className={filtersShown ? 'visible pt-4' : 'invisible h-0 min-h-0 overflow-hidden'}>
+      <div
+        className={
+          filtersShown
+            ? "visible pt-4"
+            : "invisible h-0 min-h-0 overflow-hidden"
+        }
+      >
         <div className="flex flex-wrap justify-center gap-8">
           {Object.entries(CRESTS_AND_SPECS).map(([crestId, specs]) => {
             return (

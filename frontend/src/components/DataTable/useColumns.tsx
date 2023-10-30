@@ -156,7 +156,7 @@ const getTableColumns = (activity: string, isMobile: boolean, region: string): a
       />
       return (
         <div className="flex">
-          {ratingImg}
+          {!isMobile && ratingImg}
           <span className="text-base font-light mr-2" style={{ color: ratingColor }}>
             {rating}
           </span>
