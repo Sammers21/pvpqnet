@@ -81,6 +81,10 @@ public record SnapshotDiff(List<CharAndDiff> chars, Long timestamp) implements R
                     spec = "frostm";
                 } else if (fullSpec.equals("Frost Death Knight")) {
                     spec = "frostd";
+                } else if (fullSpec.equals("Holy Paladin")) {
+                    spec = "holypala";
+                } else if (fullSpec.equals("Holy Priest")) {
+                    spec = "holypri";
                 } else if (fullSpec.equals("Beast Mastery Hunter")) {
                     spec = "beastmastery";
                 }
