@@ -22,11 +22,18 @@ public record Cutoffs(String region, String season, Map<String, Long> cutoffs,
             } else if (bracket.equals("BATTLEGROUNDS")) {
                 cfs.put(bracket + "/" + reward.getJsonObject("faction").getString("name").toLowerCase(), reward.getLong("rating_cutoff"));
             } else if (bracket.equals("SHUFFLE")) {
-                if (reward.getJsonObject("specialization").getString("name").equals("Frost")) {
+                String spec = reward.getJsonObject("specialization").getString("name");
+                if (spec.equals("Frost")) {
                     if (reward.getJsonObject("specialization").getInteger("id") == 251) {
                         cfs.put(bracket + "/frostd", reward.getLong("rating_cutoff"));
                     } else {
                         cfs.put(bracket + "/frostm", reward.getLong("rating_cutoff"));
+                    }
+                } else if (spec.equals("Holy")) {
+                    if (reward.getJsonObject("specialization").getInteger("id") == 65) {
+                        cfs.put(bracket + "/holypala", reward.getLong("rating_cutoff"));
+                    } else {
+                        cfs.put(bracket + "/holypri", reward.getLong("rating_cutoff"));
                     }
                 } else {
                     cfs.put(bracket + "/" + reward.getJsonObject("specialization").getString("name").replaceAll(" ", "").toLowerCase(), reward.getLong("rating_cutoff"));
