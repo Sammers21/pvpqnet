@@ -6,8 +6,6 @@ import io.github.sammers.pla.blizzard.Cutoffs;
 import io.github.sammers.pla.http.JsonConvertable;
 import io.github.sammers.pla.http.Resp;
 import io.github.sammers.pla.logic.Calculator;
-import io.github.sammers.pla.logic.CharAndDiff;
-import io.github.sammers.pla.logic.SnapshotDiff;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
@@ -16,11 +14,9 @@ import java.time.ZonedDateTime;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static io.github.sammers.pla.logic.Conts.*;
-import static io.github.sammers.pla.logic.Conts.SHUFFLE;
 import static java.time.ZoneOffset.UTC;
 
 public record Snapshot(List<Character> characters, Long timestamp, String region, String dateTime) implements Resp {
@@ -45,7 +41,7 @@ public record Snapshot(List<Character> characters, Long timestamp, String region
 
     public Snapshot filter(final List<String> specs) {
         final List<Character> chars = characters.stream().filter(c -> {
-            Boolean res = false;
+            boolean res = false;
             for (String spec : specs) {
                 res = res || c.fullSpec().toLowerCase().replaceAll(" ", "").replaceAll("'", "")
                     .contains(spec.toLowerCase().replaceAll(" ", "").replaceAll("'", ""));
@@ -57,15 +53,14 @@ public record Snapshot(List<Character> characters, Long timestamp, String region
 
     public JsonObject toJson(Long page) {
         List<JsonObject> chars = characters.stream().skip((page - 1) * 100L).limit(100).map(JsonConvertable::toJson).toList();
-        JsonObject put = new JsonObject()
+        return new JsonObject()
             .put("characters", new JsonArray(chars))
             .put("timestamp", timestamp)
             .put("date_time", dateTime)
             .put("region", region)
             .put("page", page)
-            .put("total_pages", Calculator.totalPages(characters().size(), 100))
+            .put("total_pages", Calculator.totalPages(this.characters().size(), 100))
             .put("last_seen", Main.PRETTY_TIME.format(new Date(timestamp)));
-        return put;
     }
 
     public JsonObject toJson() {
@@ -111,19 +106,8 @@ public record Snapshot(List<Character> characters, Long timestamp, String region
         } else if (bracket.equals(SHUFFLE)) {
             return new Snapshot(this.characters().stream().map(ch -> {
                 String fullSpec = ch.fullSpec();
-                String spec = fullSpec.toLowerCase().split(" ")[0];
-                if (fullSpec.equals("Frost Mage")) {
-                    spec = "frostm";
-                } else if (fullSpec.equals("Frost Death Knight")) {
-                    spec = "frostd";
-                } else if (fullSpec.equals("Holy Paladin")) {
-                    spec = "holypala";
-                } else if (fullSpec.equals("Holy Priest")) {
-                    spec = "holypri";
-                } else if (fullSpec.equals("Beast Mastery Hunter")) {
-                    spec = "beastmastery";
-                }
-                Long cutoff = cutoffs.shuffle(spec);
+                String specCode = Cutoffs.specCodeByFullName(fullSpec);
+                Long cutoff = cutoffs.shuffle(specCode);
                 if(cutoff == null) {
                     return ch;
                 }

@@ -8,6 +8,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static io.github.sammers.pla.logic.Conts.SPACE;
+
 public record Cutoffs(String region, String season, Map<String, Long> cutoffs,
                       Long timestamp) implements JsonConvertable {
 
@@ -23,21 +25,8 @@ public record Cutoffs(String region, String season, Map<String, Long> cutoffs,
                 cfs.put(bracket + "/" + reward.getJsonObject("faction").getString("name").toLowerCase(), reward.getLong("rating_cutoff"));
             } else if (bracket.equals("SHUFFLE")) {
                 String spec = reward.getJsonObject("specialization").getString("name");
-                if (spec.equals("Frost")) {
-                    if (reward.getJsonObject("specialization").getInteger("id") == 251) {
-                        cfs.put(bracket + "/frostd", reward.getLong("rating_cutoff"));
-                    } else {
-                        cfs.put(bracket + "/frostm", reward.getLong("rating_cutoff"));
-                    }
-                } else if (spec.equals("Holy")) {
-                    if (reward.getJsonObject("specialization").getInteger("id") == 65) {
-                        cfs.put(bracket + "/holypala", reward.getLong("rating_cutoff"));
-                    } else {
-                        cfs.put(bracket + "/holypri", reward.getLong("rating_cutoff"));
-                    }
-                } else {
-                    cfs.put(bracket + "/" + reward.getJsonObject("specialization").getString("name").replaceAll(" ", "").toLowerCase(), reward.getLong("rating_cutoff"));
-                }
+                Long id = reward.getJsonObject("specialization").getLong("id");
+                cfs.put(bracket + "/" + specCodeNameById(spec, id), reward.getLong("rating_cutoff"));
             } else {
                 System.out.println("Unknown bracket: " + bracket);
             }
@@ -49,6 +38,49 @@ public record Cutoffs(String region, String season, Map<String, Long> cutoffs,
                 cfs,
                 now
         );
+    }
+
+    public static String specCodeNameById(String spec, Long id) {
+        switch (spec) {
+            case "Frost" -> {
+                if (id == 251) {
+                    return "frostd";
+                } else {
+                    return "frostm";
+                }
+            }
+            case "Holy" -> {
+                if (id == 65) {
+                    return "holypala";
+                } else {
+                    return "holypri";
+                }
+            }
+            case "Restoration" -> {
+                if (id == 105) {
+                    return "restodruid";
+                } else {
+                    return "restosham";
+                }
+            }
+            default -> {
+                return SPACE.matcher(spec).replaceAll("").toLowerCase();
+            }
+        }
+    }
+
+    public static String specCodeByFullName(String fullName) {
+        String spec = fullName.toLowerCase().split(" ")[0];
+        return switch (fullName) {
+            case "Frost Mage" -> "frostm";
+            case "Frost Death Knight" -> "frostd";
+            case "Holy Paladin" -> "holypala";
+            case "Holy Priest" -> "holypri";
+            case "Beast Mastery Hunter" -> "beastmastery";
+            case "Restoration Druid" -> "restodruid";
+            case "Restoration Shaman" -> "restosham";
+            default -> spec;
+        };
     }
 
     public Long threeVThree() {

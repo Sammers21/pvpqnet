@@ -5,7 +5,6 @@ import io.github.sammers.pla.db.Snapshot;
 import io.github.sammers.pla.http.JsonConvertable;
 import io.github.sammers.pla.logic.Calculator;
 import io.github.sammers.pla.logic.CharAndDiff;
-import io.github.sammers.pla.logic.Diff;
 import io.github.sammers.pla.logic.Refs;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -17,7 +16,6 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -209,17 +207,10 @@ public record WowAPICharacter(long id,
             Optional<PvpBracket> prevBracket;
             if (btype.equals("SHUFFLE")) {
                 String spec = wowApiBracket.getJsonObject("specialization").getString("name");
-                if (spec.equals("Frost") && wowApiBracket.getJsonObject("specialization").getInteger("id") == 251) {
-                    spec = "frostd";
-                } else if (spec.equals("Frost")) {
-                    spec = "frostm";
-                } else if (spec.equals("Holy") && wowApiBracket.getJsonObject("specialization").getInteger("id") == 65) {
-                    spec = "holypala";
-                } else if (spec.equals("Holy")) {
-                    spec = "holypri";
-                }
-                cutoffByBracketType = cutoffs.shuffle(spec);
-                prevBracket = Optional.ofNullable(prevBrackets.get(btype+"-"+spec));
+                Long id = wowApiBracket.getJsonObject("specialization").getLong("id");
+                String specCode = Cutoffs.specCodeNameById(spec, id);
+                cutoffByBracketType = cutoffs.shuffle(specCode);
+                prevBracket = Optional.ofNullable(prevBrackets.get(btype + "-" + specCode));
             } else {
                 cutoffByBracketType = cutoffs.cutoffByBracketType(btype);
                 prevBracket = Optional.ofNullable(prevBrackets.get(btype));

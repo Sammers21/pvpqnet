@@ -76,19 +76,8 @@ public record SnapshotDiff(List<CharAndDiff> chars, Long timestamp) implements R
         } else if (bracket.equals(SHUFFLE)) {
             return new SnapshotDiff(this.chars().stream().map(charAndDiff -> {
                 String fullSpec = charAndDiff.character().fullSpec();
-                String spec = fullSpec.toLowerCase().split(" ")[0];
-                if (fullSpec.equals("Frost Mage")) {
-                    spec = "frostm";
-                } else if (fullSpec.equals("Frost Death Knight")) {
-                    spec = "frostd";
-                } else if (fullSpec.equals("Holy Paladin")) {
-                    spec = "holypala";
-                } else if (fullSpec.equals("Holy Priest")) {
-                    spec = "holypri";
-                } else if (fullSpec.equals("Beast Mastery Hunter")) {
-                    spec = "beastmastery";
-                }
-                Long cutoff = cutoffs.shuffle(spec);
+                String specCode = Cutoffs.specCodeByFullName(fullSpec);
+                Long cutoff = cutoffs.shuffle(specCode);
                 if(cutoff == null) {
                     return charAndDiff;
                 }
