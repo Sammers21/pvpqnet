@@ -13,7 +13,7 @@ import { capitalizeFirstLetter } from '@/utils/common';
 import { fetchStatistic } from '@/services/stats.service';
 
 function Activity() {
-  const { region = REGIONS.eu, bracket = BRACKETS.shuffle } = useParams();
+  const { region = REGIONS.eu, bracket = BRACKETS['3v3'] } = useParams();
   const activity = getActivityFromUrl();
 
   const [statistic, setStatistic] = useState<Record<BRACKETS, string>>();

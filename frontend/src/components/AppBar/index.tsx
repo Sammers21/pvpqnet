@@ -34,7 +34,7 @@ const Header = () => {
   const {
     region: regionFromUrl = REGIONS.eu,
     activity = 'activity',
-    bracket = BRACKETS.shuffle,
+    bracket = BRACKETS['3v3'],
   } = useParams();
   const region = getRegion(regionFromUrl);
   const breakpoint = useBreakpoint();
@@ -74,6 +74,7 @@ const Header = () => {
     { label: 'Activity', onClick: redirectToActivity },
     { label: 'Leaderboards', onClick: redirectToLadder },
     { label: 'Meta', onClick: redirectToMeta },
+    // { label: 'Skill-capped', onClick: redirectToMeta },
     // { label: 'Coaching', onClick: redirectToShop },
   ];
 

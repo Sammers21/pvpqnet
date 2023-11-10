@@ -25,7 +25,7 @@ interface IProps {
 }
 
 const DataList =  ({ statistic }: IProps) => {
-  const { region = REGIONS.eu, bracket = BRACKETS.shuffle } = useParams();
+  const { region = REGIONS.eu, bracket = BRACKETS['3v3'] } = useParams();
   const activity = getActivityFromUrl();
   const [searchParams] = useSearchParams();
   const breakpoint = useBreakpoint();

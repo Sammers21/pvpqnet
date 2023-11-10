@@ -3,7 +3,7 @@ import { REGIONS } from '../constants/region';
 
 export function getBracket(bracket?: string) {
   const validBracket = Object.values(BRACKETS).find((r) => bracket === r);
-  return validBracket ?? BRACKETS.shuffle;
+  return validBracket ?? BRACKETS['3v3'];
 }
 
 export function getRegion(region?: string) {
