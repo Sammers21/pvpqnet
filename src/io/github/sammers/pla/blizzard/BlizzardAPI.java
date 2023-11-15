@@ -34,7 +34,7 @@ public class BlizzardAPI {
 
     public static final String AUTH_URL = "https://oauth.battle.net/token";
     public static String LOCALE = "en_US";
-    private static final String CURRENT_PVP_SEASON_ID = "35";
+    private static final String CURRENT_PVP_SEASON_ID = "36";
     private static final Logger log = LoggerFactory.getLogger(BlizzardAPI.class);
     private final String clientSecret;
     private final WebClient webClient;
