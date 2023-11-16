@@ -123,10 +123,7 @@ public class BlizzardAPI {
                                                                 maybeResponse(realNamespace, absoluteURI + "/specializations")
                                                                     .flatMap(specs -> {
                                                                         Optional<WowAPICharacter> prev = Optional.ofNullable(characterCache.getByFullName(Character.fullNameByRealmAndName(name, realm)));
-                                                                        Cutoffs ctfs = cutoffs.get(realRegion);
-                                                                        if (ctfs == null) {
-                                                                            return Maybe.error(new IllegalStateException("No cutoffs for region " + region));
-                                                                        }
+                                                                        Optional<Cutoffs> ctfs = Optional.ofNullable(cutoffs.get(realRegion));
                                                                         return Maybe.just(WowAPICharacter.parse(prev, refs, ctfs, json, pvp, brackets, achievements, media, specs, pets, realRegion));
                                                                     }))))
                                     );

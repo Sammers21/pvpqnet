@@ -167,7 +167,7 @@ public record WowAPICharacter(long id,
     public static WowAPICharacter parse(
             Optional<WowAPICharacter> previous,
             Refs refs,
-            Cutoffs cutoffs,
+            Optional<Cutoffs> cutoffs,
             JsonObject entries,
             JsonObject pvpSummary,
             List<JsonObject> brackets,
@@ -209,13 +209,13 @@ public record WowAPICharacter(long id,
                 String spec = wowApiBracket.getJsonObject("specialization").getString("name");
                 Long id = wowApiBracket.getJsonObject("specialization").getLong("id");
                 String specCode = Cutoffs.specCodeNameById(spec, id);
-                cutoffByBracketType = cutoffs.shuffle(specCode);
+                cutoffByBracketType = cutoffs.map(c -> c.shuffle(specCode)).orElse(Long.MAX_VALUE);
                 prevBracket = Optional.ofNullable(prevBrackets.get(btype + "-" + specCode));
             } else {
-                cutoffByBracketType = cutoffs.cutoffByBracketType(btype);
+                cutoffByBracketType = cutoffs.map(c -> c.cutoffByBracketType(btype)).orElse(Long.MAX_VALUE);
                 prevBracket = Optional.ofNullable(prevBrackets.get(btype));
             }
-            return PvpBracket.parse(wowApiBracket, prevBracket, rank, Optional.ofNullable(cutoffByBracketType).orElse(-1L));
+            return PvpBracket.parse(wowApiBracket, prevBracket, rank, Optional.of(cutoffByBracketType).orElse(-1L));
         }).toList();
         CharacterMedia media = CharacterMedia.parse(characterMedia);
         Long lastUpdatedUTCms = Instant.now().toEpochMilli();
