@@ -45,53 +45,58 @@ const TableFilter = ({
       onSpecsChange(newSpecs);
     }
   };
-  // let cutoff;
-  // let ctRating = 0;
-  // const r1TitleColor = getRatingColor(true);
-  // const r1Img = (
-  //   <img
-  //     className="w-7 h-7 mx-1"
-  //     src={getSeasonRankImageFromRating(0, true)}
-  //     alt="rating"
-  //   />
-  // );
-  // if (bracket === "3v3") {
-  //   if (statistic !== undefined) {
-  //     ctRating = statistic.cutoffs.rewards.ARENA_3v3;
-  //   }
-  //   cutoff = (
-  //     <div className="flex">
-  //       {r1Img}
-  //       <span
-  //         className="text-lg font-light mr-2"
-  //         style={{ color: r1TitleColor }}
-  //       >
-  //         Obsidian Gladiator: Dragonflight Season 2 - Rating: {ctRating}
-  //       </span>
-  //     </div>
-  //   );
-  // } else if (bracket === "rbg") {
-  //   if (statistic !== undefined) {
-  //     ctRating = statistic.cutoffs.rewards["BATTLEGROUNDS/alliance"];
-  //   }
-  //   cutoff = (
-  //     <div className="flex">
-  //       {r1Img}
-  //       <span
-  //         className="text-lg font-light mr-2"
-  //         style={{ color: r1TitleColor }}
-  //       >
-  //         Hero of the Alliance & Horde: Obsidian - Rating: {ctRating}
-  //       </span>
-  //     </div>
-  //   );
-  // } else {
-  //   cutoff = <div></div>;
-  // }
+  let cutoff;
+  let ctRating = 0;
+  const r1TitleColor = getRatingColor(true);
+  const r1Img = (
+    <img
+      className="w-7 h-7 mx-1"
+      src={getSeasonRankImageFromRating(0, true)}
+      alt="rating"
+    />
+  );
+  if (statistic === undefined 
+    || statistic.cutoffs === undefined 
+    || statistic.cutoffs.rewards=== undefined
+    || statistic.cutoffs.rewards.ARENA_3v3 === undefined) {
+    cutoff = <div></div>;
+  } else if (bracket === "3v3") {
+    if (statistic !== undefined) {
+      ctRating = statistic.cutoffs.rewards.ARENA_3v3;
+    }
+    cutoff = (
+      <div className="flex">
+        {r1Img}
+        <span
+          className="text-lg font-light mr-2"
+          style={{ color: r1TitleColor }}
+        >
+          Obsidian Gladiator: Dragonflight Season 2 - Rating: {ctRating}
+        </span>
+      </div>
+    );
+  } else if (bracket === "rbg") {
+    if (statistic !== undefined) {
+      ctRating = statistic.cutoffs.rewards["BATTLEGROUNDS/alliance"];
+    }
+    cutoff = (
+      <div className="flex">
+        {r1Img}
+        <span
+          className="text-lg font-light mr-2"
+          style={{ color: r1TitleColor }}
+        >
+          Hero of the Alliance & Horde: Obsidian - Rating: {ctRating}
+        </span>
+      </div>
+    );
+  } else {
+    cutoff = <div></div>;
+  }
   return (
     <div className="bg-[#030303e6] px-8">
       <div className="flex justify-between pt-6 pb-0">
-        {/* {cutoff} */}
+        {cutoff}
         <Button className="!px-8 !bg-[#1F2937]" onClick={toggleFilterShown}>
           Filters
           {!isEmpty(selectedSpecs) && (
