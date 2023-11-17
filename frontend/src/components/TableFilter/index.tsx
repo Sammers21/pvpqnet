@@ -71,7 +71,7 @@ const TableFilter = ({
           className="text-lg font-light mr-2"
           style={{ color: r1TitleColor }}
         >
-          Obsidian Gladiator: Dragonflight Season 2 - Rating: {ctRating}
+          Verdant Gladiator: Dragonflight Season 2 - Rating: {ctRating}
         </span>
       </div>
     );
@@ -86,7 +86,7 @@ const TableFilter = ({
           className="text-lg font-light mr-2"
           style={{ color: r1TitleColor }}
         >
-          Hero of the Alliance & Horde: Obsidian - Rating: {ctRating}
+          Hero of the Alliance & Horde: Verdant - Rating: {ctRating}
         </span>
       </div>
     );
