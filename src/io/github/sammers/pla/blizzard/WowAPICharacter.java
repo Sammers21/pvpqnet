@@ -210,7 +210,7 @@ public record WowAPICharacter(long id,
                 Long id = wowApiBracket.getJsonObject("specialization").getLong("id");
                 String specCode = Cutoffs.specCodeNameById(spec, id);
                 cutoffByBracketType = cutoffs.map(c -> c.shuffle(specCode)).orElse(Long.MAX_VALUE);
-                prevBracket = Optional.ofNullable(prevBrackets.get(btype + "-" + specCode));
+                prevBracket = Optional.ofNullable(prevBrackets.get(btype + "-" + spec));
             } else {
                 cutoffByBracketType = cutoffs.map(c -> c.cutoffByBracketType(btype)).orElse(Long.MAX_VALUE);
                 prevBracket = Optional.ofNullable(prevBrackets.get(btype));

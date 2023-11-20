@@ -120,7 +120,7 @@ public class CharUpdater {
                     }).onErrorComplete();
                 } else {
                     log.warn("Not allowing char updates before char load from db");
-                    return Completable.complete();
+                    return Completable.error(new IllegalStateException("Not allowing char updates before char load from db"));
                 }
             }
         );
