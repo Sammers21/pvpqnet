@@ -1,19 +1,19 @@
-import { Grid, Typography } from '@mui/material';
+import { cn } from '@/utils/classnames';
 
-const BlizzardLoader = () => {
+interface IProps {
+  className?: string;
+}
+const BlizzardLoader = ({ className }: IProps) => {
   return (
-    <Grid
-      className="loader-container"
-      direction="column"
-      sx={{ position: 'absolute', display: 'flex' }}
-    >
-      <div className="loader">
+    <div className={cn(className, 'absolute top-1/2 right-1/2 translate-x-2/4 -translate-y-2/4')}>
+      <div className="loader-container">
         <div className="blizzard-loader one"></div>
         <div className="blizzard-loader two"></div>
         <div className="blizzard-loader three"></div>
       </div>
-      <Typography component="span">LOADING...</Typography>
-    </Grid>
+
+      <span className="uppercase">Loading...</span>
+    </div>
   );
 };
 
