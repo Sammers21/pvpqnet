@@ -55,6 +55,8 @@ const TableFilter = ({
       alt="rating"
     />
   );
+  const ssnName = "Verdant"
+  const ssnCnt = 3
   if (statistic === undefined 
     || statistic.cutoffs === undefined 
     || statistic.cutoffs.rewards=== undefined
@@ -71,7 +73,7 @@ const TableFilter = ({
           className="text-lg font-light mr-2"
           style={{ color: r1TitleColor }}
         >
-          Verdant Gladiator: Dragonflight Season 2 - Rating: {ctRating}
+          {ssnName} Gladiator: Dragonflight Season {ssnCnt} - Rating: {ctRating}
         </span>
       </div>
     );
@@ -86,7 +88,7 @@ const TableFilter = ({
           className="text-lg font-light mr-2"
           style={{ color: r1TitleColor }}
         >
-          Hero of the Alliance & Horde: Verdant - Rating: {ctRating}
+          Hero of the Alliance & Horde: {ssnName} - Rating: {ctRating}
         </span>
       </div>
     );
