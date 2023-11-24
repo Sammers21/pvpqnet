@@ -33,17 +33,12 @@ function Activity() {
   useEffect(() => {
     getStatistic(region as REGIONS);
   }, [activity, region]);
-  let tabs;
-  if (activity === "activity") {
-    tabs = <ActivityTabs statistic={statistic} />;
-  } else {
-    tabs = <ActivityTabs statistic={undefined} />;
-  }
+
   return (
     <>
       <Header />
       <div className="mt-24 mx-auto mb-11 w-full lg:w-[85%]">
-        {tabs}
+        <ActivityTabs statistic={activity === 'activity' ? statistic : undefined} />
         <DataTable statistic={statistic} />
       </div>
       <Footer />

@@ -12,7 +12,6 @@ import { getActivityFromUrl } from '@/utils/urlparts';
 import { BRACKETS } from '@/constants/pvp-activity';
 import { REGIONS } from '@/constants/region';
 import type { IActivityRecord } from '@/types';
-import { Typography } from '@mui/material';
 
 export function getFromSearchParams(searchParams: URLSearchParams, name: string): string[] {
   return searchParams?.get(name)?.split(',') || [];
@@ -24,7 +23,7 @@ interface IProps {
   statistic: Record<BRACKETS, string> | undefined;
 }
 
-const DataList =  ({ statistic }: IProps) => {
+const DataList = ({ statistic }: IProps) => {
   const { region = REGIONS.eu, bracket = BRACKETS['3v3'] } = useParams();
   const activity = getActivityFromUrl();
   const [searchParams] = useSearchParams();
@@ -66,7 +65,12 @@ const DataList =  ({ statistic }: IProps) => {
 
   return (
     <>
-      <TableFilter selectedSpecs={selectedSpecs} onSpecsChange={setSelectedSpecs} bracket={bracket} statistic={statistic} />
+      <TableFilter
+        selectedSpecs={selectedSpecs}
+        onSpecsChange={setSelectedSpecs}
+        bracket={bracket}
+        statistic={statistic}
+      />
 
       <Table
         loading={loading}
