@@ -53,21 +53,21 @@ const getTableColumns = (activity: string, isMobile: boolean, region: string): a
         <div className="flex">
           {window.innerWidth > 600 && (
             <img
-              className="mr-1 h-5 w-5 rounded border border-solid border-[#37415180]"
+              className="mr-1 h-6 w-6 rounded border border-solid border-[#37415180]"
               src={icons.raceIcon}
               alt="race icon"
             />
           )}
           {window.innerWidth > 700 && (
             <img
-              className="mr-1 h-5 w-5 rounded border border-solid border-[#37415180]"
+              className="mr-1 h-6 w-6 rounded border border-solid border-[#37415180]"
               src={icons.classIcon}
               alt="class icon"
             />
           )}
 
           <img
-            className=" h-5 w-5 rounded border border-solid border-[#37415180]"
+            className=" h-6 w-6 rounded border border-solid border-[#37415180]"
             src={icons.specIcon}
             alt="spec icon"
           />
