@@ -1,6 +1,12 @@
 import { FRACTION, WOW_CLASS, WOW_CLASS_ICON, WOW_RACE, WOW_SPEC } from '../constants/table';
 import type { IActivityRecord, IPlayer, IPlayerBracket } from '../types';
 
+export const winGreen = '#32CD32';
+export const lossRed = '#ff0000';
+
+export const hordeRed = '#d23636'
+export const allianceBlue = '#4accff'
+
 export const getProfileUrl = (record: IActivityRecord, region: string) => {
   const name = record?.character?.name || record?.name;
   const realm = record?.character?.realm || record?.realm;
@@ -15,7 +21,7 @@ export const getFractionIcon = (fraction: string) => {
 
 export const getRealmColor = (fraction?: string) => {
   if (!fraction) return '#FFFFFF';
-  return fraction.toUpperCase() === FRACTION.ALLIANCE ? '#3FC7EB' : '#ff0000';
+  return fraction.toUpperCase() === FRACTION.ALLIANCE ? allianceBlue : hordeRed;
 };
 
 export const specNameFromFullSpec = (spec: string) => {
@@ -59,12 +65,12 @@ export const getClassNameColor = (wowClass?: string) => {
 
 export const getDiffColor = (diff: number): string => {
   if (diff === 0) return 'white';
-  return diff > 0 ? 'green' : '#ff0000';
+  return diff > 0 ? winGreen : lossRed;
 };
 
 export const getRankDiffColor = (diff: number): string => {
   if (diff === 0) return 'white';
-  return diff < 0 ? 'green' : '#ff0000';
+  return diff < 0 ?  winGreen : lossRed;
 };
 
 export const getDiffCell = (diff: number): string | number => {
@@ -124,7 +130,7 @@ export const getWonAndLossColors = (
   won: number,
   loss: number
 ): { wonColor: string; lossColor: string } => {
-  return { wonColor: won > 0 ? '#008000' : '#FFFFFF', lossColor: loss > 0 ? '#ff0000' : '#FFFFFF' };
+  return { wonColor: won > 0 ? winGreen : '#FFFFFF', lossColor: loss > 0 ? lossRed : '#FFFFFF' };
 };
 
 export const getRatingColor = (in_cutoff: boolean) => {
