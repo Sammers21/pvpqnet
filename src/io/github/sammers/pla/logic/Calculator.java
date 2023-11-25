@@ -106,7 +106,12 @@ public class Calculator {
     public static SnapshotDiff calculateDiff(Snapshot oldChars, Snapshot newChars, String bracket, boolean newIsZero) {
         ArrayList<CharAndDiff> res = new ArrayList<>(newChars.characters().size());
         Function<Character, String> idF = getIdFunction(bracket);
-        Map<String, Character> oldMap = oldChars.characters().stream().collect(Collectors.toMap(idF, c -> c, (a, b) -> a));
+        Map<String, Character> oldMap;
+        if (oldChars == null) {
+            oldMap = new HashMap<>();
+        } else {
+            oldMap = oldChars.characters().stream().collect(Collectors.toMap(idF, c -> c, (a, b) -> a));
+        }
         for (Character newCharx : newChars.characters()) {
             Character newChar;
             Character oldChar = oldMap.get(idF.apply(newCharx));
