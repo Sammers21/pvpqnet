@@ -7,7 +7,7 @@ import { Autocomplete, InputAdornment, TextField, Typography } from '@mui/materi
 import SearchIcon from '@mui/icons-material/Search';
 
 import { getClassIcon, getClassNameColor } from '@/utils/table';
-import { EuIcon, UsIcon } from '../Icons';
+import { EuIcon, UsIcon } from '../IIcons';
 
 import { searchPlayers } from '@/services/stats.service';
 import { capitalizeNickname } from '@/utils/urlparts';

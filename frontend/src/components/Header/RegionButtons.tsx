@@ -1,5 +1,5 @@
 import { IconButton } from '@mui/material';
-import { EuIcon, UsIcon } from '@/components/Icons';
+import { EuIcon, UsIcon } from '@/components/IIcons';
 
 import { REGIONS } from '@/constants/region';
 

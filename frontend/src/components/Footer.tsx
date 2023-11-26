@@ -1,4 +1,4 @@
-import { GitHubIcon, DiscordIcon } from '@/components/Icons';
+import { GitHubIcon, DiscordIcon } from '@/components/IIcons';
 import ExternalLink from '@/components/ExternalLink';
 
 const Footer = () => {
