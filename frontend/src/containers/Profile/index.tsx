@@ -3,10 +3,10 @@ import { useParams } from 'react-router-dom';
 import axios from 'axios';
 
 import { Alert, Snackbar as MuiSnackbar, styled } from '@mui/material';
-import Header from '@/components/AppBar';
+import Header from '@/components/Header';
 import Armory from './Armory';
 import PlayerNotFound from './PlayerNotFound';
-import Footer from '@/components/common/Footer';
+import Footer from '@/components/Footer';
 
 import { baseUrl } from '@/config';
 import { capitalizeFirstLetter } from '@/utils/common';

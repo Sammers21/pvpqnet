@@ -1,7 +1,7 @@
 import loadable from '@loadable/component';
 import { BrowserRouter, Routes as ReactRouterDomRoutes, Route } from 'react-router-dom';
 
-import BlizzardLoader from '@/components/common/BlizzardLoader';
+import BlizzardLoader from '@/components/BlizzardLoader';
 import { publicUrls } from '@/config';
 
 const { page } = publicUrls;

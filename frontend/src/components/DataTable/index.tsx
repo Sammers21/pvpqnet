@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { createBreakpoint } from 'react-use';
 
-import Table from '@/components/common/Table';
+import Table from '@/components/AnotherTable';
 import TableFilter from '@/components/TableFilter';
 
 import getTableColumns from './useColumns';

@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 
-import Header from '@/components/AppBar';
+import Header from '@/components/Header';
 import ActivityTabs from './Tabs';
 import DataTable from '@/components/DataTable';
-import Footer from '@/components/common/Footer';
+import Footer from '@/components/Footer';
 
 import { REGIONS } from '@/constants/region';
 import { BRACKETS } from '@/constants/pvp-activity';

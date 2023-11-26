@@ -2,8 +2,8 @@ import { useMemo, useState } from 'react';
 import { Table as TableMui, TableBody, TableContainer, TableHead, TableRow } from '@mui/material';
 import { styled } from '@mui/system';
 
-import HeaderCell from '@/components/common/Table/SortableHeaderCell';
-import Row from '@/components/common/Table/Row';
+import HeaderCell from '@/components/AnotherTable/SortableHeaderCell';
+import Row from '@/components/AnotherTable/Row';
 
 import type { IHistoryRow, ITableColumn } from '@/types';
 import bgImage from '../../../assets/background/smoke-table.jpg';

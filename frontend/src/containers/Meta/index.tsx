@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
-import AppBar from '@/components/AppBar';
-import Footer from '@/components/common/Footer';
+import AppBar from '@/components/Header';
+import Footer from '@/components/Footer';
 
 import Grid from './Grid';
 

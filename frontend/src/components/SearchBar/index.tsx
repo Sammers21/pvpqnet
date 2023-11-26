@@ -7,7 +7,7 @@ import { Autocomplete, InputAdornment, TextField, Typography } from '@mui/materi
 import SearchIcon from '@mui/icons-material/Search';
 
 import { getClassIcon, getClassNameColor } from '@/utils/table';
-import { EuIcon, UsIcon } from '../icons';
+import { EuIcon, UsIcon } from '../Icons';
 
 import { searchPlayers } from '@/services/stats.service';
 import { capitalizeNickname } from '@/utils/urlparts';
@@ -21,9 +21,7 @@ interface ISearchResults {
 
 const renderSearchOption = (props: React.HTMLAttributes<HTMLLIElement>, option: ISearchResults) => {
   const icon = getClassIcon(option.class);
-
   const RegionIcon = option.region === 'us' || option.region === 'en-us' ? UsIcon : EuIcon;
-
   var fullNick = capitalizeNickname(option.nick);
   return (
     <li className="flex items-center" {...props}>
@@ -41,11 +39,10 @@ const renderSearchOption = (props: React.HTMLAttributes<HTMLLIElement>, option: 
 
 const PlayersSearch = () => {
   let navigate = useNavigate();
-
+  let delay = 5;
   const [inputValue, setInputValue] = useState('');
   const [loading, setLoading] = useState(false);
   const [searchResults, setSearchResults] = useState<ISearchResults[]>([]);
-
   useDebounce(
     async () => {
       if (inputValue === '') {
@@ -53,42 +50,44 @@ const PlayersSearch = () => {
         return;
       }
       setLoading(true);
-
       const data = (await searchPlayers(inputValue)) as ISearchResults[];
-
       const players = uniqBy(data, 'nick');
       setSearchResults(players);
       setLoading(false);
     },
-    200,
+    delay,
     [inputValue]
   );
 
   const redirectToProfile = (option: string | ISearchResults) => {
     if (typeof option === 'string') return;
-
     const nicknameSplit = option.nick.split(/-(.*)/s);
     const realm = capitalizeFirstLetter(nicknameSplit[1]);
     const name = capitalizeFirstLetter(nicknameSplit[0]);
-
     navigate(`/${option.region}/${realm}/${name}`);
   };
 
+  const first = (count: number, searchResults: ISearchResults[]) => {
+    return searchResults.slice(0, count);
+  }
+
   return (
     <Autocomplete
+      ListboxProps={{ style: { maxHeight: 1000, overflow: 'auto' } }}
       className="inline-flex my-2 w-full"
       disablePortal
       freeSolo
       loading={loading}
+      filterOptions={(x) => first(15, x) }
       options={searchResults}
       getOptionLabel={(option) => {
         return capitalizeNickname(typeof option === 'string' ? option : option.nick);
       }}
       renderOption={renderSearchOption}
-      onChange={(_evt, newValue) => {
+      onChange={(event, newValue) => {
         redirectToProfile(newValue);
       }}
-      onInputChange={(_evt, newInputValue) => {
+      onInputChange={(event, newInputValue) => {
         setInputValue(newInputValue);
       }}
       disableClearable
@@ -96,7 +95,7 @@ const PlayersSearch = () => {
         return (
           <TextField
             {...params}
-            label="Seach for characters..."
+            label="Search for characters..."
             size="small"
             InputProps={{
               ...params.InputProps,

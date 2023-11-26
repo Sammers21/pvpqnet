@@ -5,7 +5,7 @@ import { Button } from '@mui/material';
 import RestoreIcon from '@mui/icons-material/Restore';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 
-import CopyButton from '@/components/common/CopyButton';
+import CopyButton from '@/components/CopyButton';
 import type { IPlayer } from '@/types';
 
 interface IProps {
