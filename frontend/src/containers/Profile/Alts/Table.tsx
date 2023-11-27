@@ -18,7 +18,9 @@ const Table = styled(TableMui)({
   '& tbody tr:hover': {
     backgroundColor: 'rgb(21, 128, 61, 0.25)',
   },
-
+  '& tr': {
+    height: '40px !important',
+  },
   '& th': {
     padding: '8px !important',
   },

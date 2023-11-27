@@ -22,7 +22,7 @@ const Table = styled(TableMui)({
     padding: '4px !important',
   },
   '& tr td,th': {
-    borderBottom: 'none',
+    borderColor: '#37415180',
   },
 });
 
@@ -106,7 +106,7 @@ const HistoryTable = ({ columns, records = [], isMobile }: IProps) => {
   );
 
   return (
-    <div className="relative bg-[#030303e6]">
+    <div className="relative bg-[#030303e6] w-full w-max-full">
       {<TableContainer>{renderTable()}</TableContainer>}
       {!records.length && (
         <div className="min-h-[100px] flex justify-center items-center">
