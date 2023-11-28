@@ -12,14 +12,16 @@ const arenaAndRbg = [
   { name: 'BATTLEGROUNDS', title: 'RBG' },
 ];
 
-const Tab = styled((props: TabProps) => <MuiTab disableRipple {...props} />)(({ theme }) => ({
+const Tab = styled((props: TabProps) => <MuiTab {...props} />)(({ theme }) => ({
   textTransform: 'none',
+  minWidth: 0,
+  [theme.breakpoints.up('sm')]: {
+    minWidth: 0,
+  },
+
   fontWeight: theme.typography.fontWeightRegular,
   fontSize: theme.typography.pxToRem(14),
-  marginRight: theme.spacing(1),
-  height: '32px',
-  minHeight: '32px',
-  minWidth: 'auto',
+  padding: '8px 16px',
 }));
 
 const BracketTabs = ({
@@ -45,6 +47,8 @@ const BracketTabs = ({
       className="!min-h-[38px]"
       value={value}
       onChange={onChange}
+      variant="scrollable"
+      scrollButtons={false}
       textColor="primary"
       indicatorColor="primary"
     >

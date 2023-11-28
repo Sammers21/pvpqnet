@@ -39,13 +39,13 @@ const GamingHistory = ({ player }: { player: IPlayer }) => {
   }, [player, bracket, value]);
 
   return (
-    <div className="flex flex-col md:px-3 py-4 border border-solid border-[#37415180] rounded-lg bg-[#030303e6]">
+    <div className="flex flex-col py-2 md:px-3 border border-solid border-[#37415180] rounded-lg bg-[#030303e6] ">
       <div className="flex justify-between items-center px-3 md:px-0">
-        <span className="text-2xl">Gaming History</span>
+        <span className="text-2xl mr-4">History</span>
         <BracketTabs player={player} onChange={handleChange} value={value} />
       </div>
 
-      <hr className="h-px md:my-2 bg-[#37415180] border-0" />
+      <hr className="h-px md:mb-2 bg-[#37415180] border-0" />
 
       <Table
         columns={tableColumns(player, value)}

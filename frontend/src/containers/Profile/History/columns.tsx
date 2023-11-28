@@ -108,7 +108,7 @@ const renderServerTime = ({ record }: IParams, player: IPlayer) => {
       .format('MMM DD, YYYY - hh:mm A');
   };
 
-  return <span>{getDate(record.timestamp)}</span>;
+  return <span className="whitespace-nowrap">{getDate(record.timestamp)}</span>;
 };
 
 const shouldRenderWWho = (bracket: string) => {
