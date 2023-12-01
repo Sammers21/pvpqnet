@@ -1,6 +1,6 @@
-import { GitHubIcon, DiscordIcon } from '@/components/IIcons';
+import {DiscordIcon, GitHubIcon} from '@/components/IIcons';
 import ExternalLink from '@/components/ExternalLink';
-import { getClassIcon, getClassNameColor } from '@/utils/table';
+import {getClassIcon, getClassNameColor} from '@/utils/table';
 
 const Footer = () => {
   const priest = getClassIcon('PRIEST');
@@ -15,11 +15,11 @@ const Footer = () => {
         <ExternalLink className="text-[#3f50b5]" href="https://github.com/Sammers21" color={priestColor} >
           Sammers
         </ExternalLink>
-        &nbsp; & &nbsp;
-        <img className="inline-block w-6 h-6 mx-1" src={deathKnight} alt="death knight" />
-        <ExternalLink className="text-[#3f50b5]" href="https://github.com/Starmordar" color={deathKnightColor}>
-          Starmordar
-        </ExternalLink>
+        {/*&nbsp; & &nbsp;*/}
+        {/*<img className="inline-block w-6 h-6 mx-1" src={deathKnight} alt="death knight" />*/}
+        {/*<ExternalLink className="text-[#3f50b5]" href="https://github.com/Starmordar" color={deathKnightColor}>*/}
+        {/*  Starmordar*/}
+        {/*</ExternalLink>*/}
       </div>
 
       <div className="flex items-center gap-4">
