@@ -4,6 +4,7 @@ package io.github.sammers.pla.db;
 import io.github.sammers.pla.http.JsonConvertable;
 import io.vertx.core.json.JsonObject;
 
+import static io.github.sammers.pla.db.Spec.HEAL_SPECS;
 import static io.github.sammers.pla.logic.Conts.*;
 
 public record Character(Long pos, Long rating, boolean inCutoff, String name, String clazz, String fullSpec,
@@ -55,6 +56,18 @@ public record Character(Long pos, Long rating, boolean inCutoff, String name, St
             .put("realm", realm)
             .put("wins", wins)
             .put("losses", losses);
+    }
+
+    public boolean isHealerSpec() {
+        return HEAL_SPECS.contains(fullSpec());
+    }
+
+    public boolean isTankSpec() {
+        return Spec.TANK_SPECS.contains(fullSpec());
+    }
+
+    public boolean isDpsSpec() {
+        return Spec.DPS_SPECS.contains(fullSpec());
     }
 
     public static Character withWinsAndLossesAndPosAndRating(Character character, Long wins, Long losses, Long pos, Long rating) {
