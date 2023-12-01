@@ -1,13 +1,11 @@
 package io.github.sammers.pla.logic;
 
-import io.github.sammers.pla.blizzard.WowAPICharacter;
 import io.github.sammers.pla.db.Character;
 import io.github.sammers.pla.db.Meta;
 import io.github.sammers.pla.db.Snapshot;
 import io.github.sammers.pla.db.Spec;
 import io.reactivex.Maybe;
 import org.javatuples.Triplet;
-import org.javatuples.Tuple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,6 +15,7 @@ import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class Calculator {
@@ -80,27 +79,15 @@ public class Calculator {
         long maxTanksInOneGroup;
         if (pplInTheGroup == 2) {
             maxHealersInOneGroup = 1;
+            maxDpsInOneGroup = 2;
+            maxTanksInOneGroup = 1;
         } else if (pplInTheGroup == 3) {
             maxHealersInOneGroup = 1;
+            maxDpsInOneGroup = 2;
+            maxTanksInOneGroup = 1;
         } else if (pplInTheGroup == 10) {
             maxHealersInOneGroup = 3;
-        } else {
-            throw new IllegalArgumentException("Unknown pplInTheGroup: " + pplInTheGroup);
-        }
-        if (pplInTheGroup == 2) {
-            maxDpsInOneGroup = 2;
-        } else if (pplInTheGroup == 3) {
-            maxDpsInOneGroup = 2;
-        } else if (pplInTheGroup == 10) {
             maxDpsInOneGroup = 7;
-        } else {
-            throw new IllegalArgumentException("Unknown pplInTheGroup: " + pplInTheGroup);
-        }
-        if (pplInTheGroup == 2) {
-            maxTanksInOneGroup = 1;
-        } else if (pplInTheGroup == 3) {
-            maxTanksInOneGroup = 1;
-        } else if (pplInTheGroup == 10) {
             maxTanksInOneGroup = 2;
         } else {
             throw new IllegalArgumentException("Unknown pplInTheGroup: " + pplInTheGroup);
@@ -114,7 +101,7 @@ public class Calculator {
                 if (v == null) {
                     v = new ArrayList<>();
                 }
-                if(v.isEmpty()) {
+                if (v.isEmpty()) {
                     ArrayList<CharAndDiff> group = new ArrayList<>();
                     group.add(charAndDiff);
                     v.add(group);
@@ -122,54 +109,12 @@ public class Calculator {
                     boolean healerSpec = charAndDiff.character().isHealerSpec();
                     boolean tankSpec = charAndDiff.character().isTankSpec();
                     boolean dpsSpec = charAndDiff.character().isDpsSpec();
-                    if(healerSpec) {
-                        // find a non-full group with not more than healersInOneGroup healers
-                        List<CharAndDiff> group = v.stream().filter(g -> {
-                            if(g.size() >= pplInTheGroup) {
-                                return false;
-                            }
-                            long healersInGroup = g.stream().filter(c -> c.character().isHealerSpec()).count();
-                            return healersInGroup < maxHealersInOneGroup;
-                        }).findFirst().orElse(null);
-                        if(group == null) {
-                            ArrayList<CharAndDiff> newGroup = new ArrayList<>();
-                            newGroup.add(charAndDiff);
-                            v.add(newGroup);
-                        } else {
-                            group.add(charAndDiff);
-                        }
-                    } else if(tankSpec) {
-                        // find a non-full group with not more than healersInOneGroup healers
-                        List<CharAndDiff> group = v.stream().filter(g -> {
-                            if(g.size() >= pplInTheGroup) {
-                                return false;
-                            }
-                            long tanksInGroup = g.stream().filter(c -> c.character().isTankSpec()).count();
-                            return tanksInGroup < maxTanksInOneGroup;
-                        }).findFirst().orElse(null);
-                        if(group == null) {
-                            ArrayList<CharAndDiff> newGroup = new ArrayList<>();
-                            newGroup.add(charAndDiff);
-                            v.add(newGroup);
-                        } else {
-                            group.add(charAndDiff);
-                        }
-                    } else if(dpsSpec) {
-                        // find a non-full group with not more than healersInOneGroup healers
-                        List<CharAndDiff> group = v.stream().filter(g -> {
-                            if(g.size() >= pplInTheGroup) {
-                                return false;
-                            }
-                            long dpsInGroup = g.stream().filter(c -> c.character().isDpsSpec()).count();
-                            return dpsInGroup < maxDpsInOneGroup;
-                        }).findFirst().orElse(null);
-                        if(group == null) {
-                            ArrayList<CharAndDiff> newGroup = new ArrayList<>();
-                            newGroup.add(charAndDiff);
-                            v.add(newGroup);
-                        } else {
-                            group.add(charAndDiff);
-                        }
+                    if (healerSpec) {
+                        roleGroup(pplInTheGroup, maxHealersInOneGroup, c -> c.character().isHealerSpec(), charAndDiff, v);
+                    } else if (tankSpec) {
+                        roleGroup(pplInTheGroup, maxTanksInOneGroup, c -> c.character().isTankSpec(), charAndDiff, v);
+                    } else if (dpsSpec) {
+                        roleGroup(pplInTheGroup, maxDpsInOneGroup, c -> c.character().isDpsSpec(), charAndDiff, v);
                     }
                 }
                 return v;
@@ -177,6 +122,24 @@ public class Calculator {
         }
         return whoWWhoClassic.values().stream().flatMap(Collection::stream).filter(group -> group.size() >= 1).toList();
     }
+
+    private static void roleGroup(int pplInTheGroup, long maxOfThatRoleInGroup, Predicate<CharAndDiff>  roleFilter, CharAndDiff charAndDiff, List<List<CharAndDiff>> wholeList) {
+        List<CharAndDiff> group = wholeList.stream().filter(g -> {
+            if(g.size() >= pplInTheGroup) {
+                return false;
+            }
+            long currentRoleInGroupCount = g.stream().filter(roleFilter).count();
+            return currentRoleInGroupCount < maxOfThatRoleInGroup;
+        }).findFirst().orElse(null);
+        if(group == null) {
+            ArrayList<CharAndDiff> newGroup = new ArrayList<>();
+            newGroup.add(charAndDiff);
+            wholeList.add(newGroup);
+        } else {
+            group.add(charAndDiff);
+        }
+    }
+
 
     public static SnapshotDiff calculateDiff(Snapshot oldChars, Snapshot newChars, String bracket, boolean newIsZero) {
         ArrayList<CharAndDiff> res = new ArrayList<>(newChars.characters().size());
