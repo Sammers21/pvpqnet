@@ -10,4 +10,6 @@ jobs:
         with:
           toolchain: stable
       - run: cargo build --release
+        working-directory: health-check 
       - run: cargo run --release -- --chat-id '${{ secrets.CHAT_ID }}' --token '${{ secrets.TOKEN }}'
+        working-directory: health-check
