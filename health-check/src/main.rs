@@ -30,7 +30,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
         send_tg_notification(format!("No updates for `{} hours` and `{} minutes` in EU shuffles: [EU activity in shuffle](https://pvpq.net/eu/activity/shuffle)", diff / 60, diff % 60).as_str(), &chat_id, &token).await?; 
     } else {
         println!("Everything is fine, not sending any notifications");
-        send_tg_notification(format!("No updates for `{} hours` and `{} minutes` in EU shuffles: [EU activity in shuffle](https://pvpq.net/eu/activity/shuffle)", diff / 60, diff % 60).as_str(), &chat_id, &token).await?; 
     }
     Ok(())
 }
