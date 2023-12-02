@@ -9,3 +9,4 @@ docker-compose.yml
 .env
 .DS_Store
 settings/.DS_Store
+target/

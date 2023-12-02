@@ -1,0 +1,13 @@
+on: [push]
+name: Health Check
+jobs:
+  health-check:
+    name: Run a pvpq.net health check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+      - run: cargo build --release
+      - run: cargo run --release -- --chat-id '${{ secrets.CHAT_ID }}' --token '${{ secrets.TOKEN }}'
