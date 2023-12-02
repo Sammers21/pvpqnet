@@ -1,4 +1,9 @@
-on: [push]
+on:
+  push:
+    branches: [ master ]
+  schedule:
+    # Run every 30 minutes
+    - cron:  '*/30 * * * *'
 name: Health Check
 jobs:
   health-check:
