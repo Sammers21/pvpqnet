@@ -27,7 +27,7 @@ const MobileView = ({ menuItems, host, region, setRegion }: IProps) => {
 
   return (
     <>
-      <IconButton edge="start" className="!mr-3" onClick={() => setDrawerOpen((state) => !state)}>
+      <IconButton edge="start" className="!ml-1 !mr-3" onClick={() => setDrawerOpen((state) => !state)}>
         <MenuIcon />
       </IconButton>
 

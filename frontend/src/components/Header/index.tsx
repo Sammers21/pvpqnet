@@ -81,7 +81,7 @@ const Header = () => {
     { label: "Activity", onClick: redirectToActivity },
     { label: "Leaderboards", onClick: redirectToLadder },
     { label: "Meta", onClick: redirectToMeta },
-    { label: "Skill-capped", onClick: redirectToSkillCapped },
+    { label: "Skill-Сapped", onClick: redirectToSkillCapped },
     // { label: 'Coaching', onClick: redirectToShop },
   ];
 
