@@ -67,25 +67,30 @@ const Header = () => {
   }
 
   function redirectToShop() {
-    window.open('https://secretshop.gg/wow/arena-rbg', '_blank');
+    window.open("https://secretshop.gg/wow/arena-rbg", "_blank");
+  }
+
+  function redirectToSkillCapped() {
+    window.open(
+      "https://www.skill-capped.com/wow/pricing/plans#pvpq",
+      "_blank"
+    );
   }
 
   const menuItems = [
-    { label: 'Activity', onClick: redirectToActivity },
-    { label: 'Leaderboards', onClick: redirectToLadder },
-    { label: 'Meta', onClick: redirectToMeta },
-    // { label: 'Skill-capped', onClick: redirectToMeta },
+    { label: "Activity", onClick: redirectToActivity },
+    { label: "Leaderboards", onClick: redirectToLadder },
+    { label: "Meta", onClick: redirectToMeta },
+    { label: "Skill-capped", onClick: redirectToSkillCapped },
     // { label: 'Coaching', onClick: redirectToShop },
   ];
 
   const View = breakpoint === 'S' ? MobileView : DesktopView;
   return (
     <StyledAppBar position="fixed">
-      <Container maxWidth="xl">
         <StyledToolbar disableGutters>
           <View region={region} setRegion={handleSetRegion} menuItems={menuItems} host={host} />
         </StyledToolbar>
-      </Container>
     </StyledAppBar>
   );
 };

@@ -16,7 +16,7 @@ const DesktopView = ({ menuItems, host, region, setRegion }: IProps) => {
     <div className="flex items-center justify-between w-full">
       <div className="flex items-center justify-start grow pr-6">
         <div className="flex items-center justify-start">
-          <a href="/" className="sm:flex hidden mr-5 font-bold tracking-wider text-xl">
+          <a href="/" className="sm:flex hidden ml-5 mr-5 font-bold tracking-wider text-xl">
             {host}
           </a>
 
