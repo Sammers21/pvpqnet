@@ -324,7 +324,6 @@ public record WowAPICharacter(long id,
                         pvpBracket.gamingHistory().addDiff(new DiffAndWithWho(diff.character(), diff.diff(), List.of()))
                     );
                 } else {
-                    log.warn("Not updating bracket " + pvpBracket.bracketType() + " because it does not match " + fullSpec);
                     res = pvpBracket;
                 }
             } else {
