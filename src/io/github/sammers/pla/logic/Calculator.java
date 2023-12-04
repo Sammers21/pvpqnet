@@ -185,7 +185,7 @@ public class Calculator {
                     )
                 );
                 if (e.diff().won() < 0 || e.diff().lost() < 0) {
-                    log.error("Negative diff: " + e);
+                    log.debug("Negative diff: " + e);
                     e = new CharAndDiff(e.character(), new Diff(e.diff().won(), e.diff().lost(), e.diff().ratingDiff(), e.diff().rankDiff(), e.diff().timestamp()));
                 }
             }
