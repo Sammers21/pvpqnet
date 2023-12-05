@@ -78,7 +78,15 @@ public class Http {
                 if (bracket.equals("rbg")) {
                     bracket = RBG;
                 }
-                ladder(ctx, applySpecFilter(ctx, refs.refByBracket(bracket, region).get().applyCutoffs(bracket, ladder.regionCutoff.get(region))));
+                Snapshot snapshot = refs.refByBracket(bracket, region).get();
+                if (snapshot == null) {
+                    ctx.response().end(Snapshot.empty(region).toJson().encode());
+                } else {
+                    ladder(ctx, applySpecFilter(ctx, snapshot
+                            .applyCutoffs(bracket, ladder.regionCutoff.get(region))
+                            .applySlugToName(ladder.realms.get()))
+                    );
+                }
             });
         });
         router.get("/api/:region/activity/stats").handler(ctx -> {
@@ -103,18 +111,28 @@ public class Http {
                 if (bracket.equals("rbg")) {
                     bracket = RBG;
                 }
-                ladder(ctx, applySpecFilter(ctx, refs.diffsByBracket(bracket, region).get().applyCutoffs(bracket, ladder.regionCutoff.get(region))));
+                SnapshotDiff snapshotDiff = refs.diffsByBracket(bracket, region).get();
+                if (snapshotDiff == null) {
+                    ctx.response().end(Snapshot.empty(region).toJson().encode());
+                } else {
+                    ladder(ctx, applySpecFilter(ctx, snapshotDiff
+                            .applyCutoffs(bracket, ladder.regionCutoff.get(region))
+                            .applySlugToName(ladder.realms.get()))
+                    );
+                }
             });
         });
         router.get("/api/:region/:realm/:name").handler(ctx -> {
             VTHREAD_EXECUTOR.execute(() -> {
                 String realm = ctx.pathParam("realm");
                 String name = ctx.pathParam("name");
-                Optional<WowAPICharacter> wowAPICharacter = ladder.wowChar(realm, name);
-                if (wowAPICharacter.isEmpty() || wowAPICharacter.get().hidden()) {
+                Optional<WowAPICharacter> charWithName = ladder.wowChar(ladder.realms.get().nameToSlug(realm), name);
+                Optional<WowAPICharacter> charWithSlug = ladder.wowChar(realm, name);
+                Optional<WowAPICharacter> res = Stream.of(charWithName, charWithSlug).filter(Optional::isPresent).findFirst().map(Optional::get);
+                if (res.isEmpty() || res.get().hidden()) {
                     ctx.response().setStatusCode(404).end(new JsonObject().put("error", "Character not found").encode());
                 } else {
-                    ctx.response().end(wowCharToJson(wowAPICharacter.get()).encode());
+                    ctx.response().end(wowCharToJson(res.get()).encode());
                 }
             });
         });

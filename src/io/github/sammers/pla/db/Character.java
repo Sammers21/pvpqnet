@@ -93,4 +93,20 @@ public record Character(Long pos, Long rating, boolean inCutoff, String name, St
             entries.getString("class"), entries.getString("full_spec"), entries.getString("fraction"), gender, race,
             entries.getString("realm"), entries.getLong("wins"), entries.getLong("losses"));
     }
+
+    public Character changeRealmName(String newRealm) {
+        return new Character(
+             pos,
+             rating,
+             inCutoff,
+             name,
+             clazz,
+             fullSpec,
+             fraction,
+             gender,
+             race,
+             newRealm,
+             wins,
+             losses);
+    }
 }

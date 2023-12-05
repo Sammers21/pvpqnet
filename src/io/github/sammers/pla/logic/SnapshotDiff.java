@@ -2,6 +2,7 @@ package io.github.sammers.pla.logic;
 
 import io.github.sammers.pla.Main;
 import io.github.sammers.pla.blizzard.Cutoffs;
+import io.github.sammers.pla.blizzard.Realms;
 import io.github.sammers.pla.http.JsonConvertable;
 import io.github.sammers.pla.http.Resp;
 import io.vertx.core.json.JsonArray;
@@ -96,5 +97,13 @@ public record SnapshotDiff(List<CharAndDiff> chars, Long timestamp) implements R
             entries.getJsonArray("characters").stream().map(JsonObject.class::cast).map(CharAndDiff::fromJson).toList(),
             entries.getLong("timestamp")
         );
+    }
+
+    public SnapshotDiff applySlugToName(Realms realms) {
+        return new SnapshotDiff(chars().stream().map(charAndDiff -> {
+            String realmSlug = charAndDiff.character().realm();
+            String realmName = realms.slugToName(realmSlug);
+            return new CharAndDiff(charAndDiff.character().changeRealmName(realmName), charAndDiff.diff());
+        }).toList(), timestamp());
     }
 }

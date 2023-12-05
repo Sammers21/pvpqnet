@@ -44,6 +44,7 @@ public class Ladder {
     private final Map<String, AtomicReference<Meta>> meta = new ConcurrentHashMap<>();
     private final NickNameSearchIndex charSearchIndex = new NickNameSearchIndex();
     public final Map<String, Cutoffs> regionCutoff;
+    public final AtomicReference<Realms> realms = new AtomicReference<>(new Realms(new HashMap<>()));
     public final CharUpdater charUpdater;
     private final DB db;
     private final BlizzardAPI blizzardAPI;
@@ -76,12 +77,19 @@ public class Ladder {
         } else {
             updates = Observable.never();
         }
-        loadRegionData(EU)
-                .andThen(loadRegionData(US))
-                .andThen(charsAreLoaded())
-                .andThen(updates)
-                .doOnError(e -> log.error("Error fetching ladder", e)).onErrorReturnItem(Snapshot.empty(EU))
-                .subscribe();
+        loadRealms()
+            .andThen(loadRegionData(EU))
+            .andThen(loadRegionData(US))
+            .andThen(charsAreLoaded())
+            .andThen(updates)
+            .doOnError(e -> log.error("Error fetching ladder", e)).onErrorReturnItem(Snapshot.empty(EU))
+            .subscribe();
+        Observable.interval(24,24, TimeUnit.HOURS)
+            .flatMapCompletable(tick -> {
+                log.info("Updating realms");
+                return updateRealms(EU).andThen(updateRealms(US));
+            })
+            .subscribe();
     }
 
     private Completable charsAreLoaded() {
@@ -107,6 +115,24 @@ public class Ladder {
                 log.info("Data updater for " + region + " has been finished");
                 return Single.just(tick);
             });
+    }
+
+    public Completable loadRealms() {
+        return Completable.defer(() -> db.loadRealms()
+            .map((Realms newValue) -> {
+                Realms merge = realms.get().merge(newValue);
+                realms.set(merge);
+                return merge;
+            })
+            .ignoreElement());
+    }
+
+    public Completable updateRealms(String region) {
+        return Completable.defer(() -> blizzardAPI.realms(region)
+            .flatMapCompletable(nRealms -> {
+                realms.set(nRealms.merge(realms.get()));
+                return db.insertRealms(nRealms);
+            }));
     }
 
     public Completable loadRegionData(String region) {

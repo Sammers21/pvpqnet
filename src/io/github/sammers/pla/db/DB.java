@@ -1,6 +1,8 @@
 package io.github.sammers.pla.db;
 
 import io.github.sammers.pla.Main;
+import io.github.sammers.pla.blizzard.Realm;
+import io.github.sammers.pla.blizzard.Realms;
 import io.github.sammers.pla.blizzard.WowAPICharacter;
 import io.reactivex.Completable;
 import io.reactivex.Maybe;
@@ -11,9 +13,15 @@ import io.vertx.reactivex.ext.mongo.MongoClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Duration;
+import java.time.Instant;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
+
+import static java.time.ZoneOffset.UTC;
 
 public class DB {
     private static final Logger log = LoggerFactory.getLogger(DB.class);
@@ -41,6 +49,31 @@ public class DB {
         return mongoClient.rxRemoveDocuments(bracket,
             new JsonObject().put("timestamp", new JsonObject().put("$lt", new Date().getTime() - (long) hours * 60 * 60 * 1000))
         ).doOnSuccess(res -> log.info("Deleted " + res.getRemovedCount() + " records " + bracket + " snapshots"));
+    }
+
+    /**
+     * The idea is the following: we want snapshots to take less space, but we want to keep the history of the snapshots.
+     * We want to keep one weekly snapshot made on Friday for every week. Also, we keep all hourly snapshots for the last 24 hours.
+     */
+    public Completable cleanBracketSnapshot(String bracket) {
+        // find all snapshots timestamps first
+        FindOptions findOptions = new FindOptions();
+        findOptions.setFields(new JsonObject().put("timestamp", 1));
+        findOptions.setSort(new JsonObject().put("timestamp", 1));
+        return mongoClient.rxFindWithOptions(bracket, new JsonObject(), findOptions).flatMapCompletable(found -> {
+            List<JsonObject> notToDelete = new ArrayList<>();
+            List<JsonObject> toDelete = new ArrayList<>();
+            long now = System.currentTimeMillis();
+            Instant nowInst = Instant.ofEpochMilli(now);
+            found.forEach(json -> {
+                long timestamp = json.getLong("timestamp");
+                Instant snapTime= Instant.ofEpochMilli(timestamp);
+                Duration duration = Duration.between(snapTime, nowInst);
+                duration.toMinutes();
+                json.put("duration", duration.toMinutes() + " minutes ago");
+            });
+           return Completable.complete();
+        });
     }
 
     public Maybe<Snapshot> getMinsAgo(String bracket, String region, int mins) {
@@ -115,5 +148,28 @@ public class DB {
             })
             .subscribeOn(Main.VTHREAD_SCHEDULER)
             .observeOn(Main.VTHREAD_SCHEDULER);
+    }
+
+    public Completable insertRealms(Realms realms) {
+        return mongoClient.rxBulkWrite("realm", realms.idToRealm().values().stream()
+            .map(Realm::toJson)
+            .map(json -> BulkOperation.createUpdate(
+                new JsonObject().put("id", json.getInteger("id")),
+                new JsonObject().put("$set", json)
+            ).setUpsert(true))
+            .toList()
+        ).ignoreElement();
+    }
+
+    public Single<Realms> loadRealms() {
+        return Single.defer(() -> {
+                long tick = System.nanoTime();
+                return mongoClient.rxFind("realm", new JsonObject())
+                    .map(res -> {
+                        long elapsed = System.nanoTime() - tick;
+                        log.info("Loaded {} realms in {} ms", res.size(), elapsed / 1000000);
+                        return Realms.fromJson(res.stream().toList());
+                    });
+            });
     }
 }

@@ -20,6 +20,8 @@ import org.slf4j.LoggerFactory;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
@@ -139,22 +141,25 @@ public class BlizzardAPI {
     Maybe<JsonObject> maybeResponse(String namespace, String url) {
         return token().flatMapMaybe(blizzardAuthToken ->
             rpsToken().andThen(
-                webClient.getAbs(url)
-                    .addQueryParam("namespace", namespace)
-                    .addQueryParam("locale", LOCALE)
-                    .bearerTokenAuthentication(blizzardAuthToken.accessToken())
-                    .rxSend()
-                    .flatMapMaybe(resp -> {
-                        if (resp.statusCode() == 200) {
-                            return Maybe.just(resp.bodyAsJsonObject());
-                        } else if (resp.statusCode() == 429 || resp.statusCode() / 100 == 5) {
-                            int code = resp.statusCode();
-                            log.info(code + " Retrying " + url + " " + resp.statusMessage());
-                            return rpsToken().andThen(rpsToken()).andThen(maybeResponse(namespace, url));
-                        } else {
-                            return Maybe.error(new IllegalStateException("Error getting " + url + " " + resp.statusCode() + " " + resp.statusMessage() + " " + resp.bodyAsString()));
-                        }
-                    })
+                Maybe.defer(() -> {
+                    log.debug("Getting " + url);
+                    return webClient.getAbs(url)
+                        .addQueryParam("namespace", namespace)
+                        .addQueryParam("locale", LOCALE)
+                        .bearerTokenAuthentication(blizzardAuthToken.accessToken())
+                        .rxSend()
+                        .flatMapMaybe(resp -> {
+                            if (resp.statusCode() == 200) {
+                                return Maybe.just(resp.bodyAsJsonObject());
+                            } else if (resp.statusCode() == 429 || resp.statusCode() / 100 == 5) {
+                                int code = resp.statusCode();
+                                log.info(code + " Retrying " + url + " " + resp.statusMessage());
+                                return rpsToken().andThen(rpsToken()).andThen(maybeResponse(namespace, url));
+                            } else {
+                                return Maybe.error(new IllegalStateException("Error getting " + url + " " + resp.statusCode() + " " + resp.statusMessage() + " " + resp.bodyAsString()));
+                            }
+                        });
+                })
             )
         );
     }
@@ -220,6 +225,24 @@ public class BlizzardAPI {
             .rxSendForm(form)
             .map(response -> BlizzardAuthToken.fromJson(response.bodyAsJsonObject()))
             .doOnSuccess(token -> log.info("Got token: {}", token));
+    }
+
+    public Single<Realms> realms(String region) {
+        return Single.defer(() -> {
+            long tick = System.currentTimeMillis();
+            String realRegion = realRegion(region);
+            String namespace = "dynamic-" + realRegion;
+            String url = "https://" + realRegion + ".api.blizzard.com/data/wow/connected-realm/index";
+            return maybeResponse(namespace, url)
+                .flatMapSingle(index -> {
+                    List<String> hrefs = index.getJsonArray("connected_realms").stream().map(o -> ((JsonObject) o).getString("href")).toList();
+                    List<Maybe<JsonObject>> list = hrefs.stream().map(href -> maybeResponse(namespace, href)).toList();
+                    return Maybe.merge(list).toList().map(responses -> {
+                        log.info("Realms for {} fetched in {}ms", realRegion, System.currentTimeMillis() - tick);
+                        return Realms.fromBlizzardJson(realRegion, index, responses);
+                    });
+                });
+        });
     }
 
     public Single<Cutoffs> cutoffs(String region) {

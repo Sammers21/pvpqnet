@@ -3,9 +3,12 @@ package io.github.sammers.pla.db;
 
 import io.github.sammers.pla.Main;
 import io.github.sammers.pla.blizzard.Cutoffs;
+import io.github.sammers.pla.blizzard.Realms;
 import io.github.sammers.pla.http.JsonConvertable;
 import io.github.sammers.pla.http.Resp;
 import io.github.sammers.pla.logic.Calculator;
+import io.github.sammers.pla.logic.CharAndDiff;
+import io.github.sammers.pla.logic.SnapshotDiff;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
@@ -121,5 +124,12 @@ public record Snapshot(List<Character> characters, Long timestamp, String region
         return this;
     }
 
+    public Snapshot applySlugToName(Realms realms) {
+        return new Snapshot(characters().stream().map(ch -> {
+            String realmSlug = ch.realm();
+            String realmName = realms.slugToName(realmSlug);
+            return ch.changeRealmName(realmName);
+        }).toList(), timestamp(), region(), dateTime());
+    }
 
 }

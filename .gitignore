@@ -10,3 +10,4 @@ docker-compose.yml
 .DS_Store
 settings/.DS_Store
 target/
+backup/
