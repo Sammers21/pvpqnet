@@ -17,6 +17,7 @@ import io.vertx.reactivex.ext.web.client.WebClient;
 import org.ocpsoft.prettytime.PrettyTime;
 
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -32,6 +33,10 @@ public class Main {
     public static final Scheduler VTHREAD_SCHEDULER = Schedulers.from(VTHREAD_EXECUTOR);
     public static PrettyTime PRETTY_TIME = new PrettyTime(new Locale("en"));
     public static DateTimeFormatter DATA_TIME = ISO_DATE_TIME;
+    public static DateTimeFormatter DATA_TIME_WITH_WEEKDAY = new DateTimeFormatterBuilder()
+        .appendPattern("EEEE, ")
+        .append(ISO_DATE_TIME)
+        .toFormatter();
 
     public static void main(String[] args) {
         final Vertx vertx = Vertx.vertx(new VertxOptions()

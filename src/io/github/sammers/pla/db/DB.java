@@ -13,12 +13,8 @@ import io.vertx.reactivex.ext.mongo.MongoClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.time.Duration;
-import java.time.Instant;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.time.*;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static java.time.ZoneOffset.UTC;
@@ -59,20 +55,52 @@ public class DB {
         // find all snapshots timestamps first
         FindOptions findOptions = new FindOptions();
         findOptions.setFields(new JsonObject().put("timestamp", 1));
-        findOptions.setSort(new JsonObject().put("timestamp", 1));
+        findOptions.setSort(new JsonObject().put("timestamp", -1));
         return mongoClient.rxFindWithOptions(bracket, new JsonObject(), findOptions).flatMapCompletable(found -> {
-            List<JsonObject> notToDelete = new ArrayList<>();
-            List<JsonObject> toDelete = new ArrayList<>();
+            Map<Long, JsonObject> notToDeleteSet = new HashMap<>();
+            Map<Long, JsonObject> toDeleteSet = new HashMap<>();
             long now = System.currentTimeMillis();
             Instant nowInst = Instant.ofEpochMilli(now);
+            Map<LocalDate, List<JsonObject>> dayToSnapshots = new HashMap<>();
             found.forEach(json -> {
                 long timestamp = json.getLong("timestamp");
-                Instant snapTime= Instant.ofEpochMilli(timestamp);
+                Instant snapTime = Instant.ofEpochMilli(timestamp);
                 Duration duration = Duration.between(snapTime, nowInst);
-                duration.toMinutes();
-                json.put("duration", duration.toMinutes() + " minutes ago");
+                if (duration.toHours() < 24) {
+                    // keep all snapshots for the last 24 hours
+                    notToDeleteSet.put(timestamp, json);
+                }
+                dayToSnapshots.computeIfAbsent(ZonedDateTime.ofInstant(snapTime, UTC).toLocalDate(), k -> new ArrayList<>()).add(json);
+
+                // format snapTime to include the day of the week
+                json.put("formatted", ZonedDateTime.ofInstant(snapTime, UTC).format(Main.DATA_TIME_WITH_WEEKDAY));
+                json.put("local_date", ZonedDateTime.ofInstant(snapTime, UTC).toLocalDate().toString());
             });
-           return Completable.complete();
+            dayToSnapshots.forEach((day, snapshots) -> {
+                if (Duration.between(day.atStartOfDay(), ZonedDateTime.ofInstant(nowInst, UTC)).toDays() < 7) {
+                    // keep minimal snapshot for every day of the last week
+                    snapshots.stream().min(Comparator.comparingLong(json -> json.getLong("timestamp"))).ifPresent(json -> {
+                        notToDeleteSet.put(json.getLong("timestamp"), json);
+                    });
+                } else {
+                    // keep only THURSDAY snapshots for every week
+                    if (day.getDayOfWeek().equals(DayOfWeek.THURSDAY)) {
+                        snapshots.stream().min(Comparator.comparingLong(json -> json.getLong("timestamp"))).ifPresent(json -> {
+                            notToDeleteSet.put(json.getLong("timestamp"), json);
+                        });
+                    }
+                }
+            });
+            // keep only notToDeleteSet
+            found.forEach(json -> {
+                long timestamp = json.getLong("timestamp");
+                if (!notToDeleteSet.containsKey(timestamp)) {
+                    toDeleteSet.put(timestamp, json);
+                }
+            });
+            return mongoClient.rxRemoveDocuments(bracket, new JsonObject().put("timestamp", new JsonObject().put("$in", new ArrayList<>(toDeleteSet.keySet()))))
+                .doOnSuccess(res -> log.info("Deleted " + res.getRemovedCount() + " records " + bracket + " snapshots"))
+                .ignoreElement();
         });
     }
 

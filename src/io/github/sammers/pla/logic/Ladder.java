@@ -568,8 +568,7 @@ public class Ladder {
             current.set(newCharacters);
             log.info("Data for bracket {} is different[diffs={}] performing update", bracket, diff.chars().size());
             return db.insertOnlyIfDifferent(bracket, region, newCharacters)
-                .andThen(db.deleteOlderThanHours(bracket, 24 * 30)
-                    .ignoreElement()
+                .andThen(db.cleanBracketSnapshot(bracket)
                     .andThen(calcDiffs(bracket, region)))
                     .andThen(Completable.defer(() -> upsertGamingHistory(bracket, diff)));
         } else {
