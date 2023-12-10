@@ -118,8 +118,8 @@ public class DB {
     private Maybe<Snapshot> find(String bracket, FindOptions fopts, JsonObject opts) {
         return mongoClient.rxFindWithOptions(bracket, opts, fopts).flatMapMaybe(res -> {
             List<Snapshot> snapshots = res.stream().map(Snapshot::fromJson).toList();
-            if (snapshots.size() > 0) {
-                return Maybe.just(snapshots.get(0));
+            if (!snapshots.isEmpty()) {
+                return Maybe.just(snapshots.getFirst());
             } else {
                 return Maybe.empty();
             }
