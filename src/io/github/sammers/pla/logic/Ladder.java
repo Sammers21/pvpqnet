@@ -511,7 +511,7 @@ public class Ladder {
                         characters.forEach(characterCache::upsert);
                         charSearchIndex.insertNickNamesWC(characters);
                         log.info("Character data size={} for region={} hidden={} chars has been loaded to cache in {} ms", characters.size(), region, totalHidden, (System.nanoTime() - tick) / 1000000);
-                        VTHREAD_SCHEDULER.schedulePeriodicallyDirect(() -> charUpdater.updateCharsInfinite(region).subscribe(), minutesTill5am(), 24 * 60, TimeUnit.MINUTES);
+//                        VTHREAD_SCHEDULER.schedulePeriodicallyDirect(() -> charUpdater.updateCharsInfinite(region).subscribe(), minutesTill5am(), 24 * 60, TimeUnit.MINUTES);
                         emitter.onComplete();
                     });
                 }));
