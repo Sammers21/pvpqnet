@@ -176,9 +176,9 @@ public record WowAPICharacter(long id,
             JsonObject specs,
             JsonObject pets,
             String region) {
-        String activeSpec = entries.getJsonObject("active_spec").getString("name");
+        String activeSpec = Optional.of(entries.getJsonObject("active_spec")).map(obj -> obj.getString("name")).orElse("");
         String talents = specs.getJsonArray("specializations").stream()
-            .map(s -> (JsonObject)s)
+            .map(s -> (JsonObject) s)
             .filter(s -> s.getJsonObject("specialization").getString("name").equals(activeSpec))
             .map(s -> s.getJsonArray("loadouts").getJsonObject(0).getString("talent_loadout_code"))
             .findFirst()
