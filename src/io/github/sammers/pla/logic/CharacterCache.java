@@ -80,7 +80,11 @@ public class CharacterCache {
     }
 
     public Set<WowAPICharacter> altsFor(WowAPICharacter character) {
-        return alts.get(character.petHash()).stream().filter(c -> !c.hidden()).collect(Collectors.toSet());
+        return Optional.ofNullable(alts.get(character.petHash()))
+            .orElse(Set.of())
+            .stream()
+            .filter(c -> !c.hidden())
+            .collect(Collectors.toSet());
     }
 
     public static void indexCharAlts(Map<Integer, Set<WowAPICharacter>> alts, WowAPICharacter character) {
