@@ -8,9 +8,11 @@ import io.github.sammers.pla.logic.CharacterCache;
 import io.github.sammers.pla.logic.Ladder;
 import io.github.sammers.pla.logic.Refs;
 import io.reactivex.Scheduler;
+import io.reactivex.plugins.RxJavaPlugins;
 import io.reactivex.schedulers.Schedulers;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.json.JsonObject;
+import io.vertx.reactivex.core.RxHelper;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.ext.mongo.MongoClient;
 import io.vertx.reactivex.ext.web.client.WebClient;
@@ -48,6 +50,9 @@ public class Main {
                 .setMaxEventLoopExecuteTimeUnit(TimeUnit.SECONDS)
                 .setEventLoopPoolSize(32)
         );
+        RxJavaPlugins.setComputationSchedulerHandler(s -> RxHelper.scheduler(vertx));
+        RxJavaPlugins.setIoSchedulerHandler(s -> RxHelper.blockingScheduler(vertx));
+        RxJavaPlugins.setNewThreadSchedulerHandler(s -> RxHelper.scheduler(vertx));
         final WebClient webClient = WebClient.create(vertx);
         final String dbUri = System.getenv("DB_URI");
         final String clientId = System.getenv("CLIENT_ID");

@@ -66,7 +66,8 @@ public class RateLimiter {
     public Completable request() {
         if (requestQes.size() > maxRequestsTotal) {
             return Completable.error(new IllegalStateException("There are too many requests in the queue. Current size: " + requestQes.size()));
+        } else {
+            return Completable.create(requestQes::add);
         }
-        return Completable.create(requestQes::add);
     }
 }

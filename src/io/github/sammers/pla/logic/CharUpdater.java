@@ -8,7 +8,10 @@ import io.github.sammers.pla.db.Character;
 import io.github.sammers.pla.db.DB;
 import io.github.sammers.pla.db.Snapshot;
 import io.reactivex.Completable;
+import io.reactivex.Flowable;
 import io.reactivex.Maybe;
+import org.javatuples.Pair;
+import org.javatuples.Triplet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,6 +19,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
@@ -42,6 +46,84 @@ public class CharUpdater {
         this.characterCache = characterCache;
         this.charSearchIndex = charSearchIndex;
         this.db = db;
+    }
+
+    public Completable updateCharacters(String region,
+                                         int timeWithoutUpdateMin, TimeUnit units,
+                                         int timeout, TimeUnit timeoutUnits) {
+        return Completable.defer(() -> {
+            log.info("Updating characters for region " + region);
+            // Get top chars from 3v3, 2v2, RBG, shuffle
+            // find those that has not been updated for timeWithoutUpdateMin
+            // update them
+            // prioritize those who have the highest rating
+            // Stop when time is up
+            long tick = System.nanoTime();
+            // nickName, realm, rating
+            List<Triplet<String, String, Long>> newChars = new ArrayList<>();
+            // nickName, realm, lastUpdate, rating
+            Map<Pair<String, String>, Pair<Long, Long>> existing = new HashMap<>();
+            for (String bracket : List.of(THREE_V_THREE, TWO_V_TWO, RBG, SHUFFLE)) {
+                Snapshot snapshot = refs.refByBracket(bracket, region).get();
+                if (snapshot == null) {
+                    log.warn("No data for bracket {}-{}", region, bracket);
+                    continue;
+                }
+                List<Character> chars = snapshot.characters();
+                for (Character character : chars) {
+                    Pair<String, String> key = Pair.with(character.name(), character.realm());
+                    WowAPICharacter byFullName = characterCache.getByFullName(Character.fullNameByRealmAndName(character.name(), character.realm()));
+                    if (byFullName != null && byFullName.lastUpdatedUTCms() > tick - units.toMillis(timeWithoutUpdateMin)) {
+                        log.trace("Character {}-{} has been updated recently", character.name(), character.realm());
+                    } else if (byFullName == null) {
+                        newChars.add(Triplet.with(character.name(), character.realm(), character.rating()));
+                    } else {
+                        existing.compute(key, (k, v) -> {
+                            if (v == null) {
+                                return Pair.with(byFullName.lastUpdatedUTCms(), character.rating());
+                            } else {
+                                return Pair.with(Math.max(v.getValue0(), byFullName.lastUpdatedUTCms()), Math.max(v.getValue1(), character.rating()));
+                            }
+                        });
+                    }
+                }
+            }
+            // sort new chars by rating from highest to lowest
+            List<Pair<String, String>> newCharsSorted = newChars.stream()
+                .sorted(Comparator.comparingLong(value -> -value.getValue2()))
+                .map(triplet -> Pair.with(triplet.getValue0(), triplet.getValue1()))
+                .toList();
+            // sort existing chars by rating from highest to lowest
+            List<Pair<String, String>> existingSorted = existing.entrySet().stream()
+                .sorted(Comparator.comparingLong(entry -> -entry.getValue().getValue1()))
+                .map(Map.Entry::getKey)
+                .toList();
+            // merge in a following way:
+            // 1. put one from newCharsSorted
+            // 2. put one from existingSorted
+            // 3. repeat until both lists are empty
+            List<Pair<String, String>> merged = new ArrayList<>(newCharsSorted.size() + existingSorted.size());
+            Iterator<Pair<String, String>> newCharsIt = newCharsSorted.iterator();
+            Iterator<Pair<String, String>> existingIt = existingSorted.iterator();
+            while (newCharsIt.hasNext() || existingIt.hasNext()) {
+                if (newCharsIt.hasNext()) {
+                    merged.add(newCharsIt.next());
+                }
+                if (existingIt.hasNext()) {
+                    merged.add(existingIt.next());
+                }
+            }
+            // merged into list of nickNames
+            log.info("There is {} new chars and {} existing chars in region {} that need to be updated. We have {} {} to do it",
+                newCharsSorted.size(), existingSorted.size(), region, timeout, timeoutUnits.name());
+            // transform merged list into list of completables
+            return Flowable.fromIterable(
+                    merged.stream()
+                        .map(pair -> updateChar(region, Character.fullNameByRealmAndName(pair.getValue0(), pair.getValue1())))
+                        .toList())
+                .flatMapCompletable(c -> c, true, 1)
+                .takeUntil(Completable.timer(timeout, timeoutUnits));
+        });
     }
 
     public Completable updateCharsInfinite(String region) {

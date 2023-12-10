@@ -115,69 +115,11 @@ public class Ladder {
             .flatMapSingle(tick -> shuffle(region))
             .flatMapSingle(tick -> loadCutoffs(region).andThen(Single.just(tick)))
             .flatMapSingle(tick -> calculateMeta(region).andThen(Single.just(tick)))
-            .flatMapSingle(tick -> updateCharacters(region, 7, DAYS, timeout, timeoutUnits).andThen(Single.just(tick)))
+            .flatMapSingle(tick -> charUpdater.updateCharacters(region, 7, DAYS, timeout, timeoutUnits).andThen(Single.just(tick)))
             .flatMapSingle(tick -> {
                 log.info("Data updater for " + region + " has been finished");
                 return Single.just(tick);
             });
-    }
-
-    private Completable updateCharacters(String region,
-                                         int timeWithoutUpdateMin, TimeUnit units,
-                                         int timeout, TimeUnit timeoutUnits) {
-        return Completable.defer(() -> {
-            // Get top chars from 3v3, 2v2, RBG, shuffle
-            // find those that has not been updated for timeWithoutUpdateMin
-            // update them
-            // prioritize those who have the highest rating
-            // Stop when time is up
-            long tick = System.nanoTime();
-            // nickName, realm, rating
-            List<Triplet<String, String, Long>> newChars = new ArrayList<>();
-            // nickName, realm, lastUpdate, rating
-            Map<Pair<String, String>, Pair<Long, Long>> existing = new HashMap<>();
-            for (String bracket : List.of(THREE_V_THREE, TWO_V_TWO, RBG, SHUFFLE)) {
-                Snapshot snapshot = refs.refByBracket(bracket, region).get();
-                if (snapshot == null) {
-                    log.warn("No data for bracket {}-{}", region, bracket);
-                    continue;
-                }
-                List<Character> chars = snapshot.characters();
-                for (Character character : chars) {
-                    Pair<String, String> key = Pair.with(character.name(), character.realm());
-                    WowAPICharacter byFullName = characterCache.getByFullName(Character.fullNameByRealmAndName(character.name(), character.realm()));
-                    if (byFullName != null && byFullName.lastUpdatedUTCms() > tick - units.toMillis(timeWithoutUpdateMin)) {
-                        log.trace("Character {}-{} has been updated recently", character.name(), character.realm());
-                    } else if (byFullName == null) {
-                        newChars.add(Triplet.with(character.name(), character.realm(), character.rating()));
-                    } else {
-                        existing.compute(key, (k, v) -> {
-                            if (v == null) {
-                                return Pair.with(byFullName.lastUpdatedUTCms(), character.rating());
-                            } else {
-                                return Pair.with(Math.max(v.getValue0(), byFullName.lastUpdatedUTCms()), Math.max(v.getValue1(), character.rating()));
-                            }
-                        });
-                    }
-                }
-            }
-            // sort new chars by rating from highest to lowest
-            List<Pair<String, String>> newCharsSorted = newChars.stream()
-                .sorted(Comparator.comparingLong(value -> -value.getValue2()))
-                .map(triplet -> Pair.with(triplet.getValue0(), triplet.getValue1()))
-                .toList();
-            // sort existing chars by rating from highest to lowest
-            List<Pair<String, String>> existingSorted = existing.entrySet().stream()
-                .sorted(Comparator.comparingLong(entry -> -entry.getValue().getValue1()))
-                .map(Map.Entry::getKey)
-                .toList();
-            // merge new and existing chars, so that new chars are first
-            List<Pair<String, String>> merged = new ArrayList<>(newCharsSorted);
-            merged.addAll(existingSorted);
-            log.info("There is {} new chars and {} existing chars in region {} that need to be updated. We have {} {} to do it",
-                newCharsSorted.size(), existingSorted.size(), region, timeWithoutUpdateMin, units.name());
-            return Completable.complete();
-        });
     }
 
     public Completable loadRealms() {
