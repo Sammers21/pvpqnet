@@ -58,7 +58,7 @@ public class CharUpdater {
             // update them
             // prioritize those who have the highest rating
             // Stop when time is up
-            long tick = System.nanoTime();
+            long tick = System.currentTimeMillis();
             // nickName, realm, rating
             List<Triplet<String, String, Long>> newChars = new ArrayList<>();
             // nickName, realm, lastUpdate, rating
@@ -73,11 +73,12 @@ public class CharUpdater {
                 for (Character character : chars) {
                     Pair<String, String> key = Pair.with(character.name(), character.realm());
                     WowAPICharacter byFullName = characterCache.getByFullName(Character.fullNameByRealmAndName(character.name(), character.realm()));
-                    if (byFullName != null && byFullName.lastUpdatedUTCms() > tick - units.toMillis(timeWithoutUpdateMin)) {
+                    if (byFullName != null && tick - byFullName.lastUpdatedUTCms() < units.toMillis(timeWithoutUpdateMin)) {
                         log.trace("Character {}-{} has been updated recently", character.name(), character.realm());
                     } else if (byFullName == null) {
                         newChars.add(Triplet.with(character.name(), character.realm(), character.rating()));
                     } else {
+                        log.trace("Character {}-{} has not been updated for {} days", character.name(), character.realm(), TimeUnit.MILLISECONDS.toDays(tick - byFullName.lastUpdatedUTCms()));
                         existing.compute(key, (k, v) -> {
                             if (v == null) {
                                 return Pair.with(byFullName.lastUpdatedUTCms(), character.rating());
