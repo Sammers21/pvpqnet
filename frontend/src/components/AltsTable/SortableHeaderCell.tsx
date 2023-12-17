@@ -13,7 +13,6 @@ interface IProps {
 
 const HeaderCell = ({ column, onSort, sort, sortable }: IProps) => {
   const { align = 'left', field, label } = column;
-
   const renderButtonHover = () => {
     return (
       <ArrowDownwardOutlinedIcon
@@ -22,7 +21,6 @@ const HeaderCell = ({ column, onSort, sort, sortable }: IProps) => {
       />
     );
   };
-
   const renderOrderArrow = (field: string) => {
     const sortByField = sort.field === field ? sort : null;
     if (!sortByField) return renderButtonHover();
@@ -31,14 +29,13 @@ const HeaderCell = ({ column, onSort, sort, sortable }: IProps) => {
       sortByField.sort === 'desc' ? ArrowDownwardOutlinedIcon : ArrowUpwardOutlinedIcon;
     return <ArrowIcon fontSize="small" className="text-white" />;
   };
-
   return (
-    <TableCell align={align}>
+    <TableCell align={align} className="text-white">
       <div
         onClick={() =>
           sortable && onSort(field, sort.field === field && sort.sort === 'desc' ? 'asc' : 'desc')
         }
-        className="group gap-2 flex w-full items-center cursor-pointer text-base"
+        className="flex items-center justify-center"
       >
         {label}
         {sortable && renderOrderArrow(field)}

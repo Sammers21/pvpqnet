@@ -24,7 +24,7 @@ const getTableColumns = (activity: string, isMobile: boolean, region: string): a
 
       return (
         <div className="flex">
-          {isMobile && (<span className="text-base font-light"   style={{ color: getRankDiffColor(rankDiff) }}>{`#${pos}`}</span>)}
+          {isMobile && (<span className="text-base font-light" style={{ color: getRankDiffColor(rankDiff) }}>{`#${pos}`}</span>)}
           {!isMobile && (<span className="text-base font-light">{`#${pos}`}</span>)}
           {!isMobile && Number.isInteger(rankDiff) && (
             <span

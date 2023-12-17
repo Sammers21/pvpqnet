@@ -25,9 +25,8 @@ const renderName = ({ record: alt }: IParams, isMobile: boolean) => {
     const max = nickNameLenOnMobile();
     name = `${name.substring(0, max)}`;
   }
-
   return (
-    <div className="flex items-center">
+    <div className="pl-2 flex items-center">
       <span color={getClassNameColor(alt.class)}>
         <a
           className="text-base no-underline"

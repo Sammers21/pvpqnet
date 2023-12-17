@@ -2,11 +2,12 @@ import { useMemo, useState } from 'react';
 import { Table as TableMui, TableBody, TableContainer, TableHead, TableRow } from '@mui/material';
 import { styled } from '@mui/system';
 
-import HeaderCell from '@/components/AnotherTable/SortableHeaderCell';
-import Row from '@/components/AnotherTable/Row';
+import HeaderCell from '@/components/AltsTable/SortableHeaderCell';
+import Row from '@/components/AltsTable/Row';
 
 import type { IHistoryRow, ITableColumn } from '@/types';
 import bgImage from '../../../assets/background/smoke-table.jpg';
+import AltsTable from '../Alts/Table';
 
 const Table = styled(TableMui)({
   width: '100%',

@@ -2,29 +2,24 @@ import { useMemo, useState } from 'react';
 import { Table as TableMui, TableBody, TableContainer, TableHead, TableRow } from '@mui/material';
 import { styled } from '@mui/system';
 
-import HeaderCell from '@/components/AnotherTable/SortableHeaderCell';
-import Row from '@/components/AnotherTable/Row';
+import HeaderCell from '@/components/AltsTable/SortableHeaderCell';
+import Row from '@/components/AltsTable/Row';
 
 import type { IAlt, ITableColumn } from '@/types';
 
+// const 
 const Table = styled(TableMui)({
   width: '100%',
   tableLayout: 'auto',
-
   'tbody tr:nth-of-type(odd)': {
     backgroundColor: '#0e1216',
   },
-
   '& tbody tr:hover': {
     backgroundColor: 'rgb(21, 128, 61, 0.25)',
   },
   '& tr': {
     height: '40px !important',
   },
-  '& th': {
-    padding: '8px !important',
-  },
-
   '& tr td,th': {
     borderBottom: 'none',
   },
@@ -80,7 +75,7 @@ const AltsTable = ({ columns, records = [], isMobile }: IProps) => {
     return <TableBody>{rowsComponent}</TableBody>;
   };
   const renderTable = () => (
-    <div className="px-2 md:px-0">
+    <div>
       <Table padding={isMobile ? 'none' : 'normal'}>
         {renderHeader()}
         <colgroup>
