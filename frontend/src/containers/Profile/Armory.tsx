@@ -38,7 +38,7 @@ const Armory = ({ player, loading, updatePlayer }: IProps) => {
         <PlayerHeader player={player} updatePlayer={updatePlayer} loading={loading} />
         <PvpBrackets player={player} />
         <AltsTable player={player} />
-        <GamingHistory player={player} />
+        {player.brackets.find((bracket) => bracket.gaming_history.history.length > 0) && (<GamingHistory player={player} />)}
         {breakpoint === 'md' && <TitlesHistory player={player} />}
       </div>
     </div>
