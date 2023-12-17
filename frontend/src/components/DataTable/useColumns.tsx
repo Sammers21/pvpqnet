@@ -21,7 +21,6 @@ const getTableColumns = (activity: string, isMobile: boolean, region: string): a
     render: ({ record }: { record: IActivityRecord }) => {
       const pos = record?.character?.pos || record?.pos;
       const rankDiff = record?.diff?.rank_diff;
-
       return (
         <div className="flex">
           {isMobile && (<span className="text-base font-light" style={{ color: getRankDiffColor(rankDiff) }}>{`#${pos}`}</span>)}

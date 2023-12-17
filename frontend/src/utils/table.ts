@@ -69,7 +69,7 @@ export const getDiffColor = (diff: number): string => {
 };
 
 export const getRankDiffColor = (diff: number): string => {
-  if (diff === 0) return 'white';
+  if (diff === 0 || diff === undefined) return 'white';
   return diff < 0 ?  winGreen : lossRed;
 };
 
