@@ -24,7 +24,7 @@ record GamingHistory(List<DiffAndWithWho> hist) implements JsonConvertable {
         } else {
             List<DiffAndWithWho> newHist = new ArrayList<>(hist);
             newHist.add(diff);
-            if(newHist.size() > 500){
+            if(newHist.size() > 10_000){
                 newHist.remove(0);
             }
             return new GamingHistory(newHist);
