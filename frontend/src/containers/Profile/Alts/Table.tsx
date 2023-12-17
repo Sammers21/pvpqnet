@@ -41,12 +41,10 @@ const AltsTable = ({ columns, records = [], isMobile }: IProps) => {
     field: 'SHUFFLE',
     sort: 'desc',
   });
-
   const rowsComponent = useMemo(() => {
     function renderRow(record: IAlt, index: number) {
       return <Row key={index} record={record} columns={columns} />;
     }
-
     function sortRecords(records: IAlt[], sort: { field: keyof IAlt; sort: 'asc' | 'desc' }) {
       return records.sort((a, b) => {
         if (sort.sort === 'desc') {
@@ -55,14 +53,11 @@ const AltsTable = ({ columns, records = [], isMobile }: IProps) => {
         return (a[sort.field] as number) > (b[sort.field] as number) ? 1 : -1;
       });
     }
-
     return sortRecords(records, sort).map((record, index) => renderRow(record, index));
   }, [columns, records, sort]);
-
   const onSort = (field: any, sort: 'asc' | 'desc') => {
     setSort({ field, sort });
   };
-
   const renderHeaderCells = () => {
     return columns.map((column, index) => (
       <HeaderCell
@@ -74,7 +69,6 @@ const AltsTable = ({ columns, records = [], isMobile }: IProps) => {
       />
     ));
   };
-
   const renderHeader = () => {
     return (
       <TableHead>
@@ -82,11 +76,9 @@ const AltsTable = ({ columns, records = [], isMobile }: IProps) => {
       </TableHead>
     );
   };
-
   const renderBody = () => {
     return <TableBody>{rowsComponent}</TableBody>;
   };
-
   const renderTable = () => (
     <div className="px-2 md:px-0">
       <Table padding={isMobile ? 'none' : 'normal'}>
@@ -100,7 +92,6 @@ const AltsTable = ({ columns, records = [], isMobile }: IProps) => {
       </Table>
     </div>
   );
-
   return <TableContainer>{renderTable()}</TableContainer>;
 };
 

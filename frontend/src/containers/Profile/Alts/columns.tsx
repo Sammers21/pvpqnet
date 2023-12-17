@@ -10,6 +10,7 @@ import {
 import { CLASS_AND_SPECS } from '@/constants/filterSchema';
 
 import type { IAlt, IPlayerBracket, ITableColumn } from '@/types';
+import { MINIMUM_NICKNAME_LENGTH, nickNameLenOnMobile } from '@/utils/common';
 
 interface IParams {
   record: IAlt;
@@ -21,7 +22,7 @@ const renderName = ({ record: alt }: IParams, isMobile: boolean) => {
 
   let name = alt.name;
   if (isMobile) {
-    const max = Math.round(Math.max(6, 6 + (window.innerWidth - 500) / 30));
+    const max = nickNameLenOnMobile();
     name = `${name.substring(0, max)}`;
   }
 
@@ -65,7 +66,7 @@ const renderBracket = ({ record: alt }: IParams, bracketName: keyof typeof brack
   return (
     <div className="flex">
       <img
-        className="w-5 h-5 mx-1"
+        className="w-5 h-5 mx-05"
         src={getSeasonRankImageFromRating(rating, is_rank_one_range)}
         alt="rating"
       />
@@ -110,7 +111,6 @@ const renderShuffle = ({ record: alt }: IParams, isMobile: boolean) => {
       />
     );
   }
-
   return (
     <div className="flex md:gap-2">
       {sortedSpec.map((spec) => {

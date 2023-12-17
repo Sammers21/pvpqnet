@@ -12,6 +12,7 @@ import {
   getSeasonRankImageFromRating,
 } from '@/utils/table';
 import type { IActivityRecord } from '@/types';
+import { nickNameLenOnMobile } from '@/utils/common';
 
 const getTableColumns = (activity: string, isMobile: boolean, region: string): any[] => {
   const rank = {
@@ -23,9 +24,9 @@ const getTableColumns = (activity: string, isMobile: boolean, region: string): a
 
       return (
         <div className="flex">
-          <span className="text-base font-light">{`#${pos}`}</span>
-
-          {Number.isInteger(rankDiff) && (
+          {isMobile && (<span className="text-base font-light"   style={{ color: getRankDiffColor(rankDiff) }}>{`#${pos}`}</span>)}
+          {!isMobile && (<span className="text-base font-light">{`#${pos}`}</span>)}
+          {!isMobile && Number.isInteger(rankDiff) && (
             <span
               className="text-base font-light ml-1"
               style={{ color: getRankDiffColor(rankDiff) }}
@@ -85,7 +86,7 @@ const getTableColumns = (activity: string, isMobile: boolean, region: string): a
 
       let name = record?.character?.name || record?.name;
       if (isMobile) {
-        const max = Math.round(Math.max(6, 6 + (window.innerWidth - 500) / 30));
+        const max = nickNameLenOnMobile();
         name = `${name.substring(0, max)}`;
       }
 
