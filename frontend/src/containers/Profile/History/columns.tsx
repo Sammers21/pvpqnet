@@ -120,7 +120,7 @@ const renderServerTime = ({ record }: IParams, player: IPlayer, isMobile: boolea
 };
 
 const shouldRenderWWho = (bracket: string, isMobile) => {
-  if (isMobile) {
+  if (isMobile || bracket === 'all') {
     return false;
   }
   return ['all', 'ARENA_2v2', 'ARENA_3v3'].includes(bracket);
