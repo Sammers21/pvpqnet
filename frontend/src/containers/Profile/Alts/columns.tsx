@@ -6,6 +6,7 @@ import {
   getSpecIcon,
   bracketToColor,
   getSeasonRankImageFromRating,
+  getClassIcon,
 } from '@/utils/table';
 import { CLASS_AND_SPECS } from '@/constants/filterSchema';
 
@@ -19,22 +20,25 @@ interface IParams {
 const renderName = ({ record: alt }: IParams, isMobile: boolean) => {
   const realm = alt.realm;
   const url = getAltProfileUrl(alt);
-
   let name = alt.name;
   if (isMobile) {
     const max = nickNameLenOnMobile();
     name = `${name.substring(0, max)}`;
   }
+  const classImg = getClassIcon(alt.class);
   return (
-    <div className="pl-2 flex items-center">
+    <div className="pl-1 flex items-start">
       <span color={getClassNameColor(alt.class)}>
         <a
           className="text-base no-underline"
           href={url}
           style={{ color: getClassNameColor(alt.class) }}
         >
-          {name}
-          {!isMobile && `-${realm}`}
+          <div className="flex items-start">
+            {!isMobile && <img className="w-6 h-6 mr-2" src={classImg} alt="class" />}
+            {name}
+            {!isMobile && `-${realm}`}
+          </div>
         </a>
       </span>
     </div>
