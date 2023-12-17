@@ -1,7 +1,7 @@
-import { get } from 'lodash';
-import { TableCell, TableRow, Typography } from '@mui/material';
+import { get } from "lodash";
+import { TableCell, TableRow, Typography } from "@mui/material";
 
-import type { ITableColumn } from '@/types';
+import type { ITableColumn } from "@/types";
 interface IProps {
   columns: ITableColumn[];
   record: any;
@@ -10,8 +10,14 @@ interface IProps {
   shouldHighlight?: boolean;
 }
 
-const Row = ({ record, columns, shouldHighlight, bgColor, onRowOver }: IProps) => {
-  const bgClass = shouldHighlight ? 'rgb(21, 128, 61, 0.25)' : '';
+const Row = ({
+  record,
+  columns,
+  shouldHighlight,
+  bgColor,
+  onRowOver,
+}: IProps) => {
+  const bgClass = shouldHighlight ? "rgb(21, 128, 61, 0.25)" : "";
 
   const renderDefaultCell = (value: string) => {
     return <Typography variant="h6">{value}</Typography>;
@@ -26,12 +32,32 @@ const Row = ({ record, columns, shouldHighlight, bgColor, onRowOver }: IProps) =
     >
       {columns.map((column, i) => {
         const cellValue = get(record, column.field);
-
-        return (
-          <TableCell key={i} className="!py-1 px-0" align={column.align || 'left'}>
-            {column.render ? column.render({ record }) : renderDefaultCell(cellValue)}
-          </TableCell>
-        );
+        if (column.width) {
+          return (
+            <TableCell
+              key={i}
+              className="!py-1 px-0 "
+              style={{ width: column.width }}
+              align={column.align || "left"}
+            >
+              {column.render
+                ? column.render({ record })
+                : renderDefaultCell(cellValue)}
+            </TableCell>
+          );
+        } else {
+          return (
+            <TableCell
+              key={i}
+              className="!py-1 px-0 "
+              align={column.align || "left"}
+            >
+              {column.render
+                ? column.render({ record })
+                : renderDefaultCell(cellValue)}
+            </TableCell>
+          );
+        }
       })}
     </TableRow>
   );

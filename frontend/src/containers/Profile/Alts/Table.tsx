@@ -7,7 +7,6 @@ import Row from '@/components/AltsTable/Row';
 
 import type { IAlt, ITableColumn } from '@/types';
 
-// const 
 const Table = styled(TableMui)({
   width: '100%',
   tableLayout: 'auto',

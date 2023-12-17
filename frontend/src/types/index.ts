@@ -31,6 +31,7 @@ export interface ITableColumn {
   label: string;
   align?: 'right' | 'left';
   sortable?: boolean;
+  width?: -1 | number;
   render: (record: any) => JSX.Element;
 }
 

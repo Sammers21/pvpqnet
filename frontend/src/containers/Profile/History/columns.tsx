@@ -15,15 +15,18 @@ interface IParams {
   record: IHistoryRow;
 }
 
-const renderRank = ({ record }: IParams) => {
-  const position = record.RANK.character?.pos ?? record.RANK.rank;
+const renderRank = ({ record }: IParams, isMobile: boolean) => {
+  const pos = record.RANK.character?.pos ?? record.RANK.rank;
   const rankDiff = record.RANK.diff.rank_diff;
-
   return (
-    <div className="flex px-1">
-      <span className="text-base font-light">{`#${position}`}</span>
-      {Number.isInteger(rankDiff) && (
-        <span className="text-base font-light ml-1" style={{ color: getRankDiffColor(rankDiff) }}>
+    <div className="flex">
+      {isMobile && <span className="text-base font-light">{`#${pos}`}</span>}
+      {!isMobile && <span className="text-base font-light">{`#${pos}`}</span>}
+      {!isMobile && Number.isInteger(rankDiff) && (
+        <span
+          className="text-base font-light ml-1"
+          style={{ color: getRankDiffColor(rankDiff) }}
+        >
           {getDiffCell(rankDiff)}
         </span>
       )}
@@ -50,9 +53,8 @@ const renderWinAndLoss = ({ record }: IParams) => {
 const renderRating = ({ record }: IParams) => {
   const rating = record.RATING.character?.rating ?? record.RATING.rating;
   const ratingDiff = record.RATING.diff.rating_diff;
-
   return (
-    <div className="flex px-1">
+    <div className="flex px-0">
       <span className="text-base font-light mr-2">{rating}</span>
       {Number.isInteger(ratingDiff) && (
         <span className="text-base font-light" style={{ color: getDiffColor(ratingDiff) }}>
@@ -63,7 +65,7 @@ const renderRating = ({ record }: IParams) => {
   );
 };
 
-const renderWWho = ({ record }: IParams, player: IPlayer) => {
+const renderWWho = ({ record }: IParams, player: IPlayer, isMobile: boolean) => {
   return (
     <div className="flex md:gap-2">
       {record.WWHO.map((who) => (
@@ -97,30 +99,39 @@ const renderSpec = ({ record }: IParams) => {
   );
 };
 
-const renderServerTime = ({ record }: IParams, player: IPlayer) => {
+const renderServerTime = ({ record }: IParams, player: IPlayer, isMobile: boolean) => {
   const getDate = (ts: number) => {
     const tz = player.region === 'eu' ? 'Europe/Paris' : 'America/Chicago';
-
-    return moment
+    const time = moment
       .unix(ts / 1000)
       .utc()
-      .tz(tz)
-      .format('MMM DD, YYYY - hh:mm A');
+      .tz(tz);
+    if (isMobile) {
+      return time
+        .format('MMM DD, YYYY - hh A')
+    } else {
+      return time
+        .format('MMM DD, YYYY - hh:mm A')
+    }
   };
-
-  return <span className="whitespace-nowrap">{getDate(record.timestamp)}</span>;
+  return <span className="flex justify-center items-center">
+    {getDate(record.timestamp)}
+  </span>;
 };
 
-const shouldRenderWWho = (bracket: string) => {
+const shouldRenderWWho = (bracket: string, isMobile) => {
+  if (isMobile) {
+    return false;
+  }
   return ['all', 'ARENA_2v2', 'ARENA_3v3'].includes(bracket);
 };
 
-export const tableColumns = (player: IPlayer, bracket: string): ITableColumn[] => [
+export const tableColumns = (player: IPlayer, bracket: string, isMobile: boolean): ITableColumn[] => [
   {
     field: 'rank',
     label: 'Rank',
     sortable: false,
-    render: (params: IParams) => renderRank(params),
+    render: (params: IParams) => renderRank(params, isMobile),
   },
   {
     field: 'wl',
@@ -130,7 +141,7 @@ export const tableColumns = (player: IPlayer, bracket: string): ITableColumn[] =
   },
   {
     field: 'rating',
-    label: 'Rating',
+    label: isMobile ? 'RTG' : 'Rating',
     sortable: false,
     render: (params: IParams) => renderRating(params),
   },
@@ -139,24 +150,25 @@ export const tableColumns = (player: IPlayer, bracket: string): ITableColumn[] =
         {
           field: 'bracket_type',
           label: 'Bracket',
-          sortable: true,
+          sortable: false,
+          width: 10,
           render: (params: IParams) => renderSpec(params),
         },
       ]
     : []),
-  ...(shouldRenderWWho(bracket)
+  ...(shouldRenderWWho(bracket, isMobile)
     ? [
         {
           field: 'wwho',
-          label: 'WWHO',
+          label: 'With Who',
           sortable: false,
-          render: (params: IParams) => renderWWho(params, player),
+          render: (params: IParams) => renderWWho(params, player, isMobile),
         },
       ]
     : []),
   {
     field: 'timestamp',
-    label: `Server Time ${player.region.toUpperCase()}`,
-    render: (params: IParams) => renderServerTime(params, player),
+    label: isMobile ? 'Time' : `Server Time ${player.region.toUpperCase()}`,
+    render: (params: IParams) => renderServerTime(params, player, isMobile),
   },
 ];
