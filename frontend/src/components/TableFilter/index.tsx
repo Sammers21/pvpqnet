@@ -42,7 +42,7 @@ const TableFilter = ({ selectedSpecs, onSpecsChange, bracket, statistic }: IProp
     <div className="bg-[#030303e6] px-4 sm:px-8">
       <div className="flex items-center justify-between pt-2 sm:pt-6 pb-0">
         <CutOffRating statistic={statistic} bracket={bracket} />
-        <Button className="!px-8 !bg-[#1F2937]" onClick={toggleFilterShown}>
+        <Button className="!px-8 !text-white !bg-[#1F2937]" onClick={toggleFilterShown}>
           Filters
           {!isEmpty(selectedSpecs) && (
             <div className="flex justify-center items-center absolute w-6 h-6 -top-2 -right-2 bg-[#1769aa] text-[#fff] rounded-full text-xs">
@@ -52,7 +52,7 @@ const TableFilter = ({ selectedSpecs, onSpecsChange, bracket, statistic }: IProp
         </Button>
       </div>
 
-      <div className={filtersShown ? 'visible pt-4' : 'invisible h-0 min-h-0 overflow-hidden'}>
+      <div className={filtersShown ? 'visible rounded p-4 mt-4 bg-[#1f2937] bg-opacity-25' : 'invisible h-0 min-h-0 overflow-hidden'}>
         <div className="flex flex-wrap justify-center gap-8">
           {Object.entries(CRESTS_AND_SPECS).map(([crestId, specs]) => {
             return (
@@ -66,9 +66,9 @@ const TableFilter = ({ selectedSpecs, onSpecsChange, bracket, statistic }: IProp
           })}
         </div>
 
-        <div className="flex justify-end py-4">
+        <div className="flex justify-end pt-4">
           <Button
-            className="!px-8 !bg-[#1f2937]"
+            className="!px-8 !bg-[#991b1b] !bg-opacity-50 !text-white"
             disabled={isEmpty(selectedSpecs)}
             onClick={resetFilters}
           >
