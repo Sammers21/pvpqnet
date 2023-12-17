@@ -12,12 +12,14 @@ const useBreakpoint = createBreakpoint({ sm: 640, md: 768, lg: 1024 });
 
 const GamingHistory = ({ player }: { player: IPlayer }) => {
   const breakpoints = useBreakpoint();
-  const initialBracket = !!player.brackets.find(
+  var initialBracket = !!player.brackets.find(
     (bracket) => bracket.bracket_type === "ARENA_3v3" && bracket.gaming_history.history.length > 0
   )
     ? "ARENA_3v3"
-    : player.brackets.filter(bracket => bracket.gaming_history.history.length > 0).sort((a, b) => b.gaming_history.history[0].diff.timestamp - a.gaming_history.history[0].diff.timestamp)[0].bracket_type.split('-')[1];
-  console.log("initialBracket", initialBracket);
+    : player.brackets.filter(bracket => bracket.gaming_history.history.length > 0).sort((a, b) => b.gaming_history.history[0].diff.timestamp - a.gaming_history.history[0].diff.timestamp)[0].bracket_type;
+  if (initialBracket.includes("SHUFFLE-")) {
+    initialBracket = initialBracket.split("SHUFFLE-")[1];
+  }
   const [active_bracket_name, set_bracket_name] = useState(initialBracket);
   const bracket = useMemo(() => {
     const bracketsList = ["ARENA_2v2", "ARENA_3v3", "BATTLEGROUNDS"];
