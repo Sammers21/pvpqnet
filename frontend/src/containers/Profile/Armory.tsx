@@ -19,7 +19,7 @@ interface IProps {
 }
 
 const useBreakpoint = createBreakpoint({ md: 768, lg: 1024 });
-const Armory = ({ player, loading, updatePlayer }: IProps, isMobile: boolean) => {
+const Armory = ({ player, loading, updatePlayer }: IProps) => {
   const breakpoint = useBreakpoint();
 
   return (
@@ -40,7 +40,7 @@ const Armory = ({ player, loading, updatePlayer }: IProps, isMobile: boolean) =>
         <PvpBrackets player={player} />
         <ActivityDiagram player={player} />
         <AltsTable player={player} />
-        {player.brackets.find((bracket) => bracket.gaming_history.history.length > 0) && (<GamingHistory player={player} isMobile={isMobile} />)}
+        {player.brackets.find((bracket) => bracket.gaming_history.history.length > 0) && (<GamingHistory player={player} isMobile={breakpoint === 'md'} />)}
         {breakpoint === 'md' && <TitlesHistory player={player} />}
       </div>
     </div>
