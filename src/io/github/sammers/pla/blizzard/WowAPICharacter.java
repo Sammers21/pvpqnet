@@ -186,7 +186,8 @@ public record WowAPICharacter(long id,
         Map<String, PvpBracket> prevBrackets = previous.map(wowAPICharacter -> wowAPICharacter.brackets.stream().collect(Collectors.toMap(PvpBracket::bracketType, Function.identity()))).orElse(Map.of());
         String name = entries.getString("name").substring(0, 1).toUpperCase() + entries.getString("name").substring(1);
         String realm = Calculator.realmCalc(entries.getJsonObject("realm").getString("name"));
-        List<PvpBracket> list = brackets.stream().map((JsonObject wowApiBracket) -> {
+        List<PvpBracket> pvpBrackets = brackets.stream().map((JsonObject wowApiBracket) -> {
+            boolean thisSsnData = wowApiBracket.getJsonObject("season").getInteger("id").equals(BlizzardAPI.CURRENT_PVP_SEASON_ID);
             String btype = wowApiBracket.getJsonObject("bracket").getString("type");
             Snapshot latest = refs.snapshotByBracketType(btype, BlizzardAPI.oldRegion(region));
             Long rank = Optional.ofNullable(latest).map(s -> s.findChar(Character.fullNameByRealmAndName(name, realm))).map(foundChars -> {
@@ -215,7 +216,7 @@ public record WowAPICharacter(long id,
                 cutoffByBracketType = cutoffs.map(c -> c.cutoffByBracketType(btype)).orElse(Long.MAX_VALUE);
                 prevBracket = Optional.ofNullable(prevBrackets.get(btype));
             }
-            return PvpBracket.parse(wowApiBracket, prevBracket, rank, Optional.of(cutoffByBracketType).orElse(-1L));
+            return PvpBracket.parse(wowApiBracket, prevBracket, rank, Optional.of(cutoffByBracketType).orElse(-1L), thisSsnData);
         }).toList();
         CharacterMedia media = CharacterMedia.parse(characterMedia);
         Long lastUpdatedUTCms = Instant.now().toEpochMilli();
@@ -233,7 +234,7 @@ public record WowAPICharacter(long id,
             entries.getJsonObject("character_class").getString("name"),
             entries.getInteger("equipped_item_level"),
             region,
-            list,
+            pvpBrackets,
             lastUpdatedUTCms,
             parsedAchievements,
             pets.getJsonArray("pets").encode().hashCode(),

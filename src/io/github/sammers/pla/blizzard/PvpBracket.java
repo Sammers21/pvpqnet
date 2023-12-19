@@ -21,7 +21,7 @@ public record PvpBracket(String bracketType,
                          Boolean isRankOneRange,
                          GamingHistory gamingHistory
 ) implements JsonConvertable {
-    public static PvpBracket parse(JsonObject wowApiBracket, Optional<PvpBracket> prevBracket, Long rank, Long bracketRankOneCutoff) {
+    public static PvpBracket parse(JsonObject wowApiBracket, Optional<PvpBracket> prevBracket, Long rank, Long bracketRankOneCutoff, boolean thisSsnData) {
         String type = wowApiBracket.getJsonObject("bracket").getString("type");
         Long rating = wowApiBracket.getLong("rating");
         Optional<JsonObject> stats;
@@ -49,6 +49,15 @@ public record PvpBracket(String bracketType,
         }
         Boolean isRankOneRange = rating >= bracketRankOneCutoff;
         GamingHistory gamingHistory = prevBracket.map(PvpBracket::gamingHistory).orElse(new GamingHistory(new ArrayList<>()));
+        if (!thisSsnData) {
+            rating = 0L;
+            won = 0L;
+            lost = 0L;
+            rank = -1L;
+            isRankOneRange = false;
+            seasonMaxRating = 0L;
+            seasonMaxRatingAchievedTimestamp = System.currentTimeMillis();
+        }
         return new PvpBracket(type, rating, won, lost, rank, seasonMaxRating, seasonMaxRatingAchievedTimestamp, maxRating, maxRatingAchievedTimestamp, isRankOneRange, gamingHistory);
     }
 
