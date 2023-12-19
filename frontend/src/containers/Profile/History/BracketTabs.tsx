@@ -28,10 +28,12 @@ const BracketTabs = ({
   player,
   active_bracket_name: value,
   onChange,
+  isMobile,
 }: {
   player: IPlayer;
   active_bracket_name: string;
   onChange: (_evt: React.SyntheticEvent, value: any) => void;
+  isMobile: boolean;
 }) => {
   const shuffleBrackets = useMemo(() => {
     const classAndSpec = CLASS_AND_SPECS[player.class] as string[];
@@ -70,9 +72,9 @@ const BracketTabs = ({
             icon={
               <div className="flex items-center">
                 <span className="text-base">{title}</span>
-                <BracketCount
+                {!isMobile && <BracketCount
                   content={bracket?.gaming_history?.history?.length ?? 0}
-                />
+                />}
               </div>
             }
           />
@@ -82,6 +84,7 @@ const BracketTabs = ({
         .map(({ bracket, spec }) => {
         const specIcon = getSpecIcon(`${spec} ${player.class}` || "");
         if (!bracket) return null;
+        const imgClasses = (isMobile ? "h-7 w-7" : "h-7 w-7") + " rounded border border-solid border-[#37415180]";
         return (
           <Tab
             key={spec}
@@ -89,13 +92,13 @@ const BracketTabs = ({
             icon={
               <div className="flex items-center">
                 <img
-                  className="h-7 w-7 rounded border border-solid border-[#37415180]"
+                  className={imgClasses}
                   src={specIcon}
                   alt={spec}
                 />
-                <BracketCount
+                {!isMobile && <BracketCount
                   content={bracket?.gaming_history?.history?.length ?? 0}
-                />
+                />}
               </div>
             }
           />

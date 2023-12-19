@@ -10,6 +10,7 @@ import AltsTable from './Alts';
 import GamingHistory from './History';
 
 import type { IPlayer } from '@/types';
+import ActivityDiagram from './ActivityDiagram';
 
 interface IProps {
   player: IPlayer;
@@ -18,7 +19,7 @@ interface IProps {
 }
 
 const useBreakpoint = createBreakpoint({ md: 768, lg: 1024 });
-const Armory = ({ player, loading, updatePlayer }: IProps) => {
+const Armory = ({ player, loading, updatePlayer }: IProps, isMobile: boolean) => {
   const breakpoint = useBreakpoint();
 
   return (
@@ -37,8 +38,9 @@ const Armory = ({ player, loading, updatePlayer }: IProps) => {
         {breakpoint === 'md' && <PlayerMobile player={player} />}
         <PlayerHeader player={player} updatePlayer={updatePlayer} loading={loading} />
         <PvpBrackets player={player} />
+        <ActivityDiagram player={player} />
         <AltsTable player={player} />
-        {player.brackets.find((bracket) => bracket.gaming_history.history.length > 0) && (<GamingHistory player={player} />)}
+        {player.brackets.find((bracket) => bracket.gaming_history.history.length > 0) && (<GamingHistory player={player} isMobile={isMobile} />)}
         {breakpoint === 'md' && <TitlesHistory player={player} />}
       </div>
     </div>

@@ -10,7 +10,7 @@ import { getGamingHistoryRows } from "@/utils/profile";
 
 const useBreakpoint = createBreakpoint({ sm: 640, md: 768, lg: 1024 });
 
-const GamingHistory = ({ player }: { player: IPlayer }) => {
+const GamingHistory = ({ player, isMobile }: { player: IPlayer, isMobile: boolean }) => {
   const breakpoints = useBreakpoint();
   var initialBracket
   try {
@@ -61,6 +61,7 @@ const GamingHistory = ({ player }: { player: IPlayer }) => {
           player={player}
           onChange={handleChange}
           active_bracket_name={active_bracket_name}
+          isMobile={isMobile}
         />
       </div>
       <hr className="h-px md:mb-2 bg-[#37415180] border-0" />
