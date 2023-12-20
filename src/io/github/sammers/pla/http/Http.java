@@ -126,14 +126,7 @@ public class Http {
             VTHREAD_EXECUTOR.execute(() -> {
                 String realm = ctx.pathParam("realm");
                 String name = ctx.pathParam("name");
-                Optional<WowAPICharacter> charWithName = ladder.wowChar(ladder.realms.get().nameToSlug(realm), name);
-                Optional<WowAPICharacter> charWithSlug = ladder.wowChar(realm, name);
-                Optional<WowAPICharacter> res = Stream.of(charWithName, charWithSlug).filter(Optional::isPresent).findFirst().map(Optional::get);
-                if (res.isEmpty() || res.get().hidden()) {
-                    ctx.response().setStatusCode(404).end(new JsonObject().put("error", "Character not found").encode());
-                } else {
-                    ctx.response().end(wowCharToJson(res.get()).encode());
-                }
+                nameRealmLookupResponse(ctx, realm, name);
             });
         });
         router.get("/api/:region/:realm/:name/update").handler(ctx -> {
@@ -149,7 +142,7 @@ public class Http {
                         } else {
                             ctx.response().end(wowCharToJson(wowAPICharacter.get()).encode());
                         }
-                    });
+                    }, err -> nameRealmLookupResponse(ctx, realm, name));
             });
         });
         router.get("/:region/ladder/:bracket").handler(ctx -> ctx.response().sendFile("index.html"));
@@ -158,6 +151,17 @@ public class Http {
         router.get("/activity/:bracket").handler(ctx -> ctx.response().sendFile("index.html"));
         router.get("/").handler(ctx -> ctx.response().sendFile("index.html"));
         vertx.createHttpServer().requestHandler(router).listen(9000);
+    }
+
+    private void nameRealmLookupResponse(RoutingContext ctx, String realm, String name) {
+        Optional<WowAPICharacter> charWithName = ladder.wowChar(ladder.realms.get().nameToSlug(realm), name);
+        Optional<WowAPICharacter> charWithSlug = ladder.wowChar(realm, name);
+        Optional<WowAPICharacter> res = Stream.of(charWithName, charWithSlug).filter(Optional::isPresent).findFirst().map(Optional::get);
+        if (res.isEmpty() || res.get().hidden()) {
+            ctx.response().setStatusCode(404).end(new JsonObject().put("error", "Character not found").encode());
+        } else {
+            ctx.response().end(wowCharToJson(res.get()).encode());
+        }
     }
 
     private JsonObject wowCharToJson(WowAPICharacter character) {

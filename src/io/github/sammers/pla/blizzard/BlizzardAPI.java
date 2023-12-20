@@ -36,7 +36,7 @@ public class BlizzardAPI {
 
     public static final String AUTH_URL = "https://oauth.battle.net/token";
     public static String LOCALE = "en_US";
-    private static final String CURRENT_PVP_SEASON_ID = "36";
+    public static final Integer CURRENT_PVP_SEASON_ID = 36;
     private static final Logger log = LoggerFactory.getLogger(BlizzardAPI.class);
     private final String clientSecret;
     private final WebClient webClient;
@@ -188,7 +188,7 @@ public class BlizzardAPI {
         return oldRegion;
     }
 
-    public Maybe<PvpLeaderBoard> pvpLeaderboard(String region, String pvpSeasonId, String pvpBracket, String namespace) {
+    public Maybe<PvpLeaderBoard> pvpLeaderboard(String region, Integer pvpSeasonId, String pvpBracket, String namespace) {
         String realRegion;
         String realNamespace;
         String realPvpBracket;
@@ -249,7 +249,7 @@ public class BlizzardAPI {
         return cutoffs(region, CURRENT_PVP_SEASON_ID);
     }
 
-    public Single<Cutoffs> cutoffs(String region, String pvpSsnId) {
+    public Single<Cutoffs> cutoffs(String region, Integer pvpSsnId) {
         String realRegion = realRegion(region);
         return token().flatMap(blizzardAuthToken ->
             webClient.getAbs("https://" + realRegion + ".api.blizzard.com/data/wow/pvp-season/" + pvpSsnId + "/pvp-reward/index")
