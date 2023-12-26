@@ -33,7 +33,7 @@ export const ActivityBox = ({ maxIntensity = 5, activity = undefined, date = und
     if (intensity === 0 && gamesPlayedByActivityArray(activity) !== 0) {
         intensity = 1
     }
-    let className = `mt-[2px] mb-[2px] w-[10px] h-[10px] ${colors[intensity]} rounded-md}`
+    let className = `ml-[1px] mr-[1px] mt-[2px] mb-[2px] w-[10px] h-[10px] ${colors[intensity]} rounded-md}`
     if (date == undefined) {
        return (
         <div></div>

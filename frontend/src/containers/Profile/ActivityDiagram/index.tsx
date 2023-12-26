@@ -122,27 +122,6 @@ const ActivityDiagram = ({ player, year = currentYear }: IProps) => {
       monthAndWeekCount[week[0].date.getMonth()].weekCount += 1;
     });
     let totalGamesPlayed = fullHistory.map((activity) => { return activity.diff.won + activity.diff.lost }).reduce((a, b) => a + b, 0)
-    //     <div className="flex flex-col py-2 md:px-3 border border-solid border-[#37415180] rounded-lg bg-[#030303e6] ">
-    //   <div className="flex justify-between items-center px-3 md:px-0">
-    //     <span className="text-2xl mr-4">History</span>
-    //     <BracketTabs
-    //       player={player}
-    //       onChange={handleChange}
-    //       active_bracket_name={active_bracket_name}
-    //       isMobile={isMobile}
-    //     />
-    //   </div>
-    //   <hr className="h-px md:mb-2 bg-[#37415180] border-0" />
-    //   <Table
-    //     columns={tableColumns(
-    //       player,
-    //       active_bracket_name,
-    //       breakpoints === "sm"
-    //     )}
-    //     records={records}
-    //     isMobile={breakpoints === "sm"}
-    //   />
-    // </div>
     return (
       <div className="flex flex-col py-2 md:px-3 border border-solid border-[#37415180] rounded-lg bg-[#030303e6] ">
         <span className="text-2xl mr-4">{totalGamesPlayed} games played in {year}</span>
