@@ -77,6 +77,9 @@ const ActivityDiagram = ({ player, year = currentYear }: IProps) => {
       var newDate = loop.setDate(loop.getDate() + 1);
       loop = new Date(newDate);
     }
+    if(currentWeek.length > 0){
+      weeks.push(currentWeek);
+    }
     fullHistory.forEach((activity) => {
       let date = new Date(activity.diff.timestamp).toLocaleDateString();
       if (date in dateAndActivity) {
@@ -91,7 +94,7 @@ const ActivityDiagram = ({ player, year = currentYear }: IProps) => {
         if (date in dateAndActivity) {
           return { date: day, activity: dateAndActivity[date] };
         } else {
-          return [];
+          return { date: day, activity: [] };
         }
       });
     });
@@ -156,7 +159,7 @@ const ActivityDiagram = ({ player, year = currentYear }: IProps) => {
                 return (
                   <TableRow key={row} sx={{}}>
                     {getDayOfWeekRender(row)}
-                    {Array.from(Array(52).keys()).map((col) => {
+                    {Array.from(Array(weekWithActivity.length).keys()).map((col) => {
                       if (
                         weekWithActivity[col] !== undefined &&
                         weekWithActivity[col][row] !== undefined
