@@ -3,7 +3,7 @@ package io.github.sammers.pla.blizzard;
 import io.github.sammers.pla.Main;
 import io.github.sammers.pla.db.Character;
 import io.github.sammers.pla.logic.CharacterCache;
-import io.github.sammers.pla.logic.WoWAPIRateLimiter;
+import io.github.sammers.pla.logic.RateLimiter;
 import io.github.sammers.pla.logic.Refs;
 import io.reactivex.Completable;
 import io.reactivex.Maybe;
@@ -27,6 +27,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static io.github.sammers.pla.logic.Conts.EU;
 import static io.github.sammers.pla.logic.Conts.US;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Blizzard API.
@@ -44,7 +45,9 @@ public class BlizzardAPI {
     private final Map<String, Cutoffs> cutoffs;
     private final String clientId;
     private final AtomicReference<BlizzardAuthToken> token = new AtomicReference<>();
-    private final WoWAPIRateLimiter woWAPIRateLimiter = new WoWAPIRateLimiter(Main.VTHREAD_SCHEDULER);
+    private final RateLimiter rateLimiter = new RateLimiter(100, TimeUnit.SECONDS, 1000, 
+                                            Optional.of(new RateLimiter(36000, TimeUnit.HOURS, 1000, Optional.empty(), Main.VTHREAD_SCHEDULER)),
+                                            Main.VTHREAD_SCHEDULER);
 
     public BlizzardAPI(String clientId, String clientSecret, WebClient webClient, Refs refs, CharacterCache characterCache, Map<String, Cutoffs> cutoffs) {
         this.clientId = clientId;
@@ -56,7 +59,7 @@ public class BlizzardAPI {
     }
 
     public Completable rpsToken() {
-        return woWAPIRateLimiter.request();
+        return rateLimiter.request();
     }
 
     public Single<BlizzardAuthToken> token() {
