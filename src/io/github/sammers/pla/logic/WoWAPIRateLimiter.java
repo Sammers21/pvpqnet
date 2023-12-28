@@ -29,9 +29,6 @@ public class WoWAPIRateLimiter {
         for (int i = 0; i < maxRequestsPerSecond; i++) {
             secondRing.add(System.currentTimeMillis());
         }
-        for (int i = 0; i < maxRequestsPerHour; i++) {
-            hourRing.add(System.currentTimeMillis());
-        }
         scheduler.scheduleDirect(() -> {
             while (true) {
                 CompletableEmitter src = requestQes.poll();
@@ -50,7 +47,7 @@ public class WoWAPIRateLimiter {
                             if (sleepSecondRing > 0) {
                                 try {
                                     log.debug("Sleeping for {} ms", sleepSecondRing);
-                                    Thread.sleep(sleepSecondRing);
+                                    Thread.sleep(totalSleep);
                                 } catch (InterruptedException e) {
                                     log.error("Interrupted", e);
                                 }
