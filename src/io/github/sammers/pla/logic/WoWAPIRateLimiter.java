@@ -26,8 +26,12 @@ public class WoWAPIRateLimiter {
 
     public WoWAPIRateLimiter(int maxRequestsPerSecond, int maxRequestsPerHour, int maxRequestsTotal, Scheduler scheduler) {
         this.maxRequestsTotal = maxRequestsTotal;
+        long now = System.currentTimeMillis();
         for (int i = 0; i < maxRequestsPerSecond; i++) {
-            secondRing.add(System.currentTimeMillis());
+            secondRing.add(now);
+        }
+        for (int i = 0; i < maxRequestsPerHour; i++) {
+            hourRing.add(now - i * 100L);
         }
         scheduler.scheduleDirect(() -> {
             while (true) {
@@ -44,9 +48,9 @@ public class WoWAPIRateLimiter {
                             Long sleepSecondRing = 1000 - (System.currentTimeMillis() - oldestSecondR);
                             Long sleepHrRing = 60 * 60 * 1000L - (System.currentTimeMillis() - oldestHour);
                             Long totalSleep = Math.max(sleepSecondRing, sleepHrRing);
-                            if (sleepSecondRing > 0) {
+                            if (totalSleep > 0) {
                                 try {
-                                    log.debug("Sleeping for {} ms", sleepSecondRing);
+                                    log.debug("Sleeping for {} ms", totalSleep);
                                     Thread.sleep(totalSleep);
                                 } catch (InterruptedException e) {
                                     log.error("Interrupted", e);
