@@ -2,10 +2,8 @@ package io.github.sammers.pla.blizzard;
 
 import io.github.sammers.pla.Main;
 import io.github.sammers.pla.db.Character;
-import io.github.sammers.pla.db.Snapshot;
-import io.github.sammers.pla.logic.CharUpdater;
 import io.github.sammers.pla.logic.CharacterCache;
-import io.github.sammers.pla.logic.RateLimiter;
+import io.github.sammers.pla.logic.WoWAPIRateLimiter;
 import io.github.sammers.pla.logic.Refs;
 import io.reactivex.Completable;
 import io.reactivex.Maybe;
@@ -22,7 +20,6 @@ import org.slf4j.LoggerFactory;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -47,7 +44,7 @@ public class BlizzardAPI {
     private final Map<String, Cutoffs> cutoffs;
     private final String clientId;
     private final AtomicReference<BlizzardAuthToken> token = new AtomicReference<>();
-    private final RateLimiter rateLimiter = new RateLimiter(10, Main.VTHREAD_SCHEDULER);
+    private final WoWAPIRateLimiter woWAPIRateLimiter = new WoWAPIRateLimiter(Main.VTHREAD_SCHEDULER);
 
     public BlizzardAPI(String clientId, String clientSecret, WebClient webClient, Refs refs, CharacterCache characterCache, Map<String, Cutoffs> cutoffs) {
         this.clientId = clientId;
@@ -59,7 +56,7 @@ public class BlizzardAPI {
     }
 
     public Completable rpsToken() {
-        return rateLimiter.request();
+        return woWAPIRateLimiter.request();
     }
 
     public Single<BlizzardAuthToken> token() {
@@ -137,26 +134,6 @@ public class BlizzardAPI {
                                             long elapsed = System.nanoTime() - tick;
                                             log.debug("Parsed character {} in {} ms", wowAPICharacter.fullName(), elapsed / 1000000);
                                         });
-                                // return Maybe.concatEager(
-                                //         bracketFromJson.stream()
-                                //             .map(o -> ((JsonObject) o).getString("href"))
-                                //             .map(ref -> maybeResponse(realNamespace, ref)
-                                //             ).toList()
-                                //     ).toList()
-                                //     .flatMapMaybe(brackets ->
-                                //         maybeResponse(realNamespace, absoluteURI + "/achievements")
-                                //             .flatMap(achievements ->
-                                //                 maybeResponse(realNamespace, absoluteURI + "/character-media")
-                                //                     .flatMap(media ->
-                                //                         maybeResponse(realNamespace, absoluteURI + "/collections/pets")
-                                //                             .flatMap(pets ->
-                                //                                 maybeResponse(realNamespace, absoluteURI + "/specializations")
-                                //                                     .flatMap(specs -> {
-                                //                                         Optional<WowAPICharacter> prev = Optional.ofNullable(characterCache.getByFullName(Character.fullNameByRealmAndName(name, realm)));
-                                //                                         Optional<Cutoffs> ctfs = Optional.ofNullable(cutoffs.get(realRegion));
-                                //                                         return Maybe.just(WowAPICharacter.parse(prev, refs, ctfs, json, pvp, brackets, achievements, media, specs, pets, realRegion));
-                                //                                     }))))
-                                //     );
                             })
                             .doOnError(e -> log.error("Error parsing character: " + name + " on " + realm + " in " + realRegion, e))
                             .onErrorResumeNext(Maybe.empty());

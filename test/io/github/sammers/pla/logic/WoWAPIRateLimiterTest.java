@@ -8,19 +8,19 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.concurrent.Executors;
 
-public class RateLimiterTest {
+public class WoWAPIRateLimiterTest {
     public static final Scheduler VTHREAD_EXECUTOR = io.reactivex.schedulers.Schedulers.from(Executors.newSingleThreadExecutor());
     @Test
     public void basic() {
         Long start = System.currentTimeMillis();
-        RateLimiter rateLimiter = new RateLimiter(1, VTHREAD_EXECUTOR);
+        WoWAPIRateLimiter woWAPIRateLimiter = new WoWAPIRateLimiter(1,100, 100, VTHREAD_EXECUTOR);
         Completable.merge(
             List.of(
-                rateLimiter.request(),
-                rateLimiter.request(),
-                rateLimiter.request(),
-                rateLimiter.request(),
-                rateLimiter.request()
+                woWAPIRateLimiter.request(),
+                woWAPIRateLimiter.request(),
+                woWAPIRateLimiter.request(),
+                woWAPIRateLimiter.request(),
+                woWAPIRateLimiter.request()
             )
         ).blockingAwait();
         assertTimePassed(start, 5000L);
