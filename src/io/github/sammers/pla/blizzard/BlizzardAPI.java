@@ -15,6 +15,8 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.core.MultiMap;
 import io.vertx.reactivex.ext.web.client.HttpResponse;
 import io.vertx.reactivex.ext.web.client.WebClient;
+
+import org.javatuples.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,7 +47,7 @@ public class BlizzardAPI {
     private final Map<String, Cutoffs> cutoffs;
     private final String clientId;
     private final AtomicReference<BlizzardAuthToken> token = new AtomicReference<>();
-    private final RateLimiter rateLimiter = new RateLimiter(5, Main.VTHREAD_SCHEDULER);
+    private final RateLimiter rateLimiter = new RateLimiter(10, Main.VTHREAD_SCHEDULER);
 
     public BlizzardAPI(String clientId, String clientSecret, WebClient webClient, Refs refs, CharacterCache characterCache, Map<String, Cutoffs> cutoffs) {
         this.clientId = clientId;
@@ -94,8 +96,9 @@ public class BlizzardAPI {
         String realmSearch = URLEncoder.encode(realm.replaceAll(" ", "-").replaceAll("'", "").toLowerCase(), StandardCharsets.UTF_8);
         String nameSearch = URLEncoder.encode(name.toLowerCase(), StandardCharsets.UTF_8);
         String absoluteURI = "https://" + realRegion + ".api.blizzard.com/profile/wow/character/" + realmSearch + "/" + nameSearch;
-        return token().flatMapMaybe(blizzardAuthToken ->
-            maybeResponse(realNamespace, absoluteURI)
+        return token().flatMapMaybe(blizzardAuthToken -> {
+            long tick = System.nanoTime();
+           return maybeResponse(realNamespace, absoluteURI)
                 .flatMap(json -> {
                     Maybe<WowAPICharacter> res;
                     if (json.getInteger("code") != null && json.getInteger("code") == 404) {
@@ -109,33 +112,58 @@ public class BlizzardAPI {
                                 if (bracketFromJson == null) {
                                     bracketFromJson = new JsonArray();
                                 }
-                                return Maybe.concatEager(
+                                Single<List<JsonObject>> bracketList = Maybe.concatEager(
                                         bracketFromJson.stream()
                                             .map(o -> ((JsonObject) o).getString("href"))
                                             .map(ref -> maybeResponse(realNamespace, ref)
                                             ).toList()
-                                    ).toList()
-                                    .flatMapMaybe(brackets ->
-                                        maybeResponse(realNamespace, absoluteURI + "/achievements")
-                                            .flatMap(achievements ->
-                                                maybeResponse(realNamespace, absoluteURI + "/character-media")
-                                                    .flatMap(media ->
-                                                        maybeResponse(realNamespace, absoluteURI + "/collections/pets")
-                                                            .flatMap(pets ->
-                                                                maybeResponse(realNamespace, absoluteURI + "/specializations")
-                                                                    .flatMap(specs -> {
-                                                                        Optional<WowAPICharacter> prev = Optional.ofNullable(characterCache.getByFullName(Character.fullNameByRealmAndName(name, realm)));
-                                                                        Optional<Cutoffs> ctfs = Optional.ofNullable(cutoffs.get(realRegion));
-                                                                        return Maybe.just(WowAPICharacter.parse(prev, refs, ctfs, json, pvp, brackets, achievements, media, specs, pets, realRegion));
-                                                                    }))))
-                                    );
+                                    ).toList();
+                                Maybe<JsonObject> achievementsRx = maybeResponse(realNamespace, absoluteURI + "/achievements");
+                                Maybe<JsonObject> mediaRx = maybeResponse(realNamespace, absoluteURI + "/character-media");
+                                Maybe<JsonObject> petsRx = maybeResponse(realNamespace, absoluteURI + "/collections/pets");
+                                Maybe<JsonObject> specsRx = maybeResponse(realNamespace, absoluteURI + "/specializations");
+                                return Single.zip(
+                                        bracketList,
+                                        Maybe.concatEager(List.of(achievementsRx, mediaRx, petsRx, specsRx)).toList(),
+                                        Pair::new).flatMapMaybe(pair -> {
+                                            List<JsonObject> brackets = pair.getValue0();
+                                            List<JsonObject> otherStuff = pair.getValue1();
+                                            Optional<WowAPICharacter> prev = Optional.ofNullable(characterCache.getByFullName(Character.fullNameByRealmAndName(name, realm)));
+                                            Optional<Cutoffs> ctfs = Optional.ofNullable(cutoffs.get(realRegion));
+                                            return Maybe.just(
+                                                WowAPICharacter.parse(prev, refs, ctfs, json, pvp,
+                                                    brackets, otherStuff.get(0), otherStuff.get(1), otherStuff.get(3), otherStuff.get(2), realRegion));
+                                        }).doOnSuccess(wowAPICharacter -> {
+                                            long elapsed = System.nanoTime() - tick;
+                                            log.debug("Parsed character {} in {} ms", wowAPICharacter.fullName(), elapsed / 1000000);
+                                        });
+                                // return Maybe.concatEager(
+                                //         bracketFromJson.stream()
+                                //             .map(o -> ((JsonObject) o).getString("href"))
+                                //             .map(ref -> maybeResponse(realNamespace, ref)
+                                //             ).toList()
+                                //     ).toList()
+                                //     .flatMapMaybe(brackets ->
+                                //         maybeResponse(realNamespace, absoluteURI + "/achievements")
+                                //             .flatMap(achievements ->
+                                //                 maybeResponse(realNamespace, absoluteURI + "/character-media")
+                                //                     .flatMap(media ->
+                                //                         maybeResponse(realNamespace, absoluteURI + "/collections/pets")
+                                //                             .flatMap(pets ->
+                                //                                 maybeResponse(realNamespace, absoluteURI + "/specializations")
+                                //                                     .flatMap(specs -> {
+                                //                                         Optional<WowAPICharacter> prev = Optional.ofNullable(characterCache.getByFullName(Character.fullNameByRealmAndName(name, realm)));
+                                //                                         Optional<Cutoffs> ctfs = Optional.ofNullable(cutoffs.get(realRegion));
+                                //                                         return Maybe.just(WowAPICharacter.parse(prev, refs, ctfs, json, pvp, brackets, achievements, media, specs, pets, realRegion));
+                                //                                     }))))
+                                //     );
                             })
                             .doOnError(e -> log.error("Error parsing character: " + name + " on " + realm + " in " + realRegion, e))
                             .onErrorResumeNext(Maybe.empty());
                     }
                     return res;
-                })
-        );
+                });
+    });
     }
 
     Maybe<JsonObject> maybeResponse(String namespace, String url) {

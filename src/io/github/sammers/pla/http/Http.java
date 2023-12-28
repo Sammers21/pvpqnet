@@ -21,11 +21,14 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import org.slf4j.Logger;
+
 import static io.github.sammers.pla.Main.VTHREAD_EXECUTOR;
 import static io.github.sammers.pla.logic.Conts.*;
 
 
 public class Http {
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(Http.class);
     private final Ladder ladder;
     private final Refs refs;
     private final CharacterCache characterCache;
@@ -131,15 +134,16 @@ public class Http {
         });
         router.get("/api/:region/:realm/:name/update").handler(ctx -> {
             VTHREAD_EXECUTOR.execute(() -> {
+                long tick = System.nanoTime();
                 String region = ctx.pathParam("region");
                 String realm = ctx.pathParam("realm");
                 String name = ctx.pathParam("name");
-                ladder.charUpdater.updateChar(region, Character.fullNameByRealmAndName(name, realm))
-                    .andThen(Single.fromCallable(() -> ladder.wowChar(realm, name)))
+                ladder.charUpdater.updateCharFast(region, Character.fullNameByRealmAndName(name, realm))
                     .subscribe(wowAPICharacter -> {
                         if (wowAPICharacter.isEmpty() || wowAPICharacter.get().hidden()) {
                             ctx.response().setStatusCode(404).end(new JsonObject().put("error", "Character not found").encode());
                         } else {
+                            log.info("Updated {} in {} ms", wowAPICharacter.get().fullName(), (System.nanoTime() - tick) / 1000000);
                             ctx.response().end(wowCharToJson(wowAPICharacter.get()).encode());
                         }
                     }, err -> nameRealmLookupResponse(ctx, realm, name));

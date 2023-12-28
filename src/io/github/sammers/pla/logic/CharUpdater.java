@@ -10,6 +10,8 @@ import io.github.sammers.pla.db.Snapshot;
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.Maybe;
+import io.reactivex.Single;
+
 import org.javatuples.Pair;
 import org.javatuples.Triplet;
 import org.slf4j.Logger;
@@ -204,6 +206,28 @@ public class CharUpdater {
                 } else {
                     log.warn("Not allowing char updates before char load from db");
                     return Completable.error(new IllegalStateException("Not allowing char updates before char load from db"));
+                }
+            }
+        );
+    }
+
+    public Single<Optional<WowAPICharacter>> updateCharFast(String region, String nickName) {
+        return Single.defer(() -> {
+                if (charsLoaded.get()) {
+                    return api.character(region, nickName)
+                        .doAfterSuccess(wowAPICharacter -> {
+                            Main.VTHREAD_SCHEDULER.scheduleDirect(() -> {
+                                characterCache.upsert(wowAPICharacter);
+                                charSearchIndex.insertNickNamesWC(List.of(wowAPICharacter));
+                                db.upsertCharacter(wowAPICharacter).subscribe();
+                            });
+                        })
+                        .map(Optional::of)
+                        .onErrorReturnItem(Optional.empty())
+                        .toSingle(Optional.empty());
+                } else {
+                    log.warn("Not allowing char updates before char load from db");
+                    return Single.error(new IllegalStateException("Not allowing char updates before char load from db"));
                 }
             }
         );
