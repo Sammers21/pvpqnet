@@ -5,10 +5,8 @@ import io.github.sammers.pla.db.Character;
 import io.github.sammers.pla.db.DB;
 import io.github.sammers.pla.db.Meta;
 import io.github.sammers.pla.db.Snapshot;
-import io.reactivex.Completable;
-import io.reactivex.Maybe;
+import io.reactivex.*;
 import io.reactivex.Observable;
-import io.reactivex.Single;
 import io.vertx.reactivex.core.buffer.Buffer;
 import io.vertx.reactivex.ext.web.client.HttpRequest;
 import io.vertx.reactivex.ext.web.client.WebClient;
@@ -113,6 +111,7 @@ public class Ladder {
             .flatMapSingle(tick -> twoVTwo(region))
             .flatMapSingle(tick -> battlegrounds(region))
             .flatMapSingle(tick -> shuffle(region))
+            .flatMapSingle(tick -> calculateMulticlasserLeaderboard(region).andThen(Single.just(tick)))
             .flatMapSingle(tick -> loadCutoffs(region).andThen(Single.just(tick)))
             .flatMapSingle(tick -> calculateMeta(region).andThen(Single.just(tick)))
             .flatMapSingle(tick -> charUpdater.updateCharacters(region, 7, DAYS, timeout, timeoutUnits).andThen(Single.just(tick)))
@@ -147,9 +146,19 @@ public class Ladder {
             .andThen(loadLast(RBG, region))
             .andThen(loadLast(SHUFFLE, region))
             .andThen(calculateMeta(region))
-            .andThen(loadWowCharApiData(region));
+            .andThen(loadWowCharApiData(region))
+            .andThen(calculateMulticlasserLeaderboard(region));
     }
 
+    private Completable calculateMulticlasserLeaderboard(String region) {
+        return Completable.defer(() -> {
+            log.info("Calculating multiclasser leaderboard for region " + region);
+            Snapshot snapshot = refs.refByBracket(SHUFFLE, region).get();
+            Multiclassers multiclassers = Calculator.calculateMulticlassers(snapshot, characterCache);
+            refs.refMulticlassers(region).set(multiclassers);
+            return Completable.complete();
+        });
+    }
 
     public Single<Snapshot> threeVThree(String region) {
         String bracket = "3v3";

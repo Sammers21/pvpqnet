@@ -1,5 +1,6 @@
 package io.github.sammers.pla.logic;
 
+import io.github.sammers.pla.blizzard.Multiclassers;
 import io.github.sammers.pla.db.Snapshot;
 
 import java.util.Map;
@@ -11,10 +12,12 @@ import static io.github.sammers.pla.logic.Conts.SHUFFLE;
 public class Refs {
     private final Map<String, AtomicReference<Snapshot>> refs;
     private final Map<String, AtomicReference<SnapshotDiff>> refDiffs;
+    private final Map<String, AtomicReference<Multiclassers>> multiclassers;
 
     public Refs() {
         this.refs = new ConcurrentHashMap<>();
         this.refDiffs = new ConcurrentHashMap<>();
+        this.multiclassers = new ConcurrentHashMap<>();
     }
 
     public Snapshot snapshotByBracketType(String btype, String region) {
@@ -28,6 +31,16 @@ public class Refs {
             return refByBracket(Conts.RBG, region).get();
         }
         return refByBracket(btype, region).get();
+    }
+
+    public AtomicReference<Multiclassers> refMulticlassers(String region) {
+        return multiclassers.compute(region, (k, v) -> {
+            if (v == null) {
+                return new AtomicReference<>();
+            } else {
+                return v;
+            }
+        });
     }
 
     public AtomicReference<Snapshot> refByBracket(String bracket, String region) {

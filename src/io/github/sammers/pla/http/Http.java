@@ -81,6 +81,10 @@ public class Http {
                 if (bracket.equals("rbg")) {
                     bracket = RBG;
                 }
+                if (bracket.equals(MULTICLASSERS)) {
+                    ctx.response().end(refs.refMulticlassers(region).get().toJson().encode());
+                    return;
+                }
                 Snapshot snapshot = refs.refByBracket(bracket, region).get();
                 if (snapshot == null) {
                     ctx.response().end(Snapshot.empty(region).toJson().encode());

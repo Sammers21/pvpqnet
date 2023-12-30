@@ -1,5 +1,7 @@
 package io.github.sammers.pla.logic;
 
+import io.github.sammers.pla.blizzard.Multiclassers;
+import io.github.sammers.pla.blizzard.WowAPICharacter;
 import io.github.sammers.pla.db.Character;
 import io.github.sammers.pla.db.Meta;
 import io.github.sammers.pla.db.Snapshot;
@@ -21,6 +23,73 @@ import java.util.stream.Collectors;
 public class Calculator {
 
     private static final Logger log = LoggerFactory.getLogger(Calculator.class);
+
+    public static Multiclassers calculateMulticlassers(Snapshot shuffleSnapshot, CharacterCache cache) {
+        Map<Integer, List<Character>> charsGrpd = new HashMap<>();
+        for (Character character : shuffleSnapshot.characters()) {
+            WowAPICharacter wowAPICharacter = cache.getByFullName(character.fullName());
+            if (wowAPICharacter != null) {
+                charsGrpd.compute(wowAPICharacter.petHash(), (k, v) -> {
+                    if (v == null) {
+                        ArrayList<Character> characters = new ArrayList<>();
+                        characters.add(character);
+                        return characters;
+                    } else {
+                        v.add(character);
+                        return v;
+                    }
+                });
+            }
+        }
+        Map<String, Multiclassers.Info> res = new HashMap<>();
+        for (Map.Entry<Integer, List<Character>> entry : charsGrpd.entrySet()) {
+            List<Character> characters = entry.getValue();
+            // group by spec
+            Map<String, List<Character>> specGrpd = characters.stream().collect(Collectors.groupingBy(Character::fullSpec));
+            // in every spec group find the highest rated character
+            Map<String, Character> specAndHighestRated = specGrpd.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, entry1 -> {
+                List<Character> value = entry1.getValue();
+                return value.stream().max(Comparator.comparing(Character::rating)).orElseThrow();
+            }));
+            Map<String, Multiclassers.CharAndScore> specAndScore = specAndHighestRated.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, entry1 -> {
+                Character character = entry1.getValue();
+                return new Multiclassers.CharAndScore(character, calculateScore(Math.toIntExact(character.pos())));
+            }));
+            int totalScore = specAndScore.values().stream().mapToInt(Multiclassers.CharAndScore::score).sum();
+            Character main = specAndScore.values().stream().max(Comparator.comparing(Multiclassers.CharAndScore::score)).orElseThrow().character();
+            Multiclassers.Info info = new Multiclassers.Info(totalScore, main, specAndScore);
+            res.put(entry.getKey().toString(), info);
+        }
+        // sort by total score
+        return new Multiclassers(res.values().stream().sorted(Comparator.comparing(Multiclassers.Info::totalScore).reversed()).toList());
+    }
+
+    /**
+     * Same as in this python funtion
+     * def ladderScrore(x):
+     *     if x>=1 and x<=50:
+     *         # return 600 + (50 - x) * (400 / 50)
+     *         return 600 + (50 - x) * (400 / 50)
+     *     elif x>=51 and x<=100:
+     *         return 400 + (100 - x) * (200 / 50)
+     *     elif x>=101 and x<=5000:
+     *         return 0 + Math.floor((5000 - x) * (400 / 4900))
+     *     else:
+     *         throw("x is out of range")
+     * @return score
+     */
+    public static Integer calculateScore(Integer ladderPos) {
+        if (ladderPos >= 1 && ladderPos <= 50) {
+            return 600 + (50 - ladderPos) * (400 / 50);
+        } else if (ladderPos >= 51 && ladderPos <= 100) {
+            return 400 + (100 - ladderPos) * (200 / 50);
+        } else if (ladderPos >= 101 && ladderPos <= 5000) {
+            return Math.round((5000 - ladderPos) * (400 / 4900));
+        } else {
+            throw new IllegalArgumentException("ladderPos is out of range: " + ladderPos);
+        }
+    }
+
 
     public static Maybe<SnapshotDiff> calcDiffAndCombine(String bracket, String region, List<Maybe<Snapshot>> snaps) {
         AtomicInteger snapsCnt = new AtomicInteger();
