@@ -34,8 +34,8 @@ function activityHistoryForPlayer(player: IPlayer) {
     .flat();
 }
 function getDayOfWeekRender(numberOfDay) {
-  let days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-  if (numberOfDay == 1 || numberOfDay == 3 || numberOfDay == 5) {
+  let days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun",];
+  if (numberOfDay % 2 == 0) {
     return (
       <StyledTableCell component="th" scope="row" size="small" align="left">
         {" "}
@@ -60,15 +60,16 @@ const ActivityDiagram = ({ player, year = currentYear }: IProps) => {
     let weeks = [];
     var currentWeek = [];
     let fullHistory = activityHistoryForPlayer(player);
-    // group fullHistory by date
     let dateAndActivity = {};
-    var start = new Date(`01/01/${year}`);
-    var end = new Date();
+    let start = new Date(new Date().setFullYear(new Date().getFullYear() - 1))
+    let end = new Date();
+    let currentMonth = start.getMonth();
     var loop = new Date(start);
     while (loop <= end) {
       let dt = loop.toLocaleDateString();
       let dayOfWeek = loop.getDay();
-      currentWeek.push(loop);
+      currentWeek[dayOfWeek] = loop;
+      // currentWeek.push(loop);
       if (dayOfWeek == 6) {
         weeks.push(currentWeek);
         currentWeek = [];
@@ -121,13 +122,23 @@ const ActivityDiagram = ({ player, year = currentYear }: IProps) => {
       10: { name: "Nov", weekCount: 0 },
       11: { name: "Dec", weekCount: 0 },
     };
+    for (let i = 0; i < currentMonth; i++) {
+      for (let j = 0; j <= 11; j++) {
+        monthAndWeekCount[j - 1] = monthAndWeekCount[j];
+      }
+      monthAndWeekCount[11] = monthAndWeekCount[-1];
+      delete monthAndWeekCount[-1];
+    }
     weekWithActivity.forEach((week) => {
-      monthAndWeekCount[week[0].date.getMonth()].weekCount += 1;
+      monthAndWeekCount[week.find(d => d != null).date.getMonth()].weekCount += 1;
     });
-    let totalGamesPlayed = fullHistory.map((activity) => { return activity.diff.won + activity.diff.lost }).reduce((a, b) => a + b, 0)
+    let monthNumbers = Array.from(Array(12).keys());
+    let totalGamesPlayed = fullHistory
+    .filter((activity) => { return new Date(activity.diff.timestamp) > start })
+    .map((activity) => { return activity.diff.won + activity.diff.lost }).reduce((a, b) => a + b, 0)
     return (
       <div className="flex flex-col py-2 md:px-3 border border-solid border-[#37415180] rounded-lg bg-[#030303e6] ">
-        <span className="text-2xl mr-4">{totalGamesPlayed} games played in {year}</span>
+        <span className="text-2xl mr-4">{totalGamesPlayed} games played in the last year</span>
         <TableContainer component={Paper}>
           <Table
             sx={{
@@ -138,7 +149,7 @@ const ActivityDiagram = ({ player, year = currentYear }: IProps) => {
             <TableHead>
               <TableRow>
                 <div></div>
-                {Object.keys(monthAndWeekCount).map((month) => {
+                {Object.keys(monthNumbers).map((month) => {
                   return (
                     <StyledTableCell
                       component="th"
