@@ -21,6 +21,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
@@ -101,6 +102,12 @@ public class CharUpdater {
                 .sorted(Comparator.comparingLong(entry -> -entry.getValue().getValue1()))
                 .map(Map.Entry::getKey)
                 .toList();
+            List<Pair<String, String>> randomNotUpdatedChars = characterCache.values().stream()
+                .filter(wowAPICharacter -> tick - wowAPICharacter.lastUpdatedUTCms() > units.toMillis(timeWithoutUpdateMin))
+                .sorted((o1, o2) -> ThreadLocalRandom.current().nextInt(-1, 2))
+                .map(wowAPICharacter -> Pair.with(wowAPICharacter.name(), wowAPICharacter.realm()))
+                .limit(10_000)
+                .toList();
             // merge in a following way:
             // 1. put one from newCharsSorted
             // 2. put one from existingSorted
@@ -108,6 +115,7 @@ public class CharUpdater {
             List<Pair<String, String>> merged = new ArrayList<>(newCharsSorted.size() + existingSorted.size());
             Iterator<Pair<String, String>> newCharsIt = newCharsSorted.iterator();
             Iterator<Pair<String, String>> existingIt = existingSorted.iterator();
+            Iterator<Pair<String, String>> randomNotUpdatedIt = randomNotUpdatedChars.iterator();
             while (newCharsIt.hasNext() || existingIt.hasNext()) {
                 if (newCharsIt.hasNext()) {
                     merged.add(newCharsIt.next());
@@ -115,10 +123,13 @@ public class CharUpdater {
                 if (existingIt.hasNext()) {
                     merged.add(existingIt.next());
                 }
+                if (randomNotUpdatedIt.hasNext()) {
+                    merged.add(randomNotUpdatedIt.next());
+                }
             }
             // merged into list of nickNames
-            log.info("There is {} new chars and {} existing chars in region {} that need to be updated. We have {} {} to do it",
-                newCharsSorted.size(), existingSorted.size(), region, timeout, timeoutUnits.name());
+            log.info("There is {} new chars, {} existing chars and {} random not updated chars in region {} that need to be updated. We have {} {} to do it",
+                newCharsSorted.size(), existingSorted.size(), randomNotUpdatedChars.size(), region, timeout, timeoutUnits.name());
             // transform merged list into list of completables
             return Flowable.fromIterable(
                     merged.stream()
