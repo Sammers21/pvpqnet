@@ -104,10 +104,10 @@ public class CharUpdater {
                 .toList();
             List<Pair<String, String>> randomNotUpdatedChars = characterCache.values().stream()
                 .filter(wowAPICharacter -> tick - wowAPICharacter.lastUpdatedUTCms() > units.toMillis(timeWithoutUpdateMin))
-                .sorted((o1, o2) -> ThreadLocalRandom.current().nextInt(-1, 2))
                 .map(wowAPICharacter -> Pair.with(wowAPICharacter.name(), wowAPICharacter.realm()))
-                .limit(10_000)
                 .toList();
+            Collections.shuffle(randomNotUpdatedChars, ThreadLocalRandom.current());
+            randomNotUpdatedChars = randomNotUpdatedChars.stream().limit(10_000).toList();
             // merge in a following way:
             // 1. put one from newCharsSorted
             // 2. put one from existingSorted
