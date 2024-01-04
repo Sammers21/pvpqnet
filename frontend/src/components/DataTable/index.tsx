@@ -20,10 +20,10 @@ export function getFromSearchParams(searchParams: URLSearchParams, name: string)
 const useBreakpoint = createBreakpoint({ S: 758, L: 900, XL: 1280 });
 
 interface IProps {
-  statistic: Record<BRACKETS, string> | undefined;
+  data: Record<BRACKETS, string> | undefined;
 }
 
-const DataList = ({ statistic }: IProps) => {
+const DataList = ({ data: statistic }: IProps) => {
   const { region = REGIONS.eu, bracket = BRACKETS['3v3'] } = useParams();
   const activity = getActivityFromUrl();
   const [searchParams] = useSearchParams();
