@@ -63,14 +63,14 @@ public class Ladder {
 
     public void start() {
         boolean updatesEnabled = true;
-        int euPeriod = 5;
+        int euPeriod = 1;
         int usPeriod = 30;
-        Observable<Snapshot> updates;
+        Observable<Long> updates;
         if (updatesEnabled) {
-            updates = Observable.mergeArray(runDataUpdater(EU, 1, MINUTES, Observable.defer(() -> {
-                int initialDelay = Calculator.minutesTillNextMins(euPeriod);
+            updates = Observable.mergeArray(runDataUpdater(EU, 1, MINUTES, new AtomicBoolean(false), Observable.defer(() -> {
+                int initialDelay = 0;
                 return Observable.interval(initialDelay, euPeriod, MINUTES);
-            })), runDataUpdater(US, 5, MINUTES, Observable.defer(() -> {
+            })), runDataUpdater(US, 1, MINUTES, new AtomicBoolean(false), Observable.defer(() -> {
                 int initialDelay = Calculator.minutesTillNextMins(usPeriod);
                 return Observable.interval(initialDelay, usPeriod, MINUTES);
             })));
@@ -82,9 +82,9 @@ public class Ladder {
             .andThen(loadRegionData(US))
             .andThen(charsAreLoaded())
             .andThen(updates)
-            .doOnError(e -> log.error("Error fetching ladder", e)).onErrorReturnItem(Snapshot.empty(EU))
+            .doOnError(e -> log.error("Error fetching ladder", e)).onErrorReturnItem(0L)
             .subscribe();
-        Observable.interval(24,24, HOURS)
+        Observable.interval(24, 24, HOURS)
             .flatMapCompletable(tick -> {
                 log.info("Updating realms");
                 return updateRealms(EU).andThen(updateRealms(US));
@@ -99,25 +99,32 @@ public class Ladder {
         });
     }
 
-    private <R> Observable<Snapshot> runDataUpdater(String region,
-                                                    int timeout, TimeUnit timeoutUnits,
-                                                    Observable<R> obs) {
+    private Observable<Long> runDataUpdater(String region,
+                                            int timeout, TimeUnit timeoutUnits,
+                                            AtomicBoolean running,
+                                            Observable<Long> obs) {
         return obs
             .flatMapSingle(tick -> {
-                log.info("Starting data updater for " + region);
-                return Single.just(tick);
-            })
-            .flatMapSingle(tick -> threeVThree(region))
-            .flatMapSingle(tick -> twoVTwo(region))
-            .flatMapSingle(tick -> battlegrounds(region))
-            .flatMapSingle(tick -> shuffle(region))
-            .flatMapSingle(tick -> calculateMulticlasserLeaderboard(region).andThen(Single.just(tick)))
-            .flatMapSingle(tick -> loadCutoffs(region).andThen(Single.just(tick)))
-            .flatMapSingle(tick -> calculateMeta(region).andThen(Single.just(tick)))
-            .flatMapSingle(tick -> charUpdater.updateCharacters(region, 7, DAYS, timeout, timeoutUnits).andThen(Single.just(tick)))
-            .flatMapSingle(tick -> {
-                log.info("Data updater for " + region + " has been finished");
-                return Single.just(tick);
+                if (running.compareAndSet(false, true)) {
+                    log.info("Starting data updater for region=" + region);
+                    return threeVThree(region).ignoreElement()
+                        .andThen(twoVTwo(region).ignoreElement())
+                        .andThen(battlegrounds(region).ignoreElement())
+                        .andThen(shuffle(region).ignoreElement())
+                        .andThen(calculateMulticlasserLeaderboard(region))
+                        .andThen(loadCutoffs(region))
+                        .andThen(calculateMeta(region))
+                        .andThen(charUpdater.updateCharacters(region, 7, DAYS, timeout, timeoutUnits))
+                        .andThen(Single.just(System.nanoTime()))
+                        .doFinally(() -> running.set(false))
+                        .map(t -> {
+                            log.info("Data updater for " + region + " has been finished in " + (System.nanoTime() - tick) / 1_000_000_000 + " seconds");
+                            return t;
+                        });
+                } else {
+                    log.info("Data updater for " + region + " is already running, skipping");
+                    return Single.just(System.nanoTime());
+                }
             });
     }
 
