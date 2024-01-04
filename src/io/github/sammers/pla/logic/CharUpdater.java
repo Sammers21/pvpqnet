@@ -102,10 +102,13 @@ public class CharUpdater {
                 .sorted(Comparator.comparingLong(entry -> -entry.getValue().getValue1()))
                 .map(Map.Entry::getKey)
                 .toList();
-            List<Pair<String, String>> randomNotUpdatedChars = characterCache.values().stream()
-                .filter(wowAPICharacter -> tick - wowAPICharacter.lastUpdatedUTCms() > units.toMillis(timeWithoutUpdateMin))
-                .map(wowAPICharacter -> Pair.with(wowAPICharacter.name(), wowAPICharacter.realm()))
-                .toList();
+            List<Pair<String, String>> randomNotUpdatedChars = new ArrayList<>(
+                characterCache.values().stream()
+                    .filter(wowAPICharacter -> tick - wowAPICharacter.lastUpdatedUTCms() > units.toMillis(timeWithoutUpdateMin))
+                    .map(wowAPICharacter -> Pair.with(wowAPICharacter.name(), wowAPICharacter.realm()))
+                    .toList()
+            );
+
             Collections.shuffle(randomNotUpdatedChars, ThreadLocalRandom.current());
             randomNotUpdatedChars = randomNotUpdatedChars.stream().limit(10_000).toList();
             // merge in a following way:
@@ -137,7 +140,7 @@ public class CharUpdater {
                         .toList())
                 .flatMapCompletable(c -> c, true, 2)
                 .takeUntil(Completable.timer(timeout, timeoutUnits));
-        });
+        }).onErrorComplete().subscribeOn(Main.VTHREAD_SCHEDULER);
     }
 
     public Completable updateCharsInfinite(String region) {

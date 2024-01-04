@@ -68,7 +68,7 @@ public class Ladder {
         Observable<Long> updates;
         if (updatesEnabled) {
             updates = Observable.mergeArray(runDataUpdater(EU, 1, MINUTES, new AtomicBoolean(false), Observable.defer(() -> {
-                int initialDelay = 0;
+                int initialDelay =  Calculator.minutesTillNextMins(euPeriod);
                 return Observable.interval(initialDelay, euPeriod, MINUTES);
             })), runDataUpdater(US, 1, MINUTES, new AtomicBoolean(false), Observable.defer(() -> {
                 int initialDelay = Calculator.minutesTillNextMins(usPeriod);
