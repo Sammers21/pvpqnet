@@ -104,8 +104,9 @@ public class Ladder {
                                             AtomicBoolean running,
                                             Observable<Long> obs) {
         return obs
-            .flatMapSingle(tick -> {
+            .flatMapSingle(obst -> {
                 if (running.compareAndSet(false, true)) {
+                    long tick = System.nanoTime();
                     log.info("Starting data updater for region=" + region);
                     return threeVThree(region).ignoreElement()
                         .andThen(twoVTwo(region).ignoreElement())
