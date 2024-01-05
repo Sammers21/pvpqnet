@@ -108,16 +108,20 @@ public class Ladder {
                 if (running.compareAndSet(false, true)) {
                     long tick = System.nanoTime();
                     log.info("Starting data updater for region=" + region);
-                    return threeVThree(region).ignoreElement()
-                        .andThen(twoVTwo(region).ignoreElement())
-                        .andThen(battlegrounds(region).ignoreElement())
-                        .andThen(shuffle(region).ignoreElement())
-                        .andThen(calculateMulticlasserLeaderboard(region))
-                        .andThen(loadCutoffs(region))
-                        .andThen(calculateMeta(region))
+                    return threeVThree(region).ignoreElement().timeout(11, MINUTES)
+                        .andThen(twoVTwo(region).ignoreElement().timeout(9, MINUTES))
+                        .andThen(battlegrounds(region).ignoreElement().timeout(8, MINUTES))
+                        .andThen(shuffle(region).ignoreElement().timeout(20, MINUTES))
+                        .andThen(calculateMulticlasserLeaderboard(region).timeout(7, MINUTES))
+                        .andThen(loadCutoffs(region).timeout(1, MINUTES))
+                        .andThen(calculateMeta(region).timeout(3, MINUTES))
                         .andThen(charUpdater.updateCharacters(region, 7, DAYS, timeout, timeoutUnits))
-                        .andThen(Single.just(System.nanoTime()))
-                        .doFinally(() -> running.set(false))
+                        .onErrorComplete(e -> {
+                            log.error("Error updating data for region " + region, e);
+                            return true;
+                        })
+                        .andThen(Single.just(tick))
+                        .doOnTerminate(() -> running.set(false))
                         .map(t -> {
                             log.info("Data updater for " + region + " has been finished in " + (System.nanoTime() - tick) / 1_000_000_000 + " seconds");
                             return t;
