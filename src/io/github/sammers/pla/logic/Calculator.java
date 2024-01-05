@@ -30,7 +30,9 @@ public class Calculator {
             WowAPICharacter wowAPICharacter = cache.getByFullName(character.fullName());
             if (wowAPICharacter != null) {
                 charsGrpd.compute(wowAPICharacter.petHash(), (k, v) -> {
-                    if (v == null) {
+                    if (k == -1) {
+                        return null;
+                    } else if (v == null) {
                         ArrayList<Character> characters = new ArrayList<>();
                         characters.add(character);
                         return characters;

@@ -8,6 +8,7 @@ import io.github.sammers.pla.logic.*;
 import io.github.sammers.pla.db.Snapshot;
 import io.reactivex.Single;
 import io.vertx.core.VertxOptions;
+import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.core.Vertx;
@@ -158,7 +159,10 @@ public class Http {
         router.get("/ladder/:bracket").handler(ctx -> ctx.response().sendFile("index.html"));
         router.get("/activity/:bracket").handler(ctx -> ctx.response().sendFile("index.html"));
         router.get("/").handler(ctx -> ctx.response().sendFile("index.html"));
-        vertx.createHttpServer().requestHandler(router).listen(9000);
+        // enable gzip
+        vertx.createHttpServer(new HttpServerOptions().setCompressionSupported(true))
+            .requestHandler(router)
+            .listen(9000);
     }
 
     private void nameRealmLookupResponse(RoutingContext ctx, String realm, String name) {
