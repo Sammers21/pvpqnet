@@ -124,6 +124,7 @@ function MClassLeaderboard(dota) {
       onChange={(e, p) => setPage(p)}
     />
   );
+  const height = rowsToShow.length == 0 ? '500px' : 'auto'
   return (
     <div className="flex w-full justify-center bg-[#030303e6] pt-24 pb-11">
       <div className="w-full h-full md:w-10/12">
@@ -150,7 +151,10 @@ function MClassLeaderboard(dota) {
           </Typography>
         </div>
         <div className="mx-2 my-2 px-4 py-4 rounded-2xl bg-[#2f384d4d]">
-          <Box sx={{ width: "100%" }}>
+          <Box sx={{
+           width: "100%",
+           height: height,
+           }}>
             <div className="flex flex-row justify-between">
               <Tabs
                 value={role}
