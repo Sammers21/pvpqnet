@@ -32,6 +32,73 @@ import {
   TANK_SPECS,
 } from "@/constants/filterSchema";
 import { StripedDataGrid } from "../Meta/Grid";
+import { all } from "axios";
+
+function calculateRowForShuffleRole(shuffleRole, rows) {
+  if (rows === undefined || rows.length === 0) {
+    return [];
+  }
+  let allowedSpecs;
+  if (shuffleRole === "all") {
+    allowedSpecs = ALL_SPECS;
+  } else if (shuffleRole === "dps") {
+    allowedSpecs = DPS_SPECS;
+  } else if (shuffleRole === "healer") {
+    allowedSpecs = HEAL_SPECS;
+  } else if (shuffleRole === "melee") {
+    allowedSpecs = MELEE_SPECS;
+  } else if (shuffleRole === "ranged") {
+    allowedSpecs = RANGED_SPECS;
+  } else if (shuffleRole === "tank") {
+    allowedSpecs = TANK_SPECS;
+  } else {
+    allowedSpecs = ALL_SPECS;
+  }
+  let res = clone(rows)
+    .filter((multiclasser) => {
+      const keys = Object.keys(multiclasser.specs);
+      for (let i = 0; i < keys.length; i++) {
+        const spec = keys[i];
+        if (allowedSpecs.includes(spec)) {
+          return true;
+        }
+      }
+      return false;
+    })
+    .map((multiclasser) => {
+      const keys = Object.keys(multiclasser.specs);
+      const specs = {};
+      for (let i = 0; i < keys.length; i++) {
+        const spec = keys[i];
+        if (allowedSpecs.includes(spec)) {
+          specs[spec] = multiclasser.specs[spec];
+        }
+      }
+      multiclasser.specs = specs;
+      return multiclasser;
+    })
+    .map((multiclasser) => {
+      // recalcuate total score
+      let total_score = 0;
+      const keys = Object.keys(multiclasser.specs);
+      for (let i = 0; i < keys.length; i++) {
+        const spec = keys[i];
+        total_score += multiclasser.specs[spec].score;
+      }
+      multiclasser.total_score = total_score;
+      return multiclasser;
+    })
+    .sort((a, b) => {
+      return b.total_score - a.total_score;
+    });
+  // iter dt multiclassers
+  for (let i = 0; i < res.length; i++) {
+    const multiclasser = res[i];
+    // iter multiclasser specs
+    multiclasser.rank = i + 1;
+  }
+  return res;
+}
 
 function columns(region): GridColDef[] {
   return [
@@ -58,6 +125,8 @@ function columns(region): GridColDef[] {
         const url = getAltProfileUrl(params.value);
         return (
           <a
+            target="_blank"
+            rel="noopener noreferrer"
             href={url}
             className="text-base no-underline"
             style={{ color: getClassNameColor(params.value.class) }}
@@ -113,83 +182,37 @@ function columns(region): GridColDef[] {
 
 function MClassLeaderboard(dota) {
   const { region = REGIONS.eu } = useParams();
-  const [data, setData] = React.useState({ multiclassers: [] });
+  const [shuffleRole, setValue] = React.useState("all");
+  const [roleAndData, setRoleAndData] = React.useState({
+    all: [],
+    dps: [],
+    healer: [],
+    melee: [],
+    ranged: [],
+    tank: [],
+  });
   const getLeadeboard = async (region: REGIONS) => {
     const dt = await getMulticlasserLeaderboard(region);
-    console.log(dt);
-    setData(dt);
+    setRoleAndData({
+      all: calculateRowForShuffleRole("all", dt.multiclassers),
+      dps: calculateRowForShuffleRole("dps", dt.multiclassers),
+      healer: calculateRowForShuffleRole("healer", dt.multiclassers),
+      melee: calculateRowForShuffleRole("melee", dt.multiclassers),
+      ranged: calculateRowForShuffleRole("ranged", dt.multiclassers),
+      tank: calculateRowForShuffleRole("tank", dt.multiclassers),
+    });
   };
   React.useEffect(() => {
     getLeadeboard(region as REGIONS);
   }, [region]);
-  const [shuffleRole, setValue] = React.useState("all");
   const handleChange = (event: React.SyntheticEvent, newValue: string) => {
     setValue(newValue);
   };
-  const [rowsToShow, setRowsToShow] = React.useState([]);
+  const [rowsToShow, setRowsToShow] = React.useState(roleAndData["all"]);
   React.useEffect(() => {
-    console.log("Calculating rows to show: " + shuffleRole);
-    let allowedSpecs;
-    if (shuffleRole === "all") {
-      allowedSpecs = ALL_SPECS;
-    } else if (shuffleRole === "dps") {
-      allowedSpecs = DPS_SPECS;
-    } else if (shuffleRole === "healer") {
-      allowedSpecs = HEAL_SPECS;
-    } else if (shuffleRole === "melee") {
-      allowedSpecs = MELEE_SPECS;
-    } else if (shuffleRole === "ranged") {
-      allowedSpecs = RANGED_SPECS;
-    } else if (shuffleRole === "tank") {
-      allowedSpecs = TANK_SPECS;
-    } else {
-      allowedSpecs = ALL_SPECS;
-    }
-    let res = clone(data.multiclassers)
-      .filter((multiclasser) => {
-        const keys = Object.keys(multiclasser.specs);
-        for (let i = 0; i < keys.length; i++) {
-          const spec = keys[i];
-          if (allowedSpecs.includes(spec)) {
-            return true;
-          }
-        }
-        return false;
-      })
-      .map((multiclasser) => {
-        const keys = Object.keys(multiclasser.specs);
-        const specs = {};
-        for (let i = 0; i < keys.length; i++) {
-          const spec = keys[i];
-          if (allowedSpecs.includes(spec)) {
-            specs[spec] = multiclasser.specs[spec];
-          }
-        }
-        multiclasser.specs = specs;
-        return multiclasser;
-      })
-      .map((multiclasser) => {
-        // recalcuate total score
-        let total_score = 0;
-        const keys = Object.keys(multiclasser.specs);
-        for (let i = 0; i < keys.length; i++) {
-          const spec = keys[i];
-          total_score += multiclasser.specs[spec].score;
-        }
-        multiclasser.total_score = total_score;
-        return multiclasser;
-      })
-      .sort((a, b) => {
-        return b.total_score - a.total_score;
-      });
-    // iter dt multiclassers
-    for (let i = 0; i < res.length; i++) {
-      const multiclasser = res[i];
-      // iter multiclasser specs
-      multiclasser.rank = i + 1;
-    }
-    setRowsToShow(res);
-  }, [shuffleRole, data]);
+    setRowsToShow(roleAndData[shuffleRole]);
+  }, [shuffleRole,  roleAndData]);
+  console.log("rowsToShow", rowsToShow);
   return (
     <div className="flex w-full justify-center bg-[#030303e6] pt-24 pb-11">
       <div className="w-full md:w-4/5">
