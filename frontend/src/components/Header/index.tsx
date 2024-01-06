@@ -68,6 +68,10 @@ const Header = () => {
     navigateToPage({ activity: 'activity', bracket: isNonStandBracket ? BRACKETS.shuffle : bracket });
   }
 
+  function redirectToMulticlassers() {
+    navigateToPage({ activity: 'ladder', bracket: 'shuffle-multiclass' });
+  }
+
   function redirectToSkillCapped() {
     window.open(
       "https://www.skill-capped.com/wow/pricing/plans#pvpq",
@@ -78,6 +82,7 @@ const Header = () => {
   const menuItems = [
     { label: "Activity", onClick: redirectToActivity },
     { label: "Leaderboards", onClick: redirectToLadder },
+    { label: "Multiclassers", onClick: redirectToMulticlassers},
     { label: "Meta", onClick: redirectToMeta },
     { label: "Skill-Сapped", onClick: redirectToSkillCapped },
   ];

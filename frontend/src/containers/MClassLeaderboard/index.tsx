@@ -7,7 +7,7 @@ import {
   getSpecIcon,
   ratingToColor,
 } from "@/utils/table";
-import { Avatar, Chip, Pagination } from "@mui/material";
+import { Avatar, Chip, Pagination, Typography } from "@mui/material";
 import Box from "@mui/material/Box";
 import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
@@ -98,69 +98,96 @@ function columns(region): GridColDef[] {
 
 function MClassLeaderboard(dota) {
   const { region = REGION.eu } = useParams();
-  const [shuffleRole, setValue] = React.useState("all");
+  const [role, setRole] = React.useState("all");
   const [page, setPage] = React.useState(1);
   const [totalPages, setTotalPages] = React.useState(1);
   const [rowsToShow, setRowsToShow] = React.useState([]);
-  const getLeadeboard = async (region: REGION, role, page) => {
+  const [loading, setLoading] = React.useState(false);
+  const getLeaderboard = async (region: REGION, role, page) => {
+    setLoading(true);
     const dt = await getMulticlasserLeaderboard(region, role, page);
     const res = dt.multiclassers;
     setRowsToShow(res);
     setTotalPages(dt.total_pages);
+    setLoading(false);
   };
   React.useEffect(() => {
-    getLeadeboard(region as REGION, shuffleRole, page);
-  }, [region, shuffleRole, page]);
+    getLeaderboard(region as REGION, role, page);
+  }, [region, role, page]);
   console.log("rowsToShow", rowsToShow);
-  let pagination = <Pagination  boundaryCount={2} count={totalPages} onChange={(e, p) => setPage(p)} />;
+  let pagination = (
+    <Pagination
+      boundaryCount={2}
+      count={totalPages}
+      onChange={(e, p) => setPage(p)}
+    />
+  );
   return (
     <div className="flex w-full justify-center bg-[#030303e6] pt-24 pb-11">
-      <div className="w-full md:w-4/5">
-        <Box sx={{ width: "100%" }}>
-          <div className="flex flex-row justify-between">
-            <Tabs
-              value={shuffleRole}
-              onChange={(event: React.SyntheticEvent, newValue: string) => {
-                setValue(newValue);
+      <div className="w-full h-full md:w-10/12">
+        <div className="mx-2 my-2 mb-10 px-4 py-4 rounded-2xl bg-[#2f384d4d]">
+          <Typography variant="h4">Multiclassers</Typography>
+          <Typography variant="body1">
+            Top { role === "all" ? "" : role + " "} multiclassers in {region.toUpperCase()} based on their highest ladder spots on every unique spec.
+            Each spec is counted only once, and maximum score per each spec is 1000 for rank #1.
+            More information on the exact formula can be found on the
+             <a href="https://twitter.com/sammers_wow/status/1740958624380506258" target="_blank" rel="noopener noreferrer" className="text-blue-500"> original tweet</a>.
+          </Typography>
+          <Typography variant="body1">
+            <b>Example:</b> If player has #1 on 3 different specs in solo shuffle, his score will be 3000.
+          </Typography>
+        </div>
+        <div className="mx-2 my-2 px-4 py-4 rounded-2xl bg-[#2f384d4d]">
+          <Box sx={{ width: "100%" }}>
+            <div className="flex flex-row justify-between">
+              <Tabs
+                value={role}
+                onChange={(event: React.SyntheticEvent, newValue: string) => {
+                  setRole(newValue);
+                }}
+                variant="scrollable"
+                scrollButtons
+                allowScrollButtonsMobile
+                aria-label="scrollable force tabs example"
+              >
+                <Tab label="All" value="all" />
+                <Tab label="DPS" value="dps" />
+                <Tab label="Healer" value="healer" />
+                <Tab label="Melee" value="melee" />
+                <Tab label="Ranged" value="ranged" />
+                <Tab label="Tank" value="tank" />
+              </Tabs>
+              {pagination}
+            </div>
+            <StripedDataGrid
+              rows={rowsToShow}
+              getRowId={(row) => row.rank}
+              columns={columns(region)}
+              disableColumnMenu={true}
+              hideFooter={true}
+              sx={{ "&, [class^=MuiDataGrid]": { border: "none" } }}
+              loading={loading}
+              initialState={{
+                pagination: {
+                  paginationModel: {
+                    pageSize: 100,
+                  },
+                },
+                sorting: {
+                  sortModel: [{ field: "total_score", sort: "desc" }],
+                },
               }}
-              variant="scrollable"
-              scrollButtons
-              allowScrollButtonsMobile
-              aria-label="scrollable force tabs example"
-            >
-              <Tab label="All" value="all" />
-              <Tab label="DPS" value="dps" />
-              <Tab label="Healer" value="healer" />
-              <Tab label="Melee" value="melee" />
-              <Tab label="Ranged" value="ranged" />
-              <Tab label="Tank" value="tank" />
-            </Tabs>
+              pageSizeOptions={[100]}
+              rowHeight={33.5}
+              disableRowSelectionOnClick
+              getRowClassName={(params) =>
+                params.indexRelativeToCurrentPage % 2 === 0 ? "even" : "odd"
+              }
+            />
+          </Box>
+          <div className="flex flex-row flex-row-reverse mt-1">
             {pagination}
           </div>
-          <StripedDataGrid
-            rows={rowsToShow}
-            getRowId={(row) => row.rank}
-            columns={columns(region)}
-            disableColumnMenu={true}
-            hideFooter={true}
-            initialState={{
-              pagination: {
-                paginationModel: {
-                  pageSize: 100,
-                },
-              },
-              sorting: { sortModel: [{ field: "total_score", sort: "desc" }] },
-            }}
-            pageSizeOptions={[100]}
-            rowHeight={33.5}
-            disableRowSelectionOnClick
-            getRowClassName={(params) =>
-              params.indexRelativeToCurrentPage % 2 === 0 ? "even" : "odd"
-            }
-          />
-        </Box>
-        <div className="flex flex-row flex-row-reverse mt-1">
-          {pagination}
         </div>
       </div>
     </div>

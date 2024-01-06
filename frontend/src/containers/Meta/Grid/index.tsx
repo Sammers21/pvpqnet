@@ -22,6 +22,7 @@ const ODD_OPACITY = 0.2;
 export const StripedDataGrid = styled(DataGrid)(({ theme }) => ({
   [`& .${gridClasses.row}.even`]: {
     backgroundColor: '#0e1216',
+    minHeight: '200px',
     '&:hover, &.Mui-hovered': {
       backgroundColor: alpha(theme.palette.primary.main, ODD_OPACITY),
       '@media (hover: none)': {
