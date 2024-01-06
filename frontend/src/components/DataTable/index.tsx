@@ -6,7 +6,7 @@ import Table from '@/components/AltsTable';
 import TableFilter from '@/components/TableFilter';
 
 import getTableColumns from './useColumns';
-import { getStatistic } from '@/services/stats.service';
+import { getLadder } from '@/services/stats.service';
 import { getActivityFromUrl } from '@/utils/urlparts';
 
 import { BRACKETS } from '@/constants/pvp-activity';
@@ -49,7 +49,7 @@ const DataList = ({ data: statistic }: IProps) => {
       setLoading(true);
 
       const filter = { page, region, activity, bracket, specs: selectedSpecs };
-      const { records, totalPages } = await getStatistic(filter as any);
+      const { records, totalPages } = await getLadder(filter as any);
 
       setData(records);
       setTotalPages(totalPages);

@@ -40,9 +40,6 @@ function Activity() {
       <>
         <Header />
          <div className="mt-24 mx-auto mb-11 w-full lg:w-[85%]">
-          <h1 className="text-3xl font-bold">
-            Shuffle Multiclass is coming soon!
-          </h1>
           <MClassLeaderboard />
         </div>
         <Footer />

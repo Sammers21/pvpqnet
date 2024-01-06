@@ -11,7 +11,7 @@ export const statsMap = {
   [REGIONS.eu]: 'en-gb',
 };
 
-export const getStatistic = async ({
+export const getLadder = async ({
   page = 1,
   region = REGIONS.eu,
   activity = 'activity',
@@ -20,7 +20,7 @@ export const getStatistic = async ({
 }) => {
   try {
     const response = await axios.get(
-      urls.getData(page, statsMap[region], activity, bracket, specs)
+      urls.getLadderData(page, statsMap[region], activity, bracket, specs)
     );
 
     const data = response.data;
@@ -29,6 +29,19 @@ export const getStatistic = async ({
     return { records: [], totalPages: 0 };
   }
 };
+
+export async function getMulticlasserLeaderboard(region: REGIONS) {
+  try {
+    const response = await axios.get(urls.getMulticlasserLeaderboard(statsMap[region]), {
+      headers: {
+        'Accept-Encoding': 'gzip',
+      },
+    });
+    return response.data;
+  } catch (error) {
+    return [];
+  }
+}
 
 export async function fetchStatistic(region: REGIONS) {
   try {
