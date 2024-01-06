@@ -1,36 +1,19 @@
-import * as React from "react";
-import clone from "clone";
-import Box from "@mui/material/Box";
-import Tabs from "@mui/material/Tabs";
-import Tab from "@mui/material/Tab";
-import { DataGrid, GridColDef, GridValueGetterParams } from "@mui/x-data-grid";
-import { BRACKETS } from "@/constants/pvp-activity";
 import { REGION } from "@/constants/region";
-import {
-  fetchStatistic,
-  getLadder,
-  getMulticlasserLeaderboard,
-  statsMap,
-} from "@/services/stats.service";
+import { getMulticlasserLeaderboard } from "@/services/stats.service";
 import { capitalizeFirstLetter } from "@/utils/common";
-import { useParams } from "react-router-dom";
 import {
   getAltProfileUrl,
   getClassNameColor,
-  getRatingColor,
   getSpecIcon,
   ratingToColor,
 } from "@/utils/table";
-import { Avatar, Chip } from "@mui/material";
-import CharacterChip from "../Profile/History/CharacterChip";
-import {
-  ALL_SPECS,
-  DPS_SPECS,
-  HEAL_SPECS,
-  MELEE_SPECS,
-  RANGED_SPECS,
-  TANK_SPECS,
-} from "@/constants/filterSchema";
+import { Avatar, Chip, Pagination } from "@mui/material";
+import Box from "@mui/material/Box";
+import Tab from "@mui/material/Tab";
+import Tabs from "@mui/material/Tabs";
+import { GridColDef, GridValueGetterParams } from "@mui/x-data-grid";
+import * as React from "react";
+import { useParams } from "react-router-dom";
 import { StripedDataGrid } from "../Meta/Grid";
 
 function columns(region): GridColDef[] {
@@ -88,7 +71,7 @@ function columns(region): GridColDef[] {
           return params.value[b].score - params.value[a].score;
         });
         return (
-          <div className="flex flex-row ">
+          <div className="flex flex-row gap-1">
             {keys.map((key) => {
               const specIcon = getSpecIcon(key);
               const ratingColor = ratingToColor(
@@ -117,41 +100,43 @@ function MClassLeaderboard(dota) {
   const { region = REGION.eu } = useParams();
   const [shuffleRole, setValue] = React.useState("all");
   const [page, setPage] = React.useState(1);
+  const [totalPages, setTotalPages] = React.useState(1);
   const [rowsToShow, setRowsToShow] = React.useState([]);
   const getLeadeboard = async (region: REGION, role, page) => {
     const dt = await getMulticlasserLeaderboard(region, role, page);
     const res = dt.multiclassers;
-    for (let i = 0; i < res.length; i++) {
-      const multiclasser = res[i];
-      multiclasser.rank = i + 1;
-    }
     setRowsToShow(res);
+    setTotalPages(dt.total_pages);
   };
   React.useEffect(() => {
     getLeadeboard(region as REGION, shuffleRole, page);
   }, [region, shuffleRole, page]);
   console.log("rowsToShow", rowsToShow);
+  let pagination = <Pagination  boundaryCount={2} count={totalPages} onChange={(e, p) => setPage(p)} />;
   return (
     <div className="flex w-full justify-center bg-[#030303e6] pt-24 pb-11">
       <div className="w-full md:w-4/5">
         <Box sx={{ width: "100%" }}>
-          <Tabs
-            value={shuffleRole}
-            onChange={(event: React.SyntheticEvent, newValue: string) => {
-              setValue(newValue);
-            }}
-            variant="scrollable"
-            scrollButtons
-            allowScrollButtonsMobile
-            aria-label="scrollable force tabs example"
-          >
-            <Tab label="All" value="all" />
-            <Tab label="DPS" value="dps" />
-            <Tab label="Healer" value="healer" />
-            <Tab label="Melee" value="melee" />
-            <Tab label="Ranged" value="ranged" />
-            <Tab label="Tank" value="tank" />
-          </Tabs>
+          <div className="flex flex-row justify-between">
+            <Tabs
+              value={shuffleRole}
+              onChange={(event: React.SyntheticEvent, newValue: string) => {
+                setValue(newValue);
+              }}
+              variant="scrollable"
+              scrollButtons
+              allowScrollButtonsMobile
+              aria-label="scrollable force tabs example"
+            >
+              <Tab label="All" value="all" />
+              <Tab label="DPS" value="dps" />
+              <Tab label="Healer" value="healer" />
+              <Tab label="Melee" value="melee" />
+              <Tab label="Ranged" value="ranged" />
+              <Tab label="Tank" value="tank" />
+            </Tabs>
+            {pagination}
+          </div>
           <StripedDataGrid
             rows={rowsToShow}
             getRowId={(row) => row.rank}
@@ -174,6 +159,9 @@ function MClassLeaderboard(dota) {
             }
           />
         </Box>
+        <div className="flex flex-row flex-row-reverse mt-1">
+          {pagination}
+        </div>
       </div>
     </div>
   );

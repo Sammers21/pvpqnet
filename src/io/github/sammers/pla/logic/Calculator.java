@@ -1,6 +1,7 @@
 package io.github.sammers.pla.logic;
 
 import io.github.sammers.pla.blizzard.Multiclassers;
+import io.github.sammers.pla.blizzard.Multiclassers.Info;
 import io.github.sammers.pla.blizzard.WowAPICharacter;
 import io.github.sammers.pla.db.Character;
 import io.github.sammers.pla.db.Meta;
@@ -59,11 +60,17 @@ public class Calculator {
             }));
             int totalScore = specAndScore.values().stream().mapToInt(Multiclassers.CharAndScore::score).sum();
             Character main = specAndScore.values().stream().max(Comparator.comparing(Multiclassers.CharAndScore::score)).orElseThrow().character();
-            Multiclassers.Info info = new Multiclassers.Info(totalScore, main, specAndScore);
+            Multiclassers.Info info = new Multiclassers.Info(-1, totalScore, main, specAndScore);
             res.put(entry.getKey().toString(), info);
         }
         // sort by total score
-        return new Multiclassers(res.values().stream().sorted(Comparator.comparing(Multiclassers.Info::totalScore).reversed()).toList());
+        List<Info> list = res.values().stream().sorted(Comparator.comparing(Multiclassers.Info::totalScore).reversed()).toList();
+        List<Info> resList = new ArrayList<>(list.size());
+        for (int i = 0; i < list.size(); i++) {
+            Info info = list.get(i);
+            resList.add(new Info(i + 1, info.totalScore(), info.main(), info.specs()));
+        }
+        return new Multiclassers(resList);
     }
 
     /**

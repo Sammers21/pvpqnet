@@ -8,6 +8,7 @@ import io.github.sammers.pla.logic.Calculator;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -47,22 +48,27 @@ public record Multiclassers(List<Multiclassers.Info> multiclassers) implements J
     } else {
       acceptedSpecs = Spec.ALL_SPECS;
     }
-    return new Multiclassers(
-        multiclassers.stream()
-            .filter(entry -> entry.specs().keySet().stream().anyMatch(acceptedSpecs::contains))
-            .map(entry -> {
-              return new Multiclassers.Info(entry.totalScore(), entry.main(),
-                  entry.specs().entrySet().stream()
-                      .filter(spec -> acceptedSpecs.contains(spec.getKey()))
-                      .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
-            })
-            .map(entry -> {
-              Integer totalScore = entry.specs().values().stream().map(CharAndScore::score).reduce(0,
-                  Integer::sum);
-              return new Multiclassers.Info(totalScore, entry.main(), entry.specs());
-            })
-            .sorted((a, b) -> b.totalScore() - a.totalScore())
-            .toList());
+    List<Info> list = multiclassers.stream()
+        .filter(entry -> entry.specs().keySet().stream().anyMatch(acceptedSpecs::contains))
+        .map(entry -> {
+          return new Multiclassers.Info(-1, entry.totalScore(), entry.main(),
+              entry.specs().entrySet().stream()
+                  .filter(spec -> acceptedSpecs.contains(spec.getKey()))
+                  .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
+        })
+        .map(entry -> {
+          Integer totalScore = entry.specs().values().stream().map(CharAndScore::score).reduce(0,
+              Integer::sum);
+          return new Multiclassers.Info(-1, totalScore, entry.main(), entry.specs());
+        })
+        .sorted((a, b) -> b.totalScore() - a.totalScore())
+        .toList();
+    List<Info> resList = new ArrayList<>(list.size());
+    for (int i = 0; i < list.size(); i++) {
+      Info info = list.get(i);
+      resList.add(new Info(i + 1, info.totalScore(), info.main(), info.specs()));
+    }
+    return new Multiclassers(resList);
   }
 
   @Override
@@ -83,10 +89,12 @@ public record Multiclassers(List<Multiclassers.Info> multiclassers) implements J
 
   }
 
-  public record Info(Integer totalScore, Character main, Map<String, CharAndScore> specs) implements JsonConvertable {
+  public record Info(Integer rank, Integer totalScore, Character main, Map<String, CharAndScore> specs)
+      implements JsonConvertable {
     @Override
     public JsonObject toJson() {
       return new JsonObject()
+          .put("rank", rank)
           .put("total_score", totalScore)
           .put("main", main.toJson())
           .put("specs", specs.entrySet().stream()
