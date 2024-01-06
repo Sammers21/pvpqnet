@@ -552,7 +552,7 @@ public class Ladder {
                     return Maybe.empty();
                 }))
                 .flatMapCompletable(characters -> {
-                    refs.refByBracket(bracket, region).set(characters);
+                    refs.refByBracket(bracket, region).set(characters.applyCutoffs(bracket, regionCutoff.get(region)));
                     log.info("Data for bracket {}-{} has been loaded from DB in {} ms", region, bracket, (System.nanoTime() - tick) / 1000000);
                     return calcDiffs(bracket, region);
                 });
@@ -590,7 +590,7 @@ public class Ladder {
         SnapshotDiff diff = Calculator.calculateDiff(curVal, newCharacters, bracket);
         boolean same = diff.chars().isEmpty();
         if (!same) {
-            current.set(newCharacters);
+            current.set(newCharacters.applyCutoffs(bracket, regionCutoff.get(region)));
             log.info("Data for bracket {} is different[diffs={}] performing update", bracket, diff.chars().size());
             return db.insertOnlyIfDifferent(bracket, region, newCharacters)
                 .andThen(db.cleanBracketSnapshot(bracket)

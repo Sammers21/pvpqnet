@@ -35,12 +35,19 @@ import { StripedDataGrid } from "../Meta/Grid";
 
 function columns(region): GridColDef[] {
   return [
-    { field: "rank", headerName: "Rank", width: 90 },
+    {
+      field: "rank",
+      headerName: "Rank",
+      width: 90,
+      valueFormatter: (params: GridValueGetterParams) => {
+        return `#${params.value}`;
+      },
+    },
     { field: "total_score", headerName: "Score", width: 90 },
     {
       field: "main",
       headerName: "Main",
-      width: 300,
+      width: 200,
       valueFormatter: (params: GridValueGetterParams) => {
         return capitalizeFirstLetter(
           params.value.name + "-" + params.value.realm
@@ -50,7 +57,11 @@ function columns(region): GridColDef[] {
         params.value.region = region;
         const url = getAltProfileUrl(params.value);
         return (
-          <a href={url} className="text-base no-underline">
+          <a
+            href={url}
+            className="text-base no-underline"
+            style={{ color: getClassNameColor(params.value.class) }}
+          >
             {params.value.name + "-" + params.value.realm}
           </a>
         );
@@ -79,7 +90,8 @@ function columns(region): GridColDef[] {
             {keys.map((key) => {
               const specIcon = getSpecIcon(key);
               const ratingColor = ratingToColor(
-                params.value[key].character.rating
+                params.value[key].character.rating,
+                params.value[key].character.in_cutoff
               );
               const chip = (
                 <Chip
