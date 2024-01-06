@@ -129,26 +129,24 @@ function MClassLeaderboard(dota) {
       <div className="w-full h-full md:w-10/12">
         <div className="mx-2 my-2 mb-10 px-4 py-4 rounded-2xl bg-[#2f384d4d]">
           <Typography variant="h4">Multiclassers</Typography>
-          <Typography variant="body1">
+          <Typography variant="body1" style={{ marginTop: '10px' }}>
             Top {role === "all" ? "" : role + " "} multiclassers in{" "}
-            {region.toUpperCase()} based on their highest ladder spots on every
-            unique spec. Each spec is counted only once, and maximum score per
-            each spec is 1000 for rank #1. More information on the exact formula
-            can be found on the
+            {region.toUpperCase()} based on their highest ladder spots on every unique spec.
+            Each spec is counted only once, and the maximum score per each spec is 1000 for rank #1.
+            More information on the exact formula can be found on the{" "}
             <a
               href="https://twitter.com/sammers_wow/status/1740958624380506258"
               target="_blank"
               rel="noopener noreferrer"
               className="text-blue-500"
+              style={{ textDecoration: 'underline' }}
             >
-              {" "}
               original tweet
             </a>
             .
           </Typography>
-          <Typography variant="body1">
-            <b>Example:</b> If player has #1 on 3 different specs in solo
-            shuffle, his score will be 3000.
+          <Typography variant="body1" style={{ marginTop: '10px' }}>
+            <b>Example:</b> If a player has #1 on 3 different specs in solo shuffle, their score will be 3000.
           </Typography>
         </div>
         <div className="mx-2 my-2 px-4 py-4 rounded-2xl bg-[#2f384d4d]">
