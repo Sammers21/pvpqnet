@@ -1,19 +1,19 @@
 import axios from 'axios';
 
 import { BRACKETS } from '@/constants/pvp-activity';
-import { REGIONS } from '@/constants/region';
+import { REGION } from '@/constants/region';
 
 import { urls } from '@/config';
 import type { IMeta } from '@/types';
 
 export const statsMap = {
-  [REGIONS.us]: 'en-us',
-  [REGIONS.eu]: 'en-gb',
+  [REGION.us]: 'en-us',
+  [REGION.eu]: 'en-gb',
 };
 
 export const getLadder = async ({
   page = 1,
-  region = REGIONS.eu,
+  region = REGION.eu,
   activity = 'activity',
   bracket = BRACKETS.shuffle,
   specs = [],
@@ -34,9 +34,13 @@ export const getLadder = async ({
   }
 };
 
-export async function getMulticlasserLeaderboard(region: REGIONS) {
+export async function getMulticlasserLeaderboard(region: REGION, role: string = 'all', page = 1) {
   try {
     const response = await axios.get(urls.getMulticlasserLeaderboard(statsMap[region]), {
+      params: {
+        role: role,
+        page: page,
+      },
       headers: {
         'Accept-Encoding': 'gzip',
       },
@@ -47,7 +51,7 @@ export async function getMulticlasserLeaderboard(region: REGIONS) {
   }
 }
 
-export async function fetchStatistic(region: REGIONS) {
+export async function fetchStatistic(region: REGION) {
   try {
     const response = await axios.get(urls.getStatistic(statsMap[region]), {
       headers: {

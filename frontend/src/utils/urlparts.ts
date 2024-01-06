@@ -1,5 +1,5 @@
 import { BRACKETS } from '../constants/pvp-activity';
-import { REGIONS } from '../constants/region';
+import { REGION } from '../constants/region';
 
 export function getBracket(bracket?: string) {
   const validBracket = Object.values(BRACKETS).find((r) => bracket === r);
@@ -7,8 +7,8 @@ export function getBracket(bracket?: string) {
 }
 
 export function getRegion(region?: string) {
-  const validRegion = Object.values(REGIONS).find((r) => region === r);
-  return validRegion ?? REGIONS.eu;
+  const validRegion = Object.values(REGION).find((r) => region === r);
+  return validRegion ?? REGION.eu;
 }
 
 export function getActivity(activity: string) {

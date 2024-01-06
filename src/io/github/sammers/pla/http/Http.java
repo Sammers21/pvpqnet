@@ -1,6 +1,7 @@
 package io.github.sammers.pla.http;
 
 import io.github.sammers.pla.blizzard.Cutoffs;
+import io.github.sammers.pla.blizzard.Multiclassers;
 import io.github.sammers.pla.blizzard.WowAPICharacter;
 import io.github.sammers.pla.db.Character;
 import io.github.sammers.pla.db.Meta;
@@ -27,20 +28,19 @@ import org.slf4j.Logger;
 import static io.github.sammers.pla.Main.VTHREAD_EXECUTOR;
 import static io.github.sammers.pla.logic.Conts.*;
 
-
 public class Http {
-    private static final Logger log = org.slf4j.LoggerFactory.getLogger(Http.class);
-    private final Ladder ladder;
-    private final Refs refs;
-    private final CharacterCache characterCache;
+  private static final Logger log = org.slf4j.LoggerFactory.getLogger(Http.class);
+  private final Ladder ladder;
+  private final Refs refs;
+  private final CharacterCache characterCache;
 
-    public Http(Ladder ladder, Refs refs, CharacterCache characterCache) {
-        this.ladder = ladder;
-        this.refs = refs;
-        this.characterCache = characterCache;
-    }
+  public Http(Ladder ladder, Refs refs, CharacterCache characterCache) {
+    this.ladder = ladder;
+    this.refs = refs;
+    this.characterCache = characterCache;
+  }
 
-    public void start() {
+  public void start() {
         Vertx vertx = Vertx.vertx(new VertxOptions().setEventLoopPoolSize(4));
         Router router = Router.router(vertx);
         router.route().handler(CorsHandler.create());
@@ -83,17 +83,17 @@ public class Http {
                     bracket = RBG;
                 }
                 if (bracket.equals(MULTICLASSERS)) {
-                    ctx.response().end(refs.refMulticlassers(region).get().toJson().encode());
-                    return;
-                }
-                Snapshot snapshot = refs.refByBracket(bracket, region).get();
-                if (snapshot == null) {
-                    ctx.response().end(Snapshot.empty(region).toJson().encode());
+                    Multiclassers.Role role = Optional.ofNullable(ctx.request().getParam("role"))
+                      .map(x -> Multiclassers.Role.valueOf(x.toUpperCase()))
+                      .orElse(Multiclassers.Role.ALL);
+                    ladder(ctx, refs.refMulticlassers(role, region).get());
                 } else {
-                    ladder(ctx, applySpecFilter(ctx, snapshot
-                            .applyCutoffs(bracket, ladder.regionCutoff.get(region))
-                            .applySlugToName(ladder.realms.get()))
-                    );
+                    Snapshot snapshot = refs.refByBracket(bracket, region).get();
+                    if (snapshot == null) {
+                        ctx.response().end(Snapshot.empty(region).toJson().encode());
+                    } else {
+                        ladder(ctx, applySpecFilter(ctx, snapshot.applySlugToName(ladder.realms.get())));
+                    }
                 }
             });
         });
@@ -123,10 +123,7 @@ public class Http {
                 if (snapshotDiff == null) {
                     ctx.response().end(Snapshot.empty(region).toJson().encode());
                 } else {
-                    ladder(ctx, applySpecFilter(ctx, snapshotDiff
-                            .applyCutoffs(bracket, ladder.regionCutoff.get(region))
-                            .applySlugToName(ladder.realms.get()))
-                    );
+                    ladder(ctx, applySpecFilter(ctx, snapshotDiff.applySlugToName(ladder.realms.get())));
                 }
             });
         });
@@ -165,46 +162,49 @@ public class Http {
             .listen(9000);
     }
 
-    private void nameRealmLookupResponse(RoutingContext ctx, String realm, String name) {
-        Optional<WowAPICharacter> charWithName = ladder.wowChar(ladder.realms.get().nameToSlug(realm), name);
-        Optional<WowAPICharacter> charWithSlug = ladder.wowChar(realm, name);
-        Optional<WowAPICharacter> res = Stream.of(charWithName, charWithSlug).filter(Optional::isPresent).findFirst().map(Optional::get);
-        if (res.isEmpty() || res.get().hidden()) {
-            ctx.response().setStatusCode(404).end(new JsonObject().put("error", "Character not found").encode());
-        } else {
-            ctx.response().end(wowCharToJson(res.get()).encode());
-        }
+  private void nameRealmLookupResponse(RoutingContext ctx, String realm, String name) {
+    Optional<WowAPICharacter> charWithName = ladder.wowChar(ladder.realms.get().nameToSlug(realm), name);
+    Optional<WowAPICharacter> charWithSlug = ladder.wowChar(realm, name);
+    Optional<WowAPICharacter> res = Stream.of(charWithName, charWithSlug).filter(Optional::isPresent).findFirst()
+        .map(Optional::get);
+    if (res.isEmpty() || res.get().hidden()) {
+      ctx.response().setStatusCode(404).end(new JsonObject().put("error", "Character not found").encode());
+    } else {
+      ctx.response().end(wowCharToJson(res.get()).encode());
     }
+  }
 
-    private JsonObject wowCharToJson(WowAPICharacter character) {
-        Set<WowAPICharacter> alts = characterCache.altsFor(character);
-        JsonObject res = character.toJson();
-        if (alts != null) {
-            res.put("alts", new JsonArray(alts.stream().filter(c -> c.id() != character.id()).map(WowAPICharacter::toJson).toList()));
-        } else {
-            res.put("alts", new JsonArray());
-        }
-        return res;
+  private JsonObject wowCharToJson(WowAPICharacter character) {
+    Set<WowAPICharacter> alts = characterCache.altsFor(character);
+    JsonObject res = character.toJson();
+    if (alts != null) {
+      res.put("alts",
+          new JsonArray(alts.stream().filter(c -> c.id() != character.id()).map(WowAPICharacter::toJson).toList()));
+    } else {
+      res.put("alts", new JsonArray());
     }
+    return res;
+  }
 
-    private void ladder(RoutingContext ctx, JsonPaged snapshot) {
-        Long page = Optional.of(ctx.queryParam("page")).flatMap(l -> l.stream().findFirst()).map(Long::parseLong).orElse(1L);
-        if (snapshot == null) {
-            ctx.response().end(Snapshot.empty(EU).toJson(page).encode());
-        } else {
-            ctx.response().end(snapshot.toJson(page).encode());
-        }
+  private void ladder(RoutingContext ctx, JsonPaged snapshot) {
+    Long page = Optional.of(ctx.queryParam("page")).flatMap(l -> l.stream().findFirst()).map(Long::parseLong)
+        .orElse(1L);
+    if (snapshot == null) {
+      ctx.response().end(Snapshot.empty(EU).toJson(page).encode());
+    } else {
+      ctx.response().end(snapshot.toJson(page).encode());
     }
+  }
 
-    private Resp applySpecFilter(RoutingContext ctx, Resp specFiltered) {
-        if (specFiltered == null) {
-            return null;
-        }
-        List<String> specs = ctx.queryParam("specs").stream().flatMap(spcs -> Arrays.stream(spcs.split(","))).toList();
-        if (specs.isEmpty()) {
-            return specFiltered;
-        } else {
-            return (Resp) specFiltered.filter(specs);
-        }
+  private Resp applySpecFilter(RoutingContext ctx, Resp specFiltered) {
+    if (specFiltered == null) {
+      return null;
     }
+    List<String> specs = ctx.queryParam("specs").stream().flatMap(spcs -> Arrays.stream(spcs.split(","))).toList();
+    if (specs.isEmpty()) {
+      return specFiltered;
+    } else {
+      return (Resp) specFiltered.filter(specs);
+    }
+  }
 }

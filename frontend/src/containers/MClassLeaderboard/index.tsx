@@ -5,7 +5,7 @@ import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import { DataGrid, GridColDef, GridValueGetterParams } from "@mui/x-data-grid";
 import { BRACKETS } from "@/constants/pvp-activity";
-import { REGIONS } from "@/constants/region";
+import { REGION } from "@/constants/region";
 import {
   fetchStatistic,
   getLadder,
@@ -32,73 +32,6 @@ import {
   TANK_SPECS,
 } from "@/constants/filterSchema";
 import { StripedDataGrid } from "../Meta/Grid";
-import { all } from "axios";
-
-function calculateRowForShuffleRole(shuffleRole, rows) {
-  if (rows === undefined || rows.length === 0) {
-    return [];
-  }
-  let allowedSpecs;
-  if (shuffleRole === "all") {
-    allowedSpecs = ALL_SPECS;
-  } else if (shuffleRole === "dps") {
-    allowedSpecs = DPS_SPECS;
-  } else if (shuffleRole === "healer") {
-    allowedSpecs = HEAL_SPECS;
-  } else if (shuffleRole === "melee") {
-    allowedSpecs = MELEE_SPECS;
-  } else if (shuffleRole === "ranged") {
-    allowedSpecs = RANGED_SPECS;
-  } else if (shuffleRole === "tank") {
-    allowedSpecs = TANK_SPECS;
-  } else {
-    allowedSpecs = ALL_SPECS;
-  }
-  let res = clone(rows)
-    .filter((multiclasser) => {
-      const keys = Object.keys(multiclasser.specs);
-      for (let i = 0; i < keys.length; i++) {
-        const spec = keys[i];
-        if (allowedSpecs.includes(spec)) {
-          return true;
-        }
-      }
-      return false;
-    })
-    .map((multiclasser) => {
-      const keys = Object.keys(multiclasser.specs);
-      const specs = {};
-      for (let i = 0; i < keys.length; i++) {
-        const spec = keys[i];
-        if (allowedSpecs.includes(spec)) {
-          specs[spec] = multiclasser.specs[spec];
-        }
-      }
-      multiclasser.specs = specs;
-      return multiclasser;
-    })
-    .map((multiclasser) => {
-      // recalcuate total score
-      let total_score = 0;
-      const keys = Object.keys(multiclasser.specs);
-      for (let i = 0; i < keys.length; i++) {
-        const spec = keys[i];
-        total_score += multiclasser.specs[spec].score;
-      }
-      multiclasser.total_score = total_score;
-      return multiclasser;
-    })
-    .sort((a, b) => {
-      return b.total_score - a.total_score;
-    });
-  // iter dt multiclassers
-  for (let i = 0; i < res.length; i++) {
-    const multiclasser = res[i];
-    // iter multiclasser specs
-    multiclasser.rank = i + 1;
-  }
-  return res;
-}
 
 function columns(region): GridColDef[] {
   return [
@@ -181,37 +114,22 @@ function columns(region): GridColDef[] {
 }
 
 function MClassLeaderboard(dota) {
-  const { region = REGIONS.eu } = useParams();
+  const { region = REGION.eu } = useParams();
   const [shuffleRole, setValue] = React.useState("all");
-  const [roleAndData, setRoleAndData] = React.useState({
-    all: [],
-    dps: [],
-    healer: [],
-    melee: [],
-    ranged: [],
-    tank: [],
-  });
-  const getLeadeboard = async (region: REGIONS) => {
-    const dt = await getMulticlasserLeaderboard(region);
-    setRoleAndData({
-      all: calculateRowForShuffleRole("all", dt.multiclassers),
-      dps: calculateRowForShuffleRole("dps", dt.multiclassers),
-      healer: calculateRowForShuffleRole("healer", dt.multiclassers),
-      melee: calculateRowForShuffleRole("melee", dt.multiclassers),
-      ranged: calculateRowForShuffleRole("ranged", dt.multiclassers),
-      tank: calculateRowForShuffleRole("tank", dt.multiclassers),
-    });
+  const [page, setPage] = React.useState(1);
+  const [rowsToShow, setRowsToShow] = React.useState([]);
+  const getLeadeboard = async (region: REGION, role, page) => {
+    const dt = await getMulticlasserLeaderboard(region, role, page);
+    const res = dt.multiclassers;
+    for (let i = 0; i < res.length; i++) {
+      const multiclasser = res[i];
+      multiclasser.rank = i + 1;
+    }
+    setRowsToShow(res);
   };
   React.useEffect(() => {
-    getLeadeboard(region as REGIONS);
-  }, [region]);
-  const handleChange = (event: React.SyntheticEvent, newValue: string) => {
-    setValue(newValue);
-  };
-  const [rowsToShow, setRowsToShow] = React.useState(roleAndData["all"]);
-  React.useEffect(() => {
-    setRowsToShow(roleAndData[shuffleRole]);
-  }, [shuffleRole,  roleAndData]);
+    getLeadeboard(region as REGION, shuffleRole, page);
+  }, [region, shuffleRole, page]);
   console.log("rowsToShow", rowsToShow);
   return (
     <div className="flex w-full justify-center bg-[#030303e6] pt-24 pb-11">
@@ -219,7 +137,9 @@ function MClassLeaderboard(dota) {
         <Box sx={{ width: "100%" }}>
           <Tabs
             value={shuffleRole}
-            onChange={handleChange}
+            onChange={(event: React.SyntheticEvent, newValue: string) => {
+              setValue(newValue);
+            }}
             variant="scrollable"
             scrollButtons
             allowScrollButtonsMobile
@@ -237,6 +157,7 @@ function MClassLeaderboard(dota) {
             getRowId={(row) => row.rank}
             columns={columns(region)}
             disableColumnMenu={true}
+            hideFooter={true}
             initialState={{
               pagination: {
                 paginationModel: {

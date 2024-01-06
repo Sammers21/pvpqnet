@@ -33,8 +33,8 @@ public class Refs {
         return refByBracket(btype, region).get();
     }
 
-    public AtomicReference<Multiclassers> refMulticlassers(String region) {
-        return multiclassers.compute(region, (k, v) -> {
+    public AtomicReference<Multiclassers> refMulticlassers(Multiclassers.Role role, String region) {
+        return multiclassers.compute(bucketRef(role.role, region), (k, v) -> {
             if (v == null) {
                 return new AtomicReference<>();
             } else {

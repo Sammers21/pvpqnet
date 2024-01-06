@@ -82,11 +82,11 @@ public class Calculator {
      */
     public static Integer calculateScore(Integer ladderPos) {
         if (ladderPos >= 1 && ladderPos <= 50) {
-            return 600 + (50 - ladderPos) * (400 / 50);
+            return 600 + (50 - ladderPos - 1) * (400 / 50);
         } else if (ladderPos >= 51 && ladderPos <= 100) {
-            return 400 + (100 - ladderPos) * (200 / 50);
+            return 400 + (100 - ladderPos - 1) * (200 / 50);
         } else if (ladderPos >= 101 && ladderPos <= 5000) {
-            return Math.round((5000 - ladderPos) * (400 / 4900));
+            return Math.round((5000 - ladderPos - 1) * (400 / 4900));
         } else {
             throw new IllegalArgumentException("ladderPos is out of range: " + ladderPos);
         }

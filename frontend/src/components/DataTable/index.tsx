@@ -10,7 +10,7 @@ import { getLadder } from '@/services/stats.service';
 import { getActivityFromUrl } from '@/utils/urlparts';
 
 import { BRACKETS } from '@/constants/pvp-activity';
-import { REGIONS } from '@/constants/region';
+import { REGION } from '@/constants/region';
 import type { IActivityRecord } from '@/types';
 
 export function getFromSearchParams(searchParams: URLSearchParams, name: string): string[] {
@@ -24,7 +24,7 @@ interface IProps {
 }
 
 const DataList = ({ data: statistic }: IProps) => {
-  const { region = REGIONS.eu, bracket = BRACKETS['3v3'] } = useParams();
+  const { region = REGION.eu, bracket = BRACKETS['3v3'] } = useParams();
   const activity = getActivityFromUrl();
   const [searchParams] = useSearchParams();
   const breakpoint = useBreakpoint();

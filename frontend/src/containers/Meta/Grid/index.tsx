@@ -9,7 +9,7 @@ import Header from './Header';
 import Filters from './Filters';
 import { getColumnGroup, specNameColumn } from './columnGroup';
 
-import { REGIONS } from '@/constants/region';
+import { REGION } from '@/constants/region';
 import { columnGroups, defaultFilters, metaFilter } from '@/constants/meta';
 import { getMeta } from '@/services/stats.service';
 
@@ -57,7 +57,7 @@ function paramFromString(str: string) {
 const useBreakpoint = createBreakpoint({ S: 758, L: 900, XL: 1280 });
 
 const Grid = () => {
-  const { region = REGIONS.eu } = useParams();
+  const { region = REGION.eu } = useParams();
   const [data, setData] = useState<IMeta | null>(null);
   const breakpoint = useBreakpoint();
 

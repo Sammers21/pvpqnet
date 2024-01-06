@@ -1,30 +1,30 @@
 import { IconButton } from '@mui/material';
 import { EuIcon, UsIcon } from '@/components/IIcons';
 
-import { REGIONS } from '@/constants/region';
+import { REGION } from '@/constants/region';
 
 const RegionButtons = ({
   region,
   setRegion,
 }: {
-  region: REGIONS;
-  setRegion: (r: REGIONS) => void;
+  region: REGION;
+  setRegion: (r: REGION) => void;
 }) => {
   return (
     <>
       <IconButton
         aria-label="eu"
-        sx={region !== REGIONS.eu ? { filter: 'grayscale(100%)' } : {}}
+        sx={region !== REGION.eu ? { filter: 'grayscale(100%)' } : {}}
         disableRipple
-        onClick={() => setRegion(REGIONS.eu)}
+        onClick={() => setRegion(REGION.eu)}
       >
         <EuIcon />
       </IconButton>
       <IconButton
         aria-label="us"
-        sx={region !== REGIONS.us ? { filter: 'grayscale(100%)' } : {}}
+        sx={region !== REGION.us ? { filter: 'grayscale(100%)' } : {}}
         disableRipple
-        onClick={() => setRegion(REGIONS.us)}
+        onClick={() => setRegion(REGION.us)}
       >
         <UsIcon />
       </IconButton>

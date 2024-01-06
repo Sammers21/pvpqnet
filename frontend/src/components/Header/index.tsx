@@ -10,7 +10,7 @@ import DesktopView from './DesktopView';
 
 import { borderColor, containerBg } from '@/theme';
 import { metaUrls, publicUrls } from '@/config';
-import { REGIONS } from '@/constants/region';
+import { REGION } from '@/constants/region';
 import { BRACKETS } from '@/constants/pvp-activity';
 import { getRegion } from '@/utils/urlparts';
 
@@ -32,17 +32,19 @@ const Header = () => {
   const location = useLocation();
   const host = window.location.host.toUpperCase();
   const {
-    region: regionFromUrl = REGIONS.eu,
+    region: regionFromUrl = REGION.eu,
     activity = 'activity',
     bracket = BRACKETS['3v3'],
   } = useParams();
   const region = getRegion(regionFromUrl);
   const breakpoint = useBreakpoint();
 
-  const isMetaPage = useMemo(() => location.pathname.includes('meta'), [location]);
+  const isNonStandBracket = useMemo(() => {
+    return location.pathname.includes('meta') || location.pathname.includes('shuffle-multiclass');
+  }, [location]);
 
-  function handleSetRegion(region: REGIONS) {
-    const newPath = isMetaPage
+  function handleSetRegion(region: REGION) {
+    const newPath = isNonStandBracket
       ? generatePath(metaUrls.page, { region })
       : generatePath(publicUrls.page, { region, activity, bracket });
 
@@ -59,15 +61,11 @@ const Header = () => {
   }
 
   function redirectToLadder() {
-    navigateToPage({ activity: 'ladder', bracket: isMetaPage ? BRACKETS.shuffle : bracket });
+    navigateToPage({ activity: 'ladder', bracket: isNonStandBracket ? BRACKETS.shuffle : bracket });
   }
 
   function redirectToActivity() {
-    navigateToPage({ activity: 'activity', bracket: isMetaPage ? BRACKETS.shuffle : bracket });
-  }
-
-  function redirectToShop() {
-    window.open("https://secretshop.gg/wow/arena-rbg", "_blank");
+    navigateToPage({ activity: 'activity', bracket: isNonStandBracket ? BRACKETS.shuffle : bracket });
   }
 
   function redirectToSkillCapped() {
@@ -82,7 +80,6 @@ const Header = () => {
     { label: "Leaderboards", onClick: redirectToLadder },
     { label: "Meta", onClick: redirectToMeta },
     { label: "Skill-Сapped", onClick: redirectToSkillCapped },
-    // { label: 'Coaching', onClick: redirectToShop },
   ];
 
   const View = breakpoint === 'S' ? MobileView : DesktopView;

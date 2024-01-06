@@ -167,7 +167,15 @@ public class Ladder {
             log.info("Calculating multiclasser leaderboard for region " + region);
             Snapshot snapshot = refs.refByBracket(SHUFFLE, region).get();
             Multiclassers multiclassers = Calculator.calculateMulticlassers(snapshot, characterCache);
-            refs.refMulticlassers(region).set(multiclassers);
+            List.of(Multiclassers.Role.ALL, 
+                    Multiclassers.Role.MELEE,
+                    Multiclassers.Role.RANGED,
+                    Multiclassers.Role.DPS,
+                    Multiclassers.Role.HEALER,
+                    Multiclassers.Role.TANK).forEach(role -> {
+                Multiclassers forRole = multiclassers.forRole(role);
+                refs.refMulticlassers(role, region).set(forRole);
+            });
             return Completable.complete();
         });
     }
@@ -575,7 +583,7 @@ public class Ladder {
                 Maybe.just(refs.refByBracket(bracket, region).get()));
         return Calculator.calcDiffAndCombine(bracket, region, maybes)
                 .flatMapCompletable(res -> {
-                refs.diffsByBracket(bracket, region).set(res);
+                refs.diffsByBracket(bracket, region).set(res.applyCutoffs(bracket, regionCutoff.get(region)));
                 return Completable.complete();
             });
     }

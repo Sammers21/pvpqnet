@@ -1,4 +1,4 @@
-export enum REGIONS {
+export enum REGION {
   us = 'us',
   eu = 'eu',
 }
