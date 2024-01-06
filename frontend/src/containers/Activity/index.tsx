@@ -39,9 +39,7 @@ function Activity() {
     return (
       <>
         <Header />
-         <div className="mt-24 mx-auto mb-11 w-full lg:w-[85%]">
-          <MClassLeaderboard />
-        </div>
+        <MClassLeaderboard />
         <Footer />
       </>
     );

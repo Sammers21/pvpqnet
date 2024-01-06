@@ -25,14 +25,15 @@ import {
   RANGED_SPECS,
   TANK_SPECS,
 } from "@/constants/filterSchema";
+import { StripedDataGrid } from "../Meta/Grid";
 
 const columns: GridColDef[] = [
-  { field: "rank", headerName: "Rank", width: 90 },
-  { field: "total_score", headerName: "Score", width: 90 },
+  { field: "rank", headerName: "Rank", width: 90, },
+  { field: "total_score", headerName: "Score", width: 90,},
   {
     field: "main",
     headerName: "Main",
-    width: 150,
+    width: 300,
     valueFormatter: (params: GridValueGetterParams) => {
       return capitalizeFirstLetter(
         params.value.name + "-" + params.value.realm
@@ -42,8 +43,7 @@ const columns: GridColDef[] = [
   {
     field: "specs",
     headerName: "Specs",
-    width: 1200,
-
+    flex: 1,
     valueFormatter: (params: GridValueGetterParams) => {
       // get all keys of params.value
       return Object.keys(params.value)
@@ -98,7 +98,7 @@ function MClassLeaderboard(dota) {
   };
   const [rowsToShow, setRowsToShow] = React.useState([]);
   React.useEffect(() => {
-    console.log('Calculating rows to show: ' + shuffleRole);
+    console.log("Calculating rows to show: " + shuffleRole);
     let allowedSpecs;
     if (shuffleRole === "all") {
       allowedSpecs = ALL_SPECS;
@@ -161,38 +161,43 @@ function MClassLeaderboard(dota) {
     setRowsToShow(res);
   }, [shuffleRole, data]);
   return (
-    <Box sx={{ width: "100%" }}>
-      <Tabs
-        value={shuffleRole}
-        onChange={handleChange}
-        variant="scrollable"
-        scrollButtons
-        allowScrollButtonsMobile
-        aria-label="scrollable force tabs example"
-      >
-        <Tab label="All" value="all" />
-        <Tab label="DPS" value="dps" />
-        <Tab label="Healer" value="healer" />
-        <Tab label="Melee" value="melee" />
-        <Tab label="Ranged" value="ranged" />
-        <Tab label="Tank" value="tank" />
-      </Tabs>
-      <DataGrid
-        rows={rowsToShow}
-        getRowId={(row) => row.rank}
-        columns={columns}
-        initialState={{
-          pagination: {
-            paginationModel: {
-              pageSize: 100,
-            },
-          },
-          sorting: { sortModel: [{ field: "total_score", sort: "desc" }] },
-        }}
-        pageSizeOptions={[100]}
-        disableRowSelectionOnClick
-      />
-    </Box>
+    <div className="flex w-full justify-center bg-[#030303e6] pt-24 pb-11">
+      <div className="w-full md:w-4/5">
+        <Box sx={{ width: "100%" }}>
+          <Tabs
+            value={shuffleRole}
+            onChange={handleChange}
+            variant="scrollable"
+            scrollButtons
+            allowScrollButtonsMobile
+            aria-label="scrollable force tabs example"
+          >
+            <Tab label="All" value="all" />
+            <Tab label="DPS" value="dps" />
+            <Tab label="Healer" value="healer" />
+            <Tab label="Melee" value="melee" />
+            <Tab label="Ranged" value="ranged" />
+            <Tab label="Tank" value="tank" />
+          </Tabs>
+          <StripedDataGrid
+            rows={rowsToShow}
+            getRowId={(row) => row.rank}
+            columns={columns}
+            disableColumnMenu={true}
+            initialState={{
+              pagination: {
+                paginationModel: {
+                  pageSize: 100,
+                },
+              },
+              sorting: { sortModel: [{ field: "total_score", sort: "desc" }] },
+            }}
+            pageSizeOptions={[100]}
+            disableRowSelectionOnClick
+          />
+        </Box>
+      </div>
+    </div>
   );
 }
 
