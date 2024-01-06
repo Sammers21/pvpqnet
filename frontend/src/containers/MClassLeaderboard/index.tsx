@@ -71,6 +71,7 @@ const columns: GridColDef[] = [
                 label={`#${params.value[key].character.pos}`}
                 variant="outlined"
                 style={{ color: ratingColor, borderColor: ratingColor }}
+                size="small"
               />
             );
             return <div>{chip}</div>;
@@ -193,7 +194,11 @@ function MClassLeaderboard(dota) {
               sorting: { sortModel: [{ field: "total_score", sort: "desc" }] },
             }}
             pageSizeOptions={[100]}
+            rowHeight={33.5}
             disableRowSelectionOnClick
+            getRowClassName={(params) =>
+              params.indexRelativeToCurrentPage % 2 === 0 ? 'even' : 'odd'
+            }
           />
         </Box>
       </div>
