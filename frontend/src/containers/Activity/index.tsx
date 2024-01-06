@@ -24,10 +24,12 @@ function Activity() {
     setStatistic(data);
   };
   useEffect(() => {
-    const title = `
+    let title = `
     ${capitalizeFirstLetter(bracket)} 
     ${capitalizeFirstLetter(activity)} on ${region.toUpperCase()}`;
-
+    if (bracket === "shuffle-multiclass") {
+      title = "Shuffle Multiclassers Leaderboard on " + region.toUpperCase();
+    }
     document.title = title;
   }, [region, activity, bracket]);
 
