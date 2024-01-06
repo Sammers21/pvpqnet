@@ -14,7 +14,13 @@ import {
 } from "@/services/stats.service";
 import { capitalizeFirstLetter } from "@/utils/common";
 import { useParams } from "react-router-dom";
-import { getRatingColor, getSpecIcon, ratingToColor } from "@/utils/table";
+import {
+  getAltProfileUrl,
+  getClassNameColor,
+  getRatingColor,
+  getSpecIcon,
+  ratingToColor,
+} from "@/utils/table";
 import { Avatar, Chip } from "@mui/material";
 import CharacterChip from "../Profile/History/CharacterChip";
 import {
@@ -27,60 +33,71 @@ import {
 } from "@/constants/filterSchema";
 import { StripedDataGrid } from "../Meta/Grid";
 
-const columns: GridColDef[] = [
-  { field: "rank", headerName: "Rank", width: 90, },
-  { field: "total_score", headerName: "Score", width: 90,},
-  {
-    field: "main",
-    headerName: "Main",
-    width: 300,
-    valueFormatter: (params: GridValueGetterParams) => {
-      return capitalizeFirstLetter(
-        params.value.name + "-" + params.value.realm
-      );
+function columns(region): GridColDef[] {
+  return [
+    { field: "rank", headerName: "Rank", width: 90 },
+    { field: "total_score", headerName: "Score", width: 90 },
+    {
+      field: "main",
+      headerName: "Main",
+      width: 300,
+      valueFormatter: (params: GridValueGetterParams) => {
+        return capitalizeFirstLetter(
+          params.value.name + "-" + params.value.realm
+        );
+      },
+      renderCell: (params: GridValueGetterParams) => {
+        params.value.region = region;
+        const url = getAltProfileUrl(params.value);
+        return (
+          <a href={url} className="text-base no-underline">
+            {params.value.name + "-" + params.value.realm}
+          </a>
+        );
+      },
     },
-  },
-  {
-    field: "specs",
-    headerName: "Specs",
-    flex: 1,
-    valueFormatter: (params: GridValueGetterParams) => {
-      // get all keys of params.value
-      return Object.keys(params.value)
-        .map((key) => {
-          return key + ": " + params.value[key].score;
-        })
-        .join(", ");
+    {
+      field: "specs",
+      headerName: "Specs",
+      flex: 1,
+      valueFormatter: (params: GridValueGetterParams) => {
+        // get all keys of params.value
+        return Object.keys(params.value)
+          .map((key) => {
+            return key + ": " + params.value[key].score;
+          })
+          .join(", ");
+      },
+      renderCell: (params: GridValueGetterParams) => {
+        const keys = Object.keys(params.value);
+        // sort keys by score
+        keys.sort((a, b) => {
+          return params.value[b].score - params.value[a].score;
+        });
+        return (
+          <div className="flex flex-row ">
+            {keys.map((key) => {
+              const specIcon = getSpecIcon(key);
+              const ratingColor = ratingToColor(
+                params.value[key].character.rating
+              );
+              const chip = (
+                <Chip
+                  avatar={<Avatar alt="class" src={specIcon} />}
+                  label={`#${params.value[key].character.pos}`}
+                  variant="outlined"
+                  style={{ color: ratingColor, borderColor: ratingColor }}
+                  size="small"
+                />
+              );
+              return <div>{chip}</div>;
+            })}
+          </div>
+        );
+      },
     },
-    renderCell: (params: GridValueGetterParams) => {
-      const keys = Object.keys(params.value);
-      // sort keys by score
-      keys.sort((a, b) => {
-        return params.value[b].score - params.value[a].score;
-      });
-      return (
-        <div className="flex flex-row ">
-          {keys.map((key) => {
-            const specIcon = getSpecIcon(key);
-            const ratingColor = ratingToColor(
-              params.value[key].character.rating
-            );
-            const chip = (
-              <Chip
-                avatar={<Avatar alt="class" src={specIcon} />}
-                label={`#${params.value[key].character.pos}`}
-                variant="outlined"
-                style={{ color: ratingColor, borderColor: ratingColor }}
-                size="small"
-              />
-            );
-            return <div>{chip}</div>;
-          })}
-        </div>
-      );
-    },
-  },
-];
+  ];
+}
 
 function MClassLeaderboard(dota) {
   const { region = REGIONS.eu } = useParams();
@@ -183,7 +200,7 @@ function MClassLeaderboard(dota) {
           <StripedDataGrid
             rows={rowsToShow}
             getRowId={(row) => row.rank}
-            columns={columns}
+            columns={columns(region)}
             disableColumnMenu={true}
             initialState={{
               pagination: {
@@ -197,7 +214,7 @@ function MClassLeaderboard(dota) {
             rowHeight={33.5}
             disableRowSelectionOnClick
             getRowClassName={(params) =>
-              params.indexRelativeToCurrentPage % 2 === 0 ? 'even' : 'odd'
+              params.indexRelativeToCurrentPage % 2 === 0 ? "even" : "odd"
             }
           />
         </Box>
