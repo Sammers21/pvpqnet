@@ -121,7 +121,9 @@ public class Ladder {
                             return true;
                         })
                         .andThen(Single.just(tick))
-                        .doOnTerminate(() -> running.set(false))
+                        .doOnTerminate(() -> {
+                            running.set(false);
+                        })
                         .map(t -> {
                             log.info("Data updater for " + region + " has been finished in " + (System.nanoTime() - tick) / 1_000_000_000 + " seconds");
                             return t;
@@ -561,7 +563,7 @@ public class Ladder {
 
     public Completable calcDiffs(String bracket, String region) {
         List<Maybe<Snapshot>> maybes = List.of(
-//                db.getMinsAgo(bracket, region, 60 * 24),
+                db.getMinsAgo(bracket, region, 60 * 24),
                 db.getMinsAgo(bracket, region, 60 * 12),
                 db.getMinsAgo(bracket, region, 60 * 8),
                 db.getMinsAgo(bracket, region, 60 * 6),
