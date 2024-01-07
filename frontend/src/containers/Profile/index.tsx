@@ -1,26 +1,26 @@
-import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import axios from 'axios';
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import axios from "axios";
 
-import { Alert, Snackbar as MuiSnackbar, styled } from '@mui/material';
-import Header from '@/components/Header';
-import Armory from './Armory';
-import PlayerNotFound from './PlayerNotFound';
-import Footer from '@/components/Footer';
+import { Alert, Snackbar as MuiSnackbar, styled } from "@mui/material";
+import Header from "@/components/Header";
+import Armory from "./Armory";
+import PlayerNotFound from "./PlayerNotFound";
+import Footer from "@/components/Footer";
 
-import { baseUrl } from '@/config';
-import { capitalizeFirstLetter } from '@/utils/common';
-import type { IPlayer } from '@/types';
+import { baseUrl } from "@/config";
+import { capitalizeFirstLetter } from "@/utils/common";
+import type { IPlayer } from "@/types";
 
 const Snackbar = styled(MuiSnackbar)({
   borderRadius: 4,
-  border: '1px solid #66BB6ACC',
+  border: "1px solid #66BB6ACC",
 
-  '& .MuiPaper-root': {
-    backgroundColor: '#030303e6',
+  "& .MuiPaper-root": {
+    backgroundColor: "#030303e6",
   },
-  '& .MuiAlert-action': {
-    display: 'none',
+  "& .MuiAlert-action": {
+    display: "none",
   },
 });
 
@@ -44,9 +44,14 @@ const Profile = () => {
 
   async function loadProfile(update: boolean) {
     setLoading(true);
-    const url = baseUrl + `/api/${region}/${realm}/${name}${update ? '/update' : ''}`;
-    const response = await axios.get(url, { validateStatus: (status) => status < 500 });
-
+    const url =
+      baseUrl + `/api/${region}/${realm}/${name}${update ? "/update" : ""}`;
+    const response = await axios.get(url, {
+      validateStatus: (status) => status < 500,
+      headers: {
+        "Accept-Encoding": "gzip",
+      },
+    });
     const data = response.data as IPlayer;
     if (update && response.status !== 404) setOpenSnakbar(true);
 
@@ -59,19 +64,26 @@ const Profile = () => {
     <>
       <Header />
       {playerStatus === 404 ? (
-        <PlayerNotFound loading={loading} updatePlayer={() => loadProfile(true)} />
+        <PlayerNotFound
+          loading={loading}
+          updatePlayer={() => loadProfile(true)}
+        />
       ) : (
         <div className="flex justify-center w-full min-h-screen pt-20 md:pt-24 pb-11 bg-[#030303e6]">
           <div className="w-full px-4 xl:px-0 xl:w-10/12 2xl:w-[1180px] h-full rounded-lg">
             {player && (
-              <Armory player={player} loading={loading} updatePlayer={() => loadProfile(true)} />
+              <Armory
+                player={player}
+                loading={loading}
+                updatePlayer={() => loadProfile(true)}
+              />
             )}
           </div>
         </div>
       )}
 
       <Snackbar
-        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
         autoHideDuration={2000}
         open={openSnackbar}
         onClose={() => setOpenSnakbar(false)}

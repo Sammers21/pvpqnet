@@ -13,13 +13,13 @@ import MenuIcon from '@mui/icons-material/Menu';
 import PlayersSearch from '@/components/SearchBar';
 import RegionButtons from './RegionButtons';
 
-import { REGIONS } from '@/constants/region';
+import { REGION } from '@/constants/region';
 
 interface IProps {
   host: string;
   menuItems: { label: string; onClick: () => void }[];
-  region: REGIONS;
-  setRegion: (r: REGIONS) => void;
+  region: REGION;
+  setRegion: (r: REGION) => void;
 }
 
 const MobileView = ({ menuItems, host, region, setRegion }: IProps) => {

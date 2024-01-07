@@ -9,7 +9,7 @@ import Header from './Header';
 import Filters from './Filters';
 import { getColumnGroup, specNameColumn } from './columnGroup';
 
-import { REGIONS } from '@/constants/region';
+import { REGION } from '@/constants/region';
 import { columnGroups, defaultFilters, metaFilter } from '@/constants/meta';
 import { getMeta } from '@/services/stats.service';
 
@@ -19,9 +19,10 @@ import type { IFilterValue } from '../types';
 
 const ODD_OPACITY = 0.2;
 
-const StripedDataGrid = styled(DataGrid)(({ theme }) => ({
+export const StripedDataGrid = styled(DataGrid)(({ theme }) => ({
   [`& .${gridClasses.row}.even`]: {
     backgroundColor: '#0e1216',
+    minHeight: '200px',
     '&:hover, &.Mui-hovered': {
       backgroundColor: alpha(theme.palette.primary.main, ODD_OPACITY),
       '@media (hover: none)': {
@@ -57,7 +58,7 @@ function paramFromString(str: string) {
 const useBreakpoint = createBreakpoint({ S: 758, L: 900, XL: 1280 });
 
 const Grid = () => {
-  const { region = REGIONS.eu } = useParams();
+  const { region = REGION.eu } = useParams();
   const [data, setData] = useState<IMeta | null>(null);
   const breakpoint = useBreakpoint();
 
@@ -141,9 +142,7 @@ const Grid = () => {
     <div className="flex w-full justify-center bg-[#030303e6] pt-24 pb-11">
       <div className="w-full md:w-4/5">
         <Header />
-
         <Filters filters={metaFilter} onChange={handleFilterChange} values={filterValues} />
-
         <div className="mx-2 my-2 px-4 py-4 rounded-2xl bg-[#2f384d4d]">
           <StripedDataGrid
             experimentalFeatures={{ columnGrouping: true }}

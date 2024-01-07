@@ -5,8 +5,11 @@ const baseUrl = process.env.REACT_APP_BASE_API_URL;
 axios.defaults.baseURL = baseUrl;
 
 const urls = {
-  getData: (page: number, region: string, activity: string, bracket: string, specs: string[]) => {
+  getLadderData: (page: number, region: string, activity: string, bracket: string, specs: string[]) => {
     return `/api/${region}/${activity}/${bracket}?page=${page}&specs=${specs.join(',')}`;
+  },
+  getMulticlasserLeaderboard: (region: string) => {
+    return `/api/${region}/ladder/multiclassers`;
   },
   getStatistic: (region: string) => {
     return `/api/${region}/activity/stats`;

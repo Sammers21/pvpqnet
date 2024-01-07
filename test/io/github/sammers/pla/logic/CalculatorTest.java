@@ -10,6 +10,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class CalculatorTest {
 
     @Test
+    public void firstSpotScoreIs1000() {
+        Integer score = Calculator.calculateScore(1);
+        assertEquals(1000, score);
+    }
+
+    @Test
     public void whoPlayedWithWhoTest() {
         CharacterCache cache = new CharacterCache();
         SnapshotDiff diff = SnapshotDiff.fromJson(THREE_V_THREE_DIFF);
