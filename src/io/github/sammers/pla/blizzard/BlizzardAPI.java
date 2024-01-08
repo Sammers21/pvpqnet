@@ -156,7 +156,13 @@ public class BlizzardAPI {
                         .addQueryParam("locale", LOCALE)
                         .bearerTokenAuthentication(blizzardAuthToken.accessToken())
                         .rxSend()
+                        .timeout(10, TimeUnit.MINUTES)
+                        .onErrorResumeNext(er -> {
+                            log.error("Error getting " + url, er);
+                            return Single.error(er);
+                        })
                         .flatMapMaybe(resp -> {
+                            log.info("Got response to" + url+ " " + resp.statusCode());
                             if (resp.statusCode() == 200) {
                                 return Maybe.just(resp.bodyAsJsonObject());
                             } else if (resp.statusCode() == 429 || resp.statusCode() / 100 == 5) {
