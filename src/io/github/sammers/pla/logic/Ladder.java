@@ -111,7 +111,7 @@ public class Ladder {
                     return threeVThree(region).ignoreElement()
                         .andThen(twoVTwo(region).ignoreElement())
                         .andThen(battlegrounds(region).ignoreElement())
-                        .andThen(shuffle(region).ignoreElement()
+                        .andThen(shuffle(region).ignoreElement())
                         .andThen(calculateMulticlasserLeaderboard(region))
                         .andThen(loadCutoffs(region))
                         .andThen(calculateMeta(region))
