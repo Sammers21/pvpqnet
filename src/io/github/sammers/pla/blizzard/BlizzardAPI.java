@@ -150,7 +150,7 @@ public class BlizzardAPI {
         return token().flatMapMaybe(blizzardAuthToken ->
             rpsToken().andThen(
                 Maybe.defer(() -> {
-                    log.debug("Getting " + url);
+                    log.info("Getting " + url);
                     return webClient.getAbs(url)
                         .addQueryParam("namespace", namespace)
                         .addQueryParam("locale", LOCALE)
