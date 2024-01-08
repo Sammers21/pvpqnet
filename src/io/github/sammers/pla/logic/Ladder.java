@@ -108,13 +108,13 @@ public class Ladder {
                 if (running.compareAndSet(false, true)) {
                     long tick = System.nanoTime();
                     log.info("Starting data updater for region=" + region);
-                    return threeVThree(region).ignoreElement().timeout(11, MINUTES)
-                        .andThen(twoVTwo(region).ignoreElement().timeout(9, MINUTES))
-                        .andThen(battlegrounds(region).ignoreElement().timeout(8, MINUTES))
-                        .andThen(shuffle(region).ignoreElement().timeout(20, MINUTES))
-                        .andThen(calculateMulticlasserLeaderboard(region).timeout(7, MINUTES))
-                        .andThen(loadCutoffs(region).timeout(1, MINUTES))
-                        .andThen(calculateMeta(region).timeout(3, MINUTES))
+                    return threeVThree(region).ignoreElement()
+                        .andThen(twoVTwo(region).ignoreElement())
+                        .andThen(battlegrounds(region).ignoreElement())
+                        .andThen(shuffle(region).ignoreElement()
+                        .andThen(calculateMulticlasserLeaderboard(region))
+                        .andThen(loadCutoffs(region))
+                        .andThen(calculateMeta(region))
                         .andThen(charUpdater.updateCharacters(region, 7, DAYS, timeout, timeoutUnits))
                         .onErrorComplete(e -> {
                             log.error("Error updating data for region " + region, e);
