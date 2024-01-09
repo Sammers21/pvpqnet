@@ -155,8 +155,8 @@ public class BlizzardAPI {
                         .addQueryParam("namespace", namespace)
                         .addQueryParam("locale", LOCALE)
                         .bearerTokenAuthentication(blizzardAuthToken.accessToken())
+                        .timeout(TimeUnit.MINUTES.toMillis(10))
                         .rxSend()
-                        .timeout(10, TimeUnit.MINUTES)
                         .onErrorResumeNext(er -> {
                             log.error("Error getting " + url, er);
                             return Single.error(er);
