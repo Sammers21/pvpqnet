@@ -12,6 +12,7 @@ import io.reactivex.plugins.RxJavaPlugins;
 import io.reactivex.schedulers.Schedulers;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.client.WebClientOptions;
 import io.vertx.reactivex.core.RxHelper;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.ext.mongo.MongoClient;
@@ -53,7 +54,9 @@ public class Main {
         RxJavaPlugins.setComputationSchedulerHandler(s -> RxHelper.scheduler(vertx));
         RxJavaPlugins.setIoSchedulerHandler(s -> RxHelper.blockingScheduler(vertx));
         RxJavaPlugins.setNewThreadSchedulerHandler(s -> RxHelper.scheduler(vertx));
-        final WebClient webClient = WebClient.create(vertx);
+        final WebClient webClient = WebClient.create(vertx,
+          new WebClientOptions().setMaxPoolSize(100)
+        );
         final String dbUri = System.getenv("DB_URI");
         final String clientId = System.getenv("CLIENT_ID");
         final String clientSecret = System.getenv("CLIENT_SECRET");
