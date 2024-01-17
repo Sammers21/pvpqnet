@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo } from "react";
 import {
   Table as TableMui,
   TableBody,
@@ -6,22 +6,22 @@ import {
   TableHead,
   TableRow,
   Typography,
-} from '@mui/material';
-import { styled } from '@mui/system';
-import BlizzardLoader from '@/components/BlizzardLoader';
+} from "@mui/material";
+import { styled } from "@mui/system";
+import BlizzardLoader from "@/components/BlizzardLoader";
 
-import HeaderCell from './HeaderCell';
-import Pagination from './Pagination';
-import Row from './Row';
+import HeaderCell from "./HeaderCell";
+import Pagination from "./Pagination";
+import Row from "./Row";
 
-import type { IActivityRecord, ITableColumn } from '@/types';
+import type { IActivityRecord, ITableColumn } from "@/types";
 
 const StyledTable = styled(TableMui)({
-  'tbody tr:nth-of-type(odd)': {
-    backgroundColor: '#0e1216',
+  "tbody tr:nth-of-type(odd)": {
+    backgroundColor: "#0e1216",
   },
-  '& tr td,th': {
-    borderBottom: 'none',
+  "& tr td,th": {
+    borderBottom: "none",
   },
 });
 
@@ -50,13 +50,17 @@ const Table = ({
 }: IProps) => {
   const rowsComponent = useMemo(() => {
     function renderRow(record: IActivityRecord, index: number) {
-      const shouldHighlight =
-        diff && record.diff
-          ? record.diff.last_seen === diff.diff?.last_seen &&
-            record.diff.won === diff.diff.won &&
-            record.diff.lost === diff.diff.lost
-          : false;
-
+      let shouldHighlight;
+      if (diff === record) {
+        shouldHighlight = true;
+      } else {
+        shouldHighlight =
+          diff && record.diff
+            ? record.diff.last_seen === diff.diff?.last_seen &&
+              record.diff.won === diff.diff.won &&
+              record.diff.lost === diff.diff.lost
+            : false;
+      }
       return (
         <Row
           key={index}
@@ -98,7 +102,9 @@ const Table = ({
   };
 
   const renderHeaderCells = () => {
-    return columns.map((column, index) => <HeaderCell key={index} column={column} />);
+    return columns.map((column, index) => (
+      <HeaderCell key={index} column={column} />
+    ));
   };
 
   const renderHeader = () => {
@@ -126,7 +132,10 @@ const Table = ({
   );
 
   return (
-    <div className="relative pt-3 pb-8 px-2 md:px-8 bg-[#030303e6]" style={{ minHeight: '250px' }}>
+    <div
+      className="relative pt-3 pb-8 px-2 md:px-8 bg-[#030303e6]"
+      style={{ minHeight: "250px" }}
+    >
       {renderFooter()}
       {<TableContainer>{renderTable()}</TableContainer>}
       {!records.length && !loading && renderNoRowsOverlay()}
