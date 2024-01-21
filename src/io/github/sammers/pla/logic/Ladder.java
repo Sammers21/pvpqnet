@@ -5,13 +5,13 @@ import io.github.sammers.pla.db.Character;
 import io.github.sammers.pla.db.DB;
 import io.github.sammers.pla.db.Meta;
 import io.github.sammers.pla.db.Snapshot;
-import io.reactivex.*;
+import io.reactivex.Completable;
+import io.reactivex.Maybe;
 import io.reactivex.Observable;
+import io.reactivex.Single;
 import io.vertx.reactivex.core.buffer.Buffer;
 import io.vertx.reactivex.ext.web.client.HttpRequest;
 import io.vertx.reactivex.ext.web.client.WebClient;
-import org.javatuples.Pair;
-import org.javatuples.Triplet;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -369,7 +369,7 @@ public class Ladder {
                         String realm = Calculator.realmCalc(nodeList.get(6).attr("data-value"));
                         Long wins = Long.parseLong(nodeList.get(7).attr("data-value"));
                         Long losses = Long.parseLong(nodeList.get(8).attr("data-value"));
-                        return enrichWithSpecialData(new Character(pos, rating, false, name, clazz, fullSpec, fraction, "", "", realm, wins, losses), bracket, region);
+                        return enrichWithSpecialData(new Character(pos, rating, false, name, clazz, fullSpec, fraction, "", "", realm, wins, losses, Optional.empty()), bracket, region);
                     }).toList();
                     return characters;
                 }
@@ -417,7 +417,8 @@ public class Ladder {
             race,
             character.realm(),
             character.wins(),
-            character.losses()
+            character.losses(),
+            apiCharacter.map(WowAPICharacter::petHash)
         );
     }
 
@@ -452,7 +453,7 @@ public class Ladder {
                         String realm = Calculator.realmCalc(nodeList.get(5).attr("data-value"));
                         Long wins = Long.parseLong(nodeList.get(6).attr("data-value"));
                         Long losses = Long.parseLong(nodeList.get(7).attr("data-value"));
-                        return enrichWithSpecialData(new Character(pos, rating, false, name, clazz, fullSpec,fraction,"", "", realm, wins, losses), bracket, region);
+                        return enrichWithSpecialData(new Character(pos, rating, false, name, clazz, fullSpec,fraction,"", "", realm, wins, losses, Optional.empty()), bracket, region);
                     }).toList();
                     return characters;
                 }

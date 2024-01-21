@@ -4,21 +4,24 @@ package io.github.sammers.pla.db;
 import io.github.sammers.pla.http.JsonConvertable;
 import io.vertx.core.json.JsonObject;
 
+import java.util.Optional;
+
 import static io.github.sammers.pla.db.Spec.HEAL_SPECS;
-import static io.github.sammers.pla.logic.Conts.*;
+import static io.github.sammers.pla.logic.Conts.SPACE;
+import static io.github.sammers.pla.logic.Conts.TIRE;
 
 public record Character(Long pos, Long rating, boolean inCutoff, String name, String clazz, String fullSpec,
                         String fraction,
                         String gender, String race,
-                        String realm, Long wins, Long losses) implements JsonConvertable {
+                        String realm, Long wins, Long losses, Optional<Integer> pethash) implements JsonConvertable {
 
     public static Character emptyFromFullNickname(String fullNickname) {
         String[] split = fullNickname.split("-");
-        return new Character(-1L, -1L, false, split[0], "", "", "", "", "", split[1], -1L, -1L);
+        return new Character(-1L, -1L, false, split[0], "", "", "", "", "", split[1], -1L, -1L, Optional.empty());
     }
 
     public Character changeCutoff(boolean inCutoff) {
-        return new Character(pos, rating, inCutoff, name, clazz, fullSpec, fraction, gender, race, realm, wins, losses);
+        return new Character(pos, rating, inCutoff, name, clazz, fullSpec, fraction, gender, race, realm, wins, losses, pethash);
     }
 
     public String fullSpec() {
@@ -73,7 +76,7 @@ public record Character(Long pos, Long rating, boolean inCutoff, String name, St
     public static Character withWinsAndLossesAndPosAndRating(Character character, Long wins, Long losses, Long pos, Long rating) {
         return new Character(pos, rating, character.inCutoff(), character.name(), character.clazz(), character.fullSpec(), character.fraction(),
             character.gender(), character.race(),
-            character.realm(), wins, losses);
+            character.realm(), wins, losses, character.pethash());
     }
 
     public static Character fromJson(JsonObject entries) {
@@ -91,22 +94,23 @@ public record Character(Long pos, Long rating, boolean inCutoff, String name, St
         }
         return new Character(entries.getLong("pos"), entries.getLong("rating"), inCutoff, entries.getString("name"),
             entries.getString("class"), entries.getString("full_spec"), entries.getString("fraction"), gender, race,
-            entries.getString("realm"), entries.getLong("wins"), entries.getLong("losses"));
+            entries.getString("realm"), entries.getLong("wins"), entries.getLong("losses"), Optional.empty());
     }
 
     public Character changeRealmName(String newRealm) {
         return new Character(
-             pos,
-             rating,
-             inCutoff,
-             name,
-             clazz,
-             fullSpec,
-             fraction,
-             gender,
-             race,
-             newRealm,
-             wins,
-             losses);
+            pos,
+            rating,
+            inCutoff,
+            name,
+            clazz,
+            fullSpec,
+            fraction,
+            gender,
+            race,
+            newRealm,
+            wins,
+            losses,
+            pethash);
     }
 }

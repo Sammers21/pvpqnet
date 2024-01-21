@@ -2,12 +2,10 @@ package io.github.sammers.pla.blizzard;
 
 import io.github.sammers.pla.db.Character;
 import io.github.sammers.pla.http.JsonConvertable;
-import io.github.sammers.pla.logic.Ladder;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -95,7 +93,8 @@ public record PvpLeaderBoard(
                         wowAPICharacter.race(),
                         realm,
                         won,
-                        lost
+                        lost,
+                        Optional.of(wowAPICharacter.petHash())
                     ));
                 }
             })

@@ -26,6 +26,9 @@ public class Calculator {
     private static final Logger log = LoggerFactory.getLogger(Calculator.class);
 
     public static Multiclassers calculateMulticlassers(Snapshot shuffleSnapshot, CharacterCache cache) {
+        if (shuffleSnapshot == null) {
+            return new Multiclassers(List.of());
+        }
         Map<Integer, List<Character>> charsGrpd = new HashMap<>();
         for (Character character : shuffleSnapshot.characters()) {
             WowAPICharacter wowAPICharacter = cache.getByFullName(character.fullName());
