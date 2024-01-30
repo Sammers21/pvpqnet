@@ -138,7 +138,7 @@ public class CharUpdater {
                     merged.stream()
                         .map(pair -> updateChar(region, Character.fullNameByRealmAndName(pair.getValue0(), pair.getValue1())))
                         .toList())
-                .flatMapCompletable(c -> c, true, 2)
+                .flatMapCompletable(c -> c, true, 1)
                 .takeUntil(Completable.timer(timeout, timeoutUnits));
         }).onErrorComplete().subscribeOn(Main.VTHREAD_SCHEDULER);
     }

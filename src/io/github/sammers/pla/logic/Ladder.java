@@ -63,8 +63,8 @@ public class Ladder {
 
     public void start() {
         boolean updatesEnabled = true;
-        int euPeriod = 1;
-        int usPeriod = 30;
+        int euPeriod = 5;
+        int usPeriod = 10;
         Observable<Long> updates;
         if (updatesEnabled) {
             updates = Observable.mergeArray(runDataUpdater(EU, 1, MINUTES, new AtomicBoolean(false), Observable.defer(() -> {
@@ -115,7 +115,7 @@ public class Ladder {
                         .andThen(calculateMulticlasserLeaderboard(region))
                         .andThen(loadCutoffs(region))
                         .andThen(calculateMeta(region))
-                        .andThen(charUpdater.updateCharacters(region, 7, DAYS, timeout, timeoutUnits))
+                        .andThen(charUpdater.updateCharacters(region, 1, DAYS, timeout, timeoutUnits))
                         .onErrorComplete(e -> {
                             log.error("Error updating data for region " + region, e);
                             return true;
