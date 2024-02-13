@@ -24,6 +24,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -67,29 +68,21 @@ public class Ladder {
         int usPeriod = 10;
         Observable<Long> updates;
         if (updatesEnabled) {
-            updates = Observable.mergeArray(runDataUpdater(EU, 1, MINUTES, new AtomicBoolean(false), Observable.defer(() -> {
-                int initialDelay =  Calculator.minutesTillNextMins(euPeriod);
+            updates = Observable.mergeArray(runDataUpdater(EU, 1, MINUTES, new AtomicBoolean(false), new AtomicLong(System.nanoTime()), Observable.defer(() -> {
+                int initialDelay = Calculator.minutesTillNextMins(euPeriod);
                 return Observable.interval(initialDelay, euPeriod, MINUTES);
-            })), runDataUpdater(US, 1, MINUTES, new AtomicBoolean(false), Observable.defer(() -> {
+            })), runDataUpdater(US, 1, MINUTES, new AtomicBoolean(false), new AtomicLong(System.nanoTime()), Observable.defer(() -> {
                 int initialDelay = Calculator.minutesTillNextMins(usPeriod);
                 return Observable.interval(initialDelay, usPeriod, MINUTES);
             })));
         } else {
             updates = Observable.never();
         }
-        loadRealms()
-            .andThen(loadRegionData(EU))
-            .andThen(loadRegionData(US))
-            .andThen(charsAreLoaded())
-            .andThen(updates)
-            .doOnError(e -> log.error("Error fetching ladder", e)).onErrorReturnItem(0L)
-            .subscribe();
-        Observable.interval(24, 24, HOURS)
-            .flatMapCompletable(tick -> {
-                log.info("Updating realms");
-                return updateRealms(EU).andThen(updateRealms(US));
-            })
-            .subscribe();
+        loadRealms().andThen(loadRegionData(EU)).andThen(loadRegionData(US)).andThen(charsAreLoaded()).andThen(updates).doOnError(e -> log.error("Error fetching ladder", e)).onErrorReturnItem(0L).subscribe();
+        Observable.interval(24, 24, HOURS).flatMapCompletable(tick -> {
+            log.info("Updating realms");
+            return updateRealms(EU).andThen(updateRealms(US));
+        }).subscribe();
     }
 
     private Completable charsAreLoaded() {
@@ -99,58 +92,52 @@ public class Ladder {
         });
     }
 
-    private Observable<Long> runDataUpdater(String region,
-                                            int timeout, TimeUnit timeoutUnits,
-                                            AtomicBoolean running,
-                                            Observable<Long> obs) {
-        return obs
-            .flatMapSingle(obst -> {
-                if (running.compareAndSet(false, true)) {
-                    long tick = System.nanoTime();
-                    log.info("Starting data updater for region=" + region);
-                    return threeVThree(region).ignoreElement()
-                        .andThen(twoVTwo(region).ignoreElement())
-                        .andThen(battlegrounds(region).ignoreElement())
-                        .andThen(shuffle(region).ignoreElement())
-                        .andThen(calculateMulticlasserLeaderboard(region))
-                        .andThen(loadCutoffs(region))
-                        .andThen(calculateMeta(region))
-                        .andThen(charUpdater.updateCharacters(region, 1, DAYS, timeout, timeoutUnits))
-                        .onErrorComplete(e -> {
-                            log.error("Error updating data for region " + region, e);
-                            return true;
-                        })
-                        .andThen(Single.just(tick))
-                        .doOnTerminate(() -> {
-                            running.set(false);
-                        })
-                        .map(t -> {
-                            log.info("Data updater for " + region + " has been finished in " + (System.nanoTime() - tick) / 1_000_000_000 + " seconds");
-                            return t;
-                        });
-                } else {
-                    log.info("Data updater for " + region + " is already running, skipping");
-                    return Single.just(System.nanoTime());
+    private Observable<Long> runDataUpdater(String region, int timeout, TimeUnit timeoutUnits, AtomicBoolean running, AtomicLong lastSetToTrue, Observable<Long> obs) {
+        return obs.flatMapSingle(obst -> {
+            if (running.compareAndSet(false, true)) {
+                lastSetToTrue.set(System.nanoTime());
+                long tick = System.nanoTime();
+                log.info("Starting data updater for region=" + region);
+                return threeVThree(region).ignoreElement()
+                    .andThen(twoVTwo(region).ignoreElement())
+                    .andThen(battlegrounds(region).ignoreElement())
+                    .andThen(shuffle(region).ignoreElement())
+                    .andThen(calculateMulticlasserLeaderboard(region))
+                    .andThen(loadCutoffs(region))
+                    .andThen(calculateMeta(region))
+                    .andThen(charUpdater.updateCharacters(region, 1, DAYS, timeout, timeoutUnits)).onErrorComplete(e -> {
+                        log.error("Error updating data for region {}", region, e);
+                        return true;
+                    }).andThen(Single.just(tick)).doAfterTerminate(() -> {
+                        running.set(false);
+                    }).map(t -> {
+                        log.info("Data updater for " + region + " has been finished in " + (System.nanoTime() - tick) / 1_000_000_000 + " seconds");
+                        return t;
+                    });
+            } else {
+                log.info("Data updater for " + region + " is already running, skipping");
+                if (System.nanoTime() - lastSetToTrue.get() > HOURS.toNanos(1)) {
+                    log.warn("Data updater for " + region + " is running for more than 1 hour, resetting the lock");
+                    running.set(false);
                 }
-            });
+                return Single.just(System.nanoTime());
+            }
+        });
     }
 
     public Completable loadRealms() {
-        return Completable.defer(() -> db.loadRealms()
-            .map((Realms newValue) -> {
-                Realms merge = realms.get().merge(newValue);
-                realms.set(merge);
-                return merge;
-            })
-            .ignoreElement());
+        return Completable.defer(() -> db.loadRealms().map((Realms newValue) -> {
+            Realms merge = realms.get().merge(newValue);
+            realms.set(merge);
+            return merge;
+        }).ignoreElement());
     }
 
     public Completable updateRealms(String region) {
-        return Completable.defer(() -> blizzardAPI.realms(region)
-            .flatMapCompletable(nRealms -> {
-                realms.set(nRealms.merge(realms.get()));
-                return db.insertRealms(nRealms);
-            }));
+        return Completable.defer(() -> blizzardAPI.realms(region).flatMapCompletable(nRealms -> {
+            realms.set(nRealms.merge(realms.get()));
+            return db.insertRealms(nRealms);
+        }));
     }
 
     public Completable loadRegionData(String region) {
@@ -169,12 +156,12 @@ public class Ladder {
             log.info("Calculating multiclasser leaderboard for region " + region);
             Snapshot snapshot = refs.refByBracket(SHUFFLE, region).get();
             Multiclassers multiclassers = Calculator.calculateMulticlassers(snapshot, characterCache);
-            List.of(Multiclassers.Role.ALL, 
-                    Multiclassers.Role.MELEE,
-                    Multiclassers.Role.RANGED,
-                    Multiclassers.Role.DPS,
-                    Multiclassers.Role.HEALER,
-                    Multiclassers.Role.TANK).forEach(role -> {
+            List.of(Multiclassers.Role.ALL,
+                Multiclassers.Role.MELEE,
+                Multiclassers.Role.RANGED,
+                Multiclassers.Role.DPS,
+                Multiclassers.Role.HEALER,
+                Multiclassers.Role.TANK).forEach(role -> {
                 Multiclassers forRole = multiclassers.forRole(role);
                 refs.refMulticlassers(role, region).set(forRole);
             });
@@ -214,21 +201,18 @@ public class Ladder {
         return fetchLadder(bracket, region, true);
     }
 
-    public Single<List<Character>> pureBlizzardApiFetch(String bracket, String region){
+    public Single<List<Character>> pureBlizzardApiFetch(String bracket, String region) {
         Single<List<Character>> resCharList;
         if (bracket.equals(SHUFFLE)) {
             Single<List<Character>> res = Single.just(new ArrayList<>(5000 * shuffleSpecs.size()));
             for (String shuffleSpec : shuffleSpecs) {
                 Single<List<Character>> sh = Single.just(new ArrayList<>(shuffleSpecs.size()));
                 String specForBlizApi = shuffleSpec.replaceAll("/", "-");
-                sh = sh.flatMap(thisSpecChars -> blizzardAPI.pvpLeaderboard(specForBlizApi, region)
-                    .flatMapSingle(leaderboard -> {
-                            Set<Character> chrs = leaderboard.toCharacters(characterCache.nameCache(), shuffleSpec);
-                            thisSpecChars.addAll(chrs);
-                            return Single.just(thisSpecChars);
-                        }
-                    )
-                );
+                sh = sh.flatMap(thisSpecChars -> blizzardAPI.pvpLeaderboard(specForBlizApi, region).flatMapSingle(leaderboard -> {
+                    Set<Character> chrs = leaderboard.toCharacters(characterCache.nameCache(), shuffleSpec);
+                    thisSpecChars.addAll(chrs);
+                    return Single.just(thisSpecChars);
+                }));
                 Single<List<Character>> finalSh = sh;
                 res = res.flatMap(characters -> finalSh.map(s -> {
                     characters.addAll(s);
@@ -241,14 +225,11 @@ public class Ladder {
             });
         } else {
             Single<List<Character>> res = Single.just(new ArrayList<>(5000));
-            resCharList = res.flatMap(s -> blizzardAPI.pvpLeaderboard(bracket, region)
-                .flatMapSingle(leaderboard -> {
-                        Set<Character> chrs = leaderboard.toCharacters(characterCache.nameCache(), bracket);
-                        s.addAll(chrs);
-                        return Single.just(s);
-                    }
-                )
-            );
+            resCharList = res.flatMap(s -> blizzardAPI.pvpLeaderboard(bracket, region).flatMapSingle(leaderboard -> {
+                Set<Character> chrs = leaderboard.toCharacters(characterCache.nameCache(), bracket);
+                s.addAll(chrs);
+                return Single.just(s);
+            }));
         }
         return resCharList;
     }
@@ -283,14 +264,10 @@ public class Ladder {
         } else {
             resCharList = ladderPageFetch(bracket, region);
         }
-        return resCharList
-            .map(chars -> Snapshot.of(chars, region, System.currentTimeMillis()))
-            .flatMap(d -> newDataOnBracket(bracket, region, d).andThen(Single.just(d)))
-            .doOnError(e -> log.error("Error fetching ladder, returning empty snapshot", e))
-            .onErrorReturnItem(Snapshot.empty(region));
+        return resCharList.map(chars -> Snapshot.of(chars, region, System.currentTimeMillis())).flatMap(d -> newDataOnBracket(bracket, region, d).andThen(Single.just(d))).doOnError(e -> log.error("Error fetching ladder, returning empty snapshot", e)).onErrorReturnItem(Snapshot.empty(region));
     }
 
-    public Single<List<Character>> ladderPageFetch(String bracket, String region){
+    public Single<List<Character>> ladderPageFetch(String bracket, String region) {
         Single<List<Character>> resCharList;
         if (bracket.equals(SHUFFLE)) {
             Single<List<Character>> res = Single.just(new ArrayList<>(1000 * shuffleSpecs.size()));
@@ -298,12 +275,10 @@ public class Ladder {
                 Single<List<Character>> sh = Single.just(new ArrayList<>(shuffleSpecs.size()));
                 for (int i = 1; i <= 10; i++) {
                     int finalI = i;
-                    sh = sh.flatMap(characters ->
-                        ladderShuffle(shuffleSpec, finalI, region).map(c -> {
-                            characters.addAll(c);
-                            return characters;
-                        })
-                    );
+                    sh = sh.flatMap(characters -> ladderShuffle(shuffleSpec, finalI, region).map(c -> {
+                        characters.addAll(c);
+                        return characters;
+                    }));
                 }
                 String specForBlizApi = shuffleSpec.replaceAll("/", "-");
                 sh = sh.flatMap(s -> blizzardAPI.pvpLeaderboard(specForBlizApi, region).map(leaderboard -> leaderboard.enrich(s)).toSingle(s));
@@ -321,19 +296,16 @@ public class Ladder {
             Single<List<Character>> res = Single.just(new ArrayList<>(1000));
             for (int i = 1; i <= 10; i++) {
                 int finalI = i;
-                res = res.flatMap(characters ->
-                    ladderTraditional(bracket, finalI, region).map(c -> {
-                        characters.addAll(c);
-                        return characters;
-                    })
-                );
+                res = res.flatMap(characters -> ladderTraditional(bracket, finalI, region).map(c -> {
+                    characters.addAll(c);
+                    return characters;
+                }));
             }
             resCharList = res.flatMap(s -> {
-                Maybe<List<Character>> map = blizzardAPI.pvpLeaderboard(bracket, region)
-                    .map((PvpLeaderBoard leaderboard) -> {
-                        Set<Character> enriched = new HashSet<>(leaderboard.enrich(s));
-                        return enriched.stream().toList();
-                    });
+                Maybe<List<Character>> map = blizzardAPI.pvpLeaderboard(bracket, region).map((PvpLeaderBoard leaderboard) -> {
+                    Set<Character> enriched = new HashSet<>(leaderboard.enrich(s));
+                    return enriched.stream().toList();
+                });
                 return map.toSingle(s);
             });
         }
@@ -348,34 +320,32 @@ public class Ladder {
 
     public Single<List<Character>> ladderShuffle(String bracket, Integer page, String region) {
         return ladderRequest(bracket, page, region).rxSend().map(ok -> {
-                String ers = ok.bodyAsString();
-                Document parse = Jsoup.parse(ers);
-                Elements select = parse.select("#main > div.Pane.Pane--dirtBlue.bordered > div.Pane-content > div.Paginator > div.Paginator-pages > div:nth-child(1) > div > div.SortTable-body");
-                if (select.size() == 0) {
-                    return new ArrayList<Character>();
-                } else {
-                    Element element = select.get(0);
-                    List<Node> nodes = element.childNodes();
-                    List<Character> characters = nodes.stream().map(Node::childNodes).map(nodeList -> {
-                        Node nameNode = nodeList.get(2);
-                        Long pos = Long.parseLong(nodeList.get(0).attr("data-value"));
-                        Long rating = Long.parseLong(((Element) nodeList.get(1).childNode(0).childNode(0).childNode(0).childNode(1)).text());
-                        String name = nameNode.attr("data-value");
-                        String[] splitted = bracket.split("/");
-                        String clazz = nodeList.get(3).attr("data-value");
-                        String specName = splitted[2].substring(0, 1).toUpperCase() + splitted[2].substring(1);
-                        String fullSpec = (specName + " " + clazz).trim();
-                        String fraction = nodeList.get(5).attr("data-value");
-                        String realm = Calculator.realmCalc(nodeList.get(6).attr("data-value"));
-                        Long wins = Long.parseLong(nodeList.get(7).attr("data-value"));
-                        Long losses = Long.parseLong(nodeList.get(8).attr("data-value"));
-                        return enrichWithSpecialData(new Character(pos, rating, false, name, clazz, fullSpec, fraction, "", "", realm, wins, losses, Optional.empty()), bracket, region);
-                    }).toList();
-                    return characters;
-                }
-            })
-            .doOnSuccess(ok -> log.debug(String.format("%s-%s ladder has been fetched page=%s", region, bracket, page)))
-            .doOnError(err -> log.error(String.format("ERR %s %s %s", region, bracket, page), err));
+            String ers = ok.bodyAsString();
+            Document parse = Jsoup.parse(ers);
+            Elements select = parse.select("#main > div.Pane.Pane--dirtBlue.bordered > div.Pane-content > div.Paginator > div.Paginator-pages > div:nth-child(1) > div > div.SortTable-body");
+            if (select.size() == 0) {
+                return new ArrayList<Character>();
+            } else {
+                Element element = select.get(0);
+                List<Node> nodes = element.childNodes();
+                List<Character> characters = nodes.stream().map(Node::childNodes).map(nodeList -> {
+                    Node nameNode = nodeList.get(2);
+                    Long pos = Long.parseLong(nodeList.get(0).attr("data-value"));
+                    Long rating = Long.parseLong(((Element) nodeList.get(1).childNode(0).childNode(0).childNode(0).childNode(1)).text());
+                    String name = nameNode.attr("data-value");
+                    String[] splitted = bracket.split("/");
+                    String clazz = nodeList.get(3).attr("data-value");
+                    String specName = splitted[2].substring(0, 1).toUpperCase() + splitted[2].substring(1);
+                    String fullSpec = (specName + " " + clazz).trim();
+                    String fraction = nodeList.get(5).attr("data-value");
+                    String realm = Calculator.realmCalc(nodeList.get(6).attr("data-value"));
+                    Long wins = Long.parseLong(nodeList.get(7).attr("data-value"));
+                    Long losses = Long.parseLong(nodeList.get(8).attr("data-value"));
+                    return enrichWithSpecialData(new Character(pos, rating, false, name, clazz, fullSpec, fraction, "", "", realm, wins, losses, Optional.empty()), bracket, region);
+                }).toList();
+                return characters;
+            }
+        }).doOnSuccess(ok -> log.debug(String.format("%s-%s ladder has been fetched page=%s", region, bracket, page))).doOnError(err -> log.error(String.format("ERR %s %s %s", region, bracket, page), err));
     }
 
     private Character enrichWithSpecialData(Character character, String region, String bracket) {
@@ -405,61 +375,45 @@ public class Ladder {
             Long cutRating = ct == null ? 0 : ct;
             inCutoff = character.rating() >= cutRating;
         }
-        return new Character(
-            character.pos(),
-            character.rating(),
-            inCutoff,
-            character.name(),
-            character.clazz(),
-            character.fullSpec(),
-            character.fraction(),
-            gender,
-            race,
-            character.realm(),
-            character.wins(),
-            character.losses(),
-            apiCharacter.map(WowAPICharacter::petHash)
-        );
+        return new Character(character.pos(), character.rating(), inCutoff, character.name(), character.clazz(), character.fullSpec(), character.fraction(), gender, race, character.realm(), character.wins(), character.losses(), apiCharacter.map(WowAPICharacter::petHash));
     }
 
     public Single<List<Character>> ladderTraditional(String bracket, Integer page, String region) {
         return ladderRequest(bracket, page, region).rxSend().map(ok -> {
-                int code = ok.statusCode();
-                if (code != 200) {
-                    log.info("NON 200 code " + code);
-                    return new ArrayList<Character>();
-                }
-                String ers = ok.bodyAsString();
-                Document parse = Jsoup.parse(ers);
-                Elements select = parse.select("#main > div.Pane.Pane--dirtBlue.bordered > div.Pane-content > div.Paginator > div.Paginator-pages > div:nth-child(1) > div > div.SortTable-body");
-                if (select.size() == 0) {
-                    return new ArrayList<Character>();
-                } else {
-                    Element element = select.get(0);
-                    List<Node> nodes = element.childNodes();
-                    List<Character> characters = nodes.stream().map(Node::childNodes).map(nodeList -> {
-                        Node nameNode = nodeList.get(2);
-                        String fullSpec = "UNKNOWN";
-                        try {
-                            Node specNode = nameNode.childNode(0).childNode(0).childNode(0).childNode(2).childNode(2);
-                            fullSpec = ((Element) specNode).text().substring(2);
-                        } catch (Exception e) {
-                        }
-                        Long pos = Long.parseLong(nodeList.get(0).attr("data-value"));
-                        Long rating = Long.parseLong(((Element) nodeList.get(1).childNode(0).childNode(0).childNode(0).childNode(1)).text());
-                        String name = nameNode.attr("data-value");
-                        String clazz = nodeList.get(3).attr("data-value");
-                        String fraction = nodeList.get(4).attr("data-value");
-                        String realm = Calculator.realmCalc(nodeList.get(5).attr("data-value"));
-                        Long wins = Long.parseLong(nodeList.get(6).attr("data-value"));
-                        Long losses = Long.parseLong(nodeList.get(7).attr("data-value"));
-                        return enrichWithSpecialData(new Character(pos, rating, false, name, clazz, fullSpec,fraction,"", "", realm, wins, losses, Optional.empty()), bracket, region);
-                    }).toList();
-                    return characters;
-                }
-            })
-            .doOnSuccess(ok -> log.debug(String.format("%s-%s ladder has been fetched page=%s", region, bracket, page)))
-            .doOnError(err -> log.error(String.format("ERR %s %s %s", region, bracket, page)));
+            int code = ok.statusCode();
+            if (code != 200) {
+                log.info("NON 200 code " + code);
+                return new ArrayList<Character>();
+            }
+            String ers = ok.bodyAsString();
+            Document parse = Jsoup.parse(ers);
+            Elements select = parse.select("#main > div.Pane.Pane--dirtBlue.bordered > div.Pane-content > div.Paginator > div.Paginator-pages > div:nth-child(1) > div > div.SortTable-body");
+            if (select.size() == 0) {
+                return new ArrayList<Character>();
+            } else {
+                Element element = select.get(0);
+                List<Node> nodes = element.childNodes();
+                List<Character> characters = nodes.stream().map(Node::childNodes).map(nodeList -> {
+                    Node nameNode = nodeList.get(2);
+                    String fullSpec = "UNKNOWN";
+                    try {
+                        Node specNode = nameNode.childNode(0).childNode(0).childNode(0).childNode(2).childNode(2);
+                        fullSpec = ((Element) specNode).text().substring(2);
+                    } catch (Exception e) {
+                    }
+                    Long pos = Long.parseLong(nodeList.get(0).attr("data-value"));
+                    Long rating = Long.parseLong(((Element) nodeList.get(1).childNode(0).childNode(0).childNode(0).childNode(1)).text());
+                    String name = nameNode.attr("data-value");
+                    String clazz = nodeList.get(3).attr("data-value");
+                    String fraction = nodeList.get(4).attr("data-value");
+                    String realm = Calculator.realmCalc(nodeList.get(5).attr("data-value"));
+                    Long wins = Long.parseLong(nodeList.get(6).attr("data-value"));
+                    Long losses = Long.parseLong(nodeList.get(7).attr("data-value"));
+                    return enrichWithSpecialData(new Character(pos, rating, false, name, clazz, fullSpec, fraction, "", "", realm, wins, losses, Optional.empty()), bracket, region);
+                }).toList();
+                return characters;
+            }
+        }).doOnSuccess(ok -> log.debug(String.format("%s-%s ladder has been fetched page=%s", region, bracket, page))).doOnError(err -> log.error(String.format("ERR %s %s %s", region, bracket, page)));
     }
 
     private Completable calculateMeta(String region) {
@@ -472,46 +426,44 @@ public class Ladder {
                     log.info("No data for bracket=" + bracket + " region=" + region);
                     return Stream.empty();
                 }
-                return List.of("this_season", "last_month", "last_week", "last_day").stream().flatMap(period ->
-                    List.of("all", "melee", "ranged", "dps", "healer", "tank").stream().flatMap(role -> {
-                        Maybe<SnapshotDiff> diff;
-                        if (period.equals("this_season")) {
-                            Snapshot empty = Snapshot.empty(region);
-                            SnapshotDiff sdif = Calculator.calculateDiff(empty, now, bracket, false);
-                            diff = Maybe.just(sdif);
-                        } else {
-                            int minsAgo = 0;
-                            if (period.equals("last_month")) {
-                                minsAgo = 60 * 24 * 30;
-                            } else if (period.equals("last_week")) {
-                                minsAgo = 60 * 24 * 7;
-                            } else if (period.equals("last_day")) {
-                                minsAgo = 60 * 24;
-                            }
-                            diff = db.getMinsAgo(bracket, region, minsAgo)
-                                .map(snap -> Calculator.calculateDiff(snap, now, bracket, false));
+                return List.of("this_season", "last_month", "last_week", "last_day").stream().flatMap(period -> List.of("all", "melee", "ranged", "dps", "healer", "tank").stream().flatMap(role -> {
+                    Maybe<SnapshotDiff> diff;
+                    if (period.equals("this_season")) {
+                        Snapshot empty = Snapshot.empty(region);
+                        SnapshotDiff sdif = Calculator.calculateDiff(empty, now, bracket, false);
+                        diff = Maybe.just(sdif);
+                    } else {
+                        int minsAgo = 0;
+                        if (period.equals("last_month")) {
+                            minsAgo = 60 * 24 * 30;
+                        } else if (period.equals("last_week")) {
+                            minsAgo = 60 * 24 * 7;
+                        } else if (period.equals("last_day")) {
+                            minsAgo = 60 * 24;
                         }
-                        return Stream.of(diff.flatMapCompletable(realDiff -> {
-                            try {
-                                VTHREAD_SCHEDULER.scheduleDirect(() -> {
-                                    long tick = System.nanoTime();
-                                    Meta meta = Calculator.calculateMeta(realDiff, role, bracket, 0.05, 0.10, 0.85);
-                                    metaRef(bracket, realRegion, role, period).set(meta);
-                                    long elapsed = (System.nanoTime() - tick) / 1000000;
-                                    String msg = "Meta for bracket={} region={} role={} period={} has been calculated in {} ms";
-                                    if (elapsed > 1000) {
-                                        log.info(msg, bracket, region, role, period, elapsed);
-                                    } else {
-                                        log.debug(msg, bracket, region, role, period, elapsed);
-                                    }
-                                });
-                                return Completable.complete();
-                            } catch (Exception e) {
-                                log.error("Error calculating meta for " + bracket + " " + region + " " + role + " " + period, e);
-                                return Completable.error(e);
-                            }
-                        }).onErrorComplete());
-                    }));
+                        diff = db.getMinsAgo(bracket, region, minsAgo).map(snap -> Calculator.calculateDiff(snap, now, bracket, false));
+                    }
+                    return Stream.of(diff.flatMapCompletable(realDiff -> {
+                        try {
+                            VTHREAD_SCHEDULER.scheduleDirect(() -> {
+                                long tick = System.nanoTime();
+                                Meta meta = Calculator.calculateMeta(realDiff, role, bracket, 0.05, 0.10, 0.85);
+                                metaRef(bracket, realRegion, role, period).set(meta);
+                                long elapsed = (System.nanoTime() - tick) / 1000000;
+                                String msg = "Meta for bracket={} region={} role={} period={} has been calculated in {} ms";
+                                if (elapsed > 1000) {
+                                    log.info(msg, bracket, region, role, period, elapsed);
+                                } else {
+                                    log.debug(msg, bracket, region, role, period, elapsed);
+                                }
+                            });
+                            return Completable.complete();
+                        } catch (Exception e) {
+                            log.error("Error calculating meta for " + bracket + " " + region + " " + role + " " + period, e);
+                            return Completable.error(e);
+                        }
+                    }).onErrorComplete());
+                }));
             }).collect(Collectors.toList());
             return Completable.merge(res);
         });
@@ -521,12 +473,10 @@ public class Ladder {
         return Completable.defer(() -> {
             log.info("Load cutoffs for region " + region);
             return blizzardAPI.cutoffs(region).map(cutoffs -> {
-                    regionCutoff.put(oldRegion(region), cutoffs);
-                    regionCutoff.put(realRegion(region), cutoffs);
-                    return cutoffs;
-                }).doAfterSuccess(cutoffs -> log.info("Cutoffs for region={} has been loaded", region))
-                .ignoreElement()
-                .onErrorComplete();
+                regionCutoff.put(oldRegion(region), cutoffs);
+                regionCutoff.put(realRegion(region), cutoffs);
+                return cutoffs;
+            }).doAfterSuccess(cutoffs -> log.info("Cutoffs for region={} has been loaded", region)).ignoreElement().onErrorComplete();
         });
     }
 
@@ -539,53 +489,49 @@ public class Ladder {
             } else {
                 realRegion = "us";
             }
-            return db.fetchChars(realRegion)
-                .flatMapCompletable(characters -> Completable.create(emitter -> {
-                    VTHREAD_SCHEDULER.scheduleDirect(() -> {
-                        log.info("Character data size={} for region={} is being loaded to cache", characters.size(), region);
-                        long tick = System.nanoTime();
-                        long totalHidden = characters.stream().filter(WowAPICharacter::hidden).count();
-                        characters.forEach(characterCache::upsert);
-                        charSearchIndex.insertNickNamesWC(characters);
-                        log.info("Character data size={} for region={} hidden={} chars has been loaded to cache in {} ms", characters.size(), region, totalHidden, (System.nanoTime() - tick) / 1000000);
-                        emitter.onComplete();
-                    });
-                }));
+            return db.fetchChars(realRegion).flatMapCompletable(characters -> Completable.create(emitter -> {
+                VTHREAD_SCHEDULER.scheduleDirect(() -> {
+                    log.info("Character data size={} for region={} is being loaded to cache", characters.size(), region);
+                    long tick = System.nanoTime();
+                    long totalHidden = characters.stream().filter(WowAPICharacter::hidden).count();
+                    characters.forEach(characterCache::upsert);
+                    charSearchIndex.insertNickNamesWC(characters);
+                    log.info("Character data size={} for region={} hidden={} chars has been loaded to cache in {} ms", characters.size(), region, totalHidden, (System.nanoTime() - tick) / 1000000);
+                    emitter.onComplete();
+                });
+            }));
         });
     }
 
     private Completable loadLast(String bracket, String region) {
         return Completable.defer(() -> {
             long tick = System.nanoTime();
-            return db.getLast(bracket, region)
-                .switchIfEmpty(Maybe.defer(() -> {
-                    log.info("No data for bracket {}-{} in DB", region, bracket);
-                    return Maybe.empty();
-                }))
-                .flatMapCompletable(characters -> {
-                    refs.refByBracket(bracket, region).set(characters.applyCutoffs(bracket, regionCutoff.get(region)));
-                    log.info("Data for bracket {}-{} has been loaded from DB in {} ms", region, bracket, (System.nanoTime() - tick) / 1000000);
-                    return calcDiffs(bracket, region);
-                });
+            return db.getLast(bracket, region).switchIfEmpty(Maybe.defer(() -> {
+                log.info("No data for bracket {}-{} in DB", region, bracket);
+                return Maybe.empty();
+            })).flatMapCompletable(characters -> {
+                refs.refByBracket(bracket, region).set(characters.applyCutoffs(bracket, regionCutoff.get(region)));
+                log.info("Data for bracket {}-{} has been loaded from DB in {} ms", region, bracket, (System.nanoTime() - tick) / 1000000);
+                return calcDiffs(bracket, region);
+            });
         });
     }
 
     public Completable calcDiffs(String bracket, String region) {
         List<Maybe<Snapshot>> maybes = List.of(
-//                db.getMinsAgo(bracket, region, 60 * 24),
-                db.getMinsAgo(bracket, region, 60 * 12),
-                db.getMinsAgo(bracket, region, 60 * 8),
-                db.getMinsAgo(bracket, region, 60 * 6),
-                db.getMinsAgo(bracket, region, 60 * 3),
-                db.getMinsAgo(bracket, region, 60 * 2),
-                db.getMinsAgo(bracket, region, 60),
-                db.getMinsAgo(bracket, region, 30),
-                db.getMinsAgo(bracket, region, 15),
-                db.getMinsAgo(bracket, region, 10),
-                db.getMinsAgo(bracket, region, 5),
-                Maybe.just(refs.refByBracket(bracket, region).get()));
+            db.getMinsAgo(bracket, region, 60 * 12),
+            db.getMinsAgo(bracket, region, 60 * 8),
+            db.getMinsAgo(bracket, region, 60 * 6),
+            db.getMinsAgo(bracket, region, 60 * 3),
+            db.getMinsAgo(bracket, region, 60 * 2),
+            db.getMinsAgo(bracket, region, 60),
+            db.getMinsAgo(bracket, region, 30),
+            db.getMinsAgo(bracket, region, 15),
+            db.getMinsAgo(bracket, region, 10),
+            db.getMinsAgo(bracket, region, 5),
+            Maybe.just(refs.refByBracket(bracket, region).get()));
         return Calculator.calcDiffAndCombine(bracket, region, maybes)
-                .flatMapCompletable(res -> {
+            .flatMapCompletable(res -> {
                 refs.diffsByBracket(bracket, region).set(res.applyCutoffs(bracket, regionCutoff.get(region)));
                 return Completable.complete();
             });
@@ -606,7 +552,7 @@ public class Ladder {
             return db.insertOnlyIfDifferent(bracket, region, newCharacters)
                 .andThen(db.cleanBracketSnapshot(bracket)
                     .andThen(calcDiffs(bracket, region)))
-                    .andThen(Completable.defer(() -> upsertGamingHistory(bracket, diff)));
+                .andThen(Completable.defer(() -> upsertGamingHistory(bracket, diff)));
         } else {
             log.info("Data for bracket {} are equal, not updating", bracket);
             return Completable.complete();
