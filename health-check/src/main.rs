@@ -25,7 +25,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let token = args.token;
     let no_update_limit_minutes = 3 * 60 + 30;
     let regions = vec!["en-gb", "en-us"];
-    let brackets = vec!["shuffle", "2v2", "3v3", "rbg"];
+    let brackets = vec!["shuffle"];
     let mut combinations: Vec<(&str, &str)> = vec![];
     for region in regions.iter() {
         for bracket in brackets.iter() {
