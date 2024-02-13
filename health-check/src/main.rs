@@ -1,9 +1,12 @@
-use std::{error::Error};
+use std::error::Error;
 
-use chrono::{NaiveDateTime};
+use chrono::NaiveDateTime;
+use clap::Parser;
 use serde_json::Value;
 
-use clap::Parser;
+use region::region_name;
+
+mod region;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -21,15 +24,28 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let chat_id = args.chat_id;
     let token = args.token;
     let no_update_limit_minutes = 3 * 60 + 30;
-    let date = last_updated().await?;
-    let now = chrono::Utc::now().naive_utc();
-    let diff = (now - date).num_minutes();
-    println!("Last updated: {} minutes ago", diff);
-    if diff > no_update_limit_minutes {
-        println!("{} diff > {} limit", diff, no_update_limit_minutes);
-        send_tg_notification(format!("No updates for `{} hours` and `{} minutes` in EU shuffles: [EU activity in shuffle](https://pvpq.net/eu/activity/shuffle)", diff / 60, diff % 60).as_str(), &chat_id, &token).await?; 
-    } else {
-        println!("Everything is fine, not sending any notifications");
+    let regions = vec!["en-gb", "en-us"];
+    let brackets = vec!["shuffle", "2v2", "3v3", "rbg"];
+    let mut combinations: Vec<(&str, &str)> = vec![];
+    for region in regions.iter() {
+        for bracket in brackets.iter() {
+            combinations.push((region, bracket));
+        }
+    }
+    println!("Combinations: {:?}", combinations);
+    for (region, bracket) in combinations.iter() {
+        let date = last_updated(region, bracket).await?;
+        let now = chrono::Utc::now().naive_utc();
+        let diff = (now - date).num_minutes();
+        println!("Last updated: {} minutes ago", diff);
+        if diff > no_update_limit_minutes {
+            println!("{} diff > {} limit", diff, no_update_limit_minutes);
+            let region_name = region_name(region);
+            send_tg_notification(format!("No updates for `{} hours` and `{} minutes` in {} {} on pvpq\\.net: [{} activity in {}](https://pvpq.net/{}/activity/{})",
+                                         diff / 60, diff % 60, region_name, bracket, region_name, bracket, region_name, bracket).as_str(), &chat_id, &token).await?;
+        } else {
+            println!("Everything is fine, not sending any notifications");
+        }
     }
     Ok(())
 }
@@ -42,12 +58,14 @@ async fn send_tg_notification(text: &str, chat_id: &str, token: &str) -> Result<
     if resp.status().is_success() {
         Ok(())
     } else {
+        println!("Error sending notification {:?}", resp.text().await?);
         Err("Error sending notification".into())
     }
 }
 
-async fn last_updated() -> Result<NaiveDateTime, Box<dyn Error>> {
-    let resp = reqwest::get("https://pvpq.net/api/en-gb/activity/shuffle?page=1")
+async fn last_updated(region: &str, bracket: &str) -> Result<NaiveDateTime, Box<dyn Error>> {
+    let url = format!("https://pvpq.net/api/{}/activity/{}?page=1", region, bracket);
+    let resp = reqwest::get(url)
         .await?
         .text()
         .await?;
@@ -56,3 +74,5 @@ async fn last_updated() -> Result<NaiveDateTime, Box<dyn Error>> {
     let date = chrono::NaiveDateTime::from_timestamp_millis(timestamp).unwrap();
     Ok(date)
 }
+
+
