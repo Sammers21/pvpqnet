@@ -42,7 +42,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
             println!("{} diff > {} limit", diff, no_update_limit_minutes);
             let region_name = region_name(region);
             send_tg_notification(format!("No updates for `{} hours` and `{} minutes` in {} {} on pvpq\\.net: [{} activity in {}](https://pvpq.net/{}/activity/{})",
-                                         diff / 60, diff % 60, region_name, bracket, region_name, bracket, region_name, bracket).as_str(), &chat_id, &token).await?;
+                                         diff / 60, diff % 60, region_name, bracket, region_name, bracket, region, bracket).as_str(), &chat_id, &token).await?;
         } else {
             println!("Everything is fine, not sending any notifications");
         }
