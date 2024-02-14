@@ -27,4 +27,8 @@ const metaUrls = {
   page: '/:region/meta',
 };
 
-export { baseUrl, urls, publicUrls, metaUrls };
+const shuffleMulticlassUrls = {
+  page: '/:region/ladder/shuffle-multiclass'
+};
+
+export { baseUrl, urls, publicUrls, metaUrls, shuffleMulticlassUrls };
