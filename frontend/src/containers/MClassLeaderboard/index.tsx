@@ -187,28 +187,42 @@ function MClassLeaderboard(dota) {
       <div className="w-full h-full md:w-10/12">
         <div className="mx-2 my-2 mb-10 px-4 py-4 rounded-2xl bg-[#2f384d4d]">
           <Typography variant="h4">Multiclassers</Typography>
-          <Typography variant="body1" style={{ marginTop: "10px" }}>
-            Top {role === "all" ? "" : role + " "} multiclassers in{" "}
-            {region.toUpperCase()} based on their highest ladder spots on every
-            unique spec. Each spec is counted only once, and the maximum score
-            per each spec is 1000 for rank #1. More information on the exact
-            formula can be found on the{" "}
-            <a
-              href="https://twitter.com/sammers_wow/status/1740958624380506258"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-500"
-              style={{ textDecoration: "underline" }}
-            >
-              original tweet
-            </a>
-            .
+          <Typography variant="body1">
+            Top multiclassers in {region.toUpperCase()} based on their highest
+            ladder spots on every unique spec.
           </Typography>
-          <Typography variant="body1" style={{ marginTop: "10px" }}>
-            <b>Example:</b> If a player has #1 on 3 different specs in solo
-            shuffle, their score will be 3000.
+          <Typography variant="body1">
+             Each spec is counted only once,
+            and the maximum score per each spec is 1000 for rank #1.
           </Typography>
+          <br />
+          <Typography variant="h5" sx={{ }}>      
+             The spec score is calculated as follows:
+          </Typography>
+          <Typography variant="body2">
+            1. above 0.1% is 900-1000 score
+          </Typography>
+          <Typography variant="body2">
+            2. from 0.1% to 0.2% is 750-900 score
+          </Typography>
+          <Typography variant="body2">
+            3. from 0.2% to 0.5% is 550-750 score
+          </Typography>
+          <Typography variant="body2">
+            4. from 0.5% to 1% is 300-550 score
+          </Typography>
+          <Typography variant="body2">
+            5. from 1% to 2% is 150-300 score
+          </Typography>
+          <Typography variant="body2">
+            6. from 2% to 5% is 50-150 score
+          </Typography>
+          <Typography variant="body2">
+            7. from 5% to 100% is 0-50 score
+          </Typography>
+
         </div>
+
         <div className="mx-2 my-2 px-4 py-4 rounded-2xl bg-[#2f384d4d]">
           <Box
             sx={{
