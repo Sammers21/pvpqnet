@@ -1,5 +1,6 @@
-import { PlayerItemLvl, PlayerImages, PlayerName } from './common';
-import type { IPlayer } from '@/types';
+import { openWowArmory } from "@/utils/urlparts";
+import { PlayerItemLvl, PlayerImages, PlayerName } from "./common";
+import type { IPlayer } from "@/types";
 
 interface IProps {
   player: IPlayer;
@@ -8,8 +9,7 @@ interface IProps {
 
 const PlayerCard = ({ player }: IProps) => {
   const openArmory = () => {
-    const url = `https://worldofwarcraft.blizzard.com/en-gb/character/${player.region}/${player.realm}/${player.name}`;
-    window.open(url, '_blank');
+    openWowArmory(player);
   };
 
   return (

@@ -81,14 +81,14 @@ const Header = () => {
   function redirectToLadder() {
     navigateToPage({
       activity: "ladder",
-      bracket: isMeta ? BRACKETS.shuffle : bracket,
+      bracket: isMeta || isShuffleMclass ? BRACKETS.shuffle : bracket,
     });
   }
 
   function redirectToActivity() {
     navigateToPage({
       activity: "activity",
-      bracket: isMeta ? BRACKETS.shuffle : bracket,
+      bracket: isMeta || isShuffleMclass ? BRACKETS.shuffle : bracket,
     });
   }
 
