@@ -123,6 +123,7 @@ public class Calculator {
      * @return score
      */
     public static Integer calculateMclassScoreBasedOnCutoff(Integer ladderPos, Integer numberOfR1Spot) {
+        log.trace("calculateMclassScoreBasedOnCutoff: ladderPos={}, numberOfR1Spot={}", ladderPos, numberOfR1Spot);
         List<Pair<Pair<Integer, Integer>, Pair<Integer, Integer>>> percentAndLinearRange = List.of(
             new Pair<>(new Pair<>(0, 1), new Pair<>(1000, 900)),
             new Pair<>(new Pair<>(1, 2), new Pair<>(900, 750)),

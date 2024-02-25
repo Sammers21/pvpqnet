@@ -571,6 +571,7 @@ public class Ladder {
                     .andThen(calcDiffs(bracket, region)))
                 .andThen(Completable.defer(() -> upsertGamingHistory(bracket, diff)));
         } else {
+            newCharacters.applyCutoffs(bracket, regionCutoff.get(region));
             log.info("Data for bracket {} are equal, not updating", bracket);
             return Completable.complete();
         }
