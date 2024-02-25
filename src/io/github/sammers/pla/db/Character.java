@@ -58,7 +58,8 @@ public record Character(Long pos, Long rating, boolean inCutoff, String name, St
             .put("race", race)
             .put("realm", realm)
             .put("wins", wins)
-            .put("losses", losses);
+            .put("losses", losses)
+            .put("pethash", pethash.orElse(-1));
     }
 
     public boolean isHealerSpec() {
@@ -94,7 +95,8 @@ public record Character(Long pos, Long rating, boolean inCutoff, String name, St
         }
         return new Character(entries.getLong("pos"), entries.getLong("rating"), inCutoff, entries.getString("name"),
             entries.getString("class"), entries.getString("full_spec"), entries.getString("fraction"), gender, race,
-            entries.getString("realm"), entries.getLong("wins"), entries.getLong("losses"), Optional.empty());
+            entries.getString("realm"), entries.getLong("wins"), entries.getLong("losses"),
+            Optional.ofNullable(entries.getInteger("pethash")));
     }
 
     public Character changeRealmName(String newRealm) {

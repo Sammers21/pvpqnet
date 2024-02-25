@@ -264,7 +264,10 @@ public class Ladder {
         } else {
             resCharList = ladderPageFetch(bracket, region);
         }
-        return resCharList.map(chars -> Snapshot.of(chars, region, System.currentTimeMillis())).flatMap(d -> newDataOnBracket(bracket, region, d).andThen(Single.just(d))).doOnError(e -> log.error("Error fetching ladder, returning empty snapshot", e)).onErrorReturnItem(Snapshot.empty(region));
+        return resCharList.map(chars -> Snapshot.of(chars, region, System.currentTimeMillis()))
+            .flatMap(d -> newDataOnBracket(bracket, region, d).andThen(Single.just(d)))
+            .doOnError(e -> log.error("Error fetching ladder, returning empty snapshot", e))
+            .onErrorReturnItem(Snapshot.empty(region));
     }
 
     public Single<List<Character>> ladderPageFetch(String bracket, String region) {
@@ -375,7 +378,21 @@ public class Ladder {
             Long cutRating = ct == null ? 0 : ct;
             inCutoff = character.rating() >= cutRating;
         }
-        return new Character(character.pos(), character.rating(), inCutoff, character.name(), character.clazz(), character.fullSpec(), character.fraction(), gender, race, character.realm(), character.wins(), character.losses(), apiCharacter.map(WowAPICharacter::petHash));
+        return new Character(
+            character.pos(),
+            character.rating(),
+            inCutoff,
+            character.name(),
+            character.clazz(),
+            character.fullSpec(),
+            character.fraction(),
+            gender,
+            race,
+            character.realm(),
+            character.wins(),
+            character.losses(),
+            apiCharacter.map(WowAPICharacter::petHash)
+        );
     }
 
     public Single<List<Character>> ladderTraditional(String bracket, Integer page, String region) {
