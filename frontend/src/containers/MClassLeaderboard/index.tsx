@@ -7,7 +7,7 @@ import {
   getSpecIcon,
   ratingToColor,
 } from "@/utils/table";
-import { Avatar, Chip, Pagination, Typography } from "@mui/material";
+import { Avatar, Chip, Pagination, Popover, Typography } from "@mui/material";
 import Box from "@mui/material/Box";
 import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
@@ -15,6 +15,8 @@ import { GridColDef, GridValueGetterParams } from "@mui/x-data-grid";
 import * as React from "react";
 import { useParams } from "react-router-dom";
 import { StripedDataGrid } from "../Meta/Grid";
+import InfoIcon from "@mui/icons-material/Info";
+import Row from "@/components/AltsTable/Row";
 
 function columns(region): GridColDef[] {
   return [
@@ -26,7 +28,62 @@ function columns(region): GridColDef[] {
         return `#${params.value}`;
       },
     },
-    { field: "total_score", headerName: "Score", width: 90 },
+    {
+      field: "total_score",
+      headerName: "Score",
+      width: 90,
+      renderCell: (params: GridValueGetterParams) => {
+        // eslint-disable-next-line react-hooks/rules-of-hooks
+        const [anchorEl, setAnchorEl] =  React.useState<HTMLButtonElement | null>(null);
+
+        const handleClick = (event) => {
+          setAnchorEl(event.currentTarget);
+        };
+
+        const handleClose = () => {
+          setAnchorEl(null);
+        };
+
+        const open = Boolean(anchorEl);
+        const id = open ? "simple-popover" : undefined;
+        const renderPopoverContent = () => {
+          const keys = Object.keys(params.row.specs);
+          // sort keys by score
+          keys.sort((a, b) => {
+            return params.row.specs[b].score - params.row.specs[a].score
+          });
+          const text = `Score = ` + keys.map((key) => {
+            return params.row.specs[key].score + " (" + key + ")";
+          }).join(" + ");
+          return (
+            <div>
+              <Typography>{text}</Typography>
+            </div>
+          );
+        };
+
+        return (
+          <div className="flex flex-row gap-1">
+            <Typography variant="body1">{params.value}</Typography>
+            <div onClick={handleClick}>
+              <InfoIcon fontSize="small" color="primary" />
+            </div>
+            <Popover
+              id={id}
+              open={open}
+              anchorEl={anchorEl}
+              onClose={handleClose}
+              anchorOrigin={{
+                vertical: "bottom",
+                horizontal: "left",
+              }}
+            >
+              {renderPopoverContent()}
+            </Popover>
+          </div>
+        );
+      },
+    },
     {
       field: "main",
       headerName: "Main",
@@ -124,37 +181,41 @@ function MClassLeaderboard(dota) {
       onChange={(e, p) => setPage(p)}
     />
   );
-  const height = rowsToShow.length == 0 ? '500px' : 'auto'
+  const height = rowsToShow.length == 0 ? "500px" : "auto";
   return (
     <div className="flex w-full justify-center bg-[#030303e6] pt-24 pb-11">
       <div className="w-full h-full md:w-10/12">
         <div className="mx-2 my-2 mb-10 px-4 py-4 rounded-2xl bg-[#2f384d4d]">
           <Typography variant="h4">Multiclassers</Typography>
-          <Typography variant="body1" style={{ marginTop: '10px' }}>
+          <Typography variant="body1" style={{ marginTop: "10px" }}>
             Top {role === "all" ? "" : role + " "} multiclassers in{" "}
-            {region.toUpperCase()} based on their highest ladder spots on every unique spec.
-            Each spec is counted only once, and the maximum score per each spec is 1000 for rank #1.
-            More information on the exact formula can be found on the{" "}
+            {region.toUpperCase()} based on their highest ladder spots on every
+            unique spec. Each spec is counted only once, and the maximum score
+            per each spec is 1000 for rank #1. More information on the exact
+            formula can be found on the{" "}
             <a
               href="https://twitter.com/sammers_wow/status/1740958624380506258"
               target="_blank"
               rel="noopener noreferrer"
               className="text-blue-500"
-              style={{ textDecoration: 'underline' }}
+              style={{ textDecoration: "underline" }}
             >
               original tweet
             </a>
             .
           </Typography>
-          <Typography variant="body1" style={{ marginTop: '10px' }}>
-            <b>Example:</b> If a player has #1 on 3 different specs in solo shuffle, their score will be 3000.
+          <Typography variant="body1" style={{ marginTop: "10px" }}>
+            <b>Example:</b> If a player has #1 on 3 different specs in solo
+            shuffle, their score will be 3000.
           </Typography>
         </div>
         <div className="mx-2 my-2 px-4 py-4 rounded-2xl bg-[#2f384d4d]">
-          <Box sx={{
-           width: "100%",
-           height: height,
-           }}>
+          <Box
+            sx={{
+              width: "100%",
+              height: height,
+            }}
+          >
             <div className="flex flex-row justify-between">
               <Tabs
                 value={role}
