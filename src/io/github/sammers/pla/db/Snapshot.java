@@ -14,9 +14,8 @@ import io.vertx.core.json.JsonObject;
 
 import java.time.Instant;
 import java.time.ZonedDateTime;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 import static io.github.sammers.pla.logic.Conts.*;
@@ -90,36 +89,50 @@ public record Snapshot(List<Character> characters, Long timestamp, String region
         }
         if (bracket.equals(THREE_V_THREE)) {
             Long cutoff = cutoffs.threeVThree();
-            return new Snapshot(this.characters().stream().map(ch -> {
+            AtomicLong charsWithCutoff = new AtomicLong(0);
+            List<Character> chars = this.characters().stream().map(ch -> {
                 if (ch.rating() >= cutoff) {
+                    charsWithCutoff.incrementAndGet();
                     return ch.changeCutoff(true);
                 } else {
                     return ch;
                 }
-            }).collect(Collectors.toList()), this.timestamp(), this.region(), this.dateTime());
+            }).collect(Collectors.toList());
+            cutoffs.setSpotCount("ARENA_3v3", charsWithCutoff.intValue());
+            return new Snapshot(chars, this.timestamp(), this.region(), this.dateTime());
         } else if (bracket.equals(RBG)) {
             Long cutoff = cutoffs.battlegrounds("ALLIANCE");
-            return new Snapshot(this.characters().stream().map(ch -> {
+            AtomicLong charsWithCutoff = new AtomicLong(0);
+            List<Character> chars = this.characters().stream().map(ch -> {
                 if (ch.rating() >= cutoff) {
+                    charsWithCutoff.incrementAndGet();
                     return ch.changeCutoff(true);
                 } else {
                     return ch;
                 }
-            }).collect(Collectors.toList()), this.timestamp(), this.region(), this.dateTime());
+            }).collect(Collectors.toList());
+            cutoffs.setSpotCount("BATTLEGROUNDS/alliance", charsWithCutoff.intValue());
+            cutoffs.setSpotCount("BATTLEGROUNDS/horde", charsWithCutoff.intValue());
+            return new Snapshot(chars, this.timestamp(), this.region(), this.dateTime());
         } else if (bracket.equals(SHUFFLE)) {
-            return new Snapshot(this.characters().stream().map(ch -> {
+            Map<String, Long> specCodeAndSpotCount = new HashMap<>();
+            List<Character> chars = this.characters().stream().map(ch -> {
                 String fullSpec = ch.fullSpec();
                 String specCode = Cutoffs.specCodeByFullName(fullSpec);
                 Long cutoff = cutoffs.shuffle(specCode);
-                if(cutoff == null) {
+                if (cutoff == null) {
                     return ch;
                 }
                 if (ch.rating() >= cutoff) {
+                    specCodeAndSpotCount.compute(specCode, (k, v) -> v == null ? 1 : v + 1);
                     return ch.changeCutoff(true);
                 } else {
                     return ch;
                 }
-            }).collect(Collectors.toList()), this.timestamp(), this.region(), this.dateTime());
+            }).collect(Collectors.toList());
+            specCodeAndSpotCount.entrySet()
+                .forEach(cutoff -> cutoffs.setSpotCount("SHUFFLE/" + cutoff.getKey(), cutoff.getValue().intValue()));
+            return new Snapshot(chars, this.timestamp(), this.region(), this.dateTime());
         }
         return this;
     }

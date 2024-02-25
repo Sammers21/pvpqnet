@@ -10,8 +10,28 @@ import java.util.stream.Collectors;
 
 import static io.github.sammers.pla.logic.Conts.SPACE;
 
-public record Cutoffs(String region, String season, Map<String, Long> cutoffs,
-                      Long timestamp) implements JsonConvertable {
+public class Cutoffs implements JsonConvertable {
+
+    public final String region;
+    public final String season;
+    public final Map<String, Long> cutoffs;
+    private final Map<String, Integer> spotsCounts = new HashMap<>();
+
+    public Cutoffs(String region,
+                   String season, Map<String, Long> cutoffs,
+                   Long timestamp) {
+        this.region = region;
+        this.season = season;
+        this.cutoffs = cutoffs;
+    }
+
+    public void setSpotCount(String bracket, int count) {
+        spotsCounts.put(bracket, count);
+    }
+
+    public int spotCount(String bracket) {
+        return spotsCounts.getOrDefault(bracket, 0);
+    }
 
     public static Cutoffs fromBlizzardJson(String region, JsonObject entries) {
         final Map<String, Long> cfs = new HashMap<>();

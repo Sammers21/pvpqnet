@@ -1,5 +1,6 @@
 package io.github.sammers.pla.logic;
 
+import io.github.sammers.pla.blizzard.Cutoffs;
 import io.github.sammers.pla.blizzard.Multiclassers;
 import io.github.sammers.pla.blizzard.Multiclassers.Info;
 import io.github.sammers.pla.blizzard.WowAPICharacter;
@@ -8,6 +9,7 @@ import io.github.sammers.pla.db.Meta;
 import io.github.sammers.pla.db.Snapshot;
 import io.github.sammers.pla.db.Spec;
 import io.reactivex.Maybe;
+import org.javatuples.Pair;
 import org.javatuples.Triplet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,7 +27,7 @@ public class Calculator {
 
     private static final Logger log = LoggerFactory.getLogger(Calculator.class);
 
-    public static Multiclassers calculateMulticlassers(Snapshot shuffleSnapshot, CharacterCache cache) {
+    public static Multiclassers calculateMulticlassers(Snapshot shuffleSnapshot, CharacterCache cache, Cutoffs cutoffs) {
         if (shuffleSnapshot == null) {
             return new Multiclassers(List.of());
         }
@@ -59,7 +61,9 @@ public class Calculator {
             }));
             Map<String, Multiclassers.CharAndScore> specAndScore = specAndHighestRated.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, entry1 -> {
                 Character character = entry1.getValue();
-                return new Multiclassers.CharAndScore(character, calculateScore(Math.toIntExact(character.pos())));
+                return new Multiclassers.CharAndScore(character,
+                    Calculator.calculateMclassScoreBasedOnCutoff(character.pos().intValue(),
+                        cutoffs.spotCount("SHUFFLE" + "/" + Cutoffs.specCodeByFullName(character.fullSpec()))));
             }));
             int totalScore = specAndScore.values().stream().mapToInt(Multiclassers.CharAndScore::score).sum();
             Character main = specAndScore.values().stream().max(Comparator.comparing(Multiclassers.CharAndScore::score)).orElseThrow().character();
@@ -79,18 +83,19 @@ public class Calculator {
     /**
      * Same as in this python funtion
      * def ladderScrore(x):
-     *     if x>=1 and x<=50:
-     *         # return 600 + (50 - x) * (400 / 50)
-     *         return 600 + (50 - x) * (400 / 50)
-     *     elif x>=51 and x<=100:
-     *         return 400 + (100 - x) * (200 / 50)
-     *     elif x>=101 and x<=5000:
-     *         return 0 + Math.floor((5000 - x) * (400 / 4900))
-     *     else:
-     *         throw("x is out of range")
+     * if x>=1 and x<=50:
+     * # return 600 + (50 - x) * (400 / 50)
+     * return 600 + (50 - x) * (400 / 50)
+     * elif x>=51 and x<=100:
+     * return 400 + (100 - x) * (200 / 50)
+     * elif x>=101 and x<=5000:
+     * return 0 + Math.floor((5000 - x) * (400 / 4900))
+     * else:
+     * throw("x is out of range")
+     *
      * @return score
      */
-    public static Integer calculateScore(Integer ladderPos) {
+    public static Integer calculateScoreMclassOld(Integer ladderPos) {
         if (ladderPos >= 1 && ladderPos <= 50) {
             return 600 + (50 - (ladderPos - 1)) * (400 / 50);
         } else if (ladderPos >= 51 && ladderPos <= 100) {
@@ -100,6 +105,48 @@ public class Calculator {
         } else {
             throw new IllegalArgumentException("ladderPos is out of range: " + ladderPos);
         }
+    }
+
+    /**
+     * The score is:
+     * 0.1% 1000-900
+     * 0.1%-0.2% 899-800
+     * 0.2%-0.5% 799-700
+     * 0.5%-1% 699-600
+     * 1%-2% 599-500
+     * 2%-5% 499-400
+     * 5%-10% 399-300
+     * 10%-20% 299-200
+     * 20%-50% 199-100
+     * 50%-100% 99-0
+     *
+     * @return score
+     */
+    public static Integer calculateMclassScoreBasedOnCutoff(Integer ladderPos, Integer numberOfR1Spot) {
+        List<Pair<Pair<Integer, Integer>, Pair<Integer, Integer>>> percentAndLinearRange = List.of(
+            new Pair<>(new Pair<>(0, 1), new Pair<>(1000, 900)),
+            new Pair<>(new Pair<>(1, 2), new Pair<>(900, 750)),
+            new Pair<>(new Pair<>(2, 5), new Pair<>(750, 550)),
+            new Pair<>(new Pair<>(5, 10), new Pair<>(550, 300)),
+            new Pair<>(new Pair<>(10, 20), new Pair<>(300, 150)),
+            new Pair<>(new Pair<>(20, 50), new Pair<>(150, 50)),
+            new Pair<>(new Pair<>(50, 1000), new Pair<>(50, 0))
+        );
+        for (int i = 0; i < percentAndLinearRange.size(); i++) {
+            Pair<Pair<Integer, Integer>, Pair<Integer, Integer>> pair = percentAndLinearRange.get(i);
+            Integer ladderSpotFrom = pair.getValue0().getValue0() * numberOfR1Spot;
+            Integer ladderSpotTo = pair.getValue0().getValue1() * numberOfR1Spot;
+            Integer spotsInThisRange = ladderSpotTo - ladderSpotFrom;
+            Integer scoreFrom = pair.getValue1().getValue0();
+            Integer scoreTo = pair.getValue1().getValue1();
+            Integer scoreRange = scoreFrom - scoreTo;
+            if (ladderPos >= ladderSpotFrom && ladderPos <= ladderSpotTo) {
+                Integer ladderPosInThisRange = (ladderPos - ladderSpotFrom) - 1;
+                double scoreInThisRange = Double.valueOf(scoreFrom) - ((double) (ladderPosInThisRange * scoreRange) / spotsInThisRange);
+                return (int) scoreInThisRange;
+            }
+        }
+        return 0;
     }
 
 
@@ -204,15 +251,15 @@ public class Calculator {
         return whoWWhoClassic.values().stream().flatMap(Collection::stream).filter(group -> group.size() >= 1).toList();
     }
 
-    private static void roleGroup(int pplInTheGroup, long maxOfThatRoleInGroup, Predicate<CharAndDiff>  roleFilter, CharAndDiff charAndDiff, List<List<CharAndDiff>> wholeList) {
+    private static void roleGroup(int pplInTheGroup, long maxOfThatRoleInGroup, Predicate<CharAndDiff> roleFilter, CharAndDiff charAndDiff, List<List<CharAndDiff>> wholeList) {
         List<CharAndDiff> group = wholeList.stream().filter(g -> {
-            if(g.size() >= pplInTheGroup) {
+            if (g.size() >= pplInTheGroup) {
                 return false;
             }
             long currentRoleInGroupCount = g.stream().filter(roleFilter).count();
             return currentRoleInGroupCount < maxOfThatRoleInGroup;
         }).findFirst().orElse(null);
-        if(group == null) {
+        if (group == null) {
             ArrayList<CharAndDiff> newGroup = new ArrayList<>();
             newGroup.add(charAndDiff);
             wholeList.add(newGroup);

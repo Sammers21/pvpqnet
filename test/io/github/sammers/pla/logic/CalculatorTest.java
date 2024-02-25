@@ -5,21 +5,32 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
+import static io.github.sammers.pla.logic.Calculator.*;
+import static io.github.sammers.pla.logic.Calculator.calculateMclassScoreBasedOnCutoff;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class CalculatorTest {
 
     @Test
     public void firstSpotScoreIs1000() {
-        Integer score = Calculator.calculateScore(1);
-        assertEquals(1000, score);
+        assertEquals(1000, calculateScoreMclassOld(1));
+    }
+
+    @Test
+    public void newScoreTest() {
+        assertEquals(1000, calculateMclassScoreBasedOnCutoff(1, 10));
+        assertEquals(910, calculateMclassScoreBasedOnCutoff(10, 10));
+        assertEquals(900, calculateMclassScoreBasedOnCutoff(11, 10));
+        assertEquals(750, calculateMclassScoreBasedOnCutoff(21, 10));
+        assertEquals(550, calculateMclassScoreBasedOnCutoff(51, 10));
+        assertEquals(300, calculateMclassScoreBasedOnCutoff(101, 10));
     }
 
     @Test
     public void whoPlayedWithWhoTest() {
         CharacterCache cache = new CharacterCache();
         SnapshotDiff diff = SnapshotDiff.fromJson(THREE_V_THREE_DIFF);
-        List<List<CharAndDiff>> lists = Calculator.whoPlayedWithWho(diff, 3, cache);
+        List<List<CharAndDiff>> lists = whoPlayedWithWho(diff, 3, cache);
         assertEquals(61, lists.size());
     }
 

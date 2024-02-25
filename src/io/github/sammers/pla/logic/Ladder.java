@@ -155,7 +155,7 @@ public class Ladder {
         return Completable.defer(() -> {
             log.info("Calculating multiclasser leaderboard for region " + region);
             Snapshot snapshot = refs.refByBracket(SHUFFLE, region).get();
-            Multiclassers multiclassers = Calculator.calculateMulticlassers(snapshot, characterCache);
+            Multiclassers multiclassers = Calculator.calculateMulticlassers(snapshot, characterCache, regionCutoff.get(region));
             List.of(Multiclassers.Role.ALL,
                 Multiclassers.Role.MELEE,
                 Multiclassers.Role.RANGED,
