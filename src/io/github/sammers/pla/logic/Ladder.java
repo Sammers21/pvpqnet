@@ -98,12 +98,12 @@ public class Ladder {
                 lastSetToTrue.set(System.nanoTime());
                 long tick = System.nanoTime();
                 log.info("Starting data updater for region=" + region);
-                return threeVThree(region).ignoreElement()
+                return loadCutoffs(region)
+                    .andThen(threeVThree(region).ignoreElement())
                     .andThen(twoVTwo(region).ignoreElement())
                     .andThen(battlegrounds(region).ignoreElement())
                     .andThen(shuffle(region).ignoreElement())
                     .andThen(calculateMulticlasserLeaderboard(region))
-                    .andThen(loadCutoffs(region))
                     .andThen(calculateMeta(region))
                     .andThen(charUpdater.updateCharacters(region, 1, DAYS, timeout, timeoutUnits)).onErrorComplete(e -> {
                         log.error("Error updating data for region {}", region, e);
@@ -141,8 +141,8 @@ public class Ladder {
     }
 
     public Completable loadRegionData(String region) {
-        return loadLast(TWO_V_TWO, region)
-            .andThen(loadCutoffs(region))
+        return loadCutoffs(region)
+            .andThen(loadLast(TWO_V_TWO, region))
             .andThen(loadLast(THREE_V_THREE, region))
             .andThen(loadLast(RBG, region))
             .andThen(loadLast(SHUFFLE, region))
