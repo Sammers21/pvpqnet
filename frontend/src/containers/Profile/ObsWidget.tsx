@@ -6,6 +6,7 @@ import { useParams, useSearchParams } from "react-router-dom";
 import { baseUrl } from "@/config";
 import { groupBy } from "lodash";
 import { DPS_SPECS, HEAL_SPECS } from "@/constants/filterSchema";
+import { SpecChip } from "./Alts/SpecChip";
 
 function getSearchParamOrDefault(
   searchParams: URLSearchParams,
@@ -73,7 +74,8 @@ export const ObsWidget = () => {
     })
     .sort((a, b) => {
       return b.rating - a.rating;
-    }).filter((spec )=> {
+    })
+    .filter((spec) => {
       if (role === "healer") {
         return HEAL_SPECS.includes(spec.full_spec);
       } else if (role === "dps") {
@@ -100,16 +102,24 @@ export const ObsWidget = () => {
         </Typography>
       );
     });
-  } else {
-    contentList = [];
+  } else if (style === "chips-ranks") {
+    contentList = specAndMaxShuffle?.map((alt) => {
+      return (
+        <div>
+          <SpecChip
+            fullSpec={alt.full_spec}
+            bracket={alt.bracket}
+            label={`#` + alt.rank}
+          />
+        </div>
+      );
+    });
   }
 
   return (
     <div>
-      <Typography variant="body1">
-        data from PVPQ.NET
-      </Typography>
-      <br/>
+      <Typography variant="h6">PVPQ.NET</Typography>
+      <br />
       <div className={`flex ${flex} gap-1`}>{contentList}</div>
     </div>
   );
