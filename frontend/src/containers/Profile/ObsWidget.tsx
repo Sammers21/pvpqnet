@@ -114,6 +114,18 @@ export const ObsWidget = () => {
         </div>
       );
     });
+  } else if (style === "chips-ranks-rating") {
+    contentList = specAndMaxShuffle?.map((alt) => {
+      return (
+        <div>
+          <SpecChip
+            fullSpec={alt.full_spec}
+            bracket={alt.bracket}
+            label={`#` + alt.rank + ` - ` + alt.rating}
+          />
+        </div>
+      );
+    });
   }
 
   return (
