@@ -3,6 +3,7 @@ import { BrowserRouter, Routes as ReactRouterDomRoutes, Route } from 'react-rout
 
 import BlizzardLoader from '@/components/BlizzardLoader';
 import { publicUrls } from '@/config';
+import { ObsWidget } from '@/containers/Profile/ObsWidget';
 
 const { page } = publicUrls;
 const ActivityScreen = loadable(() => import('@/containers/Activity'), {
@@ -31,7 +32,10 @@ const AppRoutes = () => {
             <Route path=":bracket" element={<ActivityScreen />} />
           </Route>
           <Route path=":realm">
-            <Route path=":name" element={<ProfileScreen />} />
+            <Route path=":name">
+              <Route path="obs-widget" element={<ObsWidget />} />
+              <Route path="" element={<ProfileScreen />} />
+            </Route>
           </Route>
         </Route>
 

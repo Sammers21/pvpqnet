@@ -3,13 +3,26 @@ import axios from 'axios';
 import { BRACKETS } from '@/constants/pvp-activity';
 import { REGION } from '@/constants/region';
 
-import { urls } from '@/config';
-import type { IMeta } from '@/types';
+import { baseUrl, urls } from '@/config';
+import type { IMeta, IPlayer } from '@/types';
 
 export const statsMap = {
   [REGION.us]: 'en-us',
   [REGION.eu]: 'en-gb',
 };
+
+
+export const getProfile = async (region: string, realm: string, name: string, update: boolean = false) => {
+    const url = baseUrl + `/api/${region}/${realm}/${name}${update ? "/update" : ""}`;
+    const response = await axios.get(url, {
+      validateStatus: (status) => status < 500,
+      headers: {
+        "Accept-Encoding": "gzip",
+      },
+    });
+    const data = response.data as IPlayer;
+    return { playerStatus: response.status, player: data };
+}
 
 export const getLadder = async ({
   page = 1,

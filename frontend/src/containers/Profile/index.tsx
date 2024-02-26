@@ -11,6 +11,7 @@ import Footer from "@/components/Footer";
 import { baseUrl } from "@/config";
 import { capitalizeFirstLetter } from "@/utils/common";
 import type { IPlayer } from "@/types";
+import { getProfile } from "@/services/stats.service";
 
 const Snackbar = styled(MuiSnackbar)({
   borderRadius: 4,
@@ -44,18 +45,10 @@ const Profile = () => {
 
   async function loadProfile(update: boolean) {
     setLoading(true);
-    const url =
-      baseUrl + `/api/${region}/${realm}/${name}${update ? "/update" : ""}`;
-    const response = await axios.get(url, {
-      validateStatus: (status) => status < 500,
-      headers: {
-        "Accept-Encoding": "gzip",
-      },
-    });
-    const data = response.data as IPlayer;
-    if (update && response.status !== 404) setOpenSnakbar(true);
-
-    setPlayerStatus(response.status);
+    const profile = await getProfile(region, realm, name, update);
+    const { playerStatus: responseStatus, player: data } = profile;
+    if (update && responseStatus !== 404) setOpenSnakbar(true);
+    setPlayerStatus(responseStatus);
     setLoading(false);
     setPlayer(data);
   }
