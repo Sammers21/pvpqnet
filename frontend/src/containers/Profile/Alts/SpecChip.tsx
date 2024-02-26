@@ -18,7 +18,19 @@ export const SpecChip = ({
       avatar={<Avatar alt="class" src={specIcon} />}
       label={label}
       variant="outlined"
-      style={{ color: ratingColor, borderColor: ratingColor }}
+      // color={"primary"}
+      sx={{
+        "& .MuiChip-label": {
+          // color: "red"
+          fontWeight: 'bold',
+        }
+       }}
+      style={{
+        border: "3px solid",
+        
+        color: ratingColor,
+        borderColor: ratingColor,
+      }}
     />
   );
 };
