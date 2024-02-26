@@ -28,6 +28,10 @@ function getRole(searchParams: URLSearchParams) {
   return getSearchParamOrDefault(searchParams, "role", "all");
 }
 
+function getNoLogo(searchParams: URLSearchParams) {
+  return getSearchParamOrDefault(searchParams, "nologo", "false") === "true";
+}
+
 export const ObsWidget = () => {
   let { region, realm, name } = useParams();
   const [searchParams, _] = useSearchParams();
@@ -36,6 +40,7 @@ export const ObsWidget = () => {
   const style = getStyle(searchParams);
   const layout = getLayout(searchParams);
   const role = getRole(searchParams);
+  const nologo = getNoLogo(searchParams);
   useEffect(() => {
     document.title = `OBS Widget - ${name}-${realm} on ${region?.toUpperCase()}`;
     loadPlayerData();
@@ -116,12 +121,18 @@ export const ObsWidget = () => {
     });
   } else if (style === "chips-ranks-rating") {
     contentList = specAndMaxShuffle?.map((alt) => {
+      let label;
+      if (alt.rank < 1) {
+        label = alt.rating;
+      } else {
+        label = `#` + alt.rank + ` - ` + alt.rating;
+      }
       return (
         <div>
           <SpecChip
             fullSpec={alt.full_spec}
             bracket={alt.bracket}
-            label={`#` + alt.rank + ` - ` + alt.rating}
+            label={label}
           />
         </div>
       );
@@ -130,8 +141,13 @@ export const ObsWidget = () => {
 
   return (
     <div>
+      {!nologo ? <div>
+        <Typography variant="h6">PVPQ.NET</Typography>
+        <br />
+      </div> : null}
+      {/* {nologo ? null : (
       <Typography variant="h6">PVPQ.NET</Typography>
-      <br />
+      <br /> */}
       <div className={`flex ${flex} gap-1`}>{contentList}</div>
     </div>
   );
