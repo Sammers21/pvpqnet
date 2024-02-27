@@ -32,6 +32,10 @@ function getNoLogo(searchParams: URLSearchParams) {
   return getSearchParamOrDefault(searchParams, "nologo", "false") === "true";
 }
 
+function getLimit(searchParams: URLSearchParams) {
+  return parseInt(getSearchParamOrDefault(searchParams, "limit", "10"));
+}
+
 export const ObsWidget = () => {
   let { region, realm, name } = useParams();
   const [searchParams, _] = useSearchParams();
@@ -41,6 +45,7 @@ export const ObsWidget = () => {
   const layout = getLayout(searchParams);
   const role = getRole(searchParams);
   const nologo = getNoLogo(searchParams);
+  const limit = getLimit(searchParams);
   useEffect(() => {
     document.title = `OBS Widget - ${name}-${realm} on ${region?.toUpperCase()}`;
     loadPlayerData();
@@ -88,8 +93,7 @@ export const ObsWidget = () => {
       } else {
         return true;
       }
-    });
-  console.log("final", specAndMaxShuffle);
+    }).slice(0, limit);
   let flex;
   if (layout === "horizontal") {
     flex = "flex-row";
@@ -141,7 +145,7 @@ export const ObsWidget = () => {
 
   return (
     <div>
-      <div className={`flex ${flex} gap-1  items-center justify-center`}>
+      <div className={` h-full flex ${flex} gap-1  content-center  items-center justify-center`}>
         {!nologo ? (
           <div>
             <Typography variant="h6">PVPQ.NET</Typography>
