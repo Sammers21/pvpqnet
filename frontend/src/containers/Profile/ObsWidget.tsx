@@ -141,14 +141,15 @@ export const ObsWidget = () => {
 
   return (
     <div>
-      {!nologo ? <div>
-        <Typography variant="h6">PVPQ.NET</Typography>
-        <br />
-      </div> : null}
-      {/* {nologo ? null : (
-      <Typography variant="h6">PVPQ.NET</Typography>
-      <br /> */}
-      <div className={`flex ${flex} gap-1`}>{contentList}</div>
+      <div className={`flex ${flex} gap-1  items-center justify-center`}>
+        {!nologo ? (
+          <div>
+            <Typography variant="h6">PVPQ.NET</Typography>
+            <br />
+          </div>
+        ) : null}
+        {contentList}
+      </div>
     </div>
   );
 };
