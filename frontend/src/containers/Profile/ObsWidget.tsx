@@ -36,6 +36,10 @@ function getLimit(searchParams: URLSearchParams) {
   return parseInt(getSearchParamOrDefault(searchParams, "limit", "10"));
 }
 
+function getAlign(searchParams: URLSearchParams) {
+  return getSearchParamOrDefault(searchParams, "align", "center");
+}
+
 export const ObsWidget = () => {
   let { region, realm, name } = useParams();
   const [searchParams, _] = useSearchParams();
@@ -46,6 +50,7 @@ export const ObsWidget = () => {
   const role = getRole(searchParams);
   const nologo = getNoLogo(searchParams);
   const limit = getLimit(searchParams);
+  const align = getAlign(searchParams);
   useEffect(() => {
     document.title = `OBS Widget - ${name}-${realm} on ${region?.toUpperCase()}`;
     loadPlayerData();
@@ -103,6 +108,14 @@ export const ObsWidget = () => {
     flex = "flex-col";
   }
   let contentList;
+  let alignCss = 'items-center'
+  if (align === "left") {
+    alignCss = 'items-start'
+  } else if (align === "right") {
+    alignCss = 'items-end'
+  } else {
+    alignCss = 'items-center'
+  }
   if (style === "simple-text") {
     contentList = specAndMaxShuffle?.map((alt) => {
       return (
@@ -145,7 +158,7 @@ export const ObsWidget = () => {
 
   return (
     <div>
-      <div className={` h-full flex ${flex} gap-1  content-center  items-center justify-center`}>
+      <div className={` h-full flex ${flex} gap-1 ${alignCss} justify-center`}>
         {!nologo ? (
           <div>
             <Typography variant="h6">PVPQ.NET</Typography>
