@@ -14,6 +14,9 @@ import org.javatuples.Triplet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.time.Duration;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -22,6 +25,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 public class Calculator {
 
@@ -271,6 +276,12 @@ public class Calculator {
 
 
     public static SnapshotDiff calculateDiff(Snapshot oldChars, Snapshot newChars, String bracket, boolean newIsZero) {
+//        if (o)
+        if ((oldChars != null && newChars != null) && oldChars.timestamp() > newChars.timestamp()) {
+            Snapshot temp = oldChars;
+            oldChars = newChars;
+            newChars = temp;
+        }
         ArrayList<CharAndDiff> res = new ArrayList<>(newChars.characters().size());
         Function<Character, String> idF = getIdFunction(bracket);
         Map<String, Character> oldMap;
@@ -279,15 +290,17 @@ public class Calculator {
         } else {
             oldMap = oldChars.characters().stream().collect(Collectors.toMap(idF, c -> c, (a, b) -> a));
         }
-        for (Character newCharx : newChars.characters()) {
-            Character newChar;
-            Character oldChar = oldMap.get(idF.apply(newCharx));
-            if (oldChar != null && (newCharx.wins() + newCharx.losses() < oldChar.wins() + oldChar.losses())) {
-                newChar = oldChar;
-                oldChar = newCharx;
-            } else {
-                newChar = newCharx;
-            }
+        for (Character newChar : newChars.characters()) {
+            Character oldChar = oldMap.get(idF.apply(newChar));
+//            if (oldChar != null && ((newChar.wins() + newChar.losses()) < (oldChar.wins() + oldChar.losses()))) {
+//                if (newChar.name().equals("Lôôny") && bracket.equals("shuffle")) {
+//                    log.debug("Lôôny: {}", newChar);
+//                }
+//                newChar = oldChar;
+//                oldChar = newChar;
+//            } else {
+//                newChar = newChar;
+//            }
             CharAndDiff e;
             if (oldChar == null) {
                 if (newIsZero) {
@@ -447,6 +460,40 @@ public class Calculator {
             result = itemsTotal / pageSize;
         } else {
             result = itemsTotal / pageSize + 1;
+        }
+        return result;
+    }
+
+    public static byte[] gzipCompress(byte[] uncompressedData) {
+        byte[] result = new byte[]{};
+        try (ByteArrayOutputStream bos = new ByteArrayOutputStream(uncompressedData.length);
+             GZIPOutputStream gzipOS = new GZIPOutputStream(bos)) {
+            gzipOS.write(uncompressedData);
+            // You need to close it before using bos
+            gzipOS.close();
+            result = bos.toByteArray();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+    public static byte[] gzipUncompress(byte[] compressedData) {
+        if (compressedData ==null ) {
+            return null;
+        }
+        byte[] result = new byte[]{};
+        try (ByteArrayInputStream bis = new ByteArrayInputStream(compressedData);
+             ByteArrayOutputStream bos = new ByteArrayOutputStream();
+             GZIPInputStream gzipIS = new GZIPInputStream(bis)) {
+            byte[] buffer = new byte[1024];
+            int len;
+            while ((len = gzipIS.read(buffer)) != -1) {
+                bos.write(buffer, 0, len);
+            }
+            result = bos.toByteArray();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
         return result;
     }

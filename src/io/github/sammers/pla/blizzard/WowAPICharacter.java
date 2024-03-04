@@ -335,6 +335,17 @@ public record WowAPICharacter(long id,
         return new WowAPICharacter(id, hidden, name, realm, gender, fraction, race, activeSpec, level, clazz, itemLevel, region, newBrackets, lastUpdatedUTCms, achievements, petHash, media, talents);
     }
 
+    public byte[] toGzippedJson() {
+        return Calculator.gzipCompress(toJson().encode().getBytes());
+    }
+
+    public static WowAPICharacter fromGzippedJson(byte[] gzippedJson) {
+        if (gzippedJson == null) {
+            return null;
+        }
+        return fromJson(new JsonObject(new String(Calculator.gzipUncompress(gzippedJson))));
+    }
+
     @Override
     public int hashCode() {
         return fullName().hashCode();

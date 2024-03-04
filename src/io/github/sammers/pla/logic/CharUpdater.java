@@ -104,8 +104,9 @@ public class CharUpdater {
                 .toList();
             List<Pair<String, String>> randomNotUpdatedChars = new ArrayList<>(
                 characterCache.values().stream()
-                    .filter(wowAPICharacter -> tick - wowAPICharacter.lastUpdatedUTCms() > units.toMillis(timeWithoutUpdateMin))
-                    .map(wowAPICharacter -> Pair.with(wowAPICharacter.name(), wowAPICharacter.realm()))
+                    .filter(bts -> tick - WowAPICharacter.fromGzippedJson(bts).lastUpdatedUTCms() > units.toMillis(timeWithoutUpdateMin))
+                    .map(WowAPICharacter::fromGzippedJson)
+                    .map(btw -> Pair.with(btw.name(), btw.realm()))
                     .toList()
             );
 
@@ -141,67 +142,6 @@ public class CharUpdater {
                 .flatMapCompletable(c -> c, true, 1)
                 .takeUntil(Completable.timer(timeout, timeoutUnits));
         }).onErrorComplete().subscribeOn(Main.VTHREAD_SCHEDULER);
-    }
-
-    public Completable updateCharsInfinite(String region) {
-        return Completable.defer(() -> {
-            log.info("Updating chars in region " + region);
-            List<Snapshot> snapshots = new ArrayList<>(Stream.of(TWO_V_TWO, THREE_V_THREE, RBG, SHUFFLE)
-                .map(bracket -> refs.refByBracket(bracket, region).get()).toList());
-            Map<String, Long> nickAndMaxRating = new ConcurrentHashMap<>();
-            return Maybe.just(snapshots)
-                .map((List<Snapshot> list) -> {
-                    Set<String> charsToUpdate = new HashSet<>();
-                    for (Snapshot board : list) {
-                        for (Character charOnLeaderBoard : board.characters()) {
-                            if (characterCache.getByFullName(charOnLeaderBoard.fullName()) == null) {
-                                charsToUpdate.add(charOnLeaderBoard.fullName());
-                                nickAndMaxRating.compute(charOnLeaderBoard.fullName(), (nick, maxRating) -> {
-                                    if (maxRating == null) {
-                                        return charOnLeaderBoard.rating();
-                                    } else {
-                                        return Math.max(maxRating, charOnLeaderBoard.rating());
-                                    }
-                                });
-                            }
-                        }
-                    }
-                    int newChars = charsToUpdate.size();
-                    long dayAgo = Instant.now().minus(1, ChronoUnit.DAYS).toEpochMilli();
-                    characterCache.values().stream().flatMap(wowAPICharacter -> {
-                        if (wowAPICharacter.lastUpdatedUTCms() < dayAgo) {
-                            nickAndMaxRating.compute(wowAPICharacter.fullName(), (nick, maxRating) -> {
-                                Long chMax = wowAPICharacter.brackets().stream().max(Comparator.comparingLong(PvpBracket::rating)).map(PvpBracket::rating).orElse(0L);
-                                if (maxRating == null) {
-                                    return chMax;
-                                } else {
-                                    return Math.max(maxRating, chMax);
-                                }
-                            });
-                            return Stream.of(wowAPICharacter);
-                        } else {
-                            return Stream.of();
-                        }
-                    }).map(WowAPICharacter::fullName).forEach(charsToUpdate::add);
-                    log.info("Completely new chars required to be updated: " + newChars + ", old chars: " + (charsToUpdate.size() - newChars));
-                    return charsToUpdate;
-                }).flatMapCompletable(charsToUpdate -> {
-                    log.info("Updating " + charsToUpdate.size() + " chars");
-                    // first we update 300 highest rated characters
-                    // and everything else is after
-                    List<String> charsToUpdateList = new ArrayList<>(charsToUpdate);
-                    charsToUpdateList.sort(Comparator.comparingLong(nickAndMaxRating::get).reversed());
-                    List<String> firstPortion = charsToUpdateList.subList(0, Math.min(charsToUpdateList.size(), 300));
-                    List<String> rest = charsToUpdateList.subList(firstPortion.size(), charsToUpdateList.size());
-                    return updateChars(firstPortion, region)
-                        .doOnSubscribe(d -> log.info("Updating first portion of chars: " + firstPortion.size()))
-                        .doOnComplete(() -> log.info("First portion of chars has been updated"))
-                        .andThen(updateChars(rest, region))
-                        .doOnSubscribe(d -> log.info("Updating second portion of chars: " + rest.size()))
-                        .doOnComplete(() -> log.info("Second portion of chars has been updated"))
-                        .onErrorComplete();
-                });
-        }).subscribeOn(Main.VTHREAD_SCHEDULER).doOnError(e -> log.error("Update chars infinite error in region " + region, e));
     }
 
     public Completable updateChars(List<String> nickNames, String region) {

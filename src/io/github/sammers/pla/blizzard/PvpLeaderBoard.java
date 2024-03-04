@@ -2,6 +2,7 @@ package io.github.sammers.pla.blizzard;
 
 import io.github.sammers.pla.db.Character;
 import io.github.sammers.pla.http.JsonConvertable;
+import io.github.sammers.pla.logic.CharacterCache;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
@@ -59,7 +60,7 @@ public record PvpLeaderBoard(
         return new PvpLeaderBoard(links, season, name, bracket, newEntities);
     }
 
-    public Set<Character> toCharacters(Map<String, WowAPICharacter> characterCache, String bracketId) {
+    public Set<Character> toCharacters(CharacterCache characterCache, String bracketId) {
         return entities.stream()
             .map(entity -> (JsonObject) entity)
             .flatMap(entity -> {
@@ -73,7 +74,7 @@ public record PvpLeaderBoard(
                 JsonObject seasonMatchStatistics = entity.getJsonObject("season_match_statistics");
                 Long won = seasonMatchStatistics.getLong("won");
                 Long lost = seasonMatchStatistics.getLong("lost");
-                WowAPICharacter wowAPICharacter = characterCache.get(Character.fullNameByRealmAndName(name, slug));
+                WowAPICharacter wowAPICharacter = characterCache.getByFullName(Character.fullNameByRealmAndName(name, slug));
                 if(wowAPICharacter == null) {
                     return Stream.empty();
                 } else {

@@ -11,33 +11,35 @@ import java.util.stream.Collectors;
 
 public class CharacterCache {
 
-    private final Map<Long, WowAPICharacter> idCache;
-    private final Map<String, WowAPICharacter> nameCache;
-    private final Map<Integer, Set<WowAPICharacter>> alts = new ConcurrentHashMap<>();
+    private final Map<Long, byte[]> idCache;
+    private final Map<String, byte[]> nameCache;
+    private final Map<Integer, Set<Long>> alts;
 
     public CharacterCache() {
         nameCache = new ConcurrentHashMap<>();
         idCache = new ConcurrentHashMap<>();
+        alts = new ConcurrentHashMap<>();
     }
 
     public WowAPICharacter getByFullName(String name) {
-        return nameCache.get(name);
+        return WowAPICharacter.fromGzippedJson(nameCache.get(name));
     }
 
     public WowAPICharacter getById(Long id) {
-        return idCache.get(id);
+        return WowAPICharacter.fromGzippedJson(idCache.get(id));
     }
 
     public void upsert(WowAPICharacter character) {
-        nameCache.put(character.fullName(), character);
-        idCache.put(character.id(), character);
-        indexCharAlts(alts, character);
+        byte[] gzip = character.toGzippedJson();
+        nameCache.put(character.fullName(), gzip);
+        idCache.put(character.id(), gzip);
+        indexCharAlts(alts, character.id(), character.petHash());
     }
 
     public Optional<WowAPICharacter> upsertDiff(CharAndDiff diff, String bracket) {
         Character character = diff.character();
-        WowAPICharacter wowAPICharacter = nameCache.get(character.fullName());
-        if(wowAPICharacter == null) {
+        WowAPICharacter wowAPICharacter = this.getByFullName(character.fullName());
+        if (wowAPICharacter == null) {
             return Optional.empty();
         }
         WowAPICharacter updated = wowAPICharacter.updatePvpBracketData(diff, BracketType.fromType(bracket), List.of());
@@ -50,16 +52,16 @@ public class CharacterCache {
         for (int i = 0; i < groupDiff.size(); i++) {
             CharAndDiff diff = groupDiff.get(i);
             Character character = diff.character();
-            WowAPICharacter wowAPICharacter = nameCache.get(character.fullName());
-            if(wowAPICharacter == null) {
+            WowAPICharacter wowAPICharacter = getByFullName(character.fullName());
+            if (wowAPICharacter == null) {
                 continue;
             }
             List<CharAndDiff> withWho = new ArrayList<>(groupDiff.subList(0, i));
             withWho.addAll(groupDiff.subList(i + 1, groupDiff.size()));
             WowAPICharacter updated = wowAPICharacter.updatePvpBracketData(
-                    diff,
-                    BracketType.fromType(bracket),
-                    withWho.stream().map(CharAndDiff::character).toList()
+                diff,
+                BracketType.fromType(bracket),
+                withWho.stream().map(CharAndDiff::character).toList()
             );
             upsert(updated);
             res.add(updated);
@@ -67,37 +69,29 @@ public class CharacterCache {
         return res;
     }
 
-    public Collection<WowAPICharacter> values() {
+    public Collection<byte[]> values() {
         return idCache.values();
     }
 
-    public Map<String, WowAPICharacter> nameCache() {
-        return nameCache;
-    }
-
-    public Map<Long, WowAPICharacter> idCache() {
-        return idCache;
-    }
-
     public Set<WowAPICharacter> altsFor(WowAPICharacter character) {
-        return Optional.ofNullable(alts.get(character.petHash()))
+        return Optional.of(alts.get(character.petHash()).stream().map(idCache::get).map(WowAPICharacter::fromGzippedJson
+            ).collect(Collectors.toSet()))
             .orElse(Set.of())
             .stream()
             .filter(c -> !c.hidden())
             .collect(Collectors.toSet());
     }
 
-    public static void indexCharAlts(Map<Integer, Set<WowAPICharacter>> alts, WowAPICharacter character) {
-        int hash = character.petHash();
-        alts.compute(hash, (key, value) -> {
+    public static void indexCharAlts(Map<Integer, Set<Long>> alts, Long charId, int petHash) {
+        alts.compute(petHash, (key, value) -> {
             if (key == -1) {
                 return null;
             }
             if (value == null) {
-                value = new TreeSet<>(Comparator.comparing(WowAPICharacter::id));
+                value = new TreeSet<>();
             }
-            value.remove(character);
-            value.add(character);
+            value.remove(charId);
+            value.add(charId);
             return value;
         });
     }
