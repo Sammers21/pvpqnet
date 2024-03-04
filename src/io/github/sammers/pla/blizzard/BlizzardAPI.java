@@ -150,7 +150,7 @@ public class BlizzardAPI {
         return token().flatMapMaybe(blizzardAuthToken ->
             rpsToken().andThen(
                 Maybe.defer(() -> {
-                    log.info("Getting " + url);
+                    log.debug("Getting " + url);
                     return webClient.getAbs(url)
                         .addQueryParam("namespace", namespace)
                         .addQueryParam("locale", LOCALE)
@@ -162,7 +162,7 @@ public class BlizzardAPI {
                             return Single.error(er);
                         })
                         .flatMapMaybe(resp -> {
-                            log.info("Got response to" + url+ " " + resp.statusCode());
+                            log.debug("Got response to" + url+ " " + resp.statusCode());
                             if (resp.statusCode() == 200) {
                                 return Maybe.just(resp.bodyAsJsonObject());
                             } else if (resp.statusCode() == 429 || resp.statusCode() / 100 == 5) {
