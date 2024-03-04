@@ -40,6 +40,10 @@ function getAlign(searchParams: URLSearchParams) {
   return getSearchParamOrDefault(searchParams, "align", "center");
 }
 
+function getCustomText(searchParams: URLSearchParams) {
+  return getSearchParamOrDefault(searchParams, "customText", "");
+}
+
 export const ObsWidget = () => {
   let { region, realm, name } = useParams();
   const [searchParams, _] = useSearchParams();
@@ -51,6 +55,7 @@ export const ObsWidget = () => {
   const nologo = getNoLogo(searchParams);
   const limit = getLimit(searchParams);
   const align = getAlign(searchParams);
+  const customText = getCustomText(searchParams);
   useEffect(() => {
     document.title = `OBS Widget - ${name}-${realm} on ${region?.toUpperCase()}`;
     loadPlayerData();
@@ -98,7 +103,8 @@ export const ObsWidget = () => {
       } else {
         return true;
       }
-    }).slice(0, limit);
+    })
+    .slice(0, limit);
   let flex;
   if (layout === "horizontal") {
     flex = "flex-row";
@@ -108,13 +114,13 @@ export const ObsWidget = () => {
     flex = "flex-col";
   }
   let contentList;
-  let alignCss = 'items-center'
+  let alignCss = "items-center";
   if (align === "left") {
-    alignCss = 'items-start'
+    alignCss = "items-start";
   } else if (align === "right") {
-    alignCss = 'items-end'
+    alignCss = "items-end";
   } else {
-    alignCss = 'items-center'
+    alignCss = "items-center";
   }
   if (style === "simple-text") {
     contentList = specAndMaxShuffle?.map((alt) => {
@@ -165,6 +171,11 @@ export const ObsWidget = () => {
             <br />
           </div>
         ) : null}
+        {customText === "" ? null : (
+          <div>
+            <Typography variant="h6">{customText}</Typography>
+          </div>
+        )}
         {contentList}
       </div>
     </div>
