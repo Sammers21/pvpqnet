@@ -51,8 +51,10 @@ const Table = ({
   const rowsComponent = useMemo(() => {
     function renderRow(record: IActivityRecord, index: number) {
       let shouldHighlight;
+      let altHighlight;
       if (diff === record) {
         shouldHighlight = true;
+        altHighlight = true;
       } else {
         shouldHighlight =
           diff && record.diff
@@ -60,6 +62,7 @@ const Table = ({
               record.diff.won === diff.diff.won &&
               record.diff.lost === diff.diff.lost
             : false;
+        altHighlight = record && diff && record.pethash && diff.pethash ? diff.pethash  === record.pethash : false;
       }
       return (
         <Row
@@ -67,6 +70,7 @@ const Table = ({
           record={record}
           columns={columns}
           shouldHighlight={shouldHighlight}
+          altHighlight={altHighlight}
           onRowOver={onRowOver}
         />
       );

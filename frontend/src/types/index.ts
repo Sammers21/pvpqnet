@@ -11,6 +11,7 @@ interface IAcitivityCharacter {
   realm: string;
   wins: number;
   losses: number;
+  pethash: number;
 }
 
 interface IActivityDiff {

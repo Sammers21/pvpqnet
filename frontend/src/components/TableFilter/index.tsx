@@ -12,10 +12,10 @@ interface IProps {
   selectedSpecs: string[];
   onSpecsChange: (specs: string[]) => void;
   bracket: string;
-  statistic: any;
+  statistics: any;
 }
 
-const TableFilter = ({ selectedSpecs, onSpecsChange, bracket, statistic }: IProps) => {
+const TableFilter = ({ selectedSpecs, onSpecsChange, bracket, statistics: statistic }: IProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [filtersShown, setFiltersShown] = useState(selectedSpecs.length > 0);

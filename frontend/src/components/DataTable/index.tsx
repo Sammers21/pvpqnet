@@ -23,7 +23,7 @@ interface IProps {
   data: Record<BRACKETS, string> | undefined;
 }
 
-const DataList = ({ data: statistic }: IProps) => {
+const DataList = ({ data: statistics }: IProps) => {
   const { region = REGION.eu, bracket = BRACKETS['3v3'] } = useParams();
   const activity = getActivityFromUrl();
   const [searchParams] = useSearchParams();
@@ -69,9 +69,8 @@ const DataList = ({ data: statistic }: IProps) => {
         selectedSpecs={selectedSpecs}
         onSpecsChange={setSelectedSpecs}
         bracket={bracket}
-        statistic={statistic}
+        statistics={statistics}
       />
-
       <Table
         loading={loading}
         totalPages={totalPages}

@@ -8,21 +8,25 @@ interface IProps {
   onRowOver?: (record: any | null) => void;
   bgColor?: string;
   shouldHighlight?: boolean;
+  altHighlight?: boolean;
 }
 
 const Row = ({
   record,
   columns,
   shouldHighlight,
+  altHighlight,
   bgColor,
   onRowOver,
 }: IProps) => {
-  const bgClass = shouldHighlight ? "rgb(21, 128, 61, 0.25)" : "";
-
+  const href = window.location.href
+  let bgClass = shouldHighlight ? "rgb(21, 128, 61, 0.25)" : altHighlight ? "rgb(96, 165, 250, 0.25)" : '';
+  if(href.indexOf("ladder") > -1 || href.indexOf("shuffle") > -1) {
+      bgClass = altHighlight ? "rgb(96, 165, 250, 0.25)" : '';
+  }
   const renderDefaultCell = (value: string) => {
     return <Typography variant="h6">{value}</Typography>;
   };
-
   return (
     <TableRow
       onMouseEnter={() => onRowOver && onRowOver(record)}
