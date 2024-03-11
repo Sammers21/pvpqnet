@@ -62,7 +62,15 @@ const Table = ({
               record.diff.won === diff.diff.won &&
               record.diff.lost === diff.diff.lost
             : false;
-        altHighlight = record && diff && record.pethash && diff.pethash ? diff.pethash  === record.pethash : false;
+        altHighlight =
+          record &&
+          diff &&
+          record.pethash !== -1 &&
+          diff.pethash !== -1 &&
+          record.pethash &&
+          diff.pethash
+            ? diff.pethash === record.pethash
+            : false;
       }
       return (
         <Row
