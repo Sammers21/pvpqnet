@@ -103,12 +103,20 @@ const Header = () => {
     );
   }
 
+  function redirectToPvpAssistant() {
+    window.open(
+      "https://www.curseforge.com/wow/addons/pvpassistant",
+      "_blank"
+    );
+  }
+
   const menuItems = [
     { label: "Activity", onClick: redirectToActivity },
     { label: "Leaderboards", onClick: redirectToLadder },
     { label: "Multiclassers", onClick: redirectToMulticlassers },
     { label: "Meta", onClick: redirectToMeta },
     { label: "Skill-Сapped", onClick: redirectToSkillCapped },
+    { label: "PvP-Assistant", onClick: redirectToPvpAssistant },
   ];
 
   const View = breakpoint === "S" ? MobileView : DesktopView;
