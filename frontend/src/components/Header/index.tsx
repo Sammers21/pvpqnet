@@ -119,7 +119,7 @@ const Header = () => {
     { label: "PvP-Assistant", onClick: redirectToPvpAssistant },
   ];
 
-  const View = breakpoint === "S" ? MobileView : DesktopView;
+  const View = breakpoint === "L" ? MobileView : DesktopView;
   return (
     <StyledAppBar position="fixed">
       <StyledToolbar disableGutters>
