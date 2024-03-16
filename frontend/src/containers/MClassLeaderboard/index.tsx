@@ -153,7 +153,7 @@ function columns(region): GridColDef[] {
   ];
 }
 
-function MClassLeaderboard(dota) {
+function MClassLeaderboard() {
   const { region = REGION.eu } = useParams();
   const [role, setRole] = React.useState("all");
   const [page, setPage] = React.useState(1);
