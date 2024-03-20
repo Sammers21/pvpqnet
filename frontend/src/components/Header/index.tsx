@@ -118,6 +118,7 @@ const Header = () => {
     { label: "Skill-Сapped", onClick: redirectToSkillCapped },
     { label: "PvP-Assistant", onClick: redirectToPvpAssistant },
   ];
+  
   const isMobile = breakpoint === "mobile" || breakpoint === "tablet"
   const View = isMobile ? MobileView : DesktopView;
   return (
