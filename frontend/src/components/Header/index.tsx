@@ -25,7 +25,7 @@ const StyledToolbar = styled(Toolbar)({
   minHeight: "48px !important",
 });
 
-const useBreakpoint = createBreakpoint({ S: 758, L: 900, XL: 1280 });
+const useBreakpoint = createBreakpoint({ mobile: 0, tablet: 768, desktop: 1280 });
 
 const Header = () => {
   let navigate = useNavigate();
@@ -118,8 +118,8 @@ const Header = () => {
     { label: "Skill-Сapped", onClick: redirectToSkillCapped },
     { label: "PvP-Assistant", onClick: redirectToPvpAssistant },
   ];
-
-  const View = breakpoint === "L" ? MobileView : DesktopView;
+  const isMobile = breakpoint === "mobile" || breakpoint === "tablet"
+  const View = isMobile ? MobileView : DesktopView;
   return (
     <StyledAppBar position="fixed">
       <StyledToolbar disableGutters>
