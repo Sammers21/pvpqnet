@@ -165,17 +165,17 @@ public record WowAPICharacter(long id,
     }
 
     public static WowAPICharacter parse(
-            Optional<WowAPICharacter> previous,
-            Refs refs,
-            Optional<Cutoffs> cutoffs,
-            JsonObject entries,
-            JsonObject pvpSummary,
-            List<JsonObject> brackets,
-            JsonObject achievements,
-            JsonObject characterMedia,
-            JsonObject specs,
-            JsonObject pets,
-            String region) {
+        Optional<WowAPICharacter> previous,
+        Refs refs,
+        Optional<Cutoffs> cutoffs,
+        JsonObject entries,
+        JsonObject pvpSummary,
+        List<JsonObject> brackets,
+        JsonObject achievements,
+        JsonObject characterMedia,
+        JsonObject specs,
+        JsonObject pets,
+        String region) {
         String activeSpec = Optional.of(entries.getJsonObject("active_spec")).map(obj -> obj.getString("name")).orElse("");
         String talents = specs.getJsonArray("specializations").stream()
             .map(s -> (JsonObject) s)
@@ -218,7 +218,9 @@ public record WowAPICharacter(long id,
             }
             return PvpBracket.parse(wowApiBracket, prevBracket, rank, Optional.of(cutoffByBracketType).orElse(-1L), thisSsnData);
         }).toList();
-        CharacterMedia media = CharacterMedia.parse(characterMedia);
+        CharacterMedia media = characterMedia.getMap().size() == 0 ?
+            previous.map(WowAPICharacter::media).orElse(CharacterMedia.parse(characterMedia))
+            : CharacterMedia.parse(characterMedia);
         Long lastUpdatedUTCms = Instant.now().toEpochMilli();
         Achievements parsedAchievements = Achievements.parse(achievements);
         return new WowAPICharacter(
@@ -291,8 +293,8 @@ public record WowAPICharacter(long id,
             PvpBracket res;
             if (BracketType.fromType(pvpBracket.bracketType()).equals(bracket) &&
                 (bracket.equals(BracketType.TWO_V_TWO)
-                        || bracket.equals(BracketType.THREE_V_THREE)
-                        || bracket.equals(BracketType.RBG))) {
+                    || bracket.equals(BracketType.THREE_V_THREE)
+                    || bracket.equals(BracketType.RBG))) {
                 log.debug("Updating bracket " + pvpBracket.bracketType() + " with diff " + diff);
                 res = new PvpBracket(
                     pvpBracket.bracketType(),
@@ -354,24 +356,24 @@ public record WowAPICharacter(long id,
     @Override
     public JsonObject toJson() {
         return new JsonObject()
-                .put("id", id)
-                .put("hidden", hidden)
-                .put("name", name)
-                .put("realm", realm)
-                .put("gender", gender)
-                .put("fraction", fraction)
-                .put("race", race)
-                .put("activeSpec", activeSpec)
-                .put("level", level)
-                .put("class", clazz)
-                .put("itemLevel", itemLevel)
-                .put("region", region)
-                .put("lastUpdatedUTCms", lastUpdatedUTCms)
-                .put("brackets", new JsonArray(brackets.stream().map(PvpBracket::toJson).toList()))
-                .put("achievements", achievements.toJson())
-                .put("petHash", petHash)
-                .put("media", media.toJson())
-                .put("talents", talents);
+            .put("id", id)
+            .put("hidden", hidden)
+            .put("name", name)
+            .put("realm", realm)
+            .put("gender", gender)
+            .put("fraction", fraction)
+            .put("race", race)
+            .put("activeSpec", activeSpec)
+            .put("level", level)
+            .put("class", clazz)
+            .put("itemLevel", itemLevel)
+            .put("region", region)
+            .put("lastUpdatedUTCms", lastUpdatedUTCms)
+            .put("brackets", new JsonArray(brackets.stream().map(PvpBracket::toJson).toList()))
+            .put("achievements", achievements.toJson())
+            .put("petHash", petHash)
+            .put("media", media.toJson())
+            .put("talents", talents);
     }
 
 }

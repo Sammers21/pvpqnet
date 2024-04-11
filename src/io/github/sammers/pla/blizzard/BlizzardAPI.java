@@ -119,7 +119,7 @@ public class BlizzardAPI {
                                             ).toList()
                                     ).toList();
                                 Maybe<JsonObject> achievementsRx = maybeResponse(realNamespace, absoluteURI + "/achievements");
-                                Maybe<JsonObject> mediaRx = maybeResponse(realNamespace, absoluteURI + "/character-media");
+                                Maybe<JsonObject> mediaRx = maybeResponse(realNamespace, absoluteURI + "/character-media").onErrorReturnItem(new JsonObject());
                                 Maybe<JsonObject> petsRx = maybeResponse(realNamespace, absoluteURI + "/collections/pets");
                                 Maybe<JsonObject> specsRx = maybeResponse(realNamespace, absoluteURI + "/specializations");
                                 return Single.zip(
