@@ -115,8 +115,8 @@ const Header = () => {
     { label: "Leaderboards", onClick: redirectToLadder },
     { label: "Multiclassers", onClick: redirectToMulticlassers },
     { label: "Meta", onClick: redirectToMeta },
-    { label: "Skill-Сapped", onClick: redirectToSkillCapped },
-    { label: "PvP-Assistant", onClick: redirectToPvpAssistant },
+    // { label: "Skill-Сapped", onClick: redirectToSkillCapped },
+    // { label: "PvP-Assistant", onClick: redirectToPvpAssistant },
   ];
   
   const isMobile = breakpoint === "mobile" || breakpoint === "tablet"
