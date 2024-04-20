@@ -14,13 +14,15 @@ const CutOffText = ({ bracket, statistic }: IProps) => {
   const rankOneTitleColor = getRatingColor(true);
 
   const rewards = statistic?.cutoffs?.rewards;
+  const spotWithNoAlts = statistic?.cutoffs?.spotWithNoAlts
   const cutOffRating = rewards?.[ratingRewardMap[bracket]];
+  const spotsWithNoAlts = spotWithNoAlts?.[ratingRewardMap[bracket]];
 
   return (
     <span className="text-xs sm:text-lg font-light" style={{ color: rankOneTitleColor }}>
       {bracket === '3v3'
-        ? `Verdant Gladiator: Dragonflight Season 3 - Rating: ${cutOffRating}`
-        : `Hero of the Alliance & Horde: Verdant - Rating: ${cutOffRating}`}
+        ? `Verdant Gladiator: Dragonflight Season 3 - Rating: ${cutOffRating}. Spots: ${spotsWithNoAlts}`
+        : `Hero of the Alliance & Horde: Verdant - Rating: ${cutOffRating}. Spots: ${spotsWithNoAlts}`}
     </span>
   );
 };
