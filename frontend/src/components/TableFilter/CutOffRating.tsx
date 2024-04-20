@@ -41,7 +41,7 @@ const CutOffText = ({ bracket, statistic }: IProps) => {
       text = `${title} - Rating: ${cutOffRating}. Spots: ${spotsWithNoAlts}`;
     }
     else {
-      text = `${title} - Rating: BlizzardAPI:${cutOffRating} / Predicted:${predictedCutoff}. Spots: ${spotsWithNoAlts}`;
+      text = `${title} - Rating by BlizzardAPI: ${cutOffRating} / Predicted: ${predictedCutoff}. Spots: ${spotsWithNoAlts}`;
     }
     return (
       <span
@@ -63,7 +63,7 @@ const CutOffText = ({ bracket, statistic }: IProps) => {
       text = `${title} for ${specName} - Rating: ${cutOffRating}. Spots: ${spotsWithNoAlts}`;
     }
     else {
-      text = `${title} for ${specName} - Rating: BlizzardAPI:${cutOffRating} / Predicted:${predictedCutoff}. Spots: ${spotsWithNoAlts}`;
+      text = `${title} for ${specName} - Rating by BlizzardAPI: ${cutOffRating} / Predicted: ${predictedCutoff}. Spots: ${spotsWithNoAlts}`;
     }
     return (
       <span
