@@ -73,7 +73,7 @@ const Header = () => {
       activity,
       bracket,
     });
-    if (specs !== undefined) {
+    if (specs !== undefined && specs !== null) {
       newPath = newPath + "?specs=" + specs;
     }
     navigate(newPath);
