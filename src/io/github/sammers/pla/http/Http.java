@@ -107,7 +107,7 @@ public class Http {
                 JsonObject res = new JsonObject().put("2v2", twos).put("3v3", threes).put("rbg", rbgs).put("shuffle", shuffle);
                 Cutoffs cutoffs = ladder.regionCutoffFromDb.get(region);
                 if (cutoffs != null) {
-                    res.put("cutoffs", cutoffs.toJson());
+                    res.put("cutoffs", cutoffs.toJsonWithPredictions());
                 }
                 ctx.response().end(res.encode());
             });

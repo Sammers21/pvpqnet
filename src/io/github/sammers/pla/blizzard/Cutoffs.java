@@ -15,6 +15,7 @@ public class Cutoffs implements JsonConvertable {
     public final String region;
     public final String season;
     public final Map<String, Long> cutoffs;
+    public final Map<String, Long> cutoffsPredictions = new HashMap<>();
     public final Long timestamp;
     public final Map<String, Long> spotsCounts = new HashMap<>();
     public final Map<String, Long> spotWithNoAlts = new HashMap<>();
@@ -36,6 +37,10 @@ public class Cutoffs implements JsonConvertable {
         this(region, season, cutoffs, timestamp);
         this.spotsCounts.putAll(spotsCounts);
         this.spotWithNoAlts.putAll(spotWithNoAlts);
+    }
+
+    public void setPrediction(String bracket, long rating) {
+        cutoffsPredictions.put(bracket, rating);
     }
 
     public void setSpotWithNoAlts(String bracket, long count) {
@@ -146,6 +151,11 @@ public class Cutoffs implements JsonConvertable {
                 .put("rewards", new JsonObject(cutoffs.entrySet().stream().map(x -> Map.entry(x.getKey(), x.getValue())).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))))
                 .put("spotCounts", new JsonObject(spotsCounts.entrySet().stream().map(x -> Map.entry(x.getKey(), x.getValue())).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))))
                 .put("spotWithNoAlts", new JsonObject(spotWithNoAlts.entrySet().stream().map(x -> Map.entry(x.getKey(), x.getValue())).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))));
+    }
+
+    public JsonObject toJsonWithPredictions() {
+        return toJson()
+                .put("predictions", new JsonObject(cutoffsPredictions.entrySet().stream().map(x -> Map.entry(x.getKey(), x.getValue())).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))));
     }
 
     public static Cutoffs fromJson(JsonObject json) {
