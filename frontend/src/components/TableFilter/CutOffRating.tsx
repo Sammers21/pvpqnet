@@ -25,6 +25,7 @@ const CutOffText = ({ bracket, statistic }: IProps) => {
   const rankOneTitleColor = getRatingColor(true);
   const rewards = statistic?.cutoffs?.rewards;
   const spotWithNoAlts = statistic?.cutoffs?.spotWithNoAlts;
+  const predictions = statistic?.cutoffs?.predictions;
 
   useEffect(() => {
     setSelectedSpecs(getFromSearchParams(searchParams, "specs"));
@@ -33,14 +34,21 @@ const CutOffText = ({ bracket, statistic }: IProps) => {
   if (bracket === "rbg" || bracket === "3v3") {
     const cutOffRating = rewards?.[ratingRewardMap[bracket]];
     const spotsWithNoAlts = spotWithNoAlts?.[ratingRewardMap[bracket]];
+    const predictedCutoff = predictions?.[`${ratingRewardMap[bracket]}`];
+    const title = bracket === "3v3" ? "Verdant Gladiator" : "Hero: Verdant";
+    var text;
+    if (predictedCutoff === cutOffRating) {
+      text = `${title} - Rating: ${cutOffRating}. Spots: ${spotsWithNoAlts}`;
+    }
+    else {
+      text = `${title} - Rating: BlizzardAPI:${cutOffRating} / Predicted:${predictedCutoff}. Spots: ${spotsWithNoAlts}`;
+    }
     return (
       <span
         className="text-xs sm:text-lg font-light"
         style={{ color: rankOneTitleColor }}
       >
-        {bracket === "3v3"
-          ? `Verdant Gladiator - Rating: ${cutOffRating}. Spots: ${spotsWithNoAlts}`
-          : `Hero: Verdant - Rating: ${cutOffRating}. Spots: ${spotsWithNoAlts}`}
+        {text}
       </span>
     );
   } else if (bracket === "shuffle" && selectedSpecs.length == 1) {
@@ -48,12 +56,21 @@ const CutOffText = ({ bracket, statistic }: IProps) => {
     const key = `SHUFFLE/${SEARCH_PARAM_TO_SPEC[selectedSpecs[0]]}`;
     const cutOffRating = rewards?.[key];
     const spotsWithNoAlts = spotWithNoAlts?.[key];
+    const predictedCutoff = predictions?.[key];
+    const title = "Verdant Legend";
+    var text;
+    if (predictedCutoff === cutOffRating) {
+      text = `${title} for ${specName} - Rating: ${cutOffRating}. Spots: ${spotsWithNoAlts}`;
+    }
+    else {
+      text = `${title} for ${specName} - Rating: BlizzardAPI:${cutOffRating} / Predicted:${predictedCutoff}. Spots: ${spotsWithNoAlts}`;
+    }
     return (
       <span
         className="text-xs sm:text-lg font-light"
         style={{ color: rankOneTitleColor }}
       >
-        {`Verdant Legend for ${specName} - Rating: ${cutOffRating}. Spots: ${spotsWithNoAlts}`}
+        {text}
       </span>
     );
   } else if (bracket === "shuffle" && selectedSpecs.length == 0) {
