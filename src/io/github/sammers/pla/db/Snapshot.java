@@ -7,8 +7,6 @@ import io.github.sammers.pla.blizzard.Realms;
 import io.github.sammers.pla.http.JsonConvertable;
 import io.github.sammers.pla.http.Resp;
 import io.github.sammers.pla.logic.Calculator;
-import io.github.sammers.pla.logic.CharAndDiff;
-import io.github.sammers.pla.logic.SnapshotDiff;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
@@ -98,7 +96,16 @@ public record Snapshot(List<Character> characters, Long timestamp, String region
                     return ch;
                 }
             }).collect(Collectors.toList());
+            List<Character> charsInCutoff = chars.stream().filter(Character::inCutoff).toList();
             cutoffs.setSpotCount("ARENA_3v3", charsWithCutoff.intValue());
+            Map<Integer, List<Character>> petHashes = charsInCutoff.stream()
+                .collect(Collectors.groupingBy(ch -> {
+                    if (ch.pethash().isEmpty() || ch.pethash().get() == -1) {
+                        return ch.fullNameWSpec().hashCode();
+                    }
+                    return ch.pethash().get();
+                }));
+            cutoffs.setSpotWithNoAlts("ARENA_3v3", petHashes.size());
             return new Snapshot(chars, this.timestamp(), this.region(), this.dateTime());
         } else if (bracket.equals(RBG)) {
             Long cutoff = cutoffs.battlegrounds("ALLIANCE");
@@ -111,11 +118,22 @@ public record Snapshot(List<Character> characters, Long timestamp, String region
                     return ch;
                 }
             }).collect(Collectors.toList());
+            Map<Integer, List<Character>> petHashes = chars.stream()
+                .filter(Character::inCutoff)
+                .collect(Collectors.groupingBy(ch -> {
+                    if (ch.pethash().isEmpty() || ch.pethash().get() == -1) {
+                        return ch.fullNameWSpec().hashCode();
+                    }
+                    return ch.pethash().get();
+                }));
             cutoffs.setSpotCount("BATTLEGROUNDS/alliance", charsWithCutoff.intValue());
             cutoffs.setSpotCount("BATTLEGROUNDS/horde", charsWithCutoff.intValue());
+            cutoffs.setSpotWithNoAlts("BATTLEGROUNDS/alliance", petHashes.size());
+            cutoffs.setSpotWithNoAlts("BATTLEGROUNDS/horde", petHashes.size());
             return new Snapshot(chars, this.timestamp(), this.region(), this.dateTime());
         } else if (bracket.equals(SHUFFLE)) {
             Map<String, Long> specCodeAndSpotCount = new HashMap<>();
+            Map<String, Map<Integer, List<Character>>> petHashes = new HashMap<>();
             List<Character> chars = this.characters().stream().map(ch -> {
                 String fullSpec = ch.fullSpec();
                 String specCode = Cutoffs.specCodeByFullName(fullSpec);
@@ -125,13 +143,30 @@ public record Snapshot(List<Character> characters, Long timestamp, String region
                 }
                 if (ch.rating() >= cutoff) {
                     specCodeAndSpotCount.compute(specCode, (k, v) -> v == null ? 1 : v + 1);
+                    petHashes.compute(specCode, (k, v) -> {
+                        if (v == null) {
+                            v = new HashMap<>();
+                        }
+                        Integer petHash = ch.pethash().map(p -> p == -1 ? ch.fullNameWSpec().hashCode() : p).orElse(ch.fullNameWSpec().hashCode());
+                        v.compute(petHash, (k1, v1) -> {
+                            if (v1 == null) {
+                                v1 = new ArrayList<>();
+                            }
+                            v1.add(ch);
+                            return v1;
+                        });
+                        return v;
+                    });
                     return ch.changeCutoff(true);
                 } else {
                     return ch;
                 }
             }).collect(Collectors.toList());
             specCodeAndSpotCount.entrySet()
-                .forEach(cutoff -> cutoffs.setSpotCount("SHUFFLE/" + cutoff.getKey(), cutoff.getValue().intValue()));
+                .forEach((var cutoff) -> {
+                    cutoffs.setSpotWithNoAlts("SHUFFLE/" + cutoff.getKey(), petHashes.get(cutoff.getKey()).size());
+                    cutoffs.setSpotCount("SHUFFLE/" + cutoff.getKey(), cutoff.getValue().intValue());
+                });
             return new Snapshot(chars, this.timestamp(), this.region(), this.dateTime());
         }
         return this;

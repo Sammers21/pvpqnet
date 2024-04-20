@@ -11,3 +11,4 @@ docker-compose.yml
 settings/.DS_Store
 target/
 backup/
+*.json

@@ -1,6 +1,7 @@
 package io.github.sammers.pla.db;
 
 import io.github.sammers.pla.Main;
+import io.github.sammers.pla.blizzard.Cutoffs;
 import io.github.sammers.pla.blizzard.Realm;
 import io.github.sammers.pla.blizzard.Realms;
 import io.github.sammers.pla.blizzard.WowAPICharacter;
@@ -187,6 +188,35 @@ public class DB {
             ).setUpsert(true))
             .toList()
         ).ignoreElement();
+    }
+
+    public Completable insertCutoffsIfDifferent(Cutoffs cutoffs) {
+        return getLastCutoffs(cutoffs.region).flatMapCompletable(last -> {
+            if (last.isEmpty() || !last.get().equals(cutoffs)) {
+                return mongoClient.rxSave("cutoffs", cutoffs.toJson())
+                    .doOnSuccess(ok -> log.info("Inserted cutoffs for region={} season={}", cutoffs.region, cutoffs.season))
+                    .ignoreElement();
+            } else {
+                log.info("Cutoffs for region={} season={} are the same, skipping", cutoffs.region, cutoffs.season);
+                return Completable.complete();
+            }
+        });
+    }
+
+    public Single<Optional<Cutoffs>> getLastCutoffs(String region) {
+        FindOptions fopts = new FindOptions()
+            .setSort(new JsonObject().put("timestamp", -1))
+            .setLimit(1);
+        JsonObject opts = new JsonObject()
+            .put("region", new JsonObject().put("$eq", region));
+        return mongoClient.rxFindWithOptions("cutoffs", opts, fopts).flatMap(res -> {
+            List<Cutoffs> cutoffs = res.stream().map(Cutoffs::fromJson).toList();
+            if (!cutoffs.isEmpty()) {
+                return Single.just(Optional.of(cutoffs.getFirst()));
+            } else {
+                return Single.just(Optional.empty());
+            }
+        });
     }
 
     public Single<Realms> loadRealms() {

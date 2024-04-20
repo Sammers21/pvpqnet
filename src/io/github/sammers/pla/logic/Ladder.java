@@ -62,6 +62,7 @@ public class Ladder {
         this.charUpdater = new CharUpdater(blizzardAPI, characterCache, charsLoaded, refs, charSearchIndex, db);
     }
 
+    @SuppressWarnings("unchecked")
     public void start() {
         boolean updatesEnabled = true;
         int euPeriod = 5;
@@ -78,7 +79,12 @@ public class Ladder {
         } else {
             updates = Observable.never();
         }
-        loadRealms().andThen(loadRegionData(EU)).andThen(loadRegionData(US)).andThen(charsAreLoaded()).andThen(updates).doOnError(e -> log.error("Error fetching ladder", e)).onErrorReturnItem(0L).subscribe();
+        loadRealms()
+            .andThen(loadRegionData(EU))
+            .andThen(loadRegionData(US))
+            .andThen(charsAreLoaded())
+            .andThen(updates).doOnError(e -> log.error("Error fetching ladder", e))
+            .onErrorReturnItem(0L).subscribe();
         Observable.interval(24, 24, HOURS).flatMapCompletable(tick -> {
             log.info("Updating realms");
             return updateRealms(EU).andThen(updateRealms(US));
@@ -103,6 +109,7 @@ public class Ladder {
                     .andThen(twoVTwo(region).ignoreElement())
                     .andThen(battlegrounds(region).ignoreElement())
                     .andThen(shuffle(region).ignoreElement())
+                    .andThen(updateCutoffs(region))
                     .andThen(calculateMulticlasserLeaderboard(region))
                     .andThen(calculateMeta(region))
                     .andThen(charUpdater.updateCharacters(region, 1, DAYS, timeout, timeoutUnits)).onErrorComplete(e -> {
@@ -146,6 +153,7 @@ public class Ladder {
             .andThen(loadLast(THREE_V_THREE, region))
             .andThen(loadLast(RBG, region))
             .andThen(loadLast(SHUFFLE, region))
+            .andThen(updateCutoffs(region))
             .andThen(calculateMeta(region))
             .andThen(loadWowCharApiData(region))
             .andThen(calculateMulticlasserLeaderboard(region));
@@ -490,10 +498,25 @@ public class Ladder {
         return Completable.defer(() -> {
             log.info("Load cutoffs for region " + region);
             return blizzardAPI.cutoffs(region).map(cutoffs -> {
-                regionCutoff.put(oldRegion(region), cutoffs);
-                regionCutoff.put(realRegion(region), cutoffs);
-                return cutoffs;
-            }).doAfterSuccess(cutoffs -> log.info("Cutoffs for region={} has been loaded", region)).ignoreElement().onErrorComplete();
+                    regionCutoff.put(oldRegion(region), cutoffs);
+                    regionCutoff.put(realRegion(region), cutoffs);
+                    return cutoffs;
+                }).doAfterSuccess(cutoffs -> log.info("Cutoffs for region={} has been loaded", region))
+                .ignoreElement()
+                .onErrorComplete();
+        });
+    }
+
+    private Completable updateCutoffs(String region) {
+        return Completable.defer(() -> {
+            Cutoffs cutoffs = regionCutoff.get(region);
+            if (cutoffs == null) {
+                log.info("No cutoffs to update in DB");
+                return Completable.complete();
+            } else {
+                log.info("Updating cutoffs in DB");
+                return db.insertCutoffsIfDifferent(cutoffs);
+            }
         });
     }
 

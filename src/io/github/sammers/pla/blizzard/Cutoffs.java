@@ -15,22 +15,40 @@ public class Cutoffs implements JsonConvertable {
     public final String region;
     public final String season;
     public final Map<String, Long> cutoffs;
-    private final Map<String, Integer> spotsCounts = new HashMap<>();
+    public final Long timestamp;
+    public final Map<String, Long> spotsCounts = new HashMap<>();
+    public final Map<String, Long> spotWithNoAlts = new HashMap<>();
 
-    public Cutoffs(String region,
-                   String season, Map<String, Long> cutoffs,
-                   Long timestamp) {
+    public Cutoffs(String region, String season, Map<String, Long> cutoffs, Long timestamp) {
         this.region = region;
         this.season = season;
         this.cutoffs = cutoffs;
+        this.timestamp = timestamp;
+    }
+
+    public Cutoffs(
+        String region,
+        String season,
+        Map<String, Long> cutoffs,
+        Map<String, Long> spotsCounts,
+        Map<String, Long> spotWithNoAlts,
+        Long timestamp) {
+        this(region, season, cutoffs, timestamp);
+        this.spotsCounts.putAll(spotsCounts);
+        this.spotWithNoAlts.putAll(spotWithNoAlts);
+    }
+
+    public void setSpotWithNoAlts(String bracket, long count) {
+        spotWithNoAlts.put(bracket, (long)count);
     }
 
     public void setSpotCount(String bracket, int count) {
-        spotsCounts.put(bracket, count);
+        spotsCounts.put(bracket, (long)count);
     }
 
     public int spotCount(String bracket) {
-        return spotsCounts.getOrDefault(bracket, 0);
+        Long res = spotsCounts.getOrDefault(bracket, 0L);
+        return res.intValue();
     }
 
     public static Cutoffs fromBlizzardJson(String region, JsonObject entries) {
@@ -124,7 +142,21 @@ public class Cutoffs implements JsonConvertable {
         return new JsonObject()
                 .put("region", region)
                 .put("season", season)
-                .put("rewards", new JsonObject(cutoffs.entrySet().stream().map(x -> Map.entry(x.getKey(), x.getValue())).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))));
+                .put("timestamp", timestamp)
+                .put("rewards", new JsonObject(cutoffs.entrySet().stream().map(x -> Map.entry(x.getKey(), x.getValue())).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))))
+                .put("spotCounts", new JsonObject(spotsCounts.entrySet().stream().map(x -> Map.entry(x.getKey(), x.getValue())).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))))
+                .put("spotWithNoAlts", new JsonObject(spotWithNoAlts.entrySet().stream().map(x -> Map.entry(x.getKey(), x.getValue())).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))));
+    }
+
+    public static Cutoffs fromJson(JsonObject json) {
+        return new Cutoffs(
+                json.getString("region"),
+                json.getString("season"),
+                json.getJsonObject("rewards").stream().collect(Collectors.toMap(Map.Entry::getKey, x -> (Long) x.getValue())),
+                json.getJsonObject("spotCounts").stream().collect(Collectors.toMap(Map.Entry::getKey, x -> (Long) x.getValue())),
+                json.getJsonObject("spotWithNoAlts").stream().collect(Collectors.toMap(Map.Entry::getKey, x -> (Long) x.getValue())),
+                json.getLong("timestamp")
+        );
     }
 
     public Long cutoffByBracketType(String btype) {
@@ -136,5 +168,16 @@ public class Cutoffs implements JsonConvertable {
             return cutoffs.get(btype);
         }
         return cutoffs.get(btype);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Cutoffs) {
+            Cutoffs other = (Cutoffs) obj;
+            return region.equals(other.region) 
+                    && season.equals(other.season)
+                    && cutoffs.equals(other.cutoffs);
+        }
+        return false;
     }
 }
