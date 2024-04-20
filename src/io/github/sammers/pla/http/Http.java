@@ -105,8 +105,8 @@ public class Http {
                 Integer rbgs = Optional.ofNullable(refs.diffsByBracket(RBG, region).get()).map(diff -> diff.chars().size()).orElse(0);
                 Integer shuffle = Optional.ofNullable(refs.diffsByBracket(SHUFFLE, region).get()).map(diff -> diff.chars().size()).orElse(0);
                 JsonObject res = new JsonObject().put("2v2", twos).put("3v3", threes).put("rbg", rbgs).put("shuffle", shuffle);
-                Cutoffs cutoffs = ladder.regionCutoff.get(region);
-                if (ladder.regionCutoff.get(region) != null) {
+                Cutoffs cutoffs = ladder.regionCutoffFromDb.get(region);
+                if (cutoffs != null) {
                     res.put("cutoffs", cutoffs.toJson());
                 }
                 ctx.response().end(res.encode());

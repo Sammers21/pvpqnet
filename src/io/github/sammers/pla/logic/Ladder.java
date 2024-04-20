@@ -45,6 +45,7 @@ public class Ladder {
     private final Map<String, AtomicReference<Meta>> meta = new ConcurrentHashMap<>();
     private final NickNameSearchIndex charSearchIndex = new NickNameSearchIndex();
     public final Map<String, Cutoffs> regionCutoff;
+    public final Map<String, Cutoffs> regionCutoffFromDb;
     public final AtomicReference<Realms> realms = new AtomicReference<>(new Realms(new HashMap<>()));
     public final CharUpdater charUpdater;
     private final DB db;
@@ -60,6 +61,7 @@ public class Ladder {
         this.characterCache = characterCache;
         this.regionCutoff = regionCutoff;
         this.charUpdater = new CharUpdater(blizzardAPI, characterCache, charsLoaded, refs, charSearchIndex, db);
+        this.regionCutoffFromDb = new ConcurrentHashMap<>();
     }
 
     @SuppressWarnings("unchecked")
@@ -110,6 +112,7 @@ public class Ladder {
                     .andThen(battlegrounds(region).ignoreElement())
                     .andThen(shuffle(region).ignoreElement())
                     .andThen(updateCutoffs(region))
+                    .andThen(loadCutoffsFromDb(region))
                     .andThen(calculateMulticlasserLeaderboard(region))
                     .andThen(calculateMeta(region))
                     .andThen(charUpdater.updateCharacters(region, 1, DAYS, timeout, timeoutUnits)).onErrorComplete(e -> {
@@ -149,11 +152,13 @@ public class Ladder {
 
     public Completable loadRegionData(String region) {
         return loadCutoffs(region)
+            .andThen(loadCutoffsFromDb(region))
             .andThen(loadLast(TWO_V_TWO, region))
             .andThen(loadLast(THREE_V_THREE, region))
             .andThen(loadLast(RBG, region))
             .andThen(loadLast(SHUFFLE, region))
             .andThen(updateCutoffs(region))
+            .andThen(loadCutoffsFromDb(region))
             .andThen(calculateMeta(region))
             .andThen(loadWowCharApiData(region))
             .andThen(calculateMulticlasserLeaderboard(region));
@@ -504,6 +509,20 @@ public class Ladder {
                 }).doAfterSuccess(cutoffs -> log.info("Cutoffs for region={} has been loaded", region))
                 .ignoreElement()
                 .onErrorComplete();
+        });
+    }
+    private Completable loadCutoffsFromDb(String region) {
+        return Completable.defer(() -> {
+            log.info("Load cutoffs from DB for region " + region);
+            return db.getLastCutoffs(realRegion(region)).map(cutoffs -> {
+                if (cutoffs.isPresent()) {
+                    regionCutoffFromDb.put(oldRegion(region), cutoffs.get());
+                    regionCutoffFromDb.put(realRegion(region), cutoffs.get());
+                }
+                return cutoffs;
+            }).doOnSuccess(cutoffs -> log.info("Cutoffs from DB for region={} has been loaded", region))
+                    .ignoreElement()
+                    .onErrorComplete();
         });
     }
 
