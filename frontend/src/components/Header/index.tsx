@@ -66,11 +66,16 @@ const Header = () => {
     activity: string;
     bracket: string;
   }) {
-    const newPath = generatePath(publicUrls.page, {
+    let params = new URL(document.location.toString()).searchParams;
+    let specs = params.get("specs");
+    var newPath = generatePath(publicUrls.page, {
       region,
       activity,
       bracket,
     });
+    if (specs !== undefined) {
+      newPath = newPath + "?specs=" + specs;
+    }
     navigate(newPath);
   }
 
