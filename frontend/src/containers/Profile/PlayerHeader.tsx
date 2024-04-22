@@ -8,6 +8,7 @@ import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import CopyButton from "@/components/CopyButton";
 import type { IPlayer } from "@/types";
 import EmailIcon from "@mui/icons-material/Email";
+import GroupAddIcon from '@mui/icons-material/GroupAdd';
 
 interface IProps {
   player: IPlayer;
@@ -44,7 +45,7 @@ const InviteButtons = ({ player }: { player: IPlayer }) => {
   return (
     <div className="flex gap-2 !text-xs">
       <CopyButton content={copyCommand} displayCopyIcon={false} copiedText="/INV Copied!">
-        <EmailIcon fontSize="small" className="!w-4 !h-4 mr-1" />
+        <GroupAddIcon fontSize="small" className="!w-4 !h-4 mr-1" />
         Invite
       </CopyButton>
     </div>
