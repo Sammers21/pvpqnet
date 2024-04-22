@@ -15,6 +15,8 @@ import type { IActivityRecord } from "@/types";
 import { nickNameLenOnMobile } from "@/utils/common";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
+import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
+
 const getTableColumns = (
   activity: string,
   isMobile: boolean,
@@ -27,7 +29,7 @@ const getTableColumns = (
       const pos = record?.character?.pos || record?.pos;
       var rankDiff = record?.diff?.rank_diff;
       var arrow
-      if (rankDiff < 0) {
+      if (rankDiff <= 0) {
         arrow = <ArrowUpwardIcon className="w-4 h-4" style={{ color: getRankDiffColor(rankDiff) }} />
       } else {
         arrow = <ArrowDownwardIcon className="w-4 h-4" style={{ color: getRankDiffColor(rankDiff) }} />
