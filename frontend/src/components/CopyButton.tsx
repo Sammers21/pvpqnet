@@ -1,8 +1,24 @@
-import { useState } from 'react';
-import { Button } from '@mui/material';
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import { useState } from "react";
+import { Button } from "@mui/material";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 
-const CopyButton = ({ content, children }: { content: string; children?: React.ReactNode }) => {
+const CopyButton = ({
+  content,
+  children,
+  displayCopyIcon = true,
+  copiedText = "Copied!",
+}: {
+  content: string;
+  children?: React.ReactNode;
+  displayCopyIcon?: boolean;
+  copiedText?: string;
+}) => {
+  if (displayCopyIcon === undefined) {
+    displayCopyIcon = true;
+  }
+  if (copiedText === undefined) {
+    copiedText = "Copied!";
+  }
   const [showCopied, setShowCopied] = useState(false);
 
   const onCopyClick = () => {
@@ -17,18 +33,25 @@ const CopyButton = ({ content, children }: { content: string; children?: React.R
   return (
     <>
       {showCopied ? (
-        <Button className="!text-xs" size="small" variant="text" color="success">
-          Copied!
+        <Button
+          className="!text-xs"
+          size="small"
+          variant="text"
+          color="success"
+        >
+          {copiedText}
         </Button>
       ) : (
         <Button
           className="!text-xs"
-          style={{ color: '#60A5FACC' }}
+          style={{ color: "#60A5FACC" }}
           size="small"
           variant="text"
           onClick={onCopyClick}
         >
-          <ContentCopyIcon fontSize="small" className="!w-4 !h-4 mr-1" />
+          {displayCopyIcon && (
+            <ContentCopyIcon fontSize="small" className="!w-4 !h-4 mr-1" />
+          )}
           {children}
         </Button>
       )}
