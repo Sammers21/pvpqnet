@@ -85,9 +85,8 @@ const renderShuffle = ({ record: alt }: IParams, isMobile: boolean) => {
   const sortedSpec = [...classAndSpec].sort((a, b) => {
     const ratingA = alt?.brackets?.find((bracket) => bracket.bracket_type.includes(a))?.rating || 0;
     const ratingB = alt?.brackets?.find((bracket) => bracket.bracket_type.includes(b))?.rating || 0;
-
     return ratingA > ratingB ? -1 : 1;
-  });
+  }).slice(0, 3)
 
   if (isMobile) {
     let max = 0;
