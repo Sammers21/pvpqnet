@@ -10,27 +10,48 @@ import {
   getWonAndLossColors,
   getRatingColor,
   getSeasonRankImageFromRating,
-} from '@/utils/table';
-import type { IActivityRecord } from '@/types';
-import { nickNameLenOnMobile } from '@/utils/common';
-
-const getTableColumns = (activity: string, isMobile: boolean, region: string): any[] => {
+} from "@/utils/table";
+import type { IActivityRecord } from "@/types";
+import { nickNameLenOnMobile } from "@/utils/common";
+import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
+import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
+const getTableColumns = (
+  activity: string,
+  isMobile: boolean,
+  region: string
+): any[] => {
   const rank = {
-    field: 'pos',
-    label: 'RANK',
+    field: "pos",
+    label: "RANK",
     render: ({ record }: { record: IActivityRecord }) => {
       const pos = record?.character?.pos || record?.pos;
-      const rankDiff = record?.diff?.rank_diff;
+      var rankDiff = record?.diff?.rank_diff;
+      var arrow
+      if (rankDiff < 0) {
+        arrow = <ArrowUpwardIcon className="w-4 h-4" style={{ color: getRankDiffColor(rankDiff) }} />
+      } else {
+        arrow = <ArrowDownwardIcon className="w-4 h-4" style={{ color: getRankDiffColor(rankDiff) }} />
+      }
+      var unsignRankDiff = Math.abs(rankDiff)
       return (
         <div className="flex">
-          {isMobile && (<span className="text-base font-light" style={{ color: getRankDiffColor(rankDiff) }}>{`#${pos}`}</span>)}
-          {!isMobile && (<span className="text-base font-light">{`#${pos}`}</span>)}
+          {isMobile && (
+            <span
+              className="text-base font-light"
+              style={{ color: getRankDiffColor(rankDiff) }}
+            >{`#${pos}`}</span>
+          )}
+          {!isMobile && (
+            <span className="text-base font-light">{`#${pos}`}</span>
+          )}
           {!isMobile && Number.isInteger(rankDiff) && (
             <span
               className="text-base font-light ml-1"
               style={{ color: getRankDiffColor(rankDiff) }}
             >
-              {getDiffCell(rankDiff)}
+              {arrow}
+              {/* {getDiffCell(rankDiff)} */}
+              {unsignRankDiff}
             </span>
           )}
         </div>
@@ -39,8 +60,8 @@ const getTableColumns = (activity: string, isMobile: boolean, region: string): a
   };
 
   const details = {
-    field: 'details',
-    label: isMobile ? 'DTLS' : 'DETAILS',
+    field: "details",
+    label: isMobile ? "DTLS" : "DETAILS",
     render: ({ record }: { record: IActivityRecord }) => {
       const wowClass = record?.character?.class || record?.class;
       const wowSpec = record?.character?.full_spec || record?.full_spec;
@@ -77,8 +98,8 @@ const getTableColumns = (activity: string, isMobile: boolean, region: string): a
   };
 
   const name = {
-    field: 'name',
-    label: 'NAME',
+    field: "name",
+    label: "NAME",
     render: ({ record }: { record: IActivityRecord }) => {
       const wowClass = record?.character?.class || record?.class;
       const url = getProfileUrl(record, region);
@@ -102,8 +123,8 @@ const getTableColumns = (activity: string, isMobile: boolean, region: string): a
   };
 
   const realm = {
-    field: 'realm',
-    label: 'REALM',
+    field: "realm",
+    label: "REALM",
     render: ({ record }: { record: IActivityRecord }) => {
       const fraction = record?.character?.fraction || record?.fraction;
       const realm = record?.character?.realm || record?.realm;
@@ -117,8 +138,8 @@ const getTableColumns = (activity: string, isMobile: boolean, region: string): a
   };
 
   const wonLost = {
-    field: 'stats',
-    label: isMobile ? 'W/L' : 'WON / LOST',
+    field: "stats",
+    label: isMobile ? "W/L" : "WON / LOST",
     render: ({ record }: { record: IActivityRecord }) => {
       const winRate = getWinRate(record.wins, record.losses);
 
@@ -128,14 +149,22 @@ const getTableColumns = (activity: string, isMobile: boolean, region: string): a
 
       return (
         <div className="flex">
-          <span className="text-base font-light mr-1" style={{ color: wonColor }}>{`${won} `}</span>
+          <span
+            className="text-base font-light mr-1"
+            style={{ color: wonColor }}
+          >{`${won} `}</span>
           <span className="text-base font-light">{` / `}</span>
-          <span className="text-base font-light ml-1" style={{ color: lossColor }}>
+          <span
+            className="text-base font-light ml-1"
+            style={{ color: lossColor }}
+          >
             {loss}
           </span>
 
           {winRate && (
-            <span className="text-[#4B5563] mt-0.5 ml-2 mr-2 font-light text-sm">{winRate}</span>
+            <span className="text-[#4B5563] mt-0.5 ml-2 mr-2 font-light text-sm">
+              {winRate}
+            </span>
           )}
         </div>
       );
@@ -143,25 +172,38 @@ const getTableColumns = (activity: string, isMobile: boolean, region: string): a
   };
 
   const rating = {
-    field: 'rating',
-    label: 'RATING',
+    field: "rating",
+    label: "RATING",
     render: ({ record }: { record: IActivityRecord }) => {
       const rating = record?.character?.rating ?? record?.rating;
-      const ratingColor = getRatingColor(record?.character?.in_cutoff ?? record?.in_cutoff);
+      const ratingColor = getRatingColor(
+        record?.character?.in_cutoff ?? record?.in_cutoff
+      );
       const ratingDiff = record?.diff?.rating_diff;
-      const ratingImg =   <img
-        className="w-6 h-6 mx-1"
-        src={getSeasonRankImageFromRating(rating, record?.character?.in_cutoff ?? record?.in_cutoff)}
-        alt="rating"
-      />
+      const ratingImg = (
+        <img
+          className="w-6 h-6 mx-1"
+          src={getSeasonRankImageFromRating(
+            rating,
+            record?.character?.in_cutoff ?? record?.in_cutoff
+          )}
+          alt="rating"
+        />
+      );
       return (
         <div className="flex">
           {!isMobile && ratingImg}
-          <span className="text-base font-light mr-2" style={{ color: ratingColor }}>
+          <span
+            className="text-base font-light mr-2"
+            style={{ color: ratingColor }}
+          >
             {rating}
           </span>
           {Number.isInteger(ratingDiff) && (
-            <span className="text-base font-light" style={{ color: getDiffColor(ratingDiff) }}>
+            <span
+              className="text-base font-light"
+              style={{ color: getDiffColor(ratingDiff) }}
+            >
               {getDiffCell(ratingDiff)}
             </span>
           )}
@@ -175,18 +217,20 @@ const getTableColumns = (activity: string, isMobile: boolean, region: string): a
     : [rank, details, name, realm, wonLost, rating];
 
   const lastSeenColumn = {
-    field: 'lastSeen',
-    label: isMobile ? 'LS' : 'LAST SEEN',
+    field: "lastSeen",
+    label: isMobile ? "LS" : "LAST SEEN",
     render: ({ record }: { record: IActivityRecord }) => {
       if (!record?.diff?.last_seen) return <></>;
-      const split = record.diff.last_seen.split(' ');
-      const content = isMobile ? `${split[0]} ${split[1].charAt(0)}.` : record.diff.last_seen;
+      const split = record.diff.last_seen.split(" ");
+      const content = isMobile
+        ? `${split[0]} ${split[1].charAt(0)}.`
+        : record.diff.last_seen;
 
       return <span className="text-base">{content}</span>;
     },
   };
 
-  return activity === 'activity' ? [...colums, lastSeenColumn] : colums;
+  return activity === "activity" ? [...colums, lastSeenColumn] : colums;
 };
 
 export default getTableColumns;
