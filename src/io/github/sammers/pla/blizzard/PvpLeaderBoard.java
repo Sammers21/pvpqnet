@@ -78,11 +78,11 @@ public record PvpLeaderBoard(
                 Long won = seasonMatchStatistics.getLong("won");
                 Long lost = seasonMatchStatistics.getLong("lost");
                 WowAPICharacter wowAPICharacter = characterCache.getByFullName(Character.fullNameByRealmAndName(name, slug));
-                if(wowAPICharacter == null) {
+                if (wowAPICharacter == null) {
                     return Stream.empty();
                 } else {
                     String fullSpec = wowAPICharacter.activeSpec() + " " + wowAPICharacter.clazz();
-                    if(bracket.getString("type").equals("SHUFFLE")) {
+                    if (bracket.getString("type").equals("SHUFFLE")) {
                         fullSpec = SHUFFLE_SPEC_TO_SPEC.get(bracketId);
                     }
                     return Stream.of(new Character(
@@ -102,10 +102,13 @@ public record PvpLeaderBoard(
                     ));
                 }
             })
-                .collect(Collectors.toSet());
+            .collect(Collectors.toSet());
     }
 
     public List<Character> enrich(List<Character> snapshot) {
+        if (entities == null) {
+            return List.of();
+        }
         HashMap<String, JsonObject> nameToData = new HashMap<>();
         for (Object entity : entities) {
             JsonObject entityJson = (JsonObject) entity;
@@ -120,7 +123,7 @@ public record PvpLeaderBoard(
         for (Character character : snapshot) {
             String key = (character.name() + "-" + character.realm().replaceAll("[^A-Za-z]", "")).toLowerCase();
             JsonObject entity = nameToData.get(key);
-            if(entity == null) {
+            if (entity == null) {
                 characters.add(character);
             } else {
                 JsonObject statistics = entity.getJsonObject("season_match_statistics");
