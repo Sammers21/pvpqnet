@@ -64,11 +64,13 @@ public class Calculator {
                 List<Character> value = entry1.getValue();
                 return value.stream().max(Comparator.comparing(Character::rating)).orElseThrow();
             }));
+
             Map<String, Multiclassers.CharAndScore> specAndScore = specAndHighestRated.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, entry1 -> {
                 Character character = entry1.getValue();
-                return new Multiclassers.CharAndScore(character,
-                    Calculator.calculateMclassScoreBasedOnCutoff(character.pos().intValue(),
-                        cutoffs.spotCount("SHUFFLE" + "/" + Cutoffs.specCodeByFullName(character.fullSpec()))));
+                Integer score = cutoffs == null ?
+                    Calculator.calculateScoreMclassOld(character.pos().intValue())
+                    : Calculator.calculateMclassScoreBasedOnCutoff(character.pos().intValue(), cutoffs.spotCount("SHUFFLE" + "/" + Cutoffs.specCodeByFullName(character.fullSpec())));
+                return new Multiclassers.CharAndScore(character, score);
             }));
             int totalScore = specAndScore.values().stream().mapToInt(Multiclassers.CharAndScore::score).sum();
             Character main = specAndScore.values().stream().max(Comparator.comparing(Multiclassers.CharAndScore::score)).orElseThrow().character();
