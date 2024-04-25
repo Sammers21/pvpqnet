@@ -115,7 +115,7 @@ public class Ladder {
                     .andThen(loadCutoffsFromDb(region))
                     .andThen(calculateMulticlasserLeaderboard(region))
                     .andThen(calculateMeta(region))
-                    .andThen(charUpdater.updateCharacters(region, 1, DAYS, timeout, timeoutUnits)).onErrorComplete(e -> {
+                    .andThen(charUpdater.updateCharacters(region, 2, DAYS, timeout, timeoutUnits)).onErrorComplete(e -> {
                         log.error("Error updating data for region {}", region, e);
                         return true;
                     }).andThen(Single.just(tick)).doAfterTerminate(() -> {
