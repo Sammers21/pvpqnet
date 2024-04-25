@@ -61,6 +61,9 @@ public record PvpLeaderBoard(
     }
 
     public Set<Character> toCharacters(CharacterCache characterCache, String bracketId) {
+        if (entities == null) {
+            return Set.of();
+        }
         return entities.stream()
             .map(entity -> (JsonObject) entity)
             .flatMap(entity -> {
