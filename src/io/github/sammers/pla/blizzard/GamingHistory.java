@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import io.github.sammers.pla.http.JsonConvertable;
 import io.vertx.core.json.JsonObject;
+import io.github.sammers.pla.logic.Diff;
 
 record GamingHistory(List<DiffAndWithWho> hist) implements JsonConvertable {
 
@@ -16,17 +17,28 @@ record GamingHistory(List<DiffAndWithWho> hist) implements JsonConvertable {
     }
 
     public GamingHistory addDiff(DiffAndWithWho diff) {
+        List<DiffAndWithWho> res;
         if (hist instanceof ArrayList) {
             hist.add(diff);
-            return this;
+            res = hist;
         } else {
             List<DiffAndWithWho> newHist = new ArrayList<>(hist);
             newHist.add(diff);
             if(newHist.size() > 10_000){
                 newHist.remove(0);
             }
-            return new GamingHistory(newHist);
+            res = newHist;
         }
+        return new GamingHistory(res).clean();
+    }
+
+    public GamingHistory clean() {
+        return new GamingHistory(hist.stream()
+            .filter(diff -> {
+                Diff d = diff.diff();
+                return !(d.won() < 0 || d.lost() < 0);
+            })
+            .collect(Collectors.toList()));
     }
 
     public static GamingHistory fromJson(JsonObject entries) {
@@ -36,6 +48,6 @@ record GamingHistory(List<DiffAndWithWho> hist) implements JsonConvertable {
                 .map(DiffAndWithWho::fromJson)
                 .collect(Collectors.toList())
             )
-        );
+        ).clean();
     }
 }

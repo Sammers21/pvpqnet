@@ -307,7 +307,7 @@ public record WowAPICharacter(long id,
                     pvpBracket.maxRating(),
                     pvpBracket.maxRatingAchievedTimestamp(),
                     pvpBracket.isRankOneRange(),
-                    pvpBracket.gamingHistory().addDiff(new DiffAndWithWho(diff.character(), diff.diff(), withWho))
+                    pvpBracket.gamingHistory().addDiff(new DiffAndWithWho(diff.character(), diff.diff(), withWho)).clean()
                 );
             } else if (BracketType.fromType(pvpBracket.bracketType()).equals(bracket) && bracket.equals(BracketType.SHUFFLE)) {
                 String fullSpec = diff.character().fullSpec();
@@ -324,7 +324,7 @@ public record WowAPICharacter(long id,
                         pvpBracket.maxRating(),
                         pvpBracket.maxRatingAchievedTimestamp(),
                         pvpBracket.isRankOneRange(),
-                        pvpBracket.gamingHistory().addDiff(new DiffAndWithWho(diff.character(), diff.diff(), List.of()))
+                        pvpBracket.gamingHistory().addDiff(new DiffAndWithWho(diff.character(), diff.diff(), List.of())).clean()
                     );
                 } else {
                     res = pvpBracket;
