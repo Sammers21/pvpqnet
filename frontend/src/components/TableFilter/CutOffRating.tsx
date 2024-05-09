@@ -97,13 +97,13 @@ const CutOffText = ({ bracket, statistic }: IProps) => {
 };
 
 const CutOffRating = ({ bracket, statistic }: IProps) => {
-  // if (
-  //   !statistic?.cutoffs?.rewards?.ARENA_3v3 ||
-  //   !["shuffle", "rbg", "3v3"].includes(bracket)
-  // ) {
-  //   return <div></div>;
-  // }
+  if (
+    !statistic?.cutoffs?.rewards?.ARENA_3v3 ||
+    !["shuffle", "rbg", "3v3"].includes(bracket)
+  ) {
     return <div></div>;
+  }
+    // return <div></div>;
 
   return (
     <div className="flex items-center mr-2">
