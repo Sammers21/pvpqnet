@@ -555,17 +555,18 @@ public class Ladder {
             } else {
                 realRegion = "us";
             }
-            return db.fetchChars(realRegion).flatMapCompletable(characters -> Completable.create(emitter -> {
-                VTHREAD_SCHEDULER.scheduleDirect(() -> {
-                    log.info("Character data size={} for region={} is being loaded to cache", characters.size(), region);
-                    long tick = System.nanoTime();
-                    long totalHidden = characters.stream().filter(WowAPICharacter::hidden).count();
-                    characters.forEach(characterCache::upsert);
-                    charSearchIndex.insertNickNamesWC(characters);
-                    log.info("Character data size={} for region={} hidden={} chars has been loaded to cache in {} ms", characters.size(), region, totalHidden, (System.nanoTime() - tick) / 1000000);
-                    emitter.onComplete();
-                });
-            }));
+            return db.fetchCharFlow(realRegion).buffer(5000)
+                .flatMapCompletable(characters -> Completable.create(emitter -> {
+                    VTHREAD_SCHEDULER.scheduleDirect(() -> {
+                        log.info("Character data size={} for region={} is being loaded to cache", characters.size(), region);
+                        long tick = System.nanoTime();
+                        long totalHidden = characters.stream().filter(WowAPICharacter::hidden).count();
+                        characters.forEach(characterCache::upsert);
+                        charSearchIndex.insertNickNamesWC(characters);
+                        log.info("Character data size={} for region={} hidden={} chars has been loaded to cache in {} ms", characters.size(), region, totalHidden, (System.nanoTime() - tick) / 1000000);
+                        emitter.onComplete();
+                    });
+                }));
         });
     }
 

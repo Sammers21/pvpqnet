@@ -6,6 +6,7 @@ import io.github.sammers.pla.blizzard.Realm;
 import io.github.sammers.pla.blizzard.Realms;
 import io.github.sammers.pla.blizzard.WowAPICharacter;
 import io.reactivex.Completable;
+import io.reactivex.Flowable;
 import io.reactivex.Maybe;
 import io.reactivex.Single;
 import io.vertx.core.json.JsonObject;
@@ -177,6 +178,12 @@ public class DB {
             })
             .subscribeOn(Main.VTHREAD_SCHEDULER)
             .observeOn(Main.VTHREAD_SCHEDULER);
+    }
+
+    public Flowable<WowAPICharacter> fetchCharFlow(String region) {
+        return mongoClient.findBatch("profile", new JsonObject().put("region", region))
+            .toFlowable()
+            .map(WowAPICharacter::fromJson);
     }
 
     public Completable insertRealms(Realms realms) {
