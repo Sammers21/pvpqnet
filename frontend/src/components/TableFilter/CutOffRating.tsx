@@ -6,6 +6,7 @@ import {
   SEARCH_PARAM_TO_FULL_SPEC,
   SEARCH_PARAM_TO_SPEC,
 } from "@/constants/filterSchema";
+import { title } from "process";
 
 interface IProps {
   bracket: string;
@@ -31,11 +32,12 @@ const CutOffText = ({ bracket, statistic }: IProps) => {
     setSelectedSpecs(getFromSearchParams(searchParams, "specs"));
   }, [searchParams]);
 
+  const ssnName = "Draconic"
   if (bracket === "rbg" || bracket === "3v3") {
     const cutOffRating = rewards?.[ratingRewardMap[bracket]];
     const spotsWithNoAlts = spotWithNoAlts?.[ratingRewardMap[bracket]];
     const predictedCutoff = predictions?.[`${ratingRewardMap[bracket]}`];
-    const title = bracket === "3v3" ? "Verdant Gladiator" : "Hero: Verdant";
+    const title = bracket === "3v3" ?  `${ssnName} Gladiator` : `Hero: ${ssnName}`;
     var text;
     if (predictedCutoff === cutOffRating) {
       text = `${title} - Rating: ${cutOffRating}. Spots: ${spotsWithNoAlts}`;
@@ -57,7 +59,7 @@ const CutOffText = ({ bracket, statistic }: IProps) => {
     const cutOffRating = rewards?.[key];
     const spotsWithNoAlts = spotWithNoAlts?.[key];
     const predictedCutoff = predictions?.[key];
-    const title = "Verdant Legend";
+    const title = `${ssnName} Legend`
     var text;
     if (predictedCutoff === cutOffRating) {
       text = `${title} for ${specName} - Rating: ${cutOffRating}. Spots: ${spotsWithNoAlts}`;
