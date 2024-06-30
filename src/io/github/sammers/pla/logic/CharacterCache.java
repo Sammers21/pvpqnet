@@ -1,7 +1,6 @@
 package io.github.sammers.pla.logic;
 
 import io.github.sammers.pla.blizzard.BracketType;
-import io.github.sammers.pla.blizzard.PvpBracket;
 import io.github.sammers.pla.blizzard.WowAPICharacter;
 import io.github.sammers.pla.db.Character;
 
@@ -13,7 +12,7 @@ public class CharacterCache {
 
     private final Map<Long, byte[]> idCache;
     private final Map<String, byte[]> nameCache;
-    private final Map<Integer, Set<Long>> alts;
+    public final Map<Integer, Set<Long>> alts;
 
     public CharacterCache() {
         nameCache = new ConcurrentHashMap<>();
@@ -69,13 +68,35 @@ public class CharacterCache {
         return res;
     }
 
+    public Set<WowAPICharacter> findAltsInconsistenciesAndFix(WowAPICharacter character) {
+        Set<Long> idSet = new HashSet<>(character.alts());
+        Set<WowAPICharacter> charset = new HashSet<>(idSet.stream().map(idCache::get).map(WowAPICharacter::fromGzippedJson).collect(Collectors.toSet()));
+        charset.add(character);
+        charset.forEach(ch -> idSet.add(ch.id()));
+        Set<WowAPICharacter> resl = charset.stream().filter(ch -> {
+            var specificSet = new HashSet<>(idSet);
+            specificSet.remove(ch.id());
+            boolean eq = !specificSet.equals(ch.alts());
+            return eq;
+        }).collect(Collectors.toSet());
+        Set<WowAPICharacter> resm = resl.stream().map(ch -> {
+            Set<Long> longs = new HashSet<>(idSet);
+            longs.remove(ch.id());
+            WowAPICharacter changedAlts = ch.changeAlts(longs);
+            return changedAlts;
+        }).collect(Collectors.toSet());
+        return resm;
+    }
+
     public Collection<byte[]> values() {
         return idCache.values();
     }
 
     public Set<WowAPICharacter> altsFor(WowAPICharacter character) {
-        return Optional.of(alts.get(character.petHash()).stream().map(idCache::get).map(WowAPICharacter::fromGzippedJson
-            ).collect(Collectors.toSet()))
+        Set<Long> longs = Optional.ofNullable(alts.get(character.petHash())).orElse(new HashSet<>());
+        longs.addAll(character.alts());
+        return Optional.of(longs.stream().map(idCache::get).map(WowAPICharacter::fromGzippedJson)
+                .collect(Collectors.toSet()))
             .orElse(Set.of())
             .stream()
             .filter(c -> !c.hidden())

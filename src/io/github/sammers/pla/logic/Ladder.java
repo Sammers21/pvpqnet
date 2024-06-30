@@ -511,25 +511,26 @@ public class Ladder {
                 .onErrorComplete();
         });
     }
+
     private Completable loadCutoffsFromDb(String region) {
         return Completable.defer(() -> {
             log.info("Load cutoffs from DB for region " + region);
             return db.getLastCutoffs(realRegion(region)).map(cutoffs -> {
-                if (cutoffs.isPresent()) {
-                    Cutoffs ctf = cutoffs.get();
-                    List.of(TWO_V_TWO, THREE_V_THREE, RBG, SHUFFLE).forEach(bracket -> {
-                        Snapshot s = refs.refByBracket(bracket, region).get();
-                        if (s != null) {
-                            s.predictCutoffs(bracket, ctf);
-                        }
-                    });
-                    regionCutoffFromDb.put(oldRegion(region), ctf);
-                    regionCutoffFromDb.put(realRegion(region), ctf);
-                }
-                return cutoffs;
-            }).doOnSuccess(cutoffs -> log.info("Cutoffs from DB for region={} has been loaded", region))
-                    .ignoreElement()
-                    .onErrorComplete();
+                    if (cutoffs.isPresent()) {
+                        Cutoffs ctf = cutoffs.get();
+                        List.of(TWO_V_TWO, THREE_V_THREE, RBG, SHUFFLE).forEach(bracket -> {
+                            Snapshot s = refs.refByBracket(bracket, region).get();
+                            if (s != null) {
+                                s.predictCutoffs(bracket, ctf);
+                            }
+                        });
+                        regionCutoffFromDb.put(oldRegion(region), ctf);
+                        regionCutoffFromDb.put(realRegion(region), ctf);
+                    }
+                    return cutoffs;
+                }).doOnSuccess(cutoffs -> log.info("Cutoffs from DB for region={} has been loaded", region))
+                .ignoreElement()
+                .onErrorComplete();
         });
     }
 

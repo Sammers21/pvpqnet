@@ -52,8 +52,8 @@ public class CharUpdater {
     }
 
     public Completable updateCharacters(String region,
-                                         int timeWithoutUpdateMin, TimeUnit units,
-                                         int timeout, TimeUnit timeoutUnits) {
+                                        int timeWithoutUpdateMin, TimeUnit units,
+                                        int timeout, TimeUnit timeoutUnits) {
         return Completable.defer(() -> {
             log.info("Updating characters for region " + region);
             // Get top chars from 3v3, 2v2, RBG, shuffle
@@ -152,11 +152,7 @@ public class CharUpdater {
     public Completable updateChar(String region, String nickName) {
         return Completable.defer(() -> {
                 if (charsLoaded.get()) {
-                    return api.character(region, nickName).flatMapCompletable(wowAPICharacter -> {
-                        characterCache.upsert(wowAPICharacter);
-                        charSearchIndex.insertNickNamesWC(List.of(wowAPICharacter));
-                        return db.upsertCharacter(wowAPICharacter).ignoreElement();
-                    }).onErrorComplete();
+                    return api.character(region, nickName).flatMapCompletable(this::updateCharsDbSize).onErrorComplete();
                 } else {
                     log.warn("Not allowing char updates before char load from db");
                     return Completable.error(new IllegalStateException("Not allowing char updates before char load from db"));
@@ -165,17 +161,27 @@ public class CharUpdater {
         );
     }
 
+    private Completable updateCharsDbSize(WowAPICharacter wowAPICharacter) {
+        Set<WowAPICharacter> inconsistencies = characterCache.findAltsInconsistenciesAndFix(wowAPICharacter);
+        Completable fixInconsistencies;
+        if (inconsistencies.isEmpty()) {
+            fixInconsistencies = Completable.complete();
+        } else {
+            fixInconsistencies = db.bulkUpdateChars(inconsistencies.stream().toList()).ignoreElement().andThen(Completable.fromAction(() -> {
+                log.info("Updated {} alts inconsistencies", inconsistencies.size());
+            }));
+        }
+        inconsistencies.forEach(characterCache::upsert);
+        characterCache.upsert(wowAPICharacter);
+        charSearchIndex.insertNickNamesWC(List.of(wowAPICharacter));
+        return db.upsertCharacter(wowAPICharacter).ignoreElement().andThen(fixInconsistencies);
+    }
+
     public Single<Optional<WowAPICharacter>> updateCharFast(String region, String nickName) {
         return Single.defer(() -> {
                 if (charsLoaded.get()) {
                     return api.character(region, nickName)
-                        .doAfterSuccess(wowAPICharacter -> {
-                            Main.VTHREAD_SCHEDULER.scheduleDirect(() -> {
-                                characterCache.upsert(wowAPICharacter);
-                                charSearchIndex.insertNickNamesWC(List.of(wowAPICharacter));
-                                db.upsertCharacter(wowAPICharacter).subscribe();
-                            });
-                        })
+                        .doAfterSuccess(wowAPICharacter -> Main.VTHREAD_SCHEDULER.scheduleDirect(() -> updateCharsDbSize(wowAPICharacter).subscribe()))
                         .map(Optional::of)
                         .onErrorReturnItem(Optional.empty())
                         .toSingle(Optional.empty());

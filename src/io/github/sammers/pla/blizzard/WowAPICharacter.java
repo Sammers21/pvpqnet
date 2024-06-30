@@ -5,6 +5,7 @@ import io.github.sammers.pla.db.Snapshot;
 import io.github.sammers.pla.http.JsonConvertable;
 import io.github.sammers.pla.logic.Calculator;
 import io.github.sammers.pla.logic.CharAndDiff;
+import io.github.sammers.pla.logic.CharacterCache;
 import io.github.sammers.pla.logic.Refs;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -13,9 +14,7 @@ import org.slf4j.Logger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -150,7 +149,8 @@ public record WowAPICharacter(long id,
                               Achievements achievements,
                               int petHash,
                               CharacterMedia media,
-                              String talents) implements JsonConvertable {
+                              String talents,
+                              Set<Long> alts) implements JsonConvertable {
 
     private static final Logger log = org.slf4j.LoggerFactory.getLogger(WowAPICharacter.class);
 
@@ -165,6 +165,7 @@ public record WowAPICharacter(long id,
     }
 
     public static WowAPICharacter parse(
+        CharacterCache cache,
         Optional<WowAPICharacter> previous,
         Refs refs,
         Optional<Cutoffs> cutoffs,
@@ -223,8 +224,17 @@ public record WowAPICharacter(long id,
             : CharacterMedia.parse(characterMedia);
         Long lastUpdatedUTCms = Instant.now().toEpochMilli();
         Achievements parsedAchievements = Achievements.parse(achievements);
+        Long id = entries.getLong("id");
+        int petHash;
+        if (pets.getJsonArray("pets") == null) {
+            petHash = -1;
+        } else {
+            petHash = pets.getJsonArray("pets").hashCode();
+        }
+        Set<Long> alts = cache.alts.getOrDefault(petHash, new HashSet<>(0));
+        previous.ifPresent(wowAPICharacter -> alts.addAll(wowAPICharacter.alts));
         return new WowAPICharacter(
-            entries.getInteger("id"),
+            id,
             previous.map(WowAPICharacter::hidden).orElse(false),
             name,
             realm,
@@ -239,9 +249,10 @@ public record WowAPICharacter(long id,
             pvpBrackets,
             lastUpdatedUTCms,
             parsedAchievements,
-            pets.getJsonArray("pets").encode().hashCode(),
+            petHash,
             media,
-            talents
+            talents,
+            alts
         );
     }
 
@@ -256,6 +267,13 @@ public record WowAPICharacter(long id,
             brcktsFromJson = List.of();
         } else {
             brcktsFromJson = array.stream().map(o -> PvpBracket.fromJson((JsonObject) o)).toList();
+        }
+        Set<Long> alts;
+        JsonArray altsArr = entries.getJsonArray("alts");
+        if (altsArr == null) {
+            alts = new HashSet<>(0);
+        } else {
+            alts = new HashSet<>(altsArr.stream().map(o -> Long.valueOf(o.toString())).collect(Collectors.toSet()));
         }
         if (entries.getLong("lastUpdatedUTCms") == null) {
             entries.put("lastUpdatedUTCms", 0L);
@@ -284,8 +302,14 @@ public record WowAPICharacter(long id,
             Achievements.fromJson(entries.getJsonObject("achievements")),
             entries.getInteger("petHash"),
             CharacterMedia.fromJson(entries.getJsonObject("media")),
-            Optional.ofNullable(entries.getString("talents")).orElse("")
+            Optional.ofNullable(entries.getString("talents")).orElse(""),
+            alts
         );
+    }
+
+    public WowAPICharacter changeAlts(Set<Long> newAlts) {
+        return new WowAPICharacter(id, hidden, name, realm, gender, fraction, race, activeSpec, level, clazz, itemLevel,
+            region, brackets, lastUpdatedUTCms, achievements, petHash, media, talents, newAlts);
     }
 
     public WowAPICharacter updatePvpBracketData(CharAndDiff diff, BracketType bracket, List<Character> withWho) {
@@ -334,7 +358,7 @@ public record WowAPICharacter(long id,
             }
             return res;
         }).toList();
-        return new WowAPICharacter(id, hidden, name, realm, gender, fraction, race, activeSpec, level, clazz, itemLevel, region, newBrackets, lastUpdatedUTCms, achievements, petHash, media, talents);
+        return new WowAPICharacter(id, hidden, name, realm, gender, fraction, race, activeSpec, level, clazz, itemLevel, region, newBrackets, lastUpdatedUTCms, achievements, petHash, media, talents, alts);
     }
 
     public byte[] toGzippedJson() {
@@ -350,7 +374,7 @@ public record WowAPICharacter(long id,
 
     @Override
     public int hashCode() {
-        return fullName().hashCode();
+        return (int) id;
     }
 
     @Override
@@ -373,7 +397,8 @@ public record WowAPICharacter(long id,
             .put("achievements", achievements.toJson())
             .put("petHash", petHash)
             .put("media", media.toJson())
-            .put("talents", talents);
+            .put("talents", talents)
+            .put("alts", new JsonArray(alts.stream().toList()));
     }
 
 }
