@@ -32,17 +32,17 @@ const CutOffText = ({ bracket, statistic }: IProps) => {
     setSelectedSpecs(getFromSearchParams(searchParams, "specs"));
   }, [searchParams]);
 
-  const ssnName = "Draconic"
+  const ssnName = "Draconic";
   if (bracket === "rbg" || bracket === "3v3") {
     const cutOffRating = rewards?.[ratingRewardMap[bracket]];
     const spotsWithNoAlts = spotWithNoAlts?.[ratingRewardMap[bracket]];
     const predictedCutoff = predictions?.[`${ratingRewardMap[bracket]}`];
-    const title = bracket === "3v3" ?  `${ssnName} Gladiator` : `Hero: ${ssnName}`;
+    const title =
+      bracket === "3v3" ? `${ssnName} Gladiator` : `Hero: ${ssnName}`;
     var text;
-    if (predictedCutoff === cutOffRating) {
+    if (predictedCutoff === undefined || predictedCutoff === cutOffRating) {
       text = `${title} - Rating: ${cutOffRating}. Spots: ${spotsWithNoAlts}`;
-    }
-    else {
+    } else {
       text = `${title} - Rating by BlizzardAPI: ${cutOffRating} / Predicted: ${predictedCutoff}. Spots: ${spotsWithNoAlts}`;
     }
     return (
@@ -59,12 +59,11 @@ const CutOffText = ({ bracket, statistic }: IProps) => {
     const cutOffRating = rewards?.[key];
     const spotsWithNoAlts = spotWithNoAlts?.[key];
     const predictedCutoff = predictions?.[key];
-    const title = `${ssnName} Legend`
+    const title = `${ssnName} Legend`;
     var text;
-    if (predictedCutoff === cutOffRating) {
+    if (predictedCutoff === undefined || predictedCutoff === cutOffRating) {
       text = `${title} for ${specName} - Rating: ${cutOffRating}. Spots: ${spotsWithNoAlts}`;
-    }
-    else {
+    } else {
       text = `${title} for ${specName} - Rating by BlizzardAPI: ${cutOffRating} / Predicted: ${predictedCutoff}. Spots: ${spotsWithNoAlts}`;
     }
     return (
@@ -105,7 +104,7 @@ const CutOffRating = ({ bracket, statistic }: IProps) => {
   ) {
     return <div></div>;
   }
-    // return <div></div>;
+  // return <div></div>;
 
   return (
     <div className="flex items-center mr-2">
