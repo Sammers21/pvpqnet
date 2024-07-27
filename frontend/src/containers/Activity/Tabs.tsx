@@ -10,7 +10,7 @@ import { BRACKETS } from '@/constants/pvp-activity';
 import { borderColor } from '@/theme';
 
 interface IProps {
-  statistic: Record<BRACKETS, string> | undefined;
+  bracketActivity: Record<BRACKETS, string> | undefined;
 }
 
 export const TabButton = styled(Button)<{ isActive: boolean }>(({ isActive }) => {
@@ -39,7 +39,7 @@ export const BracketCount = ({ content }: { content: number | string | undefined
   );
 };
 
-const ActivityTabs = ({ statistic }: IProps) => {
+const ActivityTabs = ({ bracketActivity }: IProps) => {
   let navigate = useNavigate();
   const location = useLocation();
 
@@ -62,27 +62,27 @@ const ActivityTabs = ({ statistic }: IProps) => {
         isActive={bracket === BRACKETS.shuffle}
       >
         Shuffle
-        <BracketCount content={statistic?.shuffle} />
+        <BracketCount content={bracketActivity?.shuffle} />
       </TabButton>
       <TabButton
         onClick={() => handleBracketChange(BRACKETS['2v2'])}
         isActive={bracket === BRACKETS['2v2']}
       >
         2v2
-        <BracketCount content={statistic?.['2v2']} />
+        <BracketCount content={bracketActivity?.['2v2']} />
       </TabButton>
       <TabButton
         onClick={() => handleBracketChange(BRACKETS['3v3'])}
         isActive={bracket === BRACKETS['3v3']}
       >
-        3v3 <BracketCount content={statistic?.['3v3']} />
+        3v3 <BracketCount content={bracketActivity?.['3v3']} />
       </TabButton>
       <TabButton
         sx={{ borderTopRightRadius: 5 }}
         onClick={() => handleBracketChange(BRACKETS.rbg)}
         isActive={bracket === BRACKETS.rbg}
       >
-        RBG <BracketCount content={statistic?.rbg} />
+        RBG <BracketCount content={bracketActivity?.rbg} />
       </TabButton>
     </div>
   );

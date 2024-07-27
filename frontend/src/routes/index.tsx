@@ -25,7 +25,7 @@ const AppRoutes = () => {
 
         <Route path=":region">
           <Route path="meta" element={<MetaScreen />} />
-          <Route path="activity" element={<ActivityScreen />}>
+              <Route path="activity" element={<ActivityScreen />}>
             <Route path=":bracket" element={<ActivityScreen />} />
           </Route>
           <Route path="ladder" element={<ActivityScreen />}>
