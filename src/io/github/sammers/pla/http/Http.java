@@ -70,23 +70,25 @@ public class Http {
                     List<SearchResult> search = ladder.search(searchQ);
                     int remaining = 20 - search.size();
                     if (remaining > 0) {
-                        List<Pair<String, String>> topRealms = realmStats.top20Realms().subList(0, remaining);
-                        List<SearchResult> additionalResults = topRealms.stream().map(realm ->
-                            new SearchResult(String.format("%s-%s", searchQ, realm.getValue0()), realm.getValue1(), "null")
-                        ).toList();
-                        search.addAll(additionalResults);
+                        String[] split = searchQ.trim().split("-");
+                        if (split.length == 1) {
+                            List<Pair<String, String>> top20 = realmStats.top20Realms();
+                            List<Pair<String, String>> topRealms = top20.subList(0, Math.min(remaining, top20.size()));
+                            List<SearchResult> additionalResults = topRealms.stream().map(realm ->
+                                    new SearchResult(String.format("%s-%s", searchQ, realm.getValue0()), realm.getValue1(), "null")
+                            ).toList();
+                            search.addAll(additionalResults);
+                        } else if (split.length > 1 && !split[0].isEmpty()) {
+                            List<Pair<String, String>> top20 = realmStats.realmsStartingWithTop20(split[1]);
+                            List<Pair<String, String>> topRealms = top20.subList(0, Math.min(remaining, top20.size()));
+                            List<SearchResult> additionalResults = topRealms.stream()
+                                    .map(realm -> new SearchResult(String.format("%s-%s", split[0], realm.getValue0()), realm.getValue1(), "null")
+                                    ).toList();
+                            search.addAll(additionalResults);
+                        }
                     }
                     List<JsonObject> list = search.stream().map(SearchResult::toJson).map(j -> j.put("source", "pvpqnet")).toList();
-                    if (list.isEmpty()) {
-                        checkPvPFrAPI.searchChars(searchQ).subscribe(searchResults -> {
-                            ctx.response().end(new JsonArray(searchResults.stream().map(ExtCharacterSearcher.CheckPvPSearchResult::toJson).map(j -> j.put("source", "checkpvp.fr")).toList()).encode());
-                        }, err -> {
-                            log.error("Failed to search chars", err);
-                            ctx.response().end(new JsonArray().encode());
-                        });
-                    } else {
-                        ctx.response().end(new JsonArray(list).encode());
-                    }
+                    ctx.response().end(new JsonArray(list).encode());
                 }
             });
         });

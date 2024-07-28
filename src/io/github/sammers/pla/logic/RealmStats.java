@@ -24,4 +24,14 @@ public class RealmStats {
         return top20.subList(0, Math.min(20, top20.size()));
     }
 
+    public List<Pair<String, String>> realmsStartingWithTop20(String prefix) {
+        List<Pair<String, String>> realms = new ArrayList<>();
+        for (Pair<String, String> realm : realmStats.keySet()) {
+            if (realm.getValue0().toLowerCase().startsWith(prefix.toLowerCase())) {
+                realms.add(realm);
+            }
+        }
+        return realms;
+    }
+
 }
