@@ -13,11 +13,13 @@ public class CharacterCache {
     private final Map<Long, byte[]> idCache;
     private final Map<String, byte[]> nameCache;
     public final Map<Integer, Set<Long>> alts;
+    public final RealmStats realmStats;
 
     public CharacterCache() {
         nameCache = new ConcurrentHashMap<>();
         idCache = new ConcurrentHashMap<>();
         alts = new ConcurrentHashMap<>();
+        realmStats = new RealmStats();
     }
 
     public WowAPICharacter getByFullName(String name) {
@@ -30,9 +32,13 @@ public class CharacterCache {
 
     public void upsert(WowAPICharacter character) {
         byte[] gzip = character.toGzippedJson();
+        int ncsize = nameCache.size();
         nameCache.put(character.fullName(), gzip);
         idCache.put(character.id(), gzip);
         indexCharAlts(alts, character.id(), character.petHash());
+        if (ncsize != nameCache.size()) {
+            realmStats.addRealmStat(character.realm(), character.region(), 1);
+        }
     }
 
     public Optional<WowAPICharacter> upsertDiff(CharAndDiff diff, String bracket) {

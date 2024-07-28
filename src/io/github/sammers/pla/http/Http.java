@@ -21,28 +21,32 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.javatuples.Pair;
 import org.slf4j.Logger;
 
 import static io.github.sammers.pla.Main.VTHREAD_EXECUTOR;
 import static io.github.sammers.pla.logic.Conts.*;
 
 public class Http {
-  private static final Logger log = org.slf4j.LoggerFactory.getLogger(Http.class);
-  private final Ladder ladder;
-  private final Refs refs;
-  private final CharacterCache characterCache;
-  private final ExtCharacterSearcher checkPvPFrAPI;
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(Http.class);
+    private final Ladder ladder;
+    private final Refs refs;
+    private final CharacterCache characterCache;
+    private final RealmStats realmStats;
+    private final ExtCharacterSearcher checkPvPFrAPI;
 
-  public Http(Ladder ladder, Refs refs, CharacterCache characterCache, ExtCharacterSearcher checkPvPFrAPI) {
-    this.ladder = ladder;
-    this.refs = refs;
-    this.characterCache = characterCache;
-    this.checkPvPFrAPI = checkPvPFrAPI;
-  }
+    public Http(Ladder ladder, Refs refs, CharacterCache characterCache, ExtCharacterSearcher checkPvPFrAPI) {
+        this.ladder = ladder;
+        this.refs = refs;
+        this.characterCache = characterCache;
+        this.checkPvPFrAPI = checkPvPFrAPI;
+        this.realmStats = characterCache.realmStats;
+    }
 
-  public void start() {
+    public void start() {
         Vertx vertx = Vertx.vertx(new VertxOptions().setEventLoopPoolSize(4));
         Router router = Router.router(vertx);
         router.route().handler(CorsHandler.create());
@@ -62,19 +66,20 @@ public class Http {
                 if (opt.isEmpty()) {
                     ctx.response().end(new JsonArray().encode());
                 } else {
-                    List<JsonObject> list = ladder.search(opt.get()).stream().map(SearchResult::toJson)
-                        .map(j -> j.put("source", "pvpqnet"))
-                        .toList();
+                    String searchQ = opt.get();
+                    List<SearchResult> search = ladder.search(searchQ);
+                    int remaining = 20 - search.size();
+                    if (remaining > 0) {
+                        List<Pair<String, String>> topRealms = realmStats.top20Realms().subList(0, remaining);
+                        List<SearchResult> additionalResults = topRealms.stream().map(realm ->
+                            new SearchResult(String.format("%s-%s", searchQ, realm.getValue0()), realm.getValue1(), "null")
+                        ).toList();
+                        search.addAll(additionalResults);
+                    }
+                    List<JsonObject> list = search.stream().map(SearchResult::toJson).map(j -> j.put("source", "pvpqnet")).toList();
                     if (list.isEmpty()) {
-                        checkPvPFrAPI.searchChars(opt.get()).subscribe(searchResults -> {
-                            ctx.response().end(
-                                new JsonArray(
-                                    searchResults.stream()
-                                        .map(ExtCharacterSearcher.CheckPvPSearchResult::toJson)
-                                        .map(j -> j.put("source", "checkpvp.fr"))
-                                        .toList()
-                                ).encode()
-                            );
+                        checkPvPFrAPI.searchChars(searchQ).subscribe(searchResults -> {
+                            ctx.response().end(new JsonArray(searchResults.stream().map(ExtCharacterSearcher.CheckPvPSearchResult::toJson).map(j -> j.put("source", "checkpvp.fr")).toList()).encode());
                         }, err -> {
                             log.error("Failed to search chars", err);
                             ctx.response().end(new JsonArray().encode());
@@ -104,9 +109,7 @@ public class Http {
                     bracket = RBG;
                 }
                 if (bracket.equals(MULTICLASSERS)) {
-                    Multiclassers.Role role = Optional.ofNullable(ctx.request().getParam("role"))
-                      .map(x -> Multiclassers.Role.valueOf(x.toUpperCase()))
-                      .orElse(Multiclassers.Role.ALL);
+                    Multiclassers.Role role = Optional.ofNullable(ctx.request().getParam("role")).map(x -> Multiclassers.Role.valueOf(x.toUpperCase())).orElse(Multiclassers.Role.ALL);
                     ladder(ctx, refs.refMulticlassers(role, region).get());
                 } else {
                     Snapshot snapshot = refs.refByBracket(bracket, region).get();
@@ -161,18 +164,17 @@ public class Http {
                 String region = ctx.pathParam("region");
                 String realm = ctx.pathParam("realm");
                 String name = ctx.pathParam("name");
-                if(!ladder.charUpdater.isCharsLoaded()){
+                if (!ladder.charUpdater.isCharsLoaded()) {
                     ctx.response().setStatusCode(503).end(new JsonObject().put("error", "Character data is not loaded yet").encode());
                 } else {
-                    ladder.charUpdater.updateCharFast(region, Character.fullNameByRealmAndName(name, realm))
-                        .subscribe(wowAPICharacter -> {
-                            if (wowAPICharacter.isEmpty() || wowAPICharacter.get().hidden()) {
-                                ctx.response().setStatusCode(404).end(new JsonObject().put("error", "Character not found").encode());
-                            } else {
-                                log.info("Updated {} in {} ms", wowAPICharacter.get().fullName(), (System.nanoTime() - tick) / 1000000);
-                                ctx.response().end(wowCharToJson(wowAPICharacter.get()).encode());
-                            }
-                        }, err -> nameRealmLookupResponse(ctx, realm, name));
+                    ladder.charUpdater.updateCharFast(region, Character.fullNameByRealmAndName(name, realm)).subscribe(wowAPICharacter -> {
+                        if (wowAPICharacter.isEmpty() || wowAPICharacter.get().hidden()) {
+                            ctx.response().setStatusCode(404).end(new JsonObject().put("error", "Character not found").encode());
+                        } else {
+                            log.info("Updated {} in {} ms", wowAPICharacter.get().fullName(), (System.nanoTime() - tick) / 1000000);
+                            ctx.response().end(wowCharToJson(wowAPICharacter.get()).encode());
+                        }
+                    }, err -> nameRealmLookupResponse(ctx, realm, name));
                 }
             });
         });
@@ -182,54 +184,49 @@ public class Http {
         router.get("/activity/:bracket").handler(ctx -> ctx.response().sendFile("index.html"));
         router.get("/").handler(ctx -> ctx.response().sendFile("index.html"));
         // enable gzip
-        vertx.createHttpServer(new HttpServerOptions().setCompressionSupported(true))
-            .requestHandler(router)
-            .listen(9000);
+        vertx.createHttpServer(new HttpServerOptions().setCompressionSupported(true)).requestHandler(router).listen(9000);
     }
 
-  private void nameRealmLookupResponse(RoutingContext ctx, String realm, String name) {
-    Optional<WowAPICharacter> charWithName = ladder.wowChar(ladder.realms.get().nameToSlug(realm), name);
-    Optional<WowAPICharacter> charWithSlug = ladder.wowChar(realm, name);
-    Optional<WowAPICharacter> res = Stream.of(charWithName, charWithSlug).filter(Optional::isPresent).findFirst()
-        .map(Optional::get);
-    if (res.isEmpty() || res.get().hidden()) {
-      ctx.response().setStatusCode(404).end(new JsonObject().put("error", "Character not found").encode());
-    } else {
-      ctx.response().end(wowCharToJson(res.get()).encode());
+    private void nameRealmLookupResponse(RoutingContext ctx, String realm, String name) {
+        Optional<WowAPICharacter> charWithName = ladder.wowChar(ladder.realms.get().nameToSlug(realm), name);
+        Optional<WowAPICharacter> charWithSlug = ladder.wowChar(realm, name);
+        Optional<WowAPICharacter> res = Stream.of(charWithName, charWithSlug).filter(Optional::isPresent).findFirst().map(Optional::get);
+        if (res.isEmpty() || res.get().hidden()) {
+            ctx.response().setStatusCode(404).end(new JsonObject().put("error", "Character not found").encode());
+        } else {
+            ctx.response().end(wowCharToJson(res.get()).encode());
+        }
     }
-  }
 
-  private JsonObject wowCharToJson(WowAPICharacter character) {
-    Set<WowAPICharacter> alts = characterCache.altsFor(character);
-    JsonObject res = character.toJson();
-    if (alts != null) {
-      res.put("alts",
-          new JsonArray(alts.stream().filter(c -> c.id() != character.id()).map(WowAPICharacter::toJson).toList()));
-    } else {
-      res.put("alts", new JsonArray());
+    private JsonObject wowCharToJson(WowAPICharacter character) {
+        Set<WowAPICharacter> alts = characterCache.altsFor(character);
+        JsonObject res = character.toJson();
+        if (alts != null) {
+            res.put("alts", new JsonArray(alts.stream().filter(c -> c.id() != character.id()).map(WowAPICharacter::toJson).toList()));
+        } else {
+            res.put("alts", new JsonArray());
+        }
+        return res;
     }
-    return res;
-  }
 
-  private void ladder(RoutingContext ctx, JsonPaged snapshot) {
-    Long page = Optional.of(ctx.queryParam("page")).flatMap(l -> l.stream().findFirst()).map(Long::parseLong)
-        .orElse(1L);
-    if (snapshot == null) {
-      ctx.response().end(Snapshot.empty(EU).toJson(page).encode());
-    } else {
-      ctx.response().end(snapshot.toJson(page).encode());
+    private void ladder(RoutingContext ctx, JsonPaged snapshot) {
+        Long page = Optional.of(ctx.queryParam("page")).flatMap(l -> l.stream().findFirst()).map(Long::parseLong).orElse(1L);
+        if (snapshot == null) {
+            ctx.response().end(Snapshot.empty(EU).toJson(page).encode());
+        } else {
+            ctx.response().end(snapshot.toJson(page).encode());
+        }
     }
-  }
 
-  private Resp applySpecFilter(RoutingContext ctx, Resp specFiltered) {
-    if (specFiltered == null) {
-      return null;
+    private Resp applySpecFilter(RoutingContext ctx, Resp specFiltered) {
+        if (specFiltered == null) {
+            return null;
+        }
+        List<String> specs = ctx.queryParam("specs").stream().flatMap(spcs -> Arrays.stream(spcs.split(","))).toList();
+        if (specs.isEmpty()) {
+            return specFiltered;
+        } else {
+            return (Resp) specFiltered.filter(specs);
+        }
     }
-    List<String> specs = ctx.queryParam("specs").stream().flatMap(spcs -> Arrays.stream(spcs.split(","))).toList();
-    if (specs.isEmpty()) {
-      return specFiltered;
-    } else {
-      return (Resp) specFiltered.filter(specs);
-    }
-  }
 }
