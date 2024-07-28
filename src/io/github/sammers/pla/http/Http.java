@@ -1,5 +1,6 @@
 package io.github.sammers.pla.http;
 
+import io.github.sammers.pla.blizzard.ExtCharacterSearcher;
 import io.github.sammers.pla.blizzard.Cutoffs;
 import io.github.sammers.pla.blizzard.Multiclassers;
 import io.github.sammers.pla.blizzard.WowAPICharacter;
@@ -7,7 +8,6 @@ import io.github.sammers.pla.db.Character;
 import io.github.sammers.pla.db.Meta;
 import io.github.sammers.pla.logic.*;
 import io.github.sammers.pla.db.Snapshot;
-import io.reactivex.Single;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.json.JsonArray;
@@ -33,11 +33,13 @@ public class Http {
   private final Ladder ladder;
   private final Refs refs;
   private final CharacterCache characterCache;
+  private final ExtCharacterSearcher checkPvPFrAPI;
 
-  public Http(Ladder ladder, Refs refs, CharacterCache characterCache) {
+  public Http(Ladder ladder, Refs refs, CharacterCache characterCache, ExtCharacterSearcher checkPvPFrAPI) {
     this.ladder = ladder;
     this.refs = refs;
     this.characterCache = characterCache;
+    this.checkPvPFrAPI = checkPvPFrAPI;
   }
 
   public void start() {
@@ -60,7 +62,26 @@ public class Http {
                 if (opt.isEmpty()) {
                     ctx.response().end(new JsonArray().encode());
                 } else {
-                    ctx.response().end(new JsonArray(ladder.search(opt.get()).stream().map(SearchResult::toJson).toList()).encode());
+                    List<JsonObject> list = ladder.search(opt.get()).stream().map(SearchResult::toJson)
+                        .map(j -> j.put("source", "pvpqnet"))
+                        .toList();
+                    if (list.isEmpty()) {
+                        checkPvPFrAPI.searchChars(opt.get()).subscribe(searchResults -> {
+                            ctx.response().end(
+                                new JsonArray(
+                                    searchResults.stream()
+                                        .map(ExtCharacterSearcher.CheckPvPSearchResult::toJson)
+                                        .map(j -> j.put("source", "checkpvp.fr"))
+                                        .toList()
+                                ).encode()
+                            );
+                        }, err -> {
+                            log.error("Failed to search chars", err);
+                            ctx.response().end(new JsonArray().encode());
+                        });
+                    } else {
+                        ctx.response().end(new JsonArray(list).encode());
+                    }
                 }
             });
         });
