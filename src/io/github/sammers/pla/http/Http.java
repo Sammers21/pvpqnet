@@ -140,15 +140,19 @@ public class Http {
                 String region = ctx.pathParam("region");
                 String realm = ctx.pathParam("realm");
                 String name = ctx.pathParam("name");
-                ladder.charUpdater.updateCharFast(region, Character.fullNameByRealmAndName(name, realm))
-                    .subscribe(wowAPICharacter -> {
-                        if (wowAPICharacter.isEmpty() || wowAPICharacter.get().hidden()) {
-                            ctx.response().setStatusCode(404).end(new JsonObject().put("error", "Character not found").encode());
-                        } else {
-                            log.info("Updated {} in {} ms", wowAPICharacter.get().fullName(), (System.nanoTime() - tick) / 1000000);
-                            ctx.response().end(wowCharToJson(wowAPICharacter.get()).encode());
-                        }
-                    }, err -> nameRealmLookupResponse(ctx, realm, name));
+                if(!ladder.charUpdater.isCharsLoaded()){
+                    ctx.response().setStatusCode(503).end(new JsonObject().put("error", "Character data is not loaded yet").encode());
+                } else {
+                    ladder.charUpdater.updateCharFast(region, Character.fullNameByRealmAndName(name, realm))
+                        .subscribe(wowAPICharacter -> {
+                            if (wowAPICharacter.isEmpty() || wowAPICharacter.get().hidden()) {
+                                ctx.response().setStatusCode(404).end(new JsonObject().put("error", "Character not found").encode());
+                            } else {
+                                log.info("Updated {} in {} ms", wowAPICharacter.get().fullName(), (System.nanoTime() - tick) / 1000000);
+                                ctx.response().end(wowCharToJson(wowAPICharacter.get()).encode());
+                            }
+                        }, err -> nameRealmLookupResponse(ctx, realm, name));
+                }
             });
         });
         router.get("/:region/ladder/:bracket").handler(ctx -> ctx.response().sendFile("index.html"));

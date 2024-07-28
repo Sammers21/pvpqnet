@@ -51,6 +51,10 @@ public class CharUpdater {
         this.db = db;
     }
 
+    public boolean isCharsLoaded() {
+        return charsLoaded.get();
+    }
+
     public Completable updateCharacters(String region,
                                         int timeWithoutUpdateMin, TimeUnit units,
                                         int timeout, TimeUnit timeoutUnits) {
