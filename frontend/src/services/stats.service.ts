@@ -64,7 +64,7 @@ export async function getMulticlasserLeaderboard(region: REGION, role: string = 
   }
 }
 
-export async function fetchStatistic(region: REGION) {
+export async function fetchBracketActivity(region: REGION) {
   try {
     const response = await axios.get(urls.getStatistic(statsMap[region]), {
       headers: {

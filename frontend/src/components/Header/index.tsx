@@ -12,7 +12,7 @@ import { borderColor, containerBg } from "@/theme";
 import { metaUrls, publicUrls, shuffleMulticlassUrls } from "@/config";
 import { REGION } from "@/constants/region";
 import { BRACKETS } from "@/constants/pvp-activity";
-import { getRegion } from "@/utils/urlparts";
+import {getActivityFromUrl, getRegion} from "@/utils/urlparts";
 
 const StyledAppBar = styled(AppBar)({
   backgroundImage: "none",
@@ -33,10 +33,10 @@ const Header = () => {
   const host = window.location.host.toUpperCase();
   const {
     region: regionFromUrl = REGION.eu,
-    activity = "activity",
     bracket = BRACKETS["3v3"],
   } = useParams();
   const region = getRegion(regionFromUrl);
+  const activity = getActivityFromUrl();
   const breakpoint = useBreakpoint();
 
   const isMeta = useMemo(() => {
@@ -47,14 +47,14 @@ const Header = () => {
     return location.pathname.includes("shuffle-multiclass");
   }, [location]);
 
-  function handleSetRegion(region: REGION) {
+  function handleSetRegion(rg: REGION) {
     let newPath;
     if (isMeta) {
-      newPath = generatePath(metaUrls.page, { region });
+      newPath = generatePath(metaUrls.page, { region: rg });
     } else if (isShuffleMclass) {
-      newPath = generatePath(shuffleMulticlassUrls.page, { region });
+      newPath = generatePath(shuffleMulticlassUrls.page, { region: rg  });
     } else {
-      newPath = generatePath(publicUrls.page, { region, activity, bracket });
+      newPath = generatePath(publicUrls.page, { region: rg , activity, bracket });
     }
     navigate(newPath + window.location.search);
   }

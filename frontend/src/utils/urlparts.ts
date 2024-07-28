@@ -12,14 +12,9 @@ export function getRegion(region?: string) {
   return validRegion ?? REGION.eu;
 }
 
-export function getActivity(activity: string) {
-  const validActivity = Object.values(['activity', 'ladder']).find((r) => activity === r);
-  return validActivity ?? 'activity';
-}
-
 export function getActivityFromUrl() {
   const splitx = window.location.pathname.split('/');
-  return splitx.length >= 4 ? splitx[2] : 'activity';
+  return splitx.length >= 4 ? splitx[2] : 'ladder';
 }
 
 export function capitalizeNickname(nickname?: string) {

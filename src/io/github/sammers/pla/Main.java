@@ -1,6 +1,7 @@
 package io.github.sammers.pla;
 
 import io.github.sammers.pla.blizzard.BlizzardAPI;
+import io.github.sammers.pla.blizzard.ExtCharacterSearcher;
 import io.github.sammers.pla.blizzard.Cutoffs;
 import io.github.sammers.pla.db.DB;
 import io.github.sammers.pla.http.Http;
@@ -68,10 +69,11 @@ public class Main {
         final CharacterCache characterCache = new CharacterCache();
         final Refs refs = new Refs();
         final Map<String, Cutoffs> cutoffsMap = new ConcurrentHashMap<>();
+        final ExtCharacterSearcher checkPvPFrAPI = new ExtCharacterSearcher(webClient);
         final BlizzardAPI blizzardAPI = new BlizzardAPI(clientId, clientSecret, webClient, refs, characterCache, cutoffsMap);
         DB db = new DB(mongoClient);
         Ladder ladder = new Ladder(webClient, db, blizzardAPI, characterCache, refs, cutoffsMap);
         ladder.start();
-        new Http(ladder, refs, characterCache).start();
+        new Http(ladder, refs, characterCache, checkPvPFrAPI).start();
     }
 }

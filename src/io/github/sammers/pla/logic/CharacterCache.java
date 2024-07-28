@@ -85,7 +85,7 @@ public class CharacterCache {
             WowAPICharacter changedAlts = ch.changeAlts(longs);
             return changedAlts;
         }).collect(Collectors.toSet());
-        return resm;
+            return resm;
     }
 
     public Collection<byte[]> values() {
