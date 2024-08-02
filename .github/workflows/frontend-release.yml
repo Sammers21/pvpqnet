@@ -5,7 +5,7 @@ on:
       - main
 jobs:
   release-docker:
-    if: "contains(github.event.head_commit.message, 'releasefd')"
+    if: "contains(github.event.head_commit.message, 'released')"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -34,7 +34,7 @@ jobs:
             docker pull sammers/pvpqnet-frontend:latest
             docker stop pvpqnet-frontend
             docker rm -f pvpqnet-frontend
-            docker run --restart=always -e --name pvpqnet-frontend -d -p9001:9001 sammers/pvpqnet-frontend:latest
+            docker run --restart=always --name pvpqnet-frontend -d -p9001:9001 sammers/pvpqnet-frontend:latest
   release-normal:
     if: "contains(github.event.head_commit.message, 'releasef')"
     runs-on: ubuntu-latest
