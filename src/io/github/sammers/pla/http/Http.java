@@ -36,13 +36,13 @@ public class Http {
     private final Refs refs;
     private final CharacterCache characterCache;
     private final RealmStats realmStats;
-    private final ExtCharacterSearcher checkPvPFrAPI;
+    private final ExtCharacterSearcher extSearch;
 
     public Http(Ladder ladder, Refs refs, CharacterCache characterCache, ExtCharacterSearcher checkPvPFrAPI) {
         this.ladder = ladder;
         this.refs = refs;
         this.characterCache = characterCache;
-        this.checkPvPFrAPI = checkPvPFrAPI;
+        this.extSearch = checkPvPFrAPI;
         this.realmStats = characterCache.realmStats;
     }
 
@@ -68,27 +68,24 @@ public class Http {
                 } else {
                     String searchQ = opt.get();
                     List<SearchResult> search = ladder.search(searchQ);
-                    int remaining = 20 - search.size();
-                    if (remaining > 0) {
-                        String[] split = searchQ.trim().split("-");
-                        if (split.length == 1) {
-                            List<Pair<String, String>> top20 = realmStats.top20Realms();
-                            List<Pair<String, String>> topRealms = top20.subList(0, Math.min(remaining, top20.size()));
-                            List<SearchResult> additionalResults = topRealms.stream().map(realm ->
-                                    new SearchResult(String.format("%s-%s", searchQ, realm.getValue0()), realm.getValue1(), "null")
-                            ).toList();
-                            search.addAll(additionalResults);
-                        } else if (split.length > 1 && !split[0].isEmpty()) {
-                            List<Pair<String, String>> top20 = realmStats.realmsStartingWithTop20(split[1]);
-                            List<Pair<String, String>> topRealms = top20.subList(0, Math.min(remaining, top20.size()));
-                            List<SearchResult> additionalResults = topRealms.stream()
-                                    .map(realm -> new SearchResult(String.format("%s-%s", split[0], realm.getValue0()), realm.getValue1(), "null")
-                                    ).toList();
-                            search.addAll(additionalResults);
-                        }
+                    if (search.size() < 20) {
+                        extSearch.searchCharacterOfficial(searchQ).subscribe(res -> {
+                            List<SearchResult> results = res.stream().map(ExtCharacterSearcher.ExtSearchResult::toSearchResult).toList();
+                            search.addAll(results);
+                            fillWithSuggestionsTill20(search, searchQ);
+                            List<JsonObject> list = search.stream().map(SearchResult::toJson).map(j -> j.put("source", "official")).toList();
+                            ctx.response().end(new JsonArray(list).encode());
+                        }, err -> {
+                            log.error("Failed to search for {}", searchQ, err);
+                            fillWithSuggestionsTill20(search, searchQ);
+                            List<JsonObject> list = search.stream().map(SearchResult::toJson).map(j -> j.put("source", "pvpqnet")).toList();
+                            ctx.response().end(new JsonArray(list).encode());
+                        });
+                    } else {
+//                        fillWithSuggestionsTill20(search, searchQ);
+                        List<JsonObject> list = search.stream().map(SearchResult::toJson).map(j -> j.put("source", "pvpqnet")).toList();
+                        ctx.response().end(new JsonArray(list).encode());
                     }
-                    List<JsonObject> list = search.stream().map(SearchResult::toJson).map(j -> j.put("source", "pvpqnet")).toList();
-                    ctx.response().end(new JsonArray(list).encode());
                 }
             });
         });
@@ -187,6 +184,28 @@ public class Http {
         router.get("/").handler(ctx -> ctx.response().sendFile("index.html"));
         // enable gzip
         vertx.createHttpServer(new HttpServerOptions().setCompressionSupported(true)).requestHandler(router).listen(9000);
+    }
+
+    private void fillWithSuggestionsTill20(List<SearchResult> search, String searchQ) {
+        int remaining = 20 - search.size();
+        if (remaining > 0) {
+            String[] split = searchQ.trim().split("-");
+            if (split.length == 1) {
+                List<Pair<String, String>> top20 = realmStats.top20Realms();
+                List<Pair<String, String>> topRealms = top20.subList(0, Math.min(remaining, top20.size()));
+                List<SearchResult> additionalResults = topRealms.stream().map(realm ->
+                    new SearchResult(String.format("%s-%s", searchQ, realm.getValue0()), realm.getValue1(), "null")
+                ).toList();
+                search.addAll(additionalResults);
+            } else if (split.length > 1 && !split[0].isEmpty()) {
+                List<Pair<String, String>> top20 = realmStats.realmsStartingWithTop20(split[1]);
+                List<Pair<String, String>> topRealms = top20.subList(0, Math.min(remaining, top20.size()));
+                List<SearchResult> additionalResults = topRealms.stream()
+                    .map(realm -> new SearchResult(String.format("%s-%s", split[0], realm.getValue0()), realm.getValue1(), "null")
+                    ).toList();
+                search.addAll(additionalResults);
+            }
+        }
     }
 
     private void nameRealmLookupResponse(RoutingContext ctx, String realm, String name) {

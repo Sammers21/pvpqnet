@@ -1,6 +1,7 @@
 package io.github.sammers.pla.blizzard;
 
 import io.github.sammers.pla.http.JsonConvertable;
+import io.github.sammers.pla.logic.SearchResult;
 import io.reactivex.Single;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -123,6 +124,14 @@ public class ExtCharacterSearcher {
     }
 
     public record ExtSearchResult(String name, String realm, String region, String clazz) implements JsonConvertable {
+
+        public SearchResult toSearchResult() {
+            return new SearchResult(
+                String.format("%s-%s", name, realm),
+                region,
+                clazz
+            );
+        }
 
         public static ExtSearchResult fromOfficialArmory(Element element) {
             Elements children = element.children();
