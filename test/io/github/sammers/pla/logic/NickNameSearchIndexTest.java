@@ -14,6 +14,13 @@ public class NickNameSearchIndexTest {
     }
 
     @Test
+    public void dashTest(){
+        NickNameSearchIndex nickNameSearchIndex = new NickNameSearchIndex();
+        nickNameSearchIndex.insertNickNames(new SearchResult(Character.fullNameByRealmAndName("Whitemask", "Kazzak"), "eu", "Priest"));
+        Assertions.assertEquals(1, nickNameSearchIndex.searchNickNames("whitemask-k").size());
+    }
+
+    @Test
     public void realm() {
         NickNameSearchIndex nickNameSearchIndex = new NickNameSearchIndex();
         nickNameSearchIndex.insertNickNames(new SearchResult(Character.fullNameByRealmAndName("Whitemask", "Kazzak"), "eu", "Priest"));
