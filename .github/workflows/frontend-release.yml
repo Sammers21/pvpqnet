@@ -5,7 +5,7 @@ on:
       - main
 jobs:
   release-docker:
-    if: "contains(github.event.head_commit.message, 'released')"
+    if: "contains(github.event.head_commit.message, 'releasef')"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -36,7 +36,7 @@ jobs:
             docker rm -f pvpqnet-frontend
             docker run --restart=always --name pvpqnet-frontend -d -p9001:9001 sammers/pvpqnet-frontend:latest
   release-normal:
-    if: "contains(github.event.head_commit.message, 'releasef')"
+    if: false
     runs-on: ubuntu-latest
     env:
       CI: false
