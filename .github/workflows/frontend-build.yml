@@ -1,17 +1,24 @@
 name: Frontend build
 'on': [push, pull_request]
 jobs:
-  build:
+  build-normal:
     runs-on: ubuntu-latest
     env:
       CI: false
     steps:
       - uses: actions/checkout@v3
-      - name: Use Node.js 18.x
+      - name: Use Node.js 22.x
         uses: actions/setup-node@v3
         with:
-          node-version: 18.x
+          node-version: 22.x
       - run: npm install
         working-directory: ./frontend
       - run: npm run build
+        working-directory: ./frontend
+  build-docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build Docker image
+        run: docker build -t my-frontend .
         working-directory: ./frontend

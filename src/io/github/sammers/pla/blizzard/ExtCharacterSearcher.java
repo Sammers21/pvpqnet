@@ -1,16 +1,22 @@
 package io.github.sammers.pla.blizzard;
 
 import io.github.sammers.pla.http.JsonConvertable;
+import io.github.sammers.pla.logic.SearchResult;
 import io.reactivex.Single;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.ext.web.client.WebClient;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+import org.slf4j.Logger;
 
 import java.util.List;
 
 public class ExtCharacterSearcher {
 
-
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(ExtCharacterSearcher.class);
     private final WebClient webClient;
 
     public ExtCharacterSearcher(WebClient webClient) {
@@ -59,7 +65,7 @@ public class ExtCharacterSearcher {
 //            "credentials": "include"
 //    });
     //    [{"name":"Minpog","realm":"Aegwynn","region":"eu","class":null},{"name":"Minpog","realm":"Aerie Peak","region":"eu","class":null},{"name":"Minpog","realm":"Agamaggan","region":"eu","class":null},{"name":"Minpog","realm":"Aegwynn","region":"us","class":null},{"name":"Minpog","realm":"Aerie Peak","region":"us","class":null},{"name":"Minpog","realm":"Alexstrasza","region":"kr","class":null},{"name":"Minpog","realm":"Azshara","region":"kr","class":null},{"name":"Minpog","realm":"Arthas","region":"tw","class":null},{"name":"Minpog","realm":"Arygos","region":"tw","class":null}]
-    public Single<List<CheckPvPSearchResult>> searchChars(String query) {
+    public Single<List<ExtSearchResult>> searchChars(String query) {
         return webClient.getAbs("https://check-pvp.fr/api/characters/search")
             .addQueryParam("s", query)
             .addQueryParam("region", "eu")
@@ -85,17 +91,71 @@ public class ExtCharacterSearcher {
                 JsonArray resp = response.bodyAsJsonArray();
                 return Single.just(resp.stream()
                     .map(j -> (io.vertx.core.json.JsonObject) j)
-                    .map(CheckPvPSearchResult::fromJson)
+                    .map(ExtSearchResult::fromJson)
                     .filter(sr -> sr.clazz() != null)
                     .toList()
                 );
             });
     }
 
-    public record CheckPvPSearchResult(String name, String realm, String region, String clazz) implements JsonConvertable {
+    // Search the official blizzard WoW armory for a character
+    // Example: https://worldofwarcraft.blizzard.com/en-gb/search/character?q=sammers
+    public Single<List<ExtSearchResult>> searchCharacterOfficial(String name) {
+        return webClient.getAbs("https://worldofwarcraft.blizzard.com/en-gb/search/character")
+            .addQueryParam("q", name)
+            .rxSend()
+            .flatMap(response -> {
+                if (response.statusCode() != 200) {
+                    return Single.error(new IllegalStateException("Failed to search character: " + response.bodyAsString()));
+                }
+                String body = response.bodyAsString();
+                Document html = Jsoup.parse(body);
+                Elements elements = html.selectXpath("//*[@id=\"main\"]/div/div[2]/div/div[2]/div/div[5]/div[2]");
+                if (elements.isEmpty()) {
+                    return Single.error(new IllegalStateException("Failed to find character: " + name));
+                }
+                Elements results = elements.getFirst().children();
+                List<ExtSearchResult> res = results.stream()
+                    .map(ExtSearchResult::fromOfficialArmory)
+                    .toList();
+                log.info("Found character: {}", res.size());
+                return Single.just(res);
+            });
+    }
 
-        public static CheckPvPSearchResult fromJson(io.vertx.core.json.JsonObject json) {
-            return new CheckPvPSearchResult(
+    public record ExtSearchResult(String name, String realm, String region, String clazz) implements JsonConvertable {
+
+        public SearchResult toSearchResult() {
+            return new SearchResult(
+                String.format("%s-%s", name, realm),
+                region,
+                clazz
+            );
+        }
+
+        public static ExtSearchResult fromOfficialArmory(Element element) {
+            Elements children = element.children();
+            Element firstCol = children.getFirst();
+            Element charDiv = firstCol.children().getFirst();
+            Element charTable= charDiv.children().getFirst();
+            Element charDetails = charTable.children().get(2);
+            Element charName = charDetails.children().get(1);
+            String name = charName.text();
+            String level = children.get(1).text();
+            String race = children.get(2).text();
+            String clazz = children.get(3).text();
+            String fraction = children.get(4).text();
+            String realm = children.get(5).text();
+            return new ExtSearchResult(
+                name,
+                realm,
+                "eu",
+                clazz
+            );
+        }
+
+        public static ExtSearchResult fromJson(io.vertx.core.json.JsonObject json) {
+            return new ExtSearchResult(
                 json.getString("name"),
                 json.getString("realm"),
                 json.getString("region"),
