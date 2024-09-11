@@ -9,8 +9,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
 
   /* For cross-browser compatibility */
-  background-image: url(./assets/background/WoW_The_War_Within_Concept_IsleofDorn-min.jpg);
-  /*background-image: image-set(url(./assets/background/bg.webp), url(./assets/background/bg.jpg));*/
+  background-image: url(./assets/background/WoW_The_War_Within_Concept_IsleofDorn-compresed.jpg);
   background-position: center;
   background-repeat: no-repeat;
   background-attachment: fixed;
