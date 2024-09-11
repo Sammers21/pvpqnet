@@ -111,6 +111,7 @@ public class Ladder {
                     .andThen(twoVTwo(region).ignoreElement())
                     .andThen(battlegrounds(region).ignoreElement())
                     .andThen(shuffle(region).ignoreElement())
+                    .andThen(blitz(region).ignoreElement())
                     .andThen(updateCutoffs(region))
                     .andThen(loadCutoffsFromDb(region))
                     .andThen(calculateMulticlasserLeaderboard(region))
@@ -200,6 +201,10 @@ public class Ladder {
     public Single<Snapshot> shuffle(String region) {
         String bracket = "shuffle";
         return fetchLadder(bracket, region);
+    }
+
+    public Single<Snapshot> blitz(String region) {
+        return fetchLadder(BLITZ, region);
     }
 
     public Optional<WowAPICharacter> wowChar(String realm, String name) {
