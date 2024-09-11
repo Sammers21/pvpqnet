@@ -10,7 +10,7 @@ import { title } from "process";
 
 interface IProps {
   bracket: string;
-  statistic: any;
+  stats: any;
 }
 
 const ratingRewardMap = {
@@ -18,15 +18,15 @@ const ratingRewardMap = {
   rbg: "BATTLEGROUNDS/alliance",
 };
 
-const CutOffText = ({ bracket, statistic }: IProps) => {
+const CutOffText = ({ bracket, stats }: IProps) => {
   const [searchParams] = useSearchParams();
   const [selectedSpecs, setSelectedSpecs] = useState(
     getFromSearchParams(searchParams, "specs")
   );
   const rankOneTitleColor = getRatingColor(true);
-  const rewards = statistic?.cutoffs?.rewards;
-  const spotWithNoAlts = statistic?.cutoffs?.spotWithNoAlts;
-  const predictions = statistic?.cutoffs?.predictions;
+  const rewards = stats?.cutoffs?.rewards;
+  const spotWithNoAlts = stats?.cutoffs?.spotWithNoAlts;
+  const predictions = stats?.cutoffs?.predictions;
 
   useEffect(() => {
     setSelectedSpecs(getFromSearchParams(searchParams, "specs"));
@@ -97,25 +97,25 @@ const CutOffText = ({ bracket, statistic }: IProps) => {
   }
 };
 
-const CutOffRating = ({ bracket, statistic }: IProps) => {
+const CutOffRating = ({ bracket, stats }: IProps) => {
   if (
-    !statistic?.cutoffs?.rewards?.ARENA_3v3 ||
+    !stats?.cutoffs?.rewards?.ARENA_3v3 ||
     !["shuffle", "rbg", "3v3"].includes(bracket)
   ) {
     return <div></div>;
   }
-  // return <div></div>;
+  return <div></div>;
 
-  return (
-    <div className="flex items-center mr-2">
-      <img
-        className="w-7 h-7 mr-2"
-        src={getSeasonRankImageFromRating(0, true)}
-        alt="Season Rank"
-      />
-      <CutOffText statistic={statistic} bracket={bracket} />
-    </div>
-  );
+  // return (
+  //   <div className="flex items-center mr-2">
+  //     <img
+  //       className="w-7 h-7 mr-2"
+  //       src={getSeasonRankImageFromRating(0, true)}
+  //       alt="Season Rank"
+  //     />
+  //     <CutOffText stats={stats} bracket={bracket} />
+  //   </div>
+  // );
 };
 
 export default CutOffRating;

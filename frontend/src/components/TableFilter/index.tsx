@@ -15,7 +15,7 @@ interface IProps {
   statistics: any;
 }
 
-const TableFilter = ({ selectedSpecs, onSpecsChange, bracket, statistics: statistic }: IProps) => {
+const TableFilter = ({ selectedSpecs, onSpecsChange, bracket, statistics: stats }: IProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [filtersShown, setFiltersShown] = useState(selectedSpecs.length > 0);
@@ -41,7 +41,7 @@ const TableFilter = ({ selectedSpecs, onSpecsChange, bracket, statistics: statis
   return (
     <div className="bg-[#030303e6] px-4 sm:px-8">
       <div className="flex items-center justify-between pt-2 sm:pt-6 pb-0">
-        <CutOffRating statistic={statistic} bracket={bracket} />
+        <CutOffRating stats={stats} bracket={bracket} />
         <Button className="!px-8 !text-white !bg-[#1F2937]" onClick={toggleFilterShown}>
           Filters
           {!isEmpty(selectedSpecs) && (
