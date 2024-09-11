@@ -25,9 +25,12 @@ public record PvpBracket(String bracketType,
         String type = wowApiBracket.getJsonObject("bracket").getString("type");
         Long rating = wowApiBracket.getLong("rating");
         Optional<JsonObject> stats;
-        if (type.equals("SHUFFLE")) {
+        if (type.equals("SHUFFLE") || type.equals("BLITZ")) {
             type = type + "-" + wowApiBracket.getJsonObject("specialization").getString("name");
             stats = Optional.ofNullable(wowApiBracket.getJsonObject("season_round_statistics"));
+            if (stats.isEmpty()) {
+                stats = Optional.ofNullable(wowApiBracket.getJsonObject("season_match_statistics"));
+            }
         } else {
             stats = Optional.ofNullable(wowApiBracket.getJsonObject("season_match_statistics"));
         }

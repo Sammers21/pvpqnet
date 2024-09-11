@@ -198,7 +198,7 @@ public record WowAPICharacter(long id,
                     return foundChars.get(0).pos();
                 } else {
                     Long finalPos = -1L;
-                    if (btype.equals("SHUFFLE")) {
+                    if (btype.equals("SHUFFLE") || btype.equals("BLITZ")) {
                         String spec = wowApiBracket.getJsonObject("specialization").getString("name");
                         finalPos = foundChars.stream().filter(c -> c.fullSpec().contains(spec)).findFirst().map(Character::pos).orElse(-1L);
                     }
@@ -207,7 +207,7 @@ public record WowAPICharacter(long id,
             }).orElse(-1L);
             Long cutoffByBracketType;
             Optional<PvpBracket> prevBracket;
-            if (btype.equals("SHUFFLE")) {
+            if (btype.equals("SHUFFLE") || btype.equals("BLITZ")) {
                 String spec = wowApiBracket.getJsonObject("specialization").getString("name");
                 Long id = wowApiBracket.getJsonObject("specialization").getLong("id");
                 String specCode = Cutoffs.specCodeNameById(spec, id);

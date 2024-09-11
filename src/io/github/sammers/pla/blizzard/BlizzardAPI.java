@@ -99,84 +99,61 @@ public class BlizzardAPI {
         String absoluteURI = "https://" + realRegion + ".api.blizzard.com/profile/wow/character/" + realmSearch + "/" + nameSearch;
         return token().flatMapMaybe(blizzardAuthToken -> {
             long tick = System.nanoTime();
-            return maybeResponse(realNamespace, absoluteURI)
-                .flatMap(json -> {
-                    Maybe<WowAPICharacter> res;
-                    if (json.getInteger("code") != null && json.getInteger("code") == 404) {
-                        log.debug("Character not found: " + name + " on " + realm + " in " + realRegion);
-                        res = Maybe.empty();
-                    } else {
-                        log.debug("Found Character:  " + name + " on " + realm + " in " + realRegion);
-                        res = maybeResponse(realNamespace, json.getJsonObject("pvp_summary").getString("href"))
-                            .flatMap(pvp -> {
-                                JsonArray bracketFromJson = pvp.getJsonArray("brackets");
-                                if (bracketFromJson == null) {
-                                    bracketFromJson = new JsonArray();
-                                }
-                                Single<List<JsonObject>> bracketList = Maybe.concatEager(
-                                    bracketFromJson.stream()
-                                        .map(o -> ((JsonObject) o).getString("href"))
-                                        .map(ref -> maybeResponse(realNamespace, ref)
-                                        ).toList()
-                                ).toList();
-                                Maybe<JsonObject> achievementsRx = maybeResponse(realNamespace, absoluteURI + "/achievements");
-                                Maybe<JsonObject> mediaRx = maybeResponse(realNamespace, absoluteURI + "/character-media").onErrorReturnItem(new JsonObject());
-                                Maybe<JsonObject> petsRx = maybeResponse(realNamespace, absoluteURI + "/collections/pets");
-                                Maybe<JsonObject> specsRx = maybeResponse(realNamespace, absoluteURI + "/specializations");
-                                return Single.zip(
-                                    bracketList,
-                                    Maybe.concatEager(List.of(achievementsRx, mediaRx, petsRx, specsRx)).toList(),
-                                    Pair::new).flatMapMaybe(pair -> {
-                                    List<JsonObject> brackets = pair.getValue0();
-                                    List<JsonObject> otherStuff = pair.getValue1();
-                                    Optional<WowAPICharacter> prev = Optional.ofNullable(characterCache.getByFullName(Character.fullNameByRealmAndName(name, realm)));
-                                    Optional<Cutoffs> ctfs = Optional.ofNullable(cutoffs.get(realRegion));
-                                    WowAPICharacter parsed = WowAPICharacter.parse(characterCache, prev, refs, ctfs, json, pvp,
-                                        brackets, otherStuff.get(0), otherStuff.get(1), otherStuff.get(3), otherStuff.get(2), realRegion);
-                                    return Maybe.just(parsed);
-                                }).doOnSuccess(wowAPICharacter -> {
-                                    long elapsed = System.nanoTime() - tick;
-                                    log.debug("Parsed character {} in {} ms", wowAPICharacter.fullName(), elapsed / 1000000);
-                                });
-                            })
-                            .doOnError(e -> log.error("Error parsing character: " + name + " on " + realm + " in " + realRegion, e))
-                            .onErrorResumeNext(Maybe.empty());
-                    }
-                    return res;
-                });
+            return maybeResponse(realNamespace, absoluteURI).flatMap(json -> {
+                Maybe<WowAPICharacter> res;
+                if (json.getInteger("code") != null && json.getInteger("code") == 404) {
+                    log.debug("Character not found: " + name + " on " + realm + " in " + realRegion);
+                    res = Maybe.empty();
+                } else {
+                    log.debug("Found Character:  " + name + " on " + realm + " in " + realRegion);
+                    res = maybeResponse(realNamespace, json.getJsonObject("pvp_summary").getString("href")).flatMap(pvp -> {
+                        JsonArray bracketFromJson = pvp.getJsonArray("brackets");
+                        if (bracketFromJson == null) {
+                            bracketFromJson = new JsonArray();
+                        }
+                        Single<List<JsonObject>> bracketList = Maybe.concatEager(bracketFromJson.stream().map(o -> ((JsonObject) o).getString("href")).map(ref -> maybeResponse(realNamespace, ref)).toList()).toList();
+                        Maybe<JsonObject> achievementsRx = maybeResponse(realNamespace, absoluteURI + "/achievements");
+                        Maybe<JsonObject> mediaRx = maybeResponse(realNamespace, absoluteURI + "/character-media").onErrorReturnItem(new JsonObject());
+                        Maybe<JsonObject> petsRx = maybeResponse(realNamespace, absoluteURI + "/collections/pets");
+                        Maybe<JsonObject> specsRx = maybeResponse(realNamespace, absoluteURI + "/specializations");
+                        return Single.zip(bracketList, Maybe.concatEager(List.of(achievementsRx, mediaRx, petsRx, specsRx)).toList(), Pair::new).flatMapMaybe(pair -> {
+                            List<JsonObject> brackets = pair.getValue0();
+                            List<JsonObject> otherStuff = pair.getValue1();
+                            Optional<WowAPICharacter> prev = Optional.ofNullable(characterCache.getByFullName(Character.fullNameByRealmAndName(name, realm)));
+                            Optional<Cutoffs> ctfs = Optional.ofNullable(cutoffs.get(realRegion));
+                            WowAPICharacter parsed = WowAPICharacter.parse(characterCache, prev, refs, ctfs, json, pvp,
+                                brackets, otherStuff.get(0), otherStuff.get(1), otherStuff.get(3), otherStuff.get(2), realRegion);
+                            return Maybe.just(parsed);
+                        }).doOnSuccess(wowAPICharacter -> {
+                            long elapsed = System.nanoTime() - tick;
+                            log.debug("Parsed character {} in {} ms", wowAPICharacter.fullName(), elapsed / 1000000);
+                        });
+                    }).doOnError(e -> log.error("Error parsing character: " + name + " on " + realm + " in " + realRegion, e)).onErrorResumeNext(Maybe.empty());
+                }
+                return res;
+            });
         });
     }
 
     Maybe<JsonObject> maybeResponse(String namespace, String url) {
-        return token().flatMapMaybe(blizzardAuthToken ->
-            rpsToken().andThen(
-                Maybe.defer(() -> {
-                    log.debug("Getting " + url);
-                    return webClient.getAbs(url)
-                        .addQueryParam("namespace", namespace)
-                        .addQueryParam("locale", LOCALE)
-                        .bearerTokenAuthentication(blizzardAuthToken.accessToken())
-                        .timeout(TimeUnit.MINUTES.toMillis(10))
-                        .rxSend()
-                        .onErrorResumeNext(er -> {
-                            log.error("Error getting " + url, er);
-                            return Single.error(er);
-                        })
-                        .flatMapMaybe(resp -> {
-                            log.debug("Got response to" + url + " " + resp.statusCode());
-                            if (resp.statusCode() == 200) {
-                                return Maybe.just(resp.bodyAsJsonObject());
-                            } else if (resp.statusCode() == 429 || resp.statusCode() / 100 == 5) {
-                                int code = resp.statusCode();
-                                log.info(code + " Retrying " + url + " " + resp.statusMessage());
-                                return rpsToken().andThen(rpsToken()).andThen(maybeResponse(namespace, url));
-                            } else {
-                                return Maybe.error(new IllegalStateException("Error getting " + url + " " + resp.statusCode() + " " + resp.statusMessage() + " " + resp.bodyAsString()));
-                            }
-                        });
-                })
-            )
-        );
+        return token().flatMapMaybe(blizzardAuthToken -> rpsToken().andThen(Maybe.defer(() -> {
+            log.debug("Getting " + url);
+            return webClient.getAbs(url).addQueryParam("namespace", namespace).addQueryParam("locale", LOCALE).bearerTokenAuthentication(blizzardAuthToken.accessToken()).timeout(TimeUnit.MINUTES.toMillis(10)).rxSend().onErrorResumeNext(er -> {
+                log.error("Error getting " + url, er);
+                return Single.error(er);
+            }).flatMapMaybe(resp -> {
+                log.debug("Got response to" + url + " " + resp.statusCode());
+                if (resp.statusCode() == 200) {
+                    return Maybe.just(resp.bodyAsJsonObject());
+                } else if (resp.statusCode() == 429 || resp.statusCode() / 100 == 5) {
+                    int code = resp.statusCode();
+                    log.info(code + " Retrying " + url + " " + resp.statusMessage());
+                    return rpsToken().andThen(rpsToken()).andThen(maybeResponse(namespace, url));
+                } else {
+                    return Maybe.error(new IllegalStateException("Error getting " + url + " " + resp.statusCode() + " " + resp.statusMessage() + " " + resp.bodyAsString()));
+                }
+            });
+        })));
     }
 
     public static String realRegion(String region) {
@@ -223,23 +200,13 @@ public class BlizzardAPI {
             realPvpBracket = pvpBracket;
         }
         String url = "https://" + realRegion + ".api.blizzard.com/data/wow/pvp-season/" + pvpSeasonId + "/pvp-leaderboard/" + realPvpBracket;
-        return Maybe.defer(() ->
-                token().flatMapMaybe(blizzardAuthToken -> maybeResponse(realNamespace, url)).map(PvpLeaderBoard::fromJson)
-            )
-            .doOnSubscribe(disposable -> log.info("Getting leaderboard for region={} ssn={} bracket={}", realRegion, pvpSeasonId, realPvpBracket))
-            .doOnError(er -> log.error("Error fetching Blizzard PVP leaderboard", er))
-            .onErrorResumeNext(Maybe.empty());
+        return Maybe.defer(() -> token().flatMapMaybe(blizzardAuthToken -> maybeResponse(realNamespace, url)).map(PvpLeaderBoard::fromJson)).doOnSubscribe(disposable -> log.info("Getting leaderboard for region={} ssn={} bracket={}", realRegion, pvpSeasonId, realPvpBracket)).doOnError(er -> log.error("Error fetching Blizzard PVP leaderboard", er)).onErrorResumeNext(Maybe.empty());
     }
 
     private Single<BlizzardAuthToken> authorize() {
         MultiMap form = MultiMap.caseInsensitiveMultiMap();
         form.set("grant_type", "client_credentials");
-        return webClient.postAbs(AUTH_URL)
-            .addQueryParam("grant_type", "client_credentials")
-            .basicAuthentication(clientId, clientSecret)
-            .rxSendForm(form)
-            .map(response -> BlizzardAuthToken.fromJson(response.bodyAsJsonObject()))
-            .doOnSuccess(token -> log.info("Got token: {}", token));
+        return webClient.postAbs(AUTH_URL).addQueryParam("grant_type", "client_credentials").basicAuthentication(clientId, clientSecret).rxSendForm(form).map(response -> BlizzardAuthToken.fromJson(response.bodyAsJsonObject())).doOnSuccess(token -> log.info("Got token: {}", token));
     }
 
     public Single<Realms> realms(String region) {
@@ -248,15 +215,14 @@ public class BlizzardAPI {
             String realRegion = realRegion(region);
             String namespace = "dynamic-" + realRegion;
             String url = "https://" + realRegion + ".api.blizzard.com/data/wow/connected-realm/index";
-            return maybeResponse(namespace, url)
-                .flatMapSingle(index -> {
-                    List<String> hrefs = index.getJsonArray("connected_realms").stream().map(o -> ((JsonObject) o).getString("href")).toList();
-                    List<Maybe<JsonObject>> list = hrefs.stream().map(href -> maybeResponse(namespace, href)).toList();
-                    return Maybe.merge(list).toList().map(responses -> {
-                        log.info("Realms for {} fetched in {}ms", realRegion, System.currentTimeMillis() - tick);
-                        return Realms.fromBlizzardJson(realRegion, index, responses);
-                    });
+            return maybeResponse(namespace, url).flatMapSingle(index -> {
+                List<String> hrefs = index.getJsonArray("connected_realms").stream().map(o -> ((JsonObject) o).getString("href")).toList();
+                List<Maybe<JsonObject>> list = hrefs.stream().map(href -> maybeResponse(namespace, href)).toList();
+                return Maybe.merge(list).toList().map(responses -> {
+                    log.info("Realms for {} fetched in {}ms", realRegion, System.currentTimeMillis() - tick);
+                    return Realms.fromBlizzardJson(realRegion, index, responses);
                 });
+            });
         });
     }
 
@@ -266,14 +232,6 @@ public class BlizzardAPI {
 
     public Single<Cutoffs> cutoffs(String region, Integer pvpSsnId) {
         String realRegion = realRegion(region);
-        return token().flatMap(blizzardAuthToken ->
-            webClient.getAbs("https://" + realRegion + ".api.blizzard.com/data/wow/pvp-season/" + pvpSsnId + "/pvp-reward/index")
-                .addQueryParam("namespace", "dynamic-" + realRegion)
-                .addQueryParam("locale", LOCALE)
-                .bearerTokenAuthentication(blizzardAuthToken.accessToken())
-                .rxSend()
-                .map(HttpResponse::bodyAsJsonObject)
-                .map(res -> Cutoffs.fromBlizzardJson(realRegion, res))
-        );
+        return token().flatMap(blizzardAuthToken -> webClient.getAbs("https://" + realRegion + ".api.blizzard.com/data/wow/pvp-season/" + pvpSsnId + "/pvp-reward/index").addQueryParam("namespace", "dynamic-" + realRegion).addQueryParam("locale", LOCALE).bearerTokenAuthentication(blizzardAuthToken.accessToken()).rxSend().map(HttpResponse::bodyAsJsonObject).map(res -> Cutoffs.fromBlizzardJson(realRegion, res)));
     }
 }
