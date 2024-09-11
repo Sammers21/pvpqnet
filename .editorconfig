@@ -6,12 +6,15 @@ root = true
 # Unix-style newlines with a newline ending every file
 [*]
 end_of_line = lf
+indent_size = 2
 insert_final_newline = true
 
 # Matches multiple files with brace expansion notation
 # Set default charset
-[*.{js,py}]
+[*.{js,py,ts,tsx}]
 charset = utf-8
+indent_size = 2
+indent_style = space
 
 # 4 space indentation
 [*.py]
