@@ -107,11 +107,11 @@ public class Ladder {
                 long tick = System.nanoTime();
                 log.info("Starting data updater for region=" + region);
                 return loadCutoffs(region)
+                    .andThen(blitz(region).ignoreElement())
                     .andThen(threeVThree(region).ignoreElement())
                     .andThen(twoVTwo(region).ignoreElement())
                     .andThen(battlegrounds(region).ignoreElement())
                     .andThen(shuffle(region).ignoreElement())
-                    .andThen(blitz(region).ignoreElement())
                     .andThen(updateCutoffs(region))
                     .andThen(loadCutoffsFromDb(region))
                     .andThen(calculateMulticlasserLeaderboard(region))
@@ -158,6 +158,7 @@ public class Ladder {
             .andThen(loadLast(THREE_V_THREE, region))
             .andThen(loadLast(RBG, region))
             .andThen(loadLast(SHUFFLE, region))
+            .andThen(loadLast(BLITZ, region))
             .andThen(updateCutoffs(region))
             .andThen(loadCutoffsFromDb(region))
             .andThen(calculateMeta(region))
@@ -221,13 +222,14 @@ public class Ladder {
 
     public Single<List<Character>> pureBlizzardApiFetch(String bracket, String region) {
         Single<List<Character>> resCharList;
-        if (bracket.equals(SHUFFLE)) {
-            Single<List<Character>> res = Single.just(new ArrayList<>(5000 * shuffleSpecs.size()));
-            for (String shuffleSpec : shuffleSpecs) {
-                Single<List<Character>> sh = Single.just(new ArrayList<>(shuffleSpecs.size()));
-                String specForBlizApi = shuffleSpec.replaceAll("/", "-");
+        if (ZOLO_BRACKETS.contains(bracket)) {
+            List<String> zoloSepcs = zoloSpecList(bracket);
+            Single<List<Character>> res = Single.just(new ArrayList<>(5000 * zoloSepcs.size()));
+            for (String zoloSpec : zoloSepcs) {
+                Single<List<Character>> sh = Single.just(new ArrayList<>(zoloSepcs.size()));
+                String specForBlizApi = zoloSpec.replaceAll("/", "-");
                 sh = sh.flatMap(thisSpecChars -> blizzardAPI.pvpLeaderboard(specForBlizApi, region).flatMapSingle(leaderboard -> {
-                    Set<Character> chrs = leaderboard.toCharacters(characterCache, shuffleSpec);
+                    Set<Character> chrs = leaderboard.toCharacters(characterCache, zoloSpec);
                     thisSpecChars.addAll(chrs);
                     return Single.just(thisSpecChars);
                 }));
@@ -258,7 +260,7 @@ public class Ladder {
             resCharList = pureBlizzardApiFetch(bracket, region).flatMap(chars -> {
                 Map<String, Character> pureleyFetchedChars = new HashMap<>();
                 Function<Character, String> idf;
-                if (bracket.equals(SHUFFLE)) {
+                if (ZOLO_BRACKETS.contains(bracket)) {
                     idf = Character::fullNameWSpec;
                 } else {
                     idf = Character::fullName;
@@ -290,10 +292,11 @@ public class Ladder {
 
     public Single<List<Character>> ladderPageFetch(String bracket, String region) {
         Single<List<Character>> resCharList;
-        if (bracket.equals(SHUFFLE)) {
-            Single<List<Character>> res = Single.just(new ArrayList<>(1000 * shuffleSpecs.size()));
-            for (String shuffleSpec : shuffleSpecs) {
-                Single<List<Character>> sh = Single.just(new ArrayList<>(shuffleSpecs.size()));
+        if (ZOLO_BRACKETS.contains(bracket)) {
+            List<String> zoloSpecs = zoloSpecList(bracket);
+            Single<List<Character>> res = Single.just(new ArrayList<>(1000 * zoloSpecs.size()));
+            for (String shuffleSpec : zoloSpecs) {
+                Single<List<Character>> sh = Single.just(new ArrayList<>(zoloSpecs.size()));
                 for (int i = 1; i <= 10; i++) {
                     int finalI = i;
                     sh = sh.flatMap(characters -> ladderShuffle(shuffleSpec, finalI, region).map(c -> {

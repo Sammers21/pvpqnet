@@ -1,9 +1,6 @@
 package io.github.sammers.pla.logic;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Pattern;
 
 public class Conts {
@@ -19,49 +16,53 @@ public class Conts {
     public static String BLITZ = "blitz";
     public static String MULTICLASSERS = "multiclassers";
 
-    public static List<String> BRACKETS = List.of(TWO_V_TWO, THREE_V_THREE, RBG, SHUFFLE);
+    public static Set<String> BRACKETS = Set.of(TWO_V_TWO, THREE_V_THREE, RBG, SHUFFLE, BLITZ);
 
-    public static final List<String> shuffleSpecs = new ArrayList<>() {{
-        add("shuffle/deathknight/blood");
-        add("shuffle/deathknight/frost");
-        add("shuffle/deathknight/unholy");
-        add("shuffle/demonhunter/havoc");
-        add("shuffle/demonhunter/vengeance");
-        add("shuffle/druid/balance");
-        add("shuffle/druid/feral");
-        add("shuffle/druid/guardian");
-        add("shuffle/druid/restoration");
-        add("shuffle/evoker/devastation");
-        add("shuffle/evoker/preservation");
-        add("shuffle/evoker/augmentation");
-        add("shuffle/hunter/beastmastery");
-        add("shuffle/hunter/marksmanship");
-        add("shuffle/hunter/survival");
-        add("shuffle/mage/arcane");
-        add("shuffle/mage/fire");
-        add("shuffle/mage/frost");
-        add("shuffle/monk/brewmaster");
-        add("shuffle/monk/mistweaver");
-        add("shuffle/monk/windwalker");
-        add("shuffle/paladin/holy");
-        add("shuffle/paladin/protection");
-        add("shuffle/paladin/retribution");
-        add("shuffle/priest/discipline");
-        add("shuffle/priest/holy");
-        add("shuffle/priest/shadow");
-        add("shuffle/rogue/assassination");
-        add("shuffle/rogue/outlaw");
-        add("shuffle/rogue/subtlety");
-        add("shuffle/shaman/elemental");
-        add("shuffle/shaman/enhancement");
-        add("shuffle/shaman/restoration");
-        add("shuffle/warlock/affliction");
-        add("shuffle/warlock/demonology");
-        add("shuffle/warlock/destruction");
-        add("shuffle/warrior/arms");
-        add("shuffle/warrior/fury");
-        add("shuffle/warrior/protection");
-    }};
+    public static Set<String> ZOLO_BRACKETS = Set.of(SHUFFLE, BLITZ);
+
+    public static List<String> zoloSpecList(String bracket) {
+        return new ArrayList<>() {{
+            add(bracket + "/deathknight/blood");
+            add(bracket + "/deathknight/frost");
+            add(bracket + "/deathknight/unholy");
+            add(bracket + "/demonhunter/havoc");
+            add(bracket + "/demonhunter/vengeance");
+            add(bracket + "/druid/balance");
+            add(bracket + "/druid/feral");
+            add(bracket + "/druid/guardian");
+            add(bracket + "/druid/restoration");
+            add(bracket + "/evoker/devastation");
+            add(bracket + "/evoker/preservation");
+            add(bracket + "/evoker/augmentation");
+            add(bracket + "/hunter/beastmastery");
+            add(bracket + "/hunter/marksmanship");
+            add(bracket + "/hunter/survival");
+            add(bracket + "/mage/arcane");
+            add(bracket + "/mage/fire");
+            add(bracket + "/mage/frost");
+            add(bracket + "/monk/brewmaster");
+            add(bracket + "/monk/mistweaver");
+            add(bracket + "/monk/windwalker");
+            add(bracket + "/paladin/holy");
+            add(bracket + "/paladin/protection");
+            add(bracket + "/paladin/retribution");
+            add(bracket + "/priest/discipline");
+            add(bracket + "/priest/holy");
+            add(bracket + "/priest/shadow");
+            add(bracket + "/rogue/assassination");
+            add(bracket + "/rogue/outlaw");
+            add(bracket + "/rogue/subtlety");
+            add(bracket + "/shaman/elemental");
+            add(bracket + "/shaman/enhancement");
+            add(bracket + "/shaman/restoration");
+            add(bracket + "/warlock/affliction");
+            add(bracket + "/warlock/demonology");
+            add(bracket + "/warlock/destruction");
+            add(bracket + "/warrior/arms");
+            add(bracket + "/warrior/fury");
+            add(bracket + "/warrior/protection");
+        }};
+    }
 
     public static Map<String, String> SHUFFLE_SPEC_TO_SPEC = new HashMap<>() {
         {

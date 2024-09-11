@@ -206,7 +206,7 @@ public class Calculator {
     }
 
     public static SnapshotDiff calculateDiff(Snapshot oldChars, Snapshot newChars, String bracket) {
-        return calculateDiff(oldChars, newChars, bracket, true);
+        return calculateDiff(oldChars, newChars, bracket, false);
     }
 
     public static List<List<CharAndDiff>> whoPlayedWithWho(SnapshotDiff diff, int pplInTheGroup, CharacterCache cache) {
@@ -278,7 +278,6 @@ public class Calculator {
 
 
     public static SnapshotDiff calculateDiff(Snapshot oldChars, Snapshot newChars, String bracket, boolean newIsZero) {
-//        if (o)
         if ((oldChars != null && newChars != null) && oldChars.timestamp() > newChars.timestamp()) {
             Snapshot temp = oldChars;
             oldChars = newChars;
@@ -294,15 +293,6 @@ public class Calculator {
         }
         for (Character newChar : newChars.characters()) {
             Character oldChar = oldMap.get(idF.apply(newChar));
-//            if (oldChar != null && ((newChar.wins() + newChar.losses()) < (oldChar.wins() + oldChar.losses()))) {
-//                if (newChar.name().equals("Lôôny") && bracket.equals("shuffle")) {
-//                    log.debug("Lôôny: {}", newChar);
-//                }
-//                newChar = oldChar;
-//                oldChar = newChar;
-//            } else {
-//                newChar = newChar;
-//            }
             CharAndDiff e;
             if (oldChar == null) {
                 if (newIsZero) {
