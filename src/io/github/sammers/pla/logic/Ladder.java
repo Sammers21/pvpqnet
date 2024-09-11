@@ -72,7 +72,7 @@ public class Ladder {
         Observable<Long> updates;
         if (updatesEnabled) {
             updates = Observable.mergeArray(runDataUpdater(EU, 1, MINUTES, new AtomicBoolean(false), new AtomicLong(System.nanoTime()), Observable.defer(() -> {
-                int initialDelay = 0;
+                int initialDelay = Calculator.minutesTillNextMins(euPeriod);
                 return Observable.interval(initialDelay, euPeriod, MINUTES);
             })), runDataUpdater(US, 1, MINUTES, new AtomicBoolean(false), new AtomicLong(System.nanoTime()), Observable.defer(() -> {
                 int initialDelay = Calculator.minutesTillNextMins(usPeriod);
@@ -598,8 +598,8 @@ public class Ladder {
 //            db.getMinsAgo(bracket, region, 60 * 24 * 4),
 //            db.getMinsAgo(bracket, region, 60 * 24 * 2),
 //            db.getMinsAgo(bracket, region, 60 * 24),
-//            db.getMinsAgo(bracket, region, 60 * 12),
-//            db.getMinsAgo(bracket, region, 60 * 8),
+            db.getMinsAgo(bracket, region, 60 * 12),
+            db.getMinsAgo(bracket, region, 60 * 8),
             db.getMinsAgo(bracket, region, 60 * 6),
             db.getMinsAgo(bracket, region, 60 * 3),
             db.getMinsAgo(bracket, region, 60 * 2),
