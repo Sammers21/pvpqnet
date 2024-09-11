@@ -72,7 +72,7 @@ public class Ladder {
         Observable<Long> updates;
         if (updatesEnabled) {
             updates = Observable.mergeArray(runDataUpdater(EU, 1, MINUTES, new AtomicBoolean(false), new AtomicLong(System.nanoTime()), Observable.defer(() -> {
-                int initialDelay = Calculator.minutesTillNextMins(euPeriod);
+                int initialDelay = 0;
                 return Observable.interval(initialDelay, euPeriod, MINUTES);
             })), runDataUpdater(US, 1, MINUTES, new AtomicBoolean(false), new AtomicLong(System.nanoTime()), Observable.defer(() -> {
                 int initialDelay = Calculator.minutesTillNextMins(usPeriod);
@@ -643,34 +643,39 @@ public class Ladder {
         final AtomicReference<List<WowAPICharacter>> upserted = new AtomicReference<>();
         return Completable.create(emitter -> {
             VTHREAD_SCHEDULER.scheduleDirect(() -> {
-                log.info("Upserting gaming history for bracket " + bracket);
-                BracketType bracketType = BracketType.fromType(bracket);
-                long upsertTotalTick = System.nanoTime();
-                if (bracketType.partySize() == 1) {
-                    upserted.set(diff.chars().stream().flatMap(df -> {
-                        try {
-                            return characterCache.upsertDiff(df, bracket).stream();
-                        } catch (Exception e) {
-                            log.warn("Error upserting diff", e);
-                            return Stream.empty();
-                        }
-                    }).toList());
-                } else {
-                    int partySize = bracketType.partySize();
-                    long tick = System.nanoTime();
-                    List<List<CharAndDiff>> whoWWho = Calculator.whoPlayedWithWho(diff, partySize, characterCache);
-                    log.info("Who played with who for bracket {} partySize={} has been calculated in {} ms, {} groups", bracket, partySize, (System.nanoTime() - tick) / 1000000, whoWWho.size());
-                    upserted.set(whoWWho.stream().flatMap(list -> {
-                        try {
-                            return characterCache.upsertGroupDiff(list, bracket).stream();
-                        } catch (Exception e) {
-                            log.warn("Error upserting diff", e);
-                            return Stream.empty();
-                        }
-                    }).toList());
+                try {
+                    log.info("Upserting gaming history for bracket " + bracket);
+                    BracketType bracketType = BracketType.fromType(bracket);
+                    long upsertTotalTick = System.nanoTime();
+                    if (bracketType.partySize() == 1) {
+                        upserted.set(diff.chars().stream().flatMap(df -> {
+                            try {
+                                return characterCache.upsertDiff(df, bracket).stream();
+                            } catch (Exception e) {
+                                log.warn("Error upserting diff", e);
+                                return Stream.empty();
+                            }
+                        }).toList());
+                    } else {
+                        int partySize = bracketType.partySize();
+                        long tick = System.nanoTime();
+                        List<List<CharAndDiff>> whoWWho = Calculator.whoPlayedWithWho(diff, partySize, characterCache);
+                        log.info("Who played with who for bracket {} partySize={} has been calculated in {} ms, {} groups", bracket, partySize, (System.nanoTime() - tick) / 1000000, whoWWho.size());
+                        upserted.set(whoWWho.stream().flatMap(list -> {
+                            try {
+                                return characterCache.upsertGroupDiff(list, bracket).stream();
+                            } catch (Exception e) {
+                                log.warn("Error upserting diff", e);
+                                return Stream.empty();
+                            }
+                        }).toList());
+                    }
+                    log.info("Upserting gaming history for bracket {} has been finished in {} ms, upserted {} chars", bracket, (System.nanoTime() - upsertTotalTick) / 1000000, upserted.get().size());
+                    emitter.onComplete();
+                } catch (Exception e) {
+                    log.warn("Error upserting diff", e);
+                    emitter.onError(e);
                 }
-                log.info("Upserting gaming history for bracket {} has been finished in {} ms, upserted {} chars", bracket, (System.nanoTime() - upsertTotalTick) / 1000000, upserted.get().size());
-                emitter.onComplete();
             }, 0, SECONDS);
         }).andThen(
             Completable.defer(() -> db.bulkUpdateChars(upserted.get())

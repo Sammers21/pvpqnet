@@ -3,6 +3,7 @@ package io.github.sammers.pla.blizzard;
 import io.github.sammers.pla.http.JsonConvertable;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.slf4j.Logger;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -11,6 +12,8 @@ import java.util.stream.Collectors;
 import static io.github.sammers.pla.logic.Conts.SPACE;
 
 public class Cutoffs implements JsonConvertable {
+
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(Cutoffs.class);
 
     public final String region;
     public final String season;
@@ -44,11 +47,11 @@ public class Cutoffs implements JsonConvertable {
     }
 
     public void setSpotWithNoAlts(String bracket, long count) {
-        spotWithNoAlts.put(bracket, (long)count);
+        spotWithNoAlts.put(bracket, (long) count);
     }
 
     public void setSpotCount(String bracket, int count) {
-        spotsCounts.put(bracket, (long)count);
+        spotsCounts.put(bracket, (long) count);
     }
 
     public int spotCount(String bracket) {
@@ -66,20 +69,20 @@ public class Cutoffs implements JsonConvertable {
                 cfs.put(bracket, reward.getLong("rating_cutoff"));
             } else if (bracket.equals("BATTLEGROUNDS")) {
                 cfs.put(bracket + "/" + reward.getJsonObject("faction").getString("name").toLowerCase(), reward.getLong("rating_cutoff"));
-            } else if (bracket.equals("SHUFFLE")) {
+            } else if (bracket.equals("SHUFFLE") || bracket.equals("BLITZ")) {
                 String spec = reward.getJsonObject("specialization").getString("name");
                 Long id = reward.getJsonObject("specialization").getLong("id");
                 cfs.put(bracket + "/" + specCodeNameById(spec, id), reward.getLong("rating_cutoff"));
             } else {
-                System.out.println("Unknown bracket: " + bracket);
+                log.error("Unknown bracket type: " + bracket);
             }
         }
         long now = System.currentTimeMillis();
         return new Cutoffs(
-                region,
-                entries.getJsonObject("season").getString("id"),
-                cfs,
-                now
+            region,
+            entries.getJsonObject("season").getString("id"),
+            cfs,
+            now
         );
     }
 
@@ -145,27 +148,27 @@ public class Cutoffs implements JsonConvertable {
     @Override
     public JsonObject toJson() {
         return new JsonObject()
-                .put("region", region)
-                .put("season", season)
-                .put("timestamp", timestamp)
-                .put("rewards", new JsonObject(cutoffs.entrySet().stream().map(x -> Map.entry(x.getKey(), x.getValue())).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))))
-                .put("spotCounts", new JsonObject(spotsCounts.entrySet().stream().map(x -> Map.entry(x.getKey(), x.getValue())).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))))
-                .put("spotWithNoAlts", new JsonObject(spotWithNoAlts.entrySet().stream().map(x -> Map.entry(x.getKey(), x.getValue())).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))));
+            .put("region", region)
+            .put("season", season)
+            .put("timestamp", timestamp)
+            .put("rewards", new JsonObject(cutoffs.entrySet().stream().map(x -> Map.entry(x.getKey(), x.getValue())).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))))
+            .put("spotCounts", new JsonObject(spotsCounts.entrySet().stream().map(x -> Map.entry(x.getKey(), x.getValue())).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))))
+            .put("spotWithNoAlts", new JsonObject(spotWithNoAlts.entrySet().stream().map(x -> Map.entry(x.getKey(), x.getValue())).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))));
     }
 
     public JsonObject toJsonWithPredictions() {
         return toJson()
-                .put("predictions", new JsonObject(cutoffsPredictions.entrySet().stream().map(x -> Map.entry(x.getKey(), x.getValue())).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))));
+            .put("predictions", new JsonObject(cutoffsPredictions.entrySet().stream().map(x -> Map.entry(x.getKey(), x.getValue())).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))));
     }
 
     public static Cutoffs fromJson(JsonObject json) {
         return new Cutoffs(
-                json.getString("region"),
-                json.getString("season"),
-                json.getJsonObject("rewards").stream().collect(Collectors.toMap(Map.Entry::getKey, x -> (Long) x.getValue())),
-                json.getJsonObject("spotCounts").stream().collect(Collectors.toMap(Map.Entry::getKey, x -> (Long) x.getValue())),
-                json.getJsonObject("spotWithNoAlts").stream().collect(Collectors.toMap(Map.Entry::getKey, x -> (Long) x.getValue())),
-                json.getLong("timestamp")
+            json.getString("region"),
+            json.getString("season"),
+            json.getJsonObject("rewards").stream().collect(Collectors.toMap(Map.Entry::getKey, x -> (Long) x.getValue())),
+            json.getJsonObject("spotCounts").stream().collect(Collectors.toMap(Map.Entry::getKey, x -> (Long) x.getValue())),
+            json.getJsonObject("spotWithNoAlts").stream().collect(Collectors.toMap(Map.Entry::getKey, x -> (Long) x.getValue())),
+            json.getLong("timestamp")
         );
     }
 
@@ -184,9 +187,9 @@ public class Cutoffs implements JsonConvertable {
     public boolean equals(Object obj) {
         if (obj instanceof Cutoffs) {
             Cutoffs other = (Cutoffs) obj;
-            return region.equals(other.region) 
-                    && season.equals(other.season)
-                    && cutoffs.equals(other.cutoffs);
+            return region.equals(other.region)
+                && season.equals(other.season)
+                && cutoffs.equals(other.cutoffs);
         }
         return false;
     }

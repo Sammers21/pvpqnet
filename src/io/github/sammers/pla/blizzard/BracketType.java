@@ -7,8 +7,8 @@ public enum BracketType {
     TWO_V_TWO(2, "2v2", "ARENA_2v2"),
     THREE_V_THREE(3, "3v3", "ARENA_3v3"),
     RBG(10, "BATTLEGROUNDS", "RBG"),
-
-    SHUFFLE(1, "SHUFFLE");
+    SHUFFLE(1, "SHUFFLE"),
+    BLITZ(1, "BLITZ");
 
     private final List<String> types;
     private final Integer partySize;
