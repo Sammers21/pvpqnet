@@ -67,7 +67,8 @@ public class Http {
                     String searchQ = opt.get();
                     List<SearchResult> search = ladder.search(searchQ);
                     fillWithSuggestionsTill20(search, searchQ);
-                    ctx.response().end(new JsonArray(search).encode());
+                    List<JsonObject> list = search.stream().map(SearchResult::toJson).map(j -> j.put("source", "pvpqnet")).toList();
+                    ctx.response().end(new JsonArray(list).encode());
 //                    if (search.size() < 20) {
 //                        extSearch.searchCharacterOfficial(searchQ).subscribe(res -> {
 //                            List<SearchResult> results = res.stream().map(ExtCharacterSearcher.ExtSearchResult::toSearchResult).toList();
