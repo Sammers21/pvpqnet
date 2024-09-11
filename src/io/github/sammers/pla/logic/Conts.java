@@ -16,6 +16,7 @@ public class Conts {
     public static String THREE_V_THREE = "3v3";
     public static String RBG = "battlegrounds";
     public static String SHUFFLE = "shuffle";
+    public static String BLITZ = "blitz";
     public static String MULTICLASSERS = "multiclassers";
 
     public static List<String> BRACKETS = List.of(TWO_V_TWO, THREE_V_THREE, RBG, SHUFFLE);
