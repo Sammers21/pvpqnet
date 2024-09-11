@@ -66,23 +66,25 @@ public class Http {
                 } else {
                     String searchQ = opt.get();
                     List<SearchResult> search = ladder.search(searchQ);
-                    if (search.size() < 20) {
-                        extSearch.searchCharacterOfficial(searchQ).subscribe(res -> {
-                            List<SearchResult> results = res.stream().map(ExtCharacterSearcher.ExtSearchResult::toSearchResult).toList();
-                            addSearchResults(search, results);
-                            fillWithSuggestionsTill20(search, searchQ);
-                            List<JsonObject> list = search.stream().map(SearchResult::toJson).map(j -> j.put("source", "official")).toList();
-                            ctx.response().end(new JsonArray(list).encode());
-                        }, err -> {
-                            log.error("Failed to search for {}", searchQ, err);
-                            fillWithSuggestionsTill20(search, searchQ);
-                            List<JsonObject> list = search.stream().map(SearchResult::toJson).map(j -> j.put("source", "pvpqnet")).toList();
-                            ctx.response().end(new JsonArray(list).encode());
-                        });
-                    } else {
-                        List<JsonObject> list = search.stream().map(SearchResult::toJson).map(j -> j.put("source", "pvpqnet")).toList();
-                        ctx.response().end(new JsonArray(list).encode());
-                    }
+                    fillWithSuggestionsTill20(search, searchQ);
+                    ctx.response().end(new JsonArray(search).encode());
+//                    if (search.size() < 20) {
+//                        extSearch.searchCharacterOfficial(searchQ).subscribe(res -> {
+//                            List<SearchResult> results = res.stream().map(ExtCharacterSearcher.ExtSearchResult::toSearchResult).toList();
+//                            addSearchResults(search, results);
+//                            fillWithSuggestionsTill20(search, searchQ);
+//                            List<JsonObject> list = search.stream().map(SearchResult::toJson).map(j -> j.put("source", "official")).toList();
+//                            ctx.response().end(new JsonArray(list).encode());
+//                        }, err -> {
+//                            log.error("Failed to search for {}", searchQ, err);
+//                            fillWithSuggestionsTill20(search, searchQ);
+//                            List<JsonObject> list = search.stream().map(SearchResult::toJson).map(j -> j.put("source", "pvpqnet")).toList();
+//                            ctx.response().end(new JsonArray(list).encode());
+//                        });
+//                    } else {
+//                        List<JsonObject> list = search.stream().map(SearchResult::toJson).map(j -> j.put("source", "pvpqnet")).toList();
+//                        ctx.response().end(new JsonArray(list).encode());
+//                    }
                 }
             });
         });
