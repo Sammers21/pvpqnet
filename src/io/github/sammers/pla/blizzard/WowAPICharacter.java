@@ -333,7 +333,7 @@ public record WowAPICharacter(long id,
                     pvpBracket.isRankOneRange(),
                     pvpBracket.gamingHistory().addDiff(new DiffAndWithWho(diff.character(), diff.diff(), withWho)).clean()
                 );
-            } else if (BracketType.fromType(pvpBracket.bracketType()).equals(bracket) && bracket.equals(BracketType.SHUFFLE)) {
+            } else if (BracketType.fromType(pvpBracket.bracketType()).equals(bracket) && (bracket.equals(BracketType.SHUFFLE) | bracket.equals(BracketType.BLITZ))) {
                 String fullSpec = diff.character().fullSpec();
                 if (fullSpec.contains(pvpBracket.bracketType().split("-")[1])) {
                     log.debug("Updating bracket " + pvpBracket.bracketType() + " with diff " + diff.toJson().encodePrettily());
