@@ -8,13 +8,13 @@ import Footer from '@/components/Footer';
 
 import { REGION } from '@/constants/region';
 import { BRACKETS } from '@/constants/pvp-activity';
-import { getActivityFromUrl } from '@/utils/urlparts';
+import { getActivityFromUrl, getBracket, getRegion } from '@/utils/urlparts';
 import { capitalizeFirstLetter } from '@/utils/common';
 import { fetchBracketActivity } from '@/services/stats.service';
 import MClassLeaderboard from '../MClassLeaderboard';
 
 function Activity() {
-  const { region = REGION.eu, bracket = BRACKETS["3v3"] } = useParams();
+  const { region = getRegion(), bracket = getBracket() } = useParams();
   const activity = getActivityFromUrl();
 
   const [bracketActivity, setBracketActivity] = useState<Record<BRACKETS, string>>();

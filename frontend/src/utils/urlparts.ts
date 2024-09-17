@@ -4,7 +4,7 @@ import { REGION } from '../constants/region';
 
 export function getBracket(bracket?: string) {
   const validBracket = Object.values(BRACKETS).find((r) => bracket === r);
-  return validBracket ?? BRACKETS['3v3'];
+  return validBracket ?? BRACKETS.shuffle;
 }
 
 export function getRegion(region?: string) {
@@ -14,7 +14,7 @@ export function getRegion(region?: string) {
 
 export function getActivityFromUrl() {
   const splitx = window.location.pathname.split('/');
-  return splitx.length >= 4 ? splitx[2] : 'ladder';
+  return splitx.length >= 4 ? splitx[2] : 'activity';
 }
 
 export function capitalizeNickname(nickname?: string) {

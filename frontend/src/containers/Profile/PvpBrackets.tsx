@@ -67,13 +67,13 @@ const PvpBracket = ({
         <div className="flex flex-col w-full justify-start py-2">
           <div className="flex w-full justify-between items-center">
             {specIcon ? (
-              <div className="flex flex-row items-center w-full w-full">
+              <div className="flex flex-row items-center">
                 <img
-                  className="pr-2 h-9 w-9 rounded border border-solid border-[#37415180]"
+                  className="h-9 w-9 rounded border border-solid border-[#37415180]"
                   src={specIcon}
                   alt={title}
                 />
-                <span className="text-base sm:text-2xl text-white">{zoloName}</span>
+                <span className="pl-2 text-base sm:text-2xl text-white">{zoloName}</span>
               </div>
             ) : (
               <span className="text-base sm:text-3xl text-white">{title}</span>
