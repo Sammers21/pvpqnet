@@ -387,7 +387,7 @@ public class Calculator {
         List<CharAndDiff> totalSortedRoleList = snapshot.chars().stream()
             .filter((CharAndDiff character) -> acceptedSpecs.contains(character.character().fullSpec()))
             .sorted(Comparator.comparing((CharAndDiff o) -> o.character().rating()).reversed()).toList();
-        if (bracket.equals("shuffle")) {
+        if (bracket.equals("shuffle") || bracket.equals("blitz")) {
             int maxMinRating = totalSortedRoleList.stream().collect(Collectors.groupingBy(character -> character.character().fullSpec(), Collectors.toList()))
                 .entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().stream().mapToLong(c -> c.character().rating()).min().orElse(0)))

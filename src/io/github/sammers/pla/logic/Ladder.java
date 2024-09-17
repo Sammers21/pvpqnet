@@ -457,7 +457,7 @@ public class Ladder {
     private Completable calculateMeta(String region) {
         String realRegion = realRegion(region);
         return Completable.defer(() -> {
-            List<Completable> res = List.of(TWO_V_TWO, THREE_V_THREE, RBG, SHUFFLE).stream().flatMap(bracket -> {
+            List<Completable> res = List.of(TWO_V_TWO, THREE_V_THREE, RBG, SHUFFLE, BLITZ).stream().flatMap(bracket -> {
                 log.info("Calculating meta for bracket=" + bracket + " region=" + region);
                 Snapshot now = refs.refByBracket(bracket, region).get();
                 if (now == null) {

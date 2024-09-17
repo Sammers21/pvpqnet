@@ -335,7 +335,8 @@ public record WowAPICharacter(long id,
                 );
             } else if (BracketType.fromType(pvpBracket.bracketType()).equals(bracket) && (bracket.equals(BracketType.SHUFFLE) | bracket.equals(BracketType.BLITZ))) {
                 String fullSpec = diff.character().fullSpec();
-                if (fullSpec.contains(pvpBracket.bracketType().split("-")[1])) {
+                String[] split = pvpBracket.bracketType().split("-");
+                if (split.length > 1 && fullSpec.contains(split[1])) {
                     log.debug("Updating bracket " + pvpBracket.bracketType() + " with diff " + diff.toJson().encodePrettily());
                     res = new PvpBracket(
                         pvpBracket.bracketType(),

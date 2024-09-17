@@ -1,12 +1,12 @@
-import { getRatingColor, getSeasonRankImageFromRating } from "@/utils/table";
-import { useSearchParams } from "react-router-dom";
-import { getFromSearchParams } from "../DataTable";
-import { useEffect, useState } from "react";
+import {getRatingColor, getSeasonRankImageFromRating} from "@/utils/table";
+import {useSearchParams} from "react-router-dom";
+import {getFromSearchParams} from "../DataTable";
+import {useEffect, useState} from "react";
 import {
   SEARCH_PARAM_TO_FULL_SPEC,
   SEARCH_PARAM_TO_SPEC,
 } from "@/constants/filterSchema";
-import { title } from "process";
+import {title} from "process";
 
 interface IProps {
   bracket: string;
@@ -18,7 +18,7 @@ const ratingRewardMap = {
   rbg: "BATTLEGROUNDS/alliance",
 };
 
-const CutOffText = ({ bracket, stats }: IProps) => {
+const CutOffText = ({bracket, stats}: IProps) => {
   const [searchParams] = useSearchParams();
   const [selectedSpecs, setSelectedSpecs] = useState(
     getFromSearchParams(searchParams, "specs")
@@ -32,7 +32,7 @@ const CutOffText = ({ bracket, stats }: IProps) => {
     setSelectedSpecs(getFromSearchParams(searchParams, "specs"));
   }, [searchParams]);
 
-  const ssnName = "Draconic";
+  const ssnName = "Forged";
   if (bracket === "rbg" || bracket === "3v3") {
     const cutOffRating = rewards?.[ratingRewardMap[bracket]];
     const spotsWithNoAlts = spotWithNoAlts?.[ratingRewardMap[bracket]];
@@ -48,7 +48,7 @@ const CutOffText = ({ bracket, stats }: IProps) => {
     return (
       <span
         className="text-xs sm:text-lg font-light"
-        style={{ color: rankOneTitleColor }}
+        style={{color: rankOneTitleColor}}
       >
         {text}
       </span>
@@ -69,25 +69,25 @@ const CutOffText = ({ bracket, stats }: IProps) => {
     return (
       <span
         className="text-xs sm:text-lg font-light"
-        style={{ color: rankOneTitleColor }}
+        style={{color: rankOneTitleColor}}
       >
         {text}
       </span>
     );
-  } else if (bracket === "shuffle" && selectedSpecs.length == 0) {
+  } else if ((bracket === "shuffle" || bracket === "blitz") && selectedSpecs.length == 0) {
     return (
       <span
         className="text-xs sm:text-lg font-light"
-        style={{ color: rankOneTitleColor }}
+        style={{color: rankOneTitleColor}}
       >
         Select the spec filter to see the cutoff rating
       </span>
     );
-  } else if (bracket === "shuffle" && selectedSpecs.length > 1) {
+  } else if ((bracket === "shuffle" || bracket === "blitz") && selectedSpecs.length > 1) {
     return (
       <span
         className="text-xs sm:text-lg font-light"
-        style={{ color: rankOneTitleColor }}
+        style={{color: rankOneTitleColor}}
       >
         Select only one spec to see the cutoff rating
       </span>
@@ -97,25 +97,24 @@ const CutOffText = ({ bracket, stats }: IProps) => {
   }
 };
 
-const CutOffRating = ({ bracket, stats }: IProps) => {
+const CutOffRating = ({bracket, stats}: IProps) => {
   if (
     !stats?.cutoffs?.rewards?.ARENA_3v3 ||
-    !["shuffle", "rbg", "3v3"].includes(bracket)
+    !["shuffle", "rbg", "3v3", "blitz"].includes(bracket)
   ) {
     return <div></div>;
   }
-  return <div></div>;
-
-  // return (
-  //   <div className="flex items-center mr-2">
-  //     <img
-  //       className="w-7 h-7 mr-2"
-  //       src={getSeasonRankImageFromRating(0, true)}
-  //       alt="Season Rank"
-  //     />
-  //     <CutOffText stats={stats} bracket={bracket} />
-  //   </div>
-  // );
+  // return <div></div>;
+  return (
+    <div className="flex items-center mr-2">
+      <img
+        className="w-7 h-7 mr-2"
+        src={getSeasonRankImageFromRating(0, true)}
+        alt="Season Rank"
+      />
+      <CutOffText stats={stats} bracket={bracket}/>
+    </div>
+  );
 };
 
 export default CutOffRating;
