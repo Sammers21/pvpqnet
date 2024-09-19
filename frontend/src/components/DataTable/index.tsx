@@ -10,7 +10,6 @@ import { getLadder } from '@/services/stats.service';
 import {getActivityFromUrl, getBracket, getRegion} from '@/utils/urlparts';
 
 import { BRACKETS } from '@/constants/pvp-activity';
-import { REGION } from '@/constants/region';
 import type { IActivityRecord } from '@/types';
 
 export function getFromSearchParams(searchParams: URLSearchParams, name: string): string[] {
