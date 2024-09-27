@@ -35,7 +35,7 @@ export const BracketCount = ({content}: { content: number | string | undefined }
   if (!content) return null;
 
   return (
-    <div className="flex items-center justify-between ml-2">
+    <div className="flex items-center justify-between ml-0 sm:ml-2">
       <Chip className="!text-sm" label={content} size="small"/>
     </div>
   );
