@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
-import { createBreakpoint } from 'react-use';
+import { createBreakpoint, useWindowSize } from 'react-use';
 
 import { DataGrid, gridClasses } from '@mui/x-data-grid';
 import { styled, alpha } from '@mui/material/styles';
@@ -55,12 +55,13 @@ function paramFromString(str: string) {
   return str.toLowerCase().replace(' ', '_');
 }
 
-const useBreakpoint = createBreakpoint({ S: 758, L: 900, XL: 1280 });
+const useBreakpoint = createBreakpoint({ S: 758, L: 900, XL: 1280, XXL: 1600 });
 
 const Grid = () => {
   const { region = REGION.eu } = useParams();
   const [data, setData] = useState<IMeta | null>(null);
   const breakpoint = useBreakpoint();
+  const {width} = useWindowSize();
 
   let [searchParams, setSearchParams] = useSearchParams();
   const [filterValues, setFilterValues] = useState<IFilterValue>(valuesFromSearch());
@@ -78,7 +79,7 @@ const Grid = () => {
     const newGroups: GridColumnGroup[] = [];
 
     columnGroups.forEach((col) => {
-      const { columns, columnGroup } = getColumnGroup(data, col.field, col.icons);
+      const { columns, columnGroup } = getColumnGroup(data, col.field, col.icons, width);
       newColumns.push(...columns);
       newGroups.push(columnGroup);
     });
@@ -129,7 +130,7 @@ const Grid = () => {
     const newGroups: GridColumnGroup[] = [];
 
     columnGroups.forEach((col) => {
-      const { columns, columnGroup } = getColumnGroup(data, col.field, col.icons);
+      const { columns, columnGroup } = getColumnGroup(data, col.field, col.icons, width);
       newColumns.push(...columns);
       newGroups.push(columnGroup);
     });

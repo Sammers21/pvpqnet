@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import AppBar from '@/components/Header';
+import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 
 import Grid from './Grid';
@@ -11,7 +11,7 @@ const Meta = () => {
 
   return (
     <>
-      <AppBar />
+      <Header />
       <Grid />
       <Footer />
     </>
