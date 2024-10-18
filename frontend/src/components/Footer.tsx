@@ -23,7 +23,7 @@ const Footer = () => {
       </div>
 
       <div className="flex items-center gap-4">
-        <ExternalLink href="https://github.com/Sammers21/wow-pla/issues">
+        <ExternalLink href="https://github.com/Sammers21/pvpqnet">
           <GitHubIcon />
         </ExternalLink>
         <ExternalLink href="https://discord.com/users/343752113752506379">

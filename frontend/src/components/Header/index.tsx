@@ -12,7 +12,7 @@ import { borderColor, containerBg } from "@/theme";
 import { metaUrls, publicUrls, shuffleMulticlassUrls } from "@/config";
 import { REGION } from "@/constants/region";
 import { BRACKETS } from "@/constants/pvp-activity";
-import {getActivityFromUrl, getRegion} from "@/utils/urlparts";
+import {getActivityFromUrl, getBracket, getRegion} from "@/utils/urlparts";
 
 const StyledAppBar = styled(AppBar)({
   backgroundImage: "none",
@@ -33,7 +33,7 @@ const Header = () => {
   const host = window.location.host.toUpperCase();
   const {
     region: regionFromUrl = REGION.eu,
-    bracket = BRACKETS["3v3"],
+    bracket = getBracket(),
   } = useParams();
   const region = getRegion(regionFromUrl);
   const activity = getActivityFromUrl();

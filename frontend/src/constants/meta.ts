@@ -10,7 +10,7 @@ export const metaFilter: IMetaFilter[] = [
   {
     title: 'Bracket',
     name: 'bracket',
-    options: ['Shuffle', '2v2', '3v3', 'Battlegrounds'],
+    options: ['Shuffle', '2v2', '3v3', 'Battlegrounds', 'Blitz'],
   },
   {
     title: 'Period',
