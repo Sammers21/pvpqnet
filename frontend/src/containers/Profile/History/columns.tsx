@@ -1,18 +1,18 @@
-import moment from 'moment-timezone';
+import moment from "moment-timezone";
 
-import CharacterChip from './CharacterChip';
+import CharacterChip from "./CharacterChip";
 import {
   getDiffCell,
   getRankDiffColor,
   getWonAndLossColors,
   getDiffColor,
   getSpecIcon,
-} from '@/utils/table';
+} from "@/utils/table";
 
-import type { IHistoryRow, IPlayer, ITableColumn } from '@/types';
+import type { HistoryRow, Player, TableColumn } from "@/types";
 
 interface IParams {
-  record: IHistoryRow;
+  record: HistoryRow;
 }
 
 const renderRank = ({ record }: IParams, isMobile: boolean) => {
@@ -41,7 +41,10 @@ const renderWinAndLoss = ({ record }: IParams) => {
 
   return (
     <div className="flex px-1">
-      <span className="text-base font-light mr-1" style={{ color: wonColor }}>{`${won} `}</span>
+      <span
+        className="text-base font-light mr-1"
+        style={{ color: wonColor }}
+      >{`${won} `}</span>
       <span className="text-base font-light">{` / `}</span>
       <span className="text-base font-light ml-1" style={{ color: lossColor }}>
         {loss}
@@ -57,7 +60,10 @@ const renderRating = ({ record }: IParams) => {
     <div className="flex px-0">
       <span className="text-base font-light mr-2">{rating}</span>
       {Number.isInteger(ratingDiff) && (
-        <span className="text-base font-light" style={{ color: getDiffColor(ratingDiff) }}>
+        <span
+          className="text-base font-light"
+          style={{ color: getDiffColor(ratingDiff) }}
+        >
           {getDiffCell(ratingDiff)}
         </span>
       )}
@@ -65,7 +71,7 @@ const renderRating = ({ record }: IParams) => {
   );
 };
 
-const renderWWho = ({ record }: IParams, player: IPlayer, isMobile: boolean) => {
+const renderWWho = ({ record }: IParams, player: Player, isMobile: boolean) => {
   return (
     <div className="flex md:gap-2">
       {record.WWHO.map((who) => (
@@ -76,17 +82,17 @@ const renderWWho = ({ record }: IParams, player: IPlayer, isMobile: boolean) => 
 };
 
 const bracketTitleMap = {
-  ARENA_2v2: '2v2',
-  ARENA_3v3: '3v3',
-  BATTLEGROUNDS: 'RBG',
+  ARENA_2v2: "2v2",
+  ARENA_3v3: "3v3",
+  BATTLEGROUNDS: "RBG",
 };
 
 const renderSpec = ({ record }: IParams) => {
-  const specIcon = getSpecIcon(`${record.RANK.character?.full_spec}` || '');
+  const specIcon = getSpecIcon(`${record.RANK.character?.full_spec}` || "");
 
   return (
     <div className="flex md:gap-2 px-1">
-      {record.bracket_type.includes('SHUFFLE') ? (
+      {record.bracket_type.includes("SHUFFLE") ? (
         <img
           className=" h-7 w-7 rounded border border-solid border-[#37415180]"
           src={specIcon}
@@ -99,57 +105,65 @@ const renderSpec = ({ record }: IParams) => {
   );
 };
 
-const renderServerTime = ({ record }: IParams, player: IPlayer, isMobile: boolean) => {
+const renderServerTime = (
+  { record }: IParams,
+  player: Player,
+  isMobile: boolean
+) => {
   const getDate = (ts: number) => {
-    const tz = player.region === 'eu' ? 'Europe/Paris' : 'America/Chicago';
+    const tz = player.region === "eu" ? "Europe/Paris" : "America/Chicago";
     const time = moment
       .unix(ts / 1000)
       .utc()
       .tz(tz);
     if (isMobile) {
-      return time
-        .format('MMM DD, YYYY - hh A')
+      return time.format("MMM DD, YYYY - hh A");
     } else {
-      return time
-        .format('MMM DD, YYYY - hh:mm A')
+      return time.format("MMM DD, YYYY - hh:mm A");
     }
   };
-  return <span className="flex justify-center items-center">
-    {getDate(record.timestamp)}
-  </span>;
+  return (
+    <span className="flex justify-center items-center">
+      {getDate(record.timestamp)}
+    </span>
+  );
 };
 
 const shouldRenderWWho = (bracket: string, isMobile) => {
-  if (isMobile || bracket === 'all') {
+  if (isMobile || bracket === "all") {
     return false;
   }
-  return ['all', 'ARENA_2v2', 'ARENA_3v3'].includes(bracket);
+  return ["all", "ARENA_2v2", "ARENA_3v3"].includes(bracket);
 };
 
-export const tableColumns = (player: IPlayer, bracket: string, isMobile: boolean): ITableColumn[] => [
+export const tableColumns = (
+  player: Player,
+  bracket: string,
+  isMobile: boolean
+): TableColumn[] => [
   {
-    field: 'rank',
-    label: 'Rank',
+    field: "rank",
+    label: "Rank",
     sortable: false,
     render: (params: IParams) => renderRank(params, isMobile),
   },
   {
-    field: 'wl',
-    label: 'W/L',
+    field: "wl",
+    label: "W/L",
     sortable: false,
     render: (params: IParams) => renderWinAndLoss(params),
   },
   {
-    field: 'rating',
-    label: isMobile ? 'RTG' : 'Rating',
+    field: "rating",
+    label: isMobile ? "RTG" : "Rating",
     sortable: false,
     render: (params: IParams) => renderRating(params),
   },
-  ...(bracket === 'all'
+  ...(bracket === "all"
     ? [
         {
-          field: 'bracket_type',
-          label: 'Bracket',
+          field: "bracket_type",
+          label: "Bracket",
           sortable: false,
           width: 10,
           render: (params: IParams) => renderSpec(params),
@@ -159,16 +173,16 @@ export const tableColumns = (player: IPlayer, bracket: string, isMobile: boolean
   ...(shouldRenderWWho(bracket, isMobile)
     ? [
         {
-          field: 'wwho',
-          label: 'With Who',
+          field: "wwho",
+          label: "With Who",
           sortable: false,
           render: (params: IParams) => renderWWho(params, player, isMobile),
         },
       ]
     : []),
   {
-    field: 'timestamp',
-    label: isMobile ? 'Time' : `Server Time ${player.region.toUpperCase()}`,
+    field: "timestamp",
+    label: isMobile ? "Time" : `Server Time ${player.region.toUpperCase()}`,
     render: (params: IParams) => renderServerTime(params, player, isMobile),
   },
 ];

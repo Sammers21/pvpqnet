@@ -1,29 +1,40 @@
-import { useMemo, useState } from 'react';
-import { createBreakpoint } from 'react-use';
+import { useMemo, useState } from "react";
+import { createBreakpoint } from "react-use";
 
-import Table from './Table';
-import { tableColumns } from './columns';
-import type { IPlayer } from '@/types';
-import { FormControlLabel, Switch } from '@mui/material';
+import Table from "./Table";
+import { tableColumns } from "./columns";
+import type { Player } from "@/types";
+import { FormControlLabel, Switch } from "@mui/material";
 
-type TPvpBracket = 'SHUFFLE' | 'ARENA_2v2' | 'ARENA_3v3' | 'BATTLEGROUNDS';
-const bracketsList: TPvpBracket[] = ['SHUFFLE', 'ARENA_2v2', 'ARENA_3v3', 'BATTLEGROUNDS'];
+type TPvpBracket = "SHUFFLE" | "ARENA_2v2" | "ARENA_3v3" | "BATTLEGROUNDS";
+const bracketsList: TPvpBracket[] = [
+  "SHUFFLE",
+  "ARENA_2v2",
+  "ARENA_3v3",
+  "BATTLEGROUNDS",
+];
 
 const useBreakpoint = createBreakpoint({ sm: 640, md: 768, lg: 1024 });
 
-const Alts = ({ player }: { player: IPlayer }) => {
+const Alts = ({ player }: { player: Player }) => {
   const [showCurrent, setShowCurrent] = useState(false);
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setShowCurrent(event.target.checked);
   };
   const breakpoints = useBreakpoint();
   const sortableAlts = useMemo(() => {
-    const records = showCurrent ? [player, ...(player?.alts ?? [])] : player?.alts ?? [];
+    const records = showCurrent
+      ? [player, ...(player?.alts ?? [])]
+      : player?.alts ?? [];
     return records.map((alt) => {
       const altCopy = structuredClone(alt);
       altCopy.brackets?.forEach((bracket) => {
-        const isShuffle = bracket.bracket_type.startsWith('SHUFFLE');
-        if (isShuffle) altCopy['SHUFFLE'] = Math.max(altCopy['SHUFFLE'] || 0, bracket.rating);
+        const isShuffle = bracket.bracket_type.startsWith("SHUFFLE");
+        if (isShuffle)
+          altCopy["SHUFFLE"] = Math.max(
+            altCopy["SHUFFLE"] || 0,
+            bracket.rating
+          );
         else altCopy[bracket.bracket_type as TPvpBracket] = bracket.rating;
       });
       bracketsList.forEach((bracket) => {
@@ -45,9 +56,9 @@ const Alts = ({ player }: { player: IPlayer }) => {
       </div>
       <hr className="h-px md:my-2 bg-[#37415180] border-0" />
       <Table
-        columns={tableColumns(breakpoints === 'sm')}
+        columns={tableColumns(breakpoints === "sm")}
         records={sortableAlts}
-        isMobile={breakpoints === 'sm'}
+        isMobile={breakpoints === "sm"}
       />
     </div>
   );

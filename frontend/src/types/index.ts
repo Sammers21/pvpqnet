@@ -1,4 +1,4 @@
-interface IAcitivityCharacter {
+interface Character {
   class: string;
   full_spec: string;
   race: string;
@@ -14,7 +14,7 @@ interface IAcitivityCharacter {
   pethash: number;
 }
 
-interface IActivityDiff {
+interface ActivityDiff {
   won: number;
   lost: number;
   rating_diff: number;
@@ -22,12 +22,12 @@ interface IActivityDiff {
   last_seen?: string;
 }
 
-export interface IActivityRecord extends IAcitivityCharacter {
-  character: IAcitivityCharacter;
-  diff: IActivityDiff;
+export interface CharacterAndDiff extends Character {
+  character: Character;
+  diff: ActivityDiff;
 }
 
-export interface ITableColumn {
+export interface TableColumn {
   field: string;
   label: string;
   align?: 'right' | 'left';
@@ -36,7 +36,7 @@ export interface ITableColumn {
   render: (record: any) => JSX.Element;
 }
 
-export interface IMetaSpec {
+export interface MetaSpec {
   '0.050_presence': number;
   '0.050_win_rate': number;
   '0.100_presence': number;
@@ -46,7 +46,7 @@ export interface IMetaSpec {
   spec_name: string;
 }
 
-export interface IMetaSpecSizing {
+export interface MetaSpecSizing {
   '0.050_max': number;
   '0.050_min': number;
   '0.050_total': number;
@@ -59,18 +59,18 @@ export interface IMetaSpecSizing {
   '0.850_total': number;
 }
 
-export interface IMeta {
-  specs: IMetaSpec[];
-  specs_sizing?: IMetaSpecSizing;
+export interface Meta {
+  specs: MetaSpec[];
+  specs_sizing?: MetaSpecSizing;
 }
 
-interface IPlayerMedia {
+interface CharacterMedia {
   avatar: string;
   insert: string;
   main_raw: string;
 }
 
-export interface IPlayerBracket {
+export interface Bracket {
   bracket_type: string;
   rating: number;
 
@@ -84,31 +84,31 @@ export interface IPlayerBracket {
 
   max_rating: number;
   max_rating_achieved_timestamp: number;
-  gaming_history: IGamingHistory;
+  gaming_history: GamingHistory;
 }
 
-export interface IGamingHistory {
-  history: IGamingHistoryEntry[];
+export interface GamingHistory {
+  history: GamingHistoryEntry[];
 }
 
-export interface IGamingHistoryEntry {
-  diff: IDiff;
+export interface GamingHistoryEntry {
+  diff: Diff;
   with_who: any[];
   rating?: number;
   rank?: number;
   character: any;
 }
 
-export interface IHistoryRow {
+export interface HistoryRow {
   bracket_type: string;
-  RANK: IGamingHistoryEntry;
-  WL: IDiff;
-  RATING: IGamingHistoryEntry;
+  RANK: GamingHistoryEntry;
+  WL: Diff;
+  RATING: GamingHistoryEntry;
   WWHO: Array<string>;
   timestamp: number;
 }
 
-export interface IDiff {
+export interface Diff {
   won: number;
   lost: number;
   rating_diff: number;
@@ -117,28 +117,28 @@ export interface IDiff {
   last_seen?: string;
 }
 
-interface ISeasons {
+interface Seasons {
   name: string;
   highest_achievement: { id: number; name: string; completed_timestamp: number };
   rank: string;
 }
 
-export interface IExpansion {
+export interface Expansion {
   name: string;
-  seasons: ISeasons[];
+  seasons: Seasons[];
 }
 
-interface ITitleHistory {
-  expansions: IExpansion[];
+interface TitleHistory {
+  expansions: Expansion[];
 }
 
-interface IPlayerAchievements {
-  titles_history: ITitleHistory;
+interface PlayerAchievements {
+  titles_history: TitleHistory;
 }
 
-export type IAlt = Exclude<IPlayer, 'alts'>;
+export type Alt = Exclude<Player, 'alts'>;
 
-export interface IPlayer {
+export interface Player {
   id: number;
   name: string;
   class: string;
@@ -152,10 +152,10 @@ export interface IPlayer {
   region: string;
   talents: string;
 
-  brackets?: IPlayerBracket[];
-  media?: IPlayerMedia;
-  achievements: IPlayerAchievements;
-  alts?: IAlt[];
+  brackets?: Bracket[];
+  media?: CharacterMedia;
+  achievements: PlayerAchievements;
+  alts?: Alt[];
 
   SHUFFLE?: number;
   ARENA_2v2?: number;

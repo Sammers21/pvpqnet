@@ -6,12 +6,12 @@ import RestoreIcon from "@mui/icons-material/Restore";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 
 import CopyButton from "@/components/CopyButton";
-import type { IPlayer } from "@/types";
+import type { Player } from "@/types";
 import EmailIcon from "@mui/icons-material/Email";
-import GroupAddIcon from '@mui/icons-material/GroupAdd';
+import GroupAddIcon from "@mui/icons-material/GroupAdd";
 
 interface IProps {
-  player: IPlayer;
+  player: Player;
   loading: boolean;
   updatePlayer: () => void;
 }
@@ -40,23 +40,31 @@ const TalentsButtons = ({ talents }: { talents: string }) => {
   );
 };
 
-const InviteButtons = ({ player }: { player: IPlayer }) => {
-  const copyCommand = `/inv ${player.name}-${player.realm}`
+const InviteButtons = ({ player }: { player: Player }) => {
+  const copyCommand = `/inv ${player.name}-${player.realm}`;
   return (
     <div className="flex gap-2 !text-xs">
-      <CopyButton content={copyCommand} displayCopyIcon={false} copiedText="/INV Copied!">
+      <CopyButton
+        content={copyCommand}
+        displayCopyIcon={false}
+        copiedText="/INV Copied!"
+      >
         <GroupAddIcon fontSize="small" className="!w-4 !h-4 mr-1" />
         Invite
       </CopyButton>
     </div>
   );
-}
+};
 
-const WhisperButtons = ({ player }: { player: IPlayer }) => {
-  const copyCommand = `/w ${player.name}-${player.realm}`
+const WhisperButtons = ({ player }: { player: Player }) => {
+  const copyCommand = `/w ${player.name}-${player.realm}`;
   return (
     <div className="flex gap-2 !text-xs">
-      <CopyButton content={copyCommand} displayCopyIcon={false} copiedText="/W Copied!">
+      <CopyButton
+        content={copyCommand}
+        displayCopyIcon={false}
+        copiedText="/W Copied!"
+      >
         <EmailIcon fontSize="small" className="!w-4 !h-4 mr-1" />
         Whisper
       </CopyButton>

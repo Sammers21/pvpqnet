@@ -1,5 +1,5 @@
 import { getProfile } from "@/services/stats.service";
-import { IPlayer } from "@/types";
+import { Player } from "@/types";
 import { Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
@@ -47,8 +47,8 @@ function getCustomText(searchParams: URLSearchParams) {
 export const ObsWidget = () => {
   let { region, realm, name } = useParams();
   const [searchParams, _] = useSearchParams();
-  const [player, setPlayer] = useState<IPlayer | null>(null);
-  const [fullCharList, setFullCharList] = useState<IPlayer[] | null>(null);
+  const [player, setPlayer] = useState<Player | null>(null);
+  const [fullCharList, setFullCharList] = useState<Player[] | null>(null);
   const style = getStyle(searchParams);
   const layout = getLayout(searchParams);
   const role = getRole(searchParams);

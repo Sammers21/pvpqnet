@@ -1,4 +1,4 @@
-import { styled } from '@mui/material/styles';
+import { styled } from "@mui/material/styles";
 
 import {
   Accordion as MuiAccordion,
@@ -7,43 +7,43 @@ import {
   Typography,
   AccordionProps,
   AccordionSummaryProps,
-} from '@mui/material';
-import { IPlayer } from '@/types';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { getSeasonRankImage } from '@/utils/table';
-import { getSeasonTitleDescription, getSeasonTitle } from '@/utils/profile';
+} from "@mui/material";
+import { Player } from "@/types";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import { getSeasonRankImage } from "@/utils/table";
+import { getSeasonTitleDescription, getSeasonTitle } from "@/utils/profile";
 
 interface IProps {
-  player: IPlayer;
+  player: Player;
 }
 
 const Accordion = styled((props: AccordionProps) => (
   <MuiAccordion disableGutters elevation={0} square {...props} />
 ))(() => ({
   borderRadius: 8,
-  border: '1px solid #37415180',
-  backgroundColor: '#2f384d20',
+  border: "1px solid #37415180",
+  backgroundColor: "#2f384d20",
   marginBottom: 8,
 
-  '&:not(:last-child)': {
+  "&:not(:last-child)": {
     borderBottom: 0,
   },
-  '&:before': {
-    display: 'none',
+  "&:before": {
+    display: "none",
   },
 }));
 
 const AccordionSummary = styled((props: AccordionSummaryProps) => (
   <MuiAccordionSummary {...props} />
 ))(({ theme }) => ({
-  '& .MuiAccordionSummary-content': {
+  "& .MuiAccordionSummary-content": {
     marginLeft: theme.spacing(1),
   },
 }));
 
 const AccordionDetails = styled(MuiAccordionDetails)(({ theme }) => ({
   padding: theme.spacing(2),
-  borderTop: '1px solid #37415180',
+  borderTop: "1px solid #37415180",
 }));
 
 const TitlesHistory = ({ player }: IProps) => {
@@ -65,16 +65,25 @@ const TitlesHistory = ({ player }: IProps) => {
                 .reverse()
                 .map((season) => {
                   const imageSrc = getSeasonRankImage(season.rank);
-                  const { name, title } = getSeasonTitle(season.highest_achievement.name);
+                  const { name, title } = getSeasonTitle(
+                    season.highest_achievement.name
+                  );
 
                   return (
                     <div key={name} className="flex items-start mb-4">
-                      <img className="w-12 h-12 mr-4" src={imageSrc} alt="achievement" />
+                      <img
+                        className="w-12 h-12 mr-4"
+                        src={imageSrc}
+                        alt="achievement"
+                      />
                       <div className="flex flex-col">
                         <span className="text-xs text-[#60A5FACC]">{name}</span>
                         <span>{title}</span>
                         <span className="text-xs mt-1">
-                          {getSeasonTitleDescription(title, season.highest_achievement.name)}
+                          {getSeasonTitleDescription(
+                            title,
+                            season.highest_achievement.name
+                          )}
                         </span>
                       </div>
                     </div>

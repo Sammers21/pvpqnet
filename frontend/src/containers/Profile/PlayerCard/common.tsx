@@ -1,19 +1,28 @@
-import { useMemo } from 'react';
-import { Tooltip } from '@mui/material';
-import { getClassNameColor, getFractionIcon, getDetaisImages, getRealmColor } from '@/utils/table';
+import { useMemo } from "react";
+import { Tooltip } from "@mui/material";
+import {
+  getClassNameColor,
+  getFractionIcon,
+  getDetaisImages,
+  getRealmColor,
+} from "@/utils/table";
 
-import wowIcon from '@/assets/wow-icon.png';
+import wowIcon from "@/assets/wow-icon.png";
 
-import type { IPlayer } from '@/types';
+import type { Player } from "@/types";
 
 interface IProps {
-  player: IPlayer;
+  player: Player;
   openArmory?: () => void;
   desktop?: boolean;
 }
 
 export const PlayerName = ({ player, desktop, openArmory }: IProps) => (
-  <div className={`flex flex-col justify-start ${desktop && 'absolute left-0 top-0 mt-2 ml-3'}`}>
+  <div
+    className={`flex flex-col justify-start ${
+      desktop && "absolute left-0 top-0 mt-2 ml-3"
+    }`}
+  >
     <Tooltip title="Open WoW Armory" placement="top">
       <span
         className="flex items-center gap-2 text-xl font-semibold cursor-pointer"
@@ -26,9 +35,16 @@ export const PlayerName = ({ player, desktop, openArmory }: IProps) => (
 
     <div className="flex gap-1 items-center">
       {player.fraction && (
-        <img className="w-5" src={getFractionIcon(player.fraction)} alt="fraction" />
+        <img
+          className="w-5"
+          src={getFractionIcon(player.fraction)}
+          alt="fraction"
+        />
       )}
-      <span className="text-sm" style={{ color: getRealmColor(player.fraction) }}>
+      <span
+        className="text-sm"
+        style={{ color: getRealmColor(player.fraction) }}
+      >
         {player.realm}
       </span>
     </div>
@@ -48,7 +64,7 @@ export const PlayerImages = ({ player, desktop }: IProps) => {
   return (
     <div
       className={`flex gap-1 items-end md:items-start justify-start ${
-        desktop && 'absolute left-0 bottom-0 mb-3 ml-3'
+        desktop && "absolute left-0 bottom-0 mb-3 ml-3"
       }`}
     >
       <img
@@ -71,9 +87,13 @@ export const PlayerImages = ({ player, desktop }: IProps) => {
 };
 
 export const PlayerItemLvl = ({ player, desktop }: IProps) => (
-  <div className={`flex flex-col ${desktop && 'absolute right-0 top-0 mt-2 mr-3'}`}>
+  <div
+    className={`flex flex-col ${desktop && "absolute right-0 top-0 mt-2 mr-3"}`}
+  >
     <span className="text-[#60A5FACC] text-base">
-      <span className="text-[#ffffff] text-lg font-bold mr-2">{player.itemLevel}</span>
+      <span className="text-[#ffffff] text-lg font-bold mr-2">
+        {player.itemLevel}
+      </span>
       ILVL
     </span>
   </div>

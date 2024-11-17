@@ -1,9 +1,9 @@
 import { get } from "lodash";
 import { TableCell, TableRow, Typography } from "@mui/material";
 
-import type { ITableColumn } from "@/types";
+import type { TableColumn } from "@/types";
 interface IProps {
-  columns: ITableColumn[];
+  columns: TableColumn[];
   record: any;
   onRowOver?: (record: any | null) => void;
   bgColor?: string;
@@ -19,10 +19,14 @@ const Row = ({
   bgColor,
   onRowOver,
 }: IProps) => {
-  const href = window.location.href
-  let bgClass = shouldHighlight ? "rgb(21, 128, 61, 0.25)" : altHighlight ? "rgb(96, 165, 250, 0.25)" : '';
-  if(href.indexOf("ladder") > -1 || href.indexOf("shuffle") > -1) {
-      bgClass = altHighlight ? "rgb(96, 165, 250, 0.25)" : '';
+  const href = window.location.href;
+  let bgClass = shouldHighlight
+    ? "rgb(21, 128, 61, 0.25)"
+    : altHighlight
+    ? "rgb(96, 165, 250, 0.25)"
+    : "";
+  if (href.indexOf("ladder") > -1 || href.indexOf("shuffle") > -1) {
+    bgClass = altHighlight ? "rgb(96, 165, 250, 0.25)" : "";
   }
   const renderDefaultCell = (value: string) => {
     return <Typography variant="h6">{value}</Typography>;

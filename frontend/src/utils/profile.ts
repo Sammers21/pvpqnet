@@ -1,4 +1,4 @@
-import { IGamingHistoryEntry, IPlayerBracket } from '@/types';
+import { GamingHistoryEntry, Bracket } from '@/types';
 
 function getSeasonTitle(achievement: string): { title: string; name: string } {
   return {
@@ -56,13 +56,13 @@ function getSeasonTitleDescription(title: string, seasonName: string): string {
   return '';
 }
 
-export const getGamingHistoryRows = (bracket: IPlayerBracket) => {
+export const getGamingHistoryRows = (bracket: Bracket) => {
   let rating = bracket?.rating;
   let rank = bracket?.rank;
 
   const populatedHistory = (bracket?.gaming_history?.history ?? [])
     .reverse()
-    .map((history: IGamingHistoryEntry) => {
+    .map((history: GamingHistoryEntry) => {
       const result = { ...history, rating, rank };
 
       rating -= history.diff.rating_diff;
@@ -70,7 +70,7 @@ export const getGamingHistoryRows = (bracket: IPlayerBracket) => {
       return result;
     });
 
-  return populatedHistory.map((history: IGamingHistoryEntry) => ({
+  return populatedHistory.map((history: GamingHistoryEntry) => ({
     bracket_type: bracket?.bracket_type,
     RANK: history,
     WL: history.diff,

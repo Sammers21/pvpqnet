@@ -1,43 +1,48 @@
-import {useMemo} from 'react';
-import dayjs from 'dayjs-ext';
+import { useMemo } from "react";
+import dayjs from "dayjs-ext";
 
-import {Chip, LinearProgress, Tooltip} from '@mui/material';
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
-import {getSpecIcon, getWonAndLossColors, bracketToColor, getSeasonRankImageFromRating} from '@/utils/table';
-import {CLASS_AND_SPECS} from '@/constants/filterSchema';
-import type {IPlayerBracket, IPlayer} from '@/types';
+import { Chip, LinearProgress, Tooltip } from "@mui/material";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import {
+  getSpecIcon,
+  getWonAndLossColors,
+  bracketToColor,
+  getSeasonRankImageFromRating,
+} from "@/utils/table";
+import { CLASS_AND_SPECS } from "@/constants/filterSchema";
+import type { Bracket, Player } from "@/types";
 
 interface IProps {
-  player: IPlayer;
+  player: Player;
 }
 
 const arenaAndRbg = [
-  {name: 'ARENA_2v2', title: '2v2'},
-  {name: 'ARENA_3v3', title: '3v3'},
-  {name: 'BATTLEGROUNDS', title: 'RBG'},
+  { name: "ARENA_2v2", title: "2v2" },
+  { name: "ARENA_3v3", title: "3v3" },
+  { name: "BATTLEGROUNDS", title: "RBG" },
 ];
 
 const PvpBracket = ({
-                      title,
-                      bracket,
-                      isZolo,
-                      zoloName,
-                      playerClass,
-                      hasFourSpecs,
-                    }: {
+  title,
+  bracket,
+  isZolo,
+  zoloName,
+  playerClass,
+  hasFourSpecs,
+}: {
   title?: string;
-  bracket?: IPlayerBracket;
+  bracket?: Bracket;
   isZolo?: boolean;
-  zoloName?: string
+  zoloName?: string;
   playerClass?: string;
   hasFourSpecs: boolean;
 }) => {
   const specIcon = useMemo(() => {
     if (!isZolo || !title) return;
-    return getSpecIcon(`${title} ${playerClass}` || '');
+    return getSpecIcon(`${title} ${playerClass}` || "");
   }, [title, isZolo, playerClass]);
   const ratingColor = useMemo(() => {
-    if (!bracket) return '#ffffff';
+    if (!bracket) return "#ffffff";
     return bracketToColor(bracket);
   }, [bracket]);
   const stats = useMemo(() => {
@@ -45,11 +50,19 @@ const PvpBracket = ({
     const lost = bracket?.lost || 0;
     const rating = bracket?.rating || 0;
     const is_rank_one_range = bracket?.is_rank_one_range || false;
-    const {wonColor, lossColor} = getWonAndLossColors(won, lost);
+    const { wonColor, lossColor } = getWonAndLossColors(won, lost);
     const showWinRate = won > 0 || lost > 0;
     const winRate = ((won * 100) / (won + lost)).toFixed(2);
     const winRateColor = parseInt(winRate, 10) >= 50 ? "green" : "#ff0531";
-    return {rating, is_rank_one_range, showWinRate, winRateColor, wonColor, lossColor, winRate};
+    return {
+      rating,
+      is_rank_one_range,
+      showWinRate,
+      winRateColor,
+      wonColor,
+      lossColor,
+      winRate,
+    };
   }, [bracket]);
   const ratingImg = (
     <img
@@ -60,10 +73,11 @@ const PvpBracket = ({
   );
   return (
     <div
-      className={`flex self-stretch flex-col items-center pr-2 ${hasFourSpecs ? 'w-1/4' : 'w-1/3'}`}
+      className={`flex self-stretch flex-col items-center pr-2 ${
+        hasFourSpecs ? "w-1/4" : "w-1/3"
+      }`}
     >
-      <div
-        className="relative flex flex-col w-full h-full rounded-lg border pb-4 px-3 border-solid border-[#37415180] bg-[#030303e6]">
+      <div className="relative flex flex-col w-full h-full rounded-lg border pb-4 px-3 border-solid border-[#37415180] bg-[#030303e6]">
         <div className="flex flex-col w-full justify-start py-2">
           <div className="flex w-full justify-between items-center">
             {specIcon ? (
@@ -73,7 +87,9 @@ const PvpBracket = ({
                   src={specIcon}
                   alt={title}
                 />
-                <span className="pl-2 text-base sm:text-2xl text-white">{zoloName}</span>
+                <span className="pl-2 text-base sm:text-2xl text-white">
+                  {zoloName}
+                </span>
               </div>
             ) : (
               <span className="text-base sm:text-3xl text-white">{title}</span>
@@ -86,13 +102,16 @@ const PvpBracket = ({
                   placement="right"
                   title={`Season record achieved at ${dayjs(
                     bracket.season_max_rating_achieved_timestamp
-                  ).format('MM.DD.YY')}`}
+                  ).format("MM.DD.YY")}`}
                 >
                   <div className="flex gap-2 flex-row justify-center items-center text-[#60A5FACC]">
                     <span className="text-base">Season</span>
                     <span className="text-white text-xs sm:text-base flex items-center">
                       {bracket.season_max_rating}
-                      <InfoOutlinedIcon fontSize="small" className="!ml-1 !w-4 !h-4"/>
+                      <InfoOutlinedIcon
+                        fontSize="small"
+                        className="!ml-1 !w-4 !h-4"
+                      />
                     </span>
                   </div>
                 </Tooltip>
@@ -100,15 +119,18 @@ const PvpBracket = ({
               {bracket?.max_rating && bracket.max_rating !== -1 ? (
                 <Tooltip
                   placement="right"
-                  title={`Record achieved at ${dayjs(bracket.max_rating_achieved_timestamp).format(
-                    'MM.DD.YY'
-                  )}`}
+                  title={`Record achieved at ${dayjs(
+                    bracket.max_rating_achieved_timestamp
+                  ).format("MM.DD.YY")}`}
                 >
                   <div className="flex gap-2 flex-row justify-center items-center text-[#60A5FACC]">
                     <span className="text-base">Record</span>
                     <span className="text-white text-xs sm:text-base flex items-center">
                       {bracket.max_rating}
-                      <InfoOutlinedIcon fontSize="small" className="!ml-1 !w-4 !h-4"/>
+                      <InfoOutlinedIcon
+                        fontSize="small"
+                        className="!ml-1 !w-4 !h-4"
+                      />
                     </span>
                   </div>
                 </Tooltip>
@@ -120,14 +142,18 @@ const PvpBracket = ({
             {/* {ratingImg} */}
             <span
               className="flex flex-row items-center gap-1 text-2xl md:text-4xl font-semibold"
-              style={{color: ratingColor}}
+              style={{ color: ratingColor }}
             >
               {ratingImg}
               {stats.rating}
             </span>
             {bracket?.rank && bracket.rank !== -1 ? (
               <div className="hidden sm:flex items-center justify-between relative">
-                <Chip className="!text-xs md:!text-sm" label={`#${bracket.rank}`} size="small"/>
+                <Chip
+                  className="!text-xs md:!text-sm"
+                  label={`#${bracket.rank}`}
+                  size="small"
+                />
               </div>
             ) : null}
           </div>
@@ -143,9 +169,9 @@ const PvpBracket = ({
           <div className="flex pl-0 sm:pl-2 sm:border-l border-solid border-[#37415180]">
             <span
               className="text-sm md:text-base text-[#4B5563]"
-              style={{opacity: stats.showWinRate ? 1 : 0}}
+              style={{ opacity: stats.showWinRate ? 1 : 0 }}
             >
-              {stats.showWinRate ? `${stats.winRate}%` : '-'}
+              {stats.showWinRate ? `${stats.winRate}%` : "-"}
             </span>
           </div>
         </div>
@@ -153,8 +179,8 @@ const PvpBracket = ({
           variant="determinate"
           value={parseInt(stats.winRate, 10)}
           sx={{
-            '& .MuiLinearProgress-bar': {backgroundColor: '#008000'},
-            '&.MuiLinearProgress-root': {backgroundColor: '#ff0000'},
+            "& .MuiLinearProgress-bar": { backgroundColor: "#008000" },
+            "&.MuiLinearProgress-root": { backgroundColor: "#ff0000" },
           }}
         />
       </div>
@@ -162,39 +188,54 @@ const PvpBracket = ({
   );
 };
 
-const PvpBrackets = ({player}: IProps) => {
+const PvpBrackets = ({ player }: IProps) => {
   // @ts-ignore
   const classAndSpec = CLASS_AND_SPECS[player.class] as string[];
   const hasFourSpecs = classAndSpec.length === 4;
   const shuffleBrackets = classAndSpec
     .map((spec) => {
-      const bracket = player?.brackets?.find(({bracket_type}) => bracket_type.includes(spec) && bracket_type.includes("SHUFFLE"))
-      const noRender = player.class === 'Druid' && spec === 'Guardian' && !bracket;
-      return {bracket, spec, noRender};
+      const bracket = player?.brackets?.find(
+        ({ bracket_type }) =>
+          bracket_type.includes(spec) && bracket_type.includes("SHUFFLE")
+      );
+      const noRender =
+        player.class === "Druid" && spec === "Guardian" && !bracket;
+      return { bracket, spec, noRender };
     })
     .sort((a, b) => (b.bracket?.rating ?? 0) - (a.bracket?.rating ?? 0));
   const blitzBrackets = classAndSpec
     .map((spec) => {
-      const bracket = player?.brackets?.find(({bracket_type}) => bracket_type.includes(spec) && bracket_type.includes("BLITZ"))
-      const noRender = player.class === 'Druid' && spec === 'Guardian' && !bracket;
-      return {bracket, spec, noRender};
+      const bracket = player?.brackets?.find(
+        ({ bracket_type }) =>
+          bracket_type.includes(spec) && bracket_type.includes("BLITZ")
+      );
+      const noRender =
+        player.class === "Druid" && spec === "Guardian" && !bracket;
+      return { bracket, spec, noRender };
     })
     .sort((a, b) => (b.bracket?.rating ?? 0) - (a.bracket?.rating ?? 0));
   const hasDruidTank =
-    player.class === 'Druid' &&
-    !!(player?.brackets || []).find((b) => b.bracket_type.includes('Guardian'));
+    player.class === "Druid" &&
+    !!(player?.brackets || []).find((b) => b.bracket_type.includes("Guardian"));
   return (
     <div className="flex gap-2 justify-start flex-col">
       <div className="flex flex-nowrap flex-row items-stretch justify-start">
-        {arenaAndRbg.map(({title, name}) => {
-          const playerBracket = (player?.brackets || []).find((b) => b.bracket_type === name);
+        {arenaAndRbg.map(({ title, name }) => {
+          const playerBracket = (player?.brackets || []).find(
+            (b) => b.bracket_type === name
+          );
           return (
-            <PvpBracket key={name} title={title} bracket={playerBracket} hasFourSpecs={false}/>
+            <PvpBracket
+              key={name}
+              title={title}
+              bracket={playerBracket}
+              hasFourSpecs={false}
+            />
           );
         })}
       </div>
       <div className="flex flex-wrap justify-start">
-        {shuffleBrackets.map(({bracket, spec, noRender}) => {
+        {shuffleBrackets.map(({ bracket, spec, noRender }) => {
           if (noRender) return null;
           return (
             <PvpBracket
@@ -210,7 +251,7 @@ const PvpBrackets = ({player}: IProps) => {
         })}
       </div>
       <div className="flex flex-wrap justify-start">
-        {blitzBrackets.map(({bracket, spec, noRender}) => {
+        {blitzBrackets.map(({ bracket, spec, noRender }) => {
           if (noRender) return null;
           return (
             <PvpBracket

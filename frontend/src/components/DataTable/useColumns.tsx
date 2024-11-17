@@ -11,11 +11,11 @@ import {
   getRatingColor,
   getSeasonRankImageFromRating,
 } from "@/utils/table";
-import type { IActivityRecord } from "@/types";
+import type { CharacterAndDiff } from "@/types";
 import { nickNameLenOnMobile } from "@/utils/common";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
-import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
+import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 
 const getTableColumns = (
   activity: string,
@@ -25,16 +25,26 @@ const getTableColumns = (
   const rank = {
     field: "pos",
     label: "RANK",
-    render: ({ record }: { record: IActivityRecord }) => {
+    render: ({ record }: { record: CharacterAndDiff }) => {
       const pos = record?.character?.pos || record?.pos;
       var rankDiff = record?.diff?.rank_diff;
-      var arrow
+      var arrow;
       if (rankDiff <= 0) {
-        arrow = <ArrowUpwardIcon className="w-4 h-4" style={{ color: getRankDiffColor(rankDiff) }} />
+        arrow = (
+          <ArrowUpwardIcon
+            className="w-4 h-4"
+            style={{ color: getRankDiffColor(rankDiff) }}
+          />
+        );
       } else {
-        arrow = <ArrowDownwardIcon className="w-4 h-4" style={{ color: getRankDiffColor(rankDiff) }} />
+        arrow = (
+          <ArrowDownwardIcon
+            className="w-4 h-4"
+            style={{ color: getRankDiffColor(rankDiff) }}
+          />
+        );
       }
-      var unsignRankDiff = Math.abs(rankDiff)
+      var unsignRankDiff = Math.abs(rankDiff);
       return (
         <div className="flex">
           {isMobile && (
@@ -64,7 +74,7 @@ const getTableColumns = (
   const details = {
     field: "details",
     label: isMobile ? "DTLS" : "DETAILS",
-    render: ({ record }: { record: IActivityRecord }) => {
+    render: ({ record }: { record: CharacterAndDiff }) => {
       const wowClass = record?.character?.class || record?.class;
       const wowSpec = record?.character?.full_spec || record?.full_spec;
       const wowRace = record?.character?.race || record?.race;
@@ -102,7 +112,7 @@ const getTableColumns = (
   const name = {
     field: "name",
     label: "NAME",
-    render: ({ record }: { record: IActivityRecord }) => {
+    render: ({ record }: { record: CharacterAndDiff }) => {
       const wowClass = record?.character?.class || record?.class;
       const url = getProfileUrl(record, region);
 
@@ -127,7 +137,7 @@ const getTableColumns = (
   const realm = {
     field: "realm",
     label: "REALM",
-    render: ({ record }: { record: IActivityRecord }) => {
+    render: ({ record }: { record: CharacterAndDiff }) => {
       const fraction = record?.character?.fraction || record?.fraction;
       const realm = record?.character?.realm || record?.realm;
 
@@ -142,7 +152,7 @@ const getTableColumns = (
   const wonLost = {
     field: "stats",
     label: isMobile ? "W/L" : "WON / LOST",
-    render: ({ record }: { record: IActivityRecord }) => {
+    render: ({ record }: { record: CharacterAndDiff }) => {
       const winRate = getWinRate(record.wins, record.losses);
 
       const won = record?.diff?.won ?? record?.wins;
@@ -176,7 +186,7 @@ const getTableColumns = (
   const rating = {
     field: "rating",
     label: "RATING",
-    render: ({ record }: { record: IActivityRecord }) => {
+    render: ({ record }: { record: CharacterAndDiff }) => {
       const rating = record?.character?.rating ?? record?.rating;
       const ratingColor = getRatingColor(
         record?.character?.in_cutoff ?? record?.in_cutoff
@@ -221,7 +231,7 @@ const getTableColumns = (
   const lastSeenColumn = {
     field: "lastSeen",
     label: isMobile ? "LS" : "LAST SEEN",
-    render: ({ record }: { record: IActivityRecord }) => {
+    render: ({ record }: { record: CharacterAndDiff }) => {
       if (!record?.diff?.last_seen) return <></>;
       const split = record.diff.last_seen.split(" ");
       const content = isMobile

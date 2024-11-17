@@ -1,4 +1,4 @@
-import { IPlayer } from "@/types";
+import { Player } from "@/types";
 import {
   Paper,
   Table,
@@ -12,7 +12,7 @@ import {
 import { ActivityBox } from "./ActivityBox";
 
 interface IProps {
-  player: IPlayer;
+  player: Player;
   year?: number;
 }
 
@@ -25,7 +25,7 @@ const StyledTableCell = styled(TableCell)({
 
 const currentYear = new Date().getFullYear();
 
-function activityHistoryForPlayer(player: IPlayer) {
+function activityHistoryForPlayer(player: Player) {
   let totalPlayers = [player, ...player.alts];
   return totalPlayers
     .map((p) =>
@@ -34,7 +34,7 @@ function activityHistoryForPlayer(player: IPlayer) {
     .flat();
 }
 function getDayOfWeekRender(numberOfDay) {
-  let days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun",];
+  let days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
   if (numberOfDay % 2 == 0) {
     return (
       <StyledTableCell component="th" scope="row" size="small" align="left">
@@ -61,7 +61,7 @@ const ActivityDiagram = ({ player, year = currentYear }: IProps) => {
     var currentWeek = [];
     let fullHistory = activityHistoryForPlayer(player);
     let dateAndActivity = {};
-    let start = new Date(new Date().setFullYear(new Date().getFullYear() - 1))
+    let start = new Date(new Date().setFullYear(new Date().getFullYear() - 1));
     let end = new Date();
     let currentMonth = start.getMonth();
     var loop = new Date(start);
@@ -78,7 +78,7 @@ const ActivityDiagram = ({ player, year = currentYear }: IProps) => {
       var newDate = loop.setDate(loop.getDate() + 1);
       loop = new Date(newDate);
     }
-    if(currentWeek.length > 0){
+    if (currentWeek.length > 0) {
       weeks.push(currentWeek);
     }
     fullHistory.forEach((activity) => {
@@ -130,15 +130,24 @@ const ActivityDiagram = ({ player, year = currentYear }: IProps) => {
       delete monthAndWeekCount[-1];
     }
     weekWithActivity.forEach((week) => {
-      monthAndWeekCount[week.find(d => d != null).date.getMonth()].weekCount += 1;
+      monthAndWeekCount[
+        week.find((d) => d != null).date.getMonth()
+      ].weekCount += 1;
     });
     let monthNumbers = Array.from(Array(12).keys());
     let totalGamesPlayed = fullHistory
-    .filter((activity) => { return new Date(activity.diff.timestamp) > start })
-    .map((activity) => { return activity.diff.won + activity.diff.lost }).reduce((a, b) => a + b, 0)
+      .filter((activity) => {
+        return new Date(activity.diff.timestamp) > start;
+      })
+      .map((activity) => {
+        return activity.diff.won + activity.diff.lost;
+      })
+      .reduce((a, b) => a + b, 0);
     return (
       <div className="flex flex-col py-2 md:px-3 border border-solid border-[#37415180] rounded-lg bg-[#030303e6] ">
-        <span className="text-2xl mr-4">{totalGamesPlayed} games played in the last year</span>
+        <span className="text-2xl mr-4">
+          {totalGamesPlayed} games played in the last year
+        </span>
         <TableContainer component={Paper}>
           <Table
             sx={{
@@ -170,39 +179,41 @@ const ActivityDiagram = ({ player, year = currentYear }: IProps) => {
                 return (
                   <TableRow key={row} sx={{}}>
                     {getDayOfWeekRender(row)}
-                    {Array.from(Array(weekWithActivity.length).keys()).map((col) => {
-                      if (
-                        weekWithActivity[col] !== undefined &&
-                        weekWithActivity[col][row] !== undefined
-                      ) {
-                        const dna = weekWithActivity[col][row];
-                        return (
-                          <StyledTableCell
-                            component="th"
-                            scope="row"
-                            size="small"
-                            padding="none"
-                          >
-                            <ActivityBox
-                              maxIntensity={maxIntensity}
-                              activity={dna.activity}
-                              date={dna.date}
-                            />
-                          </StyledTableCell>
-                        );
-                      } else {
-                        return (
-                          <StyledTableCell
-                            component="th"
-                            scope="row"
-                            size="small"
-                            padding="none"
-                          >
-                            <ActivityBox activity={[]} date={undefined} />
-                          </StyledTableCell>
-                        );
+                    {Array.from(Array(weekWithActivity.length).keys()).map(
+                      (col) => {
+                        if (
+                          weekWithActivity[col] !== undefined &&
+                          weekWithActivity[col][row] !== undefined
+                        ) {
+                          const dna = weekWithActivity[col][row];
+                          return (
+                            <StyledTableCell
+                              component="th"
+                              scope="row"
+                              size="small"
+                              padding="none"
+                            >
+                              <ActivityBox
+                                maxIntensity={maxIntensity}
+                                activity={dna.activity}
+                                date={dna.date}
+                              />
+                            </StyledTableCell>
+                          );
+                        } else {
+                          return (
+                            <StyledTableCell
+                              component="th"
+                              scope="row"
+                              size="small"
+                              padding="none"
+                            >
+                              <ActivityBox activity={[]} date={undefined} />
+                            </StyledTableCell>
+                          );
+                        }
                       }
-                    })}
+                    )}
                   </TableRow>
                 );
               })}

@@ -10,7 +10,7 @@ import Footer from "@/components/Footer";
 
 import { baseUrl } from "@/config";
 import { capitalizeFirstLetter } from "@/utils/common";
-import type { IPlayer } from "@/types";
+import type { Player } from "@/types";
 import { getProfile } from "@/services/stats.service";
 
 const Snackbar = styled(MuiSnackbar)({
@@ -30,7 +30,7 @@ const Profile = () => {
   const [openSnackbar, setOpenSnakbar] = useState(false);
   const [loading, setLoading] = useState(false);
   const [playerStatus, setPlayerStatus] = useState(200);
-  const [player, setPlayer] = useState<IPlayer | null>(null);
+  const [player, setPlayer] = useState<Player | null>(null);
 
   useEffect(() => {
     document.title = `${capitalizeFirstLetter(name)}-${capitalizeFirstLetter(

@@ -1,70 +1,88 @@
-import { useMemo, useState } from 'react';
-import { Table as TableMui, TableBody, TableContainer, TableHead, TableRow } from '@mui/material';
-import { styled } from '@mui/system';
+import { useMemo, useState } from "react";
+import {
+  Table as TableMui,
+  TableBody,
+  TableContainer,
+  TableHead,
+  TableRow,
+} from "@mui/material";
+import { styled } from "@mui/system";
 
-import HeaderCell from '@/components/AltsTable/SortableHeaderCell';
-import Row from '@/components/AltsTable/Row';
+import HeaderCell from "@/components/AltsTable/SortableHeaderCell";
+import Row from "@/components/AltsTable/Row";
 
-import type { IHistoryRow, ITableColumn } from '@/types';
-import bgImage from '../../../assets/background/smoke-table.jpg';
-import AltsTable from '../Alts/Table';
+import type { HistoryRow, TableColumn } from "@/types";
+import bgImage from "../../../assets/background/smoke-table.jpg";
+import AltsTable from "../Alts/Table";
 
 const Table = styled(TableMui)({
-  width: '100%',
-  tableLayout: 'auto',
+  width: "100%",
+  tableLayout: "auto",
 
-  '& tbody': {
+  "& tbody": {
     backgroundImage: `url(${bgImage})`,
   },
-  '& tr': {
-    height: '40px !important',
+  "& tr": {
+    height: "40px !important",
   },
-  '& th, td': {
-    padding: '4px !important',
+  "& th, td": {
+    padding: "4px !important",
   },
-  '& tr td,th': {
-    borderColor: '#37415180',
+  "& tr td,th": {
+    borderColor: "#37415180",
   },
 });
 
 interface IProps {
-  columns: ITableColumn[];
-  records: IHistoryRow[];
+  columns: TableColumn[];
+  records: HistoryRow[];
   isMobile: boolean;
 }
 
 const HistoryTable = ({ columns, records = [], isMobile }: IProps) => {
-  const [sort, setSort] = useState<{ field: keyof IHistoryRow; sort: 'asc' | 'desc' }>({
-    field: 'timestamp',
-    sort: 'desc',
+  const [sort, setSort] = useState<{
+    field: keyof HistoryRow;
+    sort: "asc" | "desc";
+  }>({
+    field: "timestamp",
+    sort: "desc",
   });
 
   const rowsComponent = useMemo(() => {
-    function renderRow(record: IHistoryRow, index: number) {
+    function renderRow(record: HistoryRow, index: number) {
       function getRowColor(): string {
-        if (record.RATING.diff.rating_diff === 0) return '#0c0c0cCC';
-        return record.RATING.diff.rating_diff > 0 ? '#172517CC' : '#2b1715CC';
+        if (record.RATING.diff.rating_diff === 0) return "#0c0c0cCC";
+        return record.RATING.diff.rating_diff > 0 ? "#172517CC" : "#2b1715CC";
       }
 
-      return <Row key={index} record={record} columns={columns} bgColor={getRowColor()} />;
+      return (
+        <Row
+          key={index}
+          record={record}
+          columns={columns}
+          bgColor={getRowColor()}
+        />
+      );
     }
 
     function sortRecords(
-      records: IHistoryRow[],
-      sort: { field: keyof IHistoryRow; sort: 'asc' | 'desc' }
+      records: HistoryRow[],
+      sort: { field: keyof HistoryRow; sort: "asc" | "desc" }
     ) {
       return records.sort((a, b) => {
-        if (sort.sort === 'desc') {
+        if (sort.sort === "desc") {
           return (a[sort.field] as number) > (b[sort.field] as number) ? -1 : 1;
         }
         return (a[sort.field] as number) > (b[sort.field] as number) ? 1 : -1;
       });
     }
 
-    return sortRecords(records, sort).map((record, index) => renderRow(record, index));
+    return sortRecords(records, sort).map((record, index) =>
+      renderRow(record, index)
+    );
   }, [columns, records, sort]);
 
-  const onSort = (field: any, sort: 'asc' | 'desc') => {
+  const onSort = (field: any, sort: "asc" | "desc") => {
     setSort({ field, sort });
   };
 
@@ -94,7 +112,7 @@ const HistoryTable = ({ columns, records = [], isMobile }: IProps) => {
 
   const renderTable = () => (
     <div className="px-2 md:px-0">
-      <Table padding={isMobile ? 'none' : 'normal'}>
+      <Table padding={isMobile ? "none" : "normal"}>
         {renderHeader()}
         <colgroup>
           {columns.map((_col, index) => (

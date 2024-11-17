@@ -4,7 +4,7 @@ import { BRACKETS } from '@/constants/pvp-activity';
 import { REGION } from '@/constants/region';
 
 import { baseUrl, urls } from '@/config';
-import type { IMeta, IPlayer } from '@/types';
+import type { Meta, Player } from '@/types';
 
 export const statsMap = {
   [REGION.us]: 'en-us',
@@ -13,15 +13,15 @@ export const statsMap = {
 
 
 export const getProfile = async (region: string, realm: string, name: string, update: boolean = false) => {
-    const url = baseUrl + `/api/${region}/${realm}/${name}${update ? "/update" : ""}`;
-    const response = await axios.get(url, {
-      validateStatus: (status) => status < 500,
-      headers: {
-        "Accept-Encoding": "gzip",
-      },
-    });
-    const data = response.data as IPlayer;
-    return { playerStatus: response.status, player: data };
+  const url = baseUrl + `/api/${region}/${realm}/${name}${update ? "/update" : ""}`;
+  const response = await axios.get(url, {
+    validateStatus: (status) => status < 500,
+    headers: {
+      "Accept-Encoding": "gzip",
+    },
+  });
+  const data = response.data as Player;
+  return { playerStatus: response.status, player: data };
 }
 
 export const getLadder = async ({
@@ -90,7 +90,7 @@ export async function searchPlayers(search: string) {
   }
 }
 
-export async function getMeta(params: Record<string, string>): Promise<IMeta> {
+export async function getMeta(params: Record<string, string>): Promise<Meta> {
   const response = await axios.get(urls.currentMeta, Object.assign({}, { params }, {
     headers: {
       'Accept-Encoding': 'gzip',

@@ -1,19 +1,22 @@
-import { useCallback, useEffect, useState } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
-import { createBreakpoint } from 'react-use';
+import { useCallback, useEffect, useState } from "react";
+import { useParams, useSearchParams } from "react-router-dom";
+import { createBreakpoint } from "react-use";
 
-import Table from '@/components/AltsTable';
-import TableFilter from '@/components/TableFilter';
+import Table from "@/components/AltsTable";
+import TableFilter from "@/components/TableFilter";
 
-import getTableColumns from './useColumns';
-import { getLadder } from '@/services/stats.service';
-import {getActivityFromUrl, getBracket, getRegion} from '@/utils/urlparts';
+import getTableColumns from "./useColumns";
+import { getLadder } from "@/services/stats.service";
+import { getActivityFromUrl, getBracket, getRegion } from "@/utils/urlparts";
 
-import { BRACKETS } from '@/constants/pvp-activity';
-import type { IActivityRecord } from '@/types';
+import { BRACKETS } from "@/constants/pvp-activity";
+import type { CharacterAndDiff } from "@/types";
 
-export function getFromSearchParams(searchParams: URLSearchParams, name: string): string[] {
-  return searchParams?.get(name)?.split(',') || [];
+export function getFromSearchParams(
+  searchParams: URLSearchParams,
+  name: string
+): string[] {
+  return searchParams?.get(name)?.split(",") || [];
 }
 
 const useBreakpoint = createBreakpoint({ S: 758, L: 900, XL: 1280 });
@@ -28,12 +31,14 @@ const DataList = ({ data: statistics }: IProps) => {
   const [searchParams] = useSearchParams();
   const breakpoint = useBreakpoint();
 
-  const [data, setData] = useState<IActivityRecord[]>([]);
+  const [data, setData] = useState<CharacterAndDiff[]>([]);
   const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
-  const [selectedSpecs, setSelectedSpecs] = useState(getFromSearchParams(searchParams, 'specs'));
-  const [diff, setDiff] = useState<IActivityRecord | null>(null);
+  const [selectedSpecs, setSelectedSpecs] = useState(
+    getFromSearchParams(searchParams, "specs")
+  );
+  const [diff, setDiff] = useState<CharacterAndDiff | null>(null);
 
   function handlePageChange(_: unknown, value: number) {
     setPage(value);
@@ -59,7 +64,7 @@ const DataList = ({ data: statistics }: IProps) => {
   }, [page, region, activity, bracket, selectedSpecs]);
 
   const getColumns = useCallback(() => {
-    return getTableColumns(activity, breakpoint === 'S', region);
+    return getTableColumns(activity, breakpoint === "S", region);
   }, [activity, breakpoint, region]);
 
   return (

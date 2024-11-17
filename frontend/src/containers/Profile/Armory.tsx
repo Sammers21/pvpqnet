@@ -1,19 +1,19 @@
-import { createBreakpoint } from 'react-use';
+import { createBreakpoint } from "react-use";
 
-import PlayerHeader from './PlayerHeader';
-import PlayerDesktop from './PlayerCard/Desktop';
-import PlayerMobile from './PlayerCard/Modile';
-import PvpBrackets from './PvpBrackets';
+import PlayerHeader from "./PlayerHeader";
+import PlayerDesktop from "./PlayerCard/Desktop";
+import PlayerMobile from "./PlayerCard/Modile";
+import PvpBrackets from "./PvpBrackets";
 
-import TitlesHistory from './TitlesHistory';
-import AltsTable from './Alts';
-import GamingHistory from './History';
+import TitlesHistory from "./TitlesHistory";
+import AltsTable from "./Alts";
+import GamingHistory from "./History";
 
-import type { IPlayer } from '@/types';
-import ActivityDiagram from './ActivityDiagram';
+import type { Player } from "@/types";
+import ActivityDiagram from "./ActivityDiagram";
 
 interface IProps {
-  player: IPlayer;
+  player: Player;
   loading: boolean;
   updatePlayer: () => void;
 }
@@ -24,7 +24,7 @@ const Armory = ({ player, loading, updatePlayer }: IProps) => {
 
   return (
     <div className="flex flex-col lg:flex-row gap-2 md:gap-4 rounded-lg">
-      {breakpoint === 'lg' && (
+      {breakpoint === "lg" && (
         <div className="flex flex-col gap-2 md:gap-4 lg:w-[300px] lg:min-w-[300px]">
           <PlayerDesktop player={player} />
           <TitlesHistory player={player} />
@@ -33,15 +33,21 @@ const Armory = ({ player, loading, updatePlayer }: IProps) => {
 
       <div
         className="flex flex-col gap-2 grow lg:self-start rounded-lg"
-        style={breakpoint === 'lg' ? { maxWidth: 'calc(100% - 300px)' } : {}}
+        style={breakpoint === "lg" ? { maxWidth: "calc(100% - 300px)" } : {}}
       >
-        {breakpoint === 'md' && <PlayerMobile player={player} />}
-        <PlayerHeader player={player} updatePlayer={updatePlayer} loading={loading} />
+        {breakpoint === "md" && <PlayerMobile player={player} />}
+        <PlayerHeader
+          player={player}
+          updatePlayer={updatePlayer}
+          loading={loading}
+        />
         <PvpBrackets player={player} />
         <ActivityDiagram player={player} />
         <AltsTable player={player} />
-        {player.brackets.find((bracket) => bracket.gaming_history.history.length > 0) && (<GamingHistory player={player} isMobile={breakpoint === 'md'} />)}
-        {breakpoint === 'md' && <TitlesHistory player={player} />}
+        {player.brackets.find(
+          (bracket) => bracket.gaming_history.history.length > 0
+        ) && <GamingHistory player={player} isMobile={breakpoint === "md"} />}
+        {breakpoint === "md" && <TitlesHistory player={player} />}
       </div>
     </div>
   );

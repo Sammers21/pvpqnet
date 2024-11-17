@@ -1,5 +1,5 @@
 import { FRACTION, WOW_CLASS, WOW_CLASS_ICON, WOW_RACE, WOW_SPEC } from '../constants/table';
-import type { IActivityRecord, IPlayer, IPlayerBracket } from '../types';
+import type { CharacterAndDiff, Player, Bracket } from '../types';
 
 export const winGreen = '#32CD32';
 export const lossRed = '#ff0000';
@@ -7,7 +7,7 @@ export const lossRed = '#ff0000';
 export const hordeRed = '#d23636'
 export const allianceBlue = '#4accff'
 
-export const getProfileUrl = (record: IActivityRecord, region: string) => {
+export const getProfileUrl = (record: CharacterAndDiff, region: string) => {
   const name = record?.character?.name || record?.name;
   const realm = record?.character?.realm || record?.realm;
   return window.location.origin + `/${region}/${realm}/${name}`;
@@ -70,7 +70,7 @@ export const getDiffColor = (diff: number): string => {
 
 export const getRankDiffColor = (diff: number): string => {
   if (diff === 0 || diff === undefined) return 'white';
-  return diff < 0 ?  winGreen : lossRed;
+  return diff < 0 ? winGreen : lossRed;
 };
 
 export const getDiffCell = (diff: number): string | number => {
@@ -150,7 +150,7 @@ export const ratingToColor = (rating: number, is_rank_one_range = false) => {
   return '#FFFFFF';
 }
 
-export const bracketToColor = (bracket: Partial<IPlayerBracket>) => {
+export const bracketToColor = (bracket: Partial<Bracket>) => {
   const { rating = 0, is_rank_one_range = false } = bracket;
   return ratingToColor(rating, is_rank_one_range);
 };
@@ -211,6 +211,6 @@ export const getSeasonRankImageFromRating = (rating: number, is_rank_one_range: 
   return getSeasonRankImage('Unranked');
 };
 
-export const getAltProfileUrl = (alt: IPlayer) => {
+export const getAltProfileUrl = (alt: Player) => {
   return window.location.origin + `/${alt.region}/${alt.realm}/${alt.name}`;
 };

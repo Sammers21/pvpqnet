@@ -1,13 +1,13 @@
-import { TableCell } from '@mui/material';
+import { TableCell } from "@mui/material";
 
-import type { ITableColumn } from '@/types';
+import type { TableColumn } from "@/types";
 
 interface IProps {
-  column: ITableColumn;
+  column: TableColumn;
 }
 
 const HeaderCell = ({ column }: IProps) => {
-  const { align = 'left', label } = column;
+  const { align = "left", label } = column;
 
   return <TableCell align={align}>{label}</TableCell>;
 };

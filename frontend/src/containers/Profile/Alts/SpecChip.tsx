@@ -1,4 +1,4 @@
-import { IPlayerBracket } from "@/types";
+import { Bracket } from "@/types";
 import { bracketToColor, getSpecIcon } from "@/utils/table";
 import { Avatar, Chip } from "@mui/material";
 
@@ -8,7 +8,7 @@ export const SpecChip = ({
   label,
 }: {
   fullSpec: string;
-  bracket: Partial<IPlayerBracket>;
+  bracket: Partial<Bracket>;
   label: string;
 }) => {
   const specIcon = getSpecIcon(`${fullSpec}` || "");
@@ -22,12 +22,12 @@ export const SpecChip = ({
       sx={{
         "& .MuiChip-label": {
           // color: "red"
-          fontWeight: 'bold',
-        }
-       }}
+          fontWeight: "bold",
+        },
+      }}
       style={{
         border: "3px solid",
-        
+
         color: ratingColor,
         borderColor: ratingColor,
       }}

@@ -43,12 +43,6 @@ public class DB {
         return find(bracket, fopts, opts);
     }
 
-    public Maybe<MongoClientDeleteResult> deleteOlderThanHours(String bracket, int hours) {
-        return mongoClient.rxRemoveDocuments(bracket,
-            new JsonObject().put("timestamp", new JsonObject().put("$lt", new Date().getTime() - (long) hours * 60 * 60 * 1000))
-        ).doOnSuccess(res -> log.info("Deleted " + res.getRemovedCount() + " records " + bracket + " snapshots"));
-    }
-
     /**
      * The idea is the following: we want snapshots to take less space, but we want to keep the history of the snapshots.
      * We want to keep one weekly snapshot made on Friday for every week. Also, we keep all hourly snapshots for the last 24 hours.

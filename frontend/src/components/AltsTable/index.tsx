@@ -14,7 +14,7 @@ import HeaderCell from "./HeaderCell";
 import Pagination from "./Pagination";
 import Row from "./Row";
 
-import type { IActivityRecord, ITableColumn } from "@/types";
+import type { CharacterAndDiff, TableColumn } from "@/types";
 
 const StyledTable = styled(TableMui)({
   "tbody tr:nth-of-type(odd)": {
@@ -27,14 +27,14 @@ const StyledTable = styled(TableMui)({
 
 interface IProps {
   loading?: boolean;
-  columns: ITableColumn[];
-  records: IActivityRecord[];
+  columns: TableColumn[];
+  records: CharacterAndDiff[];
   totalPages: number;
   pagination: boolean;
   page: number;
   onPageChange: (_: unknown, page: number) => void;
-  onRowOver: (record: IActivityRecord | null) => void;
-  diff: IActivityRecord | null;
+  onRowOver: (record: CharacterAndDiff | null) => void;
+  diff: CharacterAndDiff | null;
 }
 
 const Table = ({
@@ -49,7 +49,7 @@ const Table = ({
   diff,
 }: IProps) => {
   const rowsComponent = useMemo(() => {
-    function renderRow(record: IActivityRecord, index: number) {
+    function renderRow(record: CharacterAndDiff, index: number) {
       let shouldHighlight;
       let altHighlight;
       if (diff === record) {

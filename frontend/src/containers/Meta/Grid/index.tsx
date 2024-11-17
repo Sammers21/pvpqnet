@@ -1,46 +1,52 @@
-import { useEffect, useState } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
-import { createBreakpoint, useWindowSize } from 'react-use';
+import { useEffect, useState } from "react";
+import { useParams, useSearchParams } from "react-router-dom";
+import { createBreakpoint, useWindowSize } from "react-use";
 
-import { DataGrid, gridClasses } from '@mui/x-data-grid';
-import { styled, alpha } from '@mui/material/styles';
+import { DataGrid, gridClasses } from "@mui/x-data-grid";
+import { styled, alpha } from "@mui/material/styles";
 
-import Header from './Header';
-import Filters from './Filters';
-import { getColumnGroup, specNameColumn } from './columnGroup';
+import Header from "./Header";
+import Filters from "./Filters";
+import { getColumnGroup, specNameColumn } from "./columnGroup";
 
-import { REGION } from '@/constants/region';
-import { columnGroups, defaultFilters, metaFilter } from '@/constants/meta';
-import { getMeta } from '@/services/stats.service';
+import { REGION } from "@/constants/region";
+import { columnGroups, defaultFilters, metaFilter } from "@/constants/meta";
+import { getMeta } from "@/services/stats.service";
 
-import type { IMeta } from '@/types';
-import type { GridColDef, GridColumnGroup, GridValidRowModel } from '@mui/x-data-grid';
-import type { IFilterValue } from '../types';
+import type { Meta } from "@/types";
+import type {
+  GridColDef,
+  GridColumnGroup,
+  GridValidRowModel,
+} from "@mui/x-data-grid";
+import type { IFilterValue } from "../types";
 
 const ODD_OPACITY = 0.2;
 
 export const StripedDataGrid = styled(DataGrid)(({ theme }) => ({
   [`& .${gridClasses.row}.even`]: {
-    backgroundColor: '#0e1216',
-    minHeight: '200px',
-    '&:hover, &.Mui-hovered': {
+    backgroundColor: "#0e1216",
+    minHeight: "200px",
+    "&:hover, &.Mui-hovered": {
       backgroundColor: alpha(theme.palette.primary.main, ODD_OPACITY),
-      '@media (hover: none)': {
-        backgroundColor: 'transparent',
+      "@media (hover: none)": {
+        backgroundColor: "transparent",
       },
     },
-    '&.Mui-selected': {
+    "&.Mui-selected": {
       backgroundColor: alpha(
         theme.palette.primary.main,
         ODD_OPACITY + theme.palette.action.selectedOpacity
       ),
-      '&:hover, &.Mui-hovered': {
+      "&:hover, &.Mui-hovered": {
         backgroundColor: alpha(
           theme.palette.primary.main,
-          ODD_OPACITY + theme.palette.action.selectedOpacity + theme.palette.action.hoverOpacity
+          ODD_OPACITY +
+            theme.palette.action.selectedOpacity +
+            theme.palette.action.hoverOpacity
         ),
         // Reset on touch devices, it doesn't add specificity
-        '@media (hover: none)': {
+        "@media (hover: none)": {
           backgroundColor: alpha(
             theme.palette.primary.main,
             ODD_OPACITY + theme.palette.action.selectedOpacity
@@ -52,21 +58,25 @@ export const StripedDataGrid = styled(DataGrid)(({ theme }) => ({
 }));
 
 function paramFromString(str: string) {
-  return str.toLowerCase().replace(' ', '_');
+  return str.toLowerCase().replace(" ", "_");
 }
 
 const useBreakpoint = createBreakpoint({ S: 758, L: 900, XL: 1280, XXL: 1600 });
 
 const Grid = () => {
   const { region = REGION.eu } = useParams();
-  const [data, setData] = useState<IMeta | null>(null);
+  const [data, setData] = useState<Meta | null>(null);
   const breakpoint = useBreakpoint();
-  const {width} = useWindowSize();
+  const { width } = useWindowSize();
 
   let [searchParams, setSearchParams] = useSearchParams();
-  const [filterValues, setFilterValues] = useState<IFilterValue>(valuesFromSearch());
+  const [filterValues, setFilterValues] = useState<IFilterValue>(
+    valuesFromSearch()
+  );
 
-  const [columns, setColumns] = useState<GridColDef<GridValidRowModel>[]>(computeColumns().columns);
+  const [columns, setColumns] = useState<GridColDef<GridValidRowModel>[]>(
+    computeColumns().columns
+  );
   const [columnGroupModel, setColorGroupModel] = useState<GridColumnGroup[]>(
     computeColumns().groups
   );
@@ -79,12 +89,20 @@ const Grid = () => {
     const newGroups: GridColumnGroup[] = [];
 
     columnGroups.forEach((col) => {
-      const { columns, columnGroup } = getColumnGroup(data, col.field, col.icons, width);
+      const { columns, columnGroup } = getColumnGroup(
+        data,
+        col.field,
+        col.icons,
+        width
+      );
       newColumns.push(...columns);
       newGroups.push(columnGroup);
     });
 
-    return { columns: [specNameColumn(breakpoint === 'S'), ...newColumns], groups: newGroups };
+    return {
+      columns: [specNameColumn(breakpoint === "S"), ...newColumns],
+      groups: newGroups,
+    };
   }
 
   const handleFilterChange = (value: string, filterName: string) => {
@@ -101,7 +119,9 @@ const Grid = () => {
       const param = searchParams.get(name);
       if (!param) return;
 
-      const value = options.find((option) => paramFromString(option) === paramFromString(param));
+      const value = options.find(
+        (option) => paramFromString(option) === paramFromString(param)
+      );
       if (!value) return;
 
       values[name] = value;
@@ -130,12 +150,17 @@ const Grid = () => {
     const newGroups: GridColumnGroup[] = [];
 
     columnGroups.forEach((col) => {
-      const { columns, columnGroup } = getColumnGroup(data, col.field, col.icons, width);
+      const { columns, columnGroup } = getColumnGroup(
+        data,
+        col.field,
+        col.icons,
+        width
+      );
       newColumns.push(...columns);
       newGroups.push(columnGroup);
     });
 
-    setColumns([specNameColumn(breakpoint === 'S'), ...newColumns]);
+    setColumns([specNameColumn(breakpoint === "S"), ...newColumns]);
     setColorGroupModel(newGroups);
   }, [data, breakpoint]);
 
@@ -143,7 +168,11 @@ const Grid = () => {
     <div className="flex w-full justify-center bg-[#030303e6] pt-24 pb-11">
       <div className="w-full md:w-4/5">
         <Header />
-        <Filters filters={metaFilter} onChange={handleFilterChange} values={filterValues} />
+        <Filters
+          filters={metaFilter}
+          onChange={handleFilterChange}
+          values={filterValues}
+        />
         <div className="mx-2 my-2 px-4 py-4 rounded-2xl bg-[#2f384d4d]">
           <StripedDataGrid
             experimentalFeatures={{ columnGrouping: true }}
@@ -156,10 +185,14 @@ const Grid = () => {
             autoHeight={true}
             rowHeight={33.5}
             hideFooter={true}
-            sx={{ '&, [class^=MuiDataGrid]': { border: 'none' } }}
-            initialState={{ sorting: { sortModel: [{ field: '0.050_presence', sort: 'desc' }] } }}
+            sx={{ "&, [class^=MuiDataGrid]": { border: "none" } }}
+            initialState={{
+              sorting: {
+                sortModel: [{ field: "0.050_presence", sort: "desc" }],
+              },
+            }}
             getRowClassName={(params) =>
-              params.indexRelativeToCurrentPage % 2 === 0 ? 'even' : 'odd'
+              params.indexRelativeToCurrentPage % 2 === 0 ? "even" : "odd"
             }
           />
         </div>

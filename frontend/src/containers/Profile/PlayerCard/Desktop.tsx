@@ -1,10 +1,10 @@
-import { openWowArmory } from '@/utils/urlparts';
-import { PlayerItemLvl, PlayerImages, PlayerName } from './common';
+import { openWowArmory } from "@/utils/urlparts";
+import { PlayerItemLvl, PlayerImages, PlayerName } from "./common";
 
-import type { IPlayer } from '@/types';
+import type { Player } from "@/types";
 
 interface IProps {
-  player: IPlayer;
+  player: Player;
   openArmory?: () => void;
 }
 
@@ -24,7 +24,7 @@ const PlayerImage = ({ player }: IProps) => (
 
 const PlayerCard = ({ player }: IProps) => {
   const openArmory = () => {
-   openWowArmory(player)
+    openWowArmory(player);
   };
 
   return (

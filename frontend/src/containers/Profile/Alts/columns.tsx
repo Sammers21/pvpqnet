@@ -1,4 +1,4 @@
-import { Avatar, Chip } from '@mui/material';
+import { Avatar, Chip } from "@mui/material";
 
 import {
   getAltProfileUrl,
@@ -7,14 +7,14 @@ import {
   bracketToColor,
   getSeasonRankImageFromRating,
   getClassIcon,
-} from '@/utils/table';
-import { CLASS_AND_SPECS } from '@/constants/filterSchema';
+} from "@/utils/table";
+import { CLASS_AND_SPECS } from "@/constants/filterSchema";
 
-import type { IAlt, IPlayerBracket, ITableColumn } from '@/types';
-import { MINIMUM_NICKNAME_LENGTH, nickNameLenOnMobile } from '@/utils/common';
+import type { Alt, Bracket, TableColumn } from "@/types";
+import { MINIMUM_NICKNAME_LENGTH, nickNameLenOnMobile } from "@/utils/common";
 
 interface IParams {
-  record: IAlt;
+  record: Alt;
 }
 
 const renderName = ({ record: alt }: IParams, isMobile: boolean) => {
@@ -35,7 +35,9 @@ const renderName = ({ record: alt }: IParams, isMobile: boolean) => {
           style={{ color: getClassNameColor(alt.class) }}
         >
           <div className="flex items-start">
-            {!isMobile && <img className="w-6 h-6 mr-2" src={classImg} alt="class" />}
+            {!isMobile && (
+              <img className="w-6 h-6 mr-2" src={classImg} alt="class" />
+            )}
             {name}
             {!isMobile && `-${realm}`}
           </div>
@@ -46,13 +48,18 @@ const renderName = ({ record: alt }: IParams, isMobile: boolean) => {
 };
 
 const bracketTypeTitleMap = {
-  '2v2': 'ARENA_2v2',
-  '3v3': 'ARENA_3v3',
-  rbg: 'BATTLEGROUNDS',
+  "2v2": "ARENA_2v2",
+  "3v3": "ARENA_3v3",
+  rbg: "BATTLEGROUNDS",
 };
 
-const renderBracket = ({ record: alt }: IParams, bracketName: keyof typeof bracketTypeTitleMap) => {
-  const bracket = alt?.brackets?.find((br) => br.bracket_type === bracketTypeTitleMap[bracketName]);
+const renderBracket = (
+  { record: alt }: IParams,
+  bracketName: keyof typeof bracketTypeTitleMap
+) => {
+  const bracket = alt?.brackets?.find(
+    (br) => br.bracket_type === bracketTypeTitleMap[bracketName]
+  );
   var rating;
   var is_rank_one_range;
   var color;
@@ -60,7 +67,7 @@ const renderBracket = ({ record: alt }: IParams, bracketName: keyof typeof brack
   if (!bracket) {
     rating = 0;
     is_rank_one_range = false;
-    color = '#FFFFFF';
+    color = "#FFFFFF";
   } else {
     rating = bracket.rating;
     is_rank_one_range = bracket.is_rank_one_range;
@@ -82,19 +89,27 @@ const renderShuffle = ({ record: alt }: IParams, isMobile: boolean) => {
   // @ts-ignore
   const classAndSpec = CLASS_AND_SPECS[alt.class] as string[];
 
-  const sortedSpec = [...classAndSpec].sort((a, b) => {
-    const ratingA = alt?.brackets?.find((bracket) => bracket.bracket_type.includes(a))?.rating || 0;
-    const ratingB = alt?.brackets?.find((bracket) => bracket.bracket_type.includes(b))?.rating || 0;
-    return ratingA > ratingB ? -1 : 1;
-  }).slice(0, 3)
+  const sortedSpec = [...classAndSpec]
+    .sort((a, b) => {
+      const ratingA =
+        alt?.brackets?.find((bracket) => bracket.bracket_type.includes(a))
+          ?.rating || 0;
+      const ratingB =
+        alt?.brackets?.find((bracket) => bracket.bracket_type.includes(b))
+          ?.rating || 0;
+      return ratingA > ratingB ? -1 : 1;
+    })
+    .slice(0, 3);
 
   if (isMobile) {
     let max = 0;
     let spec = sortedSpec[0];
-    let bracket: IPlayerBracket | null = null;
+    let bracket: Bracket | null = null;
 
     sortedSpec.forEach((spec) => {
-      const altBracket = alt?.brackets?.find((b) => b.bracket_type.includes(spec));
+      const altBracket = alt?.brackets?.find((b) =>
+        b.bracket_type.includes(spec)
+      );
       if (altBracket?.rating && altBracket.rating > max) {
         max = altBracket.rating;
         bracket = altBracket;
@@ -102,7 +117,7 @@ const renderShuffle = ({ record: alt }: IParams, isMobile: boolean) => {
     });
     if (!bracket) return <></>;
 
-    const specIcon = getSpecIcon(`${spec} ${alt.class}` || '');
+    const specIcon = getSpecIcon(`${spec} ${alt.class}` || "");
     const ratingColor = bracketToColor(bracket);
     return (
       <Chip
@@ -116,10 +131,12 @@ const renderShuffle = ({ record: alt }: IParams, isMobile: boolean) => {
   return (
     <div className="flex md:gap-2">
       {sortedSpec.map((spec) => {
-        const altBracket = alt?.brackets?.find((b) => b.bracket_type.includes(spec));
+        const altBracket = alt?.brackets?.find((b) =>
+          b.bracket_type.includes(spec)
+        );
         if (!altBracket?.rating) return <></>;
 
-        const specIcon = getSpecIcon(`${spec} ${alt.class}` || '');
+        const specIcon = getSpecIcon(`${spec} ${alt.class}` || "");
         const ratingColor = bracketToColor(altBracket);
         return (
           <Chip
@@ -134,30 +151,30 @@ const renderShuffle = ({ record: alt }: IParams, isMobile: boolean) => {
   );
 };
 
-export const tableColumns = (isMobile: boolean): ITableColumn[] => [
+export const tableColumns = (isMobile: boolean): TableColumn[] => [
   {
-    field: 'name',
-    label: 'Name',
+    field: "name",
+    label: "Name",
     render: (params: IParams) => renderName(params, isMobile),
   },
   {
-    field: 'SHUFFLE',
-    label: 'Shuffle',
+    field: "SHUFFLE",
+    label: "Shuffle",
     render: (params: IParams) => renderShuffle(params, isMobile),
   },
   {
-    field: 'ARENA_2v2',
-    label: '2v2',
-    render: (params: IParams) => renderBracket(params, '2v2'),
+    field: "ARENA_2v2",
+    label: "2v2",
+    render: (params: IParams) => renderBracket(params, "2v2"),
   },
   {
-    field: 'ARENA_3v3',
-    label: '3v3',
-    render: (params: IParams) => renderBracket(params, '3v3'),
+    field: "ARENA_3v3",
+    label: "3v3",
+    render: (params: IParams) => renderBracket(params, "3v3"),
   },
   {
-    field: 'BATTLEGROUNDS',
-    label: 'RBG',
-    render: (params: IParams) => renderBracket(params, 'rbg'),
+    field: "BATTLEGROUNDS",
+    label: "RBG",
+    render: (params: IParams) => renderBracket(params, "rbg"),
   },
 ];

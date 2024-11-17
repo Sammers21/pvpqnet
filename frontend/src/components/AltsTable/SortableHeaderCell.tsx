@@ -1,18 +1,18 @@
-import { TableCell } from '@mui/material';
-import ArrowUpwardOutlinedIcon from '@mui/icons-material/ArrowUpwardOutlined';
-import ArrowDownwardOutlinedIcon from '@mui/icons-material/ArrowDownwardOutlined';
+import { TableCell } from "@mui/material";
+import ArrowUpwardOutlinedIcon from "@mui/icons-material/ArrowUpwardOutlined";
+import ArrowDownwardOutlinedIcon from "@mui/icons-material/ArrowDownwardOutlined";
 
-import type { ITableColumn } from '@/types';
+import type { TableColumn } from "@/types";
 
 interface IProps {
-  column: ITableColumn;
-  onSort: (field: string, sort: 'asc' | 'desc') => void;
-  sort: { field: string; sort: 'asc' | 'desc' };
+  column: TableColumn;
+  onSort: (field: string, sort: "asc" | "desc") => void;
+  sort: { field: string; sort: "asc" | "desc" };
   sortable: boolean;
 }
 
 const HeaderCell = ({ column, onSort, sort, sortable }: IProps) => {
-  const { align = 'left', field, label } = column;
+  const { align = "left", field, label } = column;
   const renderButtonHover = () => {
     return (
       <ArrowDownwardOutlinedIcon
@@ -26,14 +26,20 @@ const HeaderCell = ({ column, onSort, sort, sortable }: IProps) => {
     if (!sortByField) return renderButtonHover();
 
     const ArrowIcon =
-      sortByField.sort === 'desc' ? ArrowDownwardOutlinedIcon : ArrowUpwardOutlinedIcon;
+      sortByField.sort === "desc"
+        ? ArrowDownwardOutlinedIcon
+        : ArrowUpwardOutlinedIcon;
     return <ArrowIcon fontSize="small" className="text-white" />;
   };
   return (
     <TableCell align={align} className="text-white">
       <div
         onClick={() =>
-          sortable && onSort(field, sort.field === field && sort.sort === 'desc' ? 'asc' : 'desc')
+          sortable &&
+          onSort(
+            field,
+            sort.field === field && sort.sort === "desc" ? "asc" : "desc"
+          )
         }
         className="group gap-2 flex items-center justify-center cursor-pointer text-base"
       >

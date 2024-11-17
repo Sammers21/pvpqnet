@@ -1,4 +1,4 @@
-import { IPlayer } from '@/types';
+import { Player } from '@/types';
 import { BRACKETS } from '../constants/pvp-activity';
 import { REGION } from '../constants/region';
 
@@ -33,7 +33,7 @@ export function capitalizeNickname(nickname?: string) {
     : `${name}-${realm}`;
 }
 
-export function openWowArmory(player: IPlayer) {
+export function openWowArmory(player: Player) {
   const fixedRealm = player.realm.replaceAll("'", "")
   const url = `https://worldofwarcraft.blizzard.com/en-gb/character/${player.region}/${fixedRealm}/${player.name}`;
   window.open(url, '_blank');

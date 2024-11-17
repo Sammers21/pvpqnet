@@ -1,7 +1,7 @@
 import { LinearProgress, Tooltip } from "@mui/material";
 import { getClassNameColor, getSpecIcon } from "@/utils/table";
 
-import type { IMetaSpec, IMetaSpecSizing, IMeta } from "@/types";
+import type { MetaSpec, MetaSpecSizing, Meta } from "@/types";
 import type {
   GridAlignment,
   GridColDef,
@@ -84,13 +84,13 @@ export function specNameColumn(isMobile: boolean): GridColDef {
 }
 
 export function getColumnGroup(
-  data: null | IMeta,
+  data: null | Meta,
   field: string,
   rankIcons: string[],
   wh: number
 ): { columns: GridColDef<GridValidRowModel>[]; columnGroup: GridColumnGroup } {
-  const popularity = `${field}_presence` as keyof IMetaSpec;
-  const winrate = `${field}_win_rate` as keyof IMetaSpec;
+  const popularity = `${field}_presence` as keyof MetaSpec;
+  const winrate = `${field}_win_rate` as keyof MetaSpec;
 
   let maxPopularity = 0;
   let maxWr = 0;
@@ -107,9 +107,9 @@ export function getColumnGroup(
   let to = 3000;
   if (data?.specs_sizing) {
     charCount =
-      data.specs_sizing[`${field}_total` as keyof IMetaSpecSizing] || 0;
-    from = data.specs_sizing[`${field}_min` as keyof IMetaSpecSizing] || 0;
-    to = data.specs_sizing[`${field}_max` as keyof IMetaSpecSizing] || 0;
+      data.specs_sizing[`${field}_total` as keyof MetaSpecSizing] || 0;
+    from = data.specs_sizing[`${field}_min` as keyof MetaSpecSizing] || 0;
+    to = data.specs_sizing[`${field}_max` as keyof MetaSpecSizing] || 0;
 
     columnTitle = `Based on ${charCount} characters between ${from} and ${to} rating`;
   }
@@ -122,8 +122,6 @@ export function getColumnGroup(
   // const textTip
   const topText = `Based on ${charCount} characters`;
   const bottomText = `From ${from} to ${to} rating`;
-
-
 
   const columnGroup = {
     groupId: field,
@@ -142,14 +140,10 @@ export function getColumnGroup(
             ))}
           </div>
           {/* Text on top  */}
-          { wh > 1600 && (
+          {wh > 1600 && (
             <div className="flex flex-col items-center">
-              <p className="text-sm font-mono ">
-                {topText}
-              </p>
-              <p className="text-sm font-mono ">
-                {bottomText}
-              </p>
+              <p className="text-sm font-mono ">{topText}</p>
+              <p className="text-sm font-mono ">{bottomText}</p>
             </div>
           )}
         </div>
