@@ -41,15 +41,18 @@ const GamingHistory = ({
   }
   const [activeBracketName, setBracketName] = useState(initialBracket);
   const bracket = useMemo(() => {
-    console.log("active_bracket_name", activeBracketName);
-    const arenaBrackets = ["ARENA_2v2", "ARENA_3v3", "BATTLEGROUNDS"];
-    const soloBarackets = ["SHUFFLE", "BLITZ"];
-    const search = arenaBrackets.includes(activeBracketName)
-      ? activeBracketName
-      : `SHUFFLE-${activeBracketName}`;
-    return player.brackets.find((history) => history.bracket_type === search);
+    // console.log("active_bracket_name", activeBracketName);
+    // const arenaBrackets = ["ARENA_2v2", "ARENA_3v3", "BATTLEGROUNDS"];
+    // const soloBarackets = ["SHUFFLE", "BLITZ"];
+    // const search = arenaBrackets.includes(activeBracketName)
+    //   ? activeBracketName
+    //   : `SHUFFLE-${activeBracketName}`;
+    // return player.brackets.find((history) => history.bracket_type === search);
+    return player.brackets.find(
+      (bracket) => bracket.bracket_type === activeBracketName
+    );
   }, [player, activeBracketName]);
-  const handleChange = (_evt: React.SyntheticEvent, newValue: string) => {
+  const handleHistBracketChange = (_evt: React.SyntheticEvent, newValue: string) => {
     setBracketName(newValue);
   };
   const records = useMemo(() => {
@@ -66,7 +69,7 @@ const GamingHistory = ({
         <span className="text-2xl mr-4">History</span>
         <BracketTabs
           player={player}
-          onChange={handleChange}
+          onChange={handleHistBracketChange}
           activeBracketName={activeBracketName}
           isMobile={isMobile}
         />

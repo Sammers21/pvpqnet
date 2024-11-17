@@ -1,16 +1,19 @@
-import { useMemo } from "react";
 import { Tabs, Tab as MuiTab, TabProps, styled } from "@mui/material";
 
-import type { Player } from "@/types";
-import { CLASS_AND_SPECS } from "@/constants/filterSchema";
+import type { Bracket, Player } from "@/types";
 import { getSpecIcon } from "@/utils/table";
 import { BracketCount } from "@/containers/Activity/Tabs";
+import { capitalizeFirstLetter } from "@/utils/common";
 
-const arenaAndRbg = [
-  { name: "ARENA_2v2", title: "2v2" },
-  { name: "ARENA_3v3", title: "3v3" },
-  { name: "BATTLEGROUNDS", title: "RBG" },
-];
+export const PartyBrackets = {
+  ARENA_2v2: "2v2",
+  ARENA_3v3: "3v3",
+  BATTLEGROUNDS: "RBG",
+};
+
+export function isSoloBracket(bracketName: string) {
+  return bracketName.startsWith("SHUFFLE") || bracketName.startsWith("BLITZ");
+}
 
 const Tab = styled((props: TabProps) => <MuiTab {...props} />)(({ theme }) => ({
   textTransform: "none",
@@ -18,15 +21,59 @@ const Tab = styled((props: TabProps) => <MuiTab {...props} />)(({ theme }) => ({
   [theme.breakpoints.up("sm")]: {
     minWidth: 0,
   },
-
   fontWeight: theme.typography.fontWeightRegular,
   fontSize: theme.typography.pxToRem(14),
   padding: "8px 16px",
 }));
 
+function BracketTab(characterClass, bracket, isMobile) {
+  const key = bracket.bracket_type;
+  const value = bracket.bracket_type;
+  let icon;
+  if (bracket.bracket_type in PartyBrackets) {
+    icon = (
+      <div className="flex items-center">
+        <span className="text-base">{PartyBrackets[bracket.bracket_type]}</span>
+        {!isMobile && (
+          <BracketCount
+            content={bracket?.gaming_history?.history?.length ?? 0}
+          />
+        )}
+      </div>
+    );
+  } else if (isSoloBracket(bracket.bracket_type)) {
+    const split = bracket.bracket_type.split("-");
+    const bracketType = capitalizeFirstLetter(split[0].toLocaleLowerCase());
+    const spec = split[1];
+    const specIcon = getSpecIcon(`${spec} ${characterClass}` || "");
+    const imgClasses =
+      (isMobile ? "h-7 w-7" : "h-7 w-7") +
+      " " +
+      "ml-1 rounded border border-solid border-[#37415180]";
+    icon = (
+      <div className="flex items-center">
+        <span className="text-base">{bracketType}</span>
+        <img className={imgClasses} src={specIcon} alt={spec} />
+        {!isMobile && (
+          <BracketCount
+            content={bracket?.gaming_history?.history?.length ?? 0}
+          />
+        )}
+      </div>
+    );
+  } else {
+    icon = (
+      <div className="flex items-center">
+        <span className="text-base">{bracket.bracket_type}</span>
+      </div>
+    );
+  }
+  return <Tab key={key} value={value} icon={icon} />;
+}
+
 const BracketTabs = ({
   player,
-  activeBracketName: value,
+  activeBracketName,
   onChange,
   isMobile,
 }: {
@@ -35,43 +82,13 @@ const BracketTabs = ({
   onChange: (_evt: React.SyntheticEvent, value: any) => void;
   isMobile: boolean;
 }) => {
-  const blitzBrackets = useMemo(() => {
-    const classAndSpec = CLASS_AND_SPECS[player.class] as string[];
-    return classAndSpec
-      .map((spec) => {
-        const bracket = player?.brackets?.find(
-          ({ bracket_type }) =>
-            bracket_type.includes(spec) && bracket_type.includes("BLITZ")
-        );
-        return { bracket, spec };
-      })
-      .filter(
-        ({ bracket, spec }) =>
-          bracket !== undefined && bracket.gaming_history.history.length > 0
-      );
-  }, [player]);
-  const shuffleBrackets = useMemo(() => {
-    const classAndSpec = CLASS_AND_SPECS[player.class] as string[];
-    return classAndSpec
-      .map((spec) => {
-        const bracket = player?.brackets?.find(
-          ({ bracket_type }) =>
-            bracket_type.includes(spec) && bracket_type.includes("SHUFFLE")
-        );
-        return { bracket, spec };
-      })
-      .filter(
-        ({ bracket, spec }) =>
-          bracket !== undefined && bracket.gaming_history.history.length > 0
-      );
-  }, [player]);
   const more_than_one_bracket =
     player.brackets.filter((b) => b.gaming_history?.history?.length > 0)
       .length > 1;
   return (
     <Tabs
       className="!min-h-[38px]"
-      value={value}
+      value={activeBracketName}
       onChange={onChange}
       variant="scrollable"
       scrollButtons={false}
@@ -79,87 +96,11 @@ const BracketTabs = ({
       indicatorColor="primary"
     >
       {more_than_one_bracket && <Tab label="All" value="all" />}
-      {arenaAndRbg.filter(non_empty_brackets()).map(({ title, name }) => {
-        const bracket = player?.brackets?.find(
-          ({ bracket_type }) => bracket_type === name
-        );
-        return (
-          <Tab
-            key={name}
-            value={name}
-            icon={
-              <div className="flex items-center">
-                <span className="text-base">{title}</span>
-                {!isMobile && (
-                  <BracketCount
-                    content={bracket?.gaming_history?.history?.length ?? 0}
-                  />
-                )}
-              </div>
-            }
-          />
-        );
-      })}
-      {blitzBrackets.map(({ bracket, spec }) => {
-        const specIcon = getSpecIcon(`${spec} ${player.class}` || "");
-        if (!bracket) return null;
-        const imgClasses =
-          (isMobile ? "h-7 w-7" : "h-7 w-7") +
-          " rounded border border-solid border-[#37415180]";
-        return (
-          <Tab
-            key={spec}
-            value={spec}
-            icon={
-              <div className="flex items-center">
-                <span className="text-base">Blitz</span>
-                <img className={imgClasses} src={specIcon} alt={spec} />
-                {!isMobile && (
-                  <BracketCount
-                    content={bracket?.gaming_history?.history?.length ?? 0}
-                  />
-                )}
-              </div>
-            }
-          />
-        );
-      })}
-      {shuffleBrackets.map(({ bracket, spec }) => {
-        const specIcon = getSpecIcon(`${spec} ${player.class}` || "");
-        if (!bracket) return null;
-        const imgClasses =
-          (isMobile ? "h-7 w-7" : "h-7 w-7") +
-          " rounded border border-solid border-[#37415180]";
-        return (
-          <Tab
-            key={spec}
-            value={spec}
-            icon={
-              <div className="flex items-center">
-                <span className="text-base">Shuffle</span>
-                <img className={imgClasses} src={specIcon} alt={spec} />
-                {!isMobile && (
-                  <BracketCount
-                    content={bracket?.gaming_history?.history?.length ?? 0}
-                  />
-                )}
-              </div>
-            }
-          />
-        );
-      })}
+      {player.brackets
+        .filter((b) => b.gaming_history?.history?.length > 0)
+        .map((bracket) => BracketTab(player.class, bracket, isMobile))}
     </Tabs>
   );
-
-  function non_empty_brackets() {
-    return ({ title, name }) => {
-      const b = player?.brackets?.find(
-        ({ bracket_type }) => bracket_type === name
-      );
-      if (!b) return false;
-      return b.gaming_history?.history?.length > 0;
-    };
-  }
 };
 
 export default BracketTabs;

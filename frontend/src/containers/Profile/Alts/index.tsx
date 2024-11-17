@@ -6,9 +6,15 @@ import { tableColumns } from "./columns";
 import type { Player } from "@/types";
 import { FormControlLabel, Switch } from "@mui/material";
 
-type TPvpBracket = "SHUFFLE" | "ARENA_2v2" | "ARENA_3v3" | "BATTLEGROUNDS";
+type TPvpBracket =
+  | "BLITZ"
+  | "SHUFFLE"
+  | "ARENA_2v2"
+  | "ARENA_3v3"
+  | "BATTLEGROUNDS";
 const bracketsList: TPvpBracket[] = [
   "SHUFFLE",
+  "BLITZ",
   "ARENA_2v2",
   "ARENA_3v3",
   "BATTLEGROUNDS",
@@ -30,12 +36,15 @@ const Alts = ({ player }: { player: Player }) => {
       const altCopy = structuredClone(alt);
       altCopy.brackets?.forEach((bracket) => {
         const isShuffle = bracket.bracket_type.startsWith("SHUFFLE");
-        if (isShuffle)
+        const isBlitz = bracket.bracket_type.startsWith("BLITZ");
+        if (isShuffle) {
           altCopy["SHUFFLE"] = Math.max(
             altCopy["SHUFFLE"] || 0,
             bracket.rating
           );
-        else altCopy[bracket.bracket_type as TPvpBracket] = bracket.rating;
+        } else if (isBlitz) {
+          altCopy["BLITZ"] = Math.max(altCopy["BLITZ"] || 0, bracket.rating);
+        } else altCopy[bracket.bracket_type as TPvpBracket] = bracket.rating;
       });
       bracketsList.forEach((bracket) => {
         if (!altCopy[bracket]) altCopy[bracket] = 0;

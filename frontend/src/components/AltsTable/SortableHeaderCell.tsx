@@ -41,7 +41,7 @@ const HeaderCell = ({ column, onSort, sort, sortable }: IProps) => {
             sort.field === field && sort.sort === "desc" ? "asc" : "desc"
           )
         }
-        className="group gap-2 flex items-center justify-center cursor-pointer text-base"
+        className="group gap-2 flex items-center cursor-pointer text-base"
       >
         {label}
         {sortable && renderOrderArrow(field)}

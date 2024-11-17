@@ -173,7 +173,6 @@ function MClassLeaderboard() {
   React.useEffect(() => {
     getLeaderboard(region as REGION, role, page);
   }, [region, role, page]);
-  console.log("rowsToShow", rowsToShow);
   let pagination = (
     <Pagination
       boundaryCount={2}

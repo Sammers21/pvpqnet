@@ -13,11 +13,12 @@ import { CLASS_AND_SPECS } from "@/constants/filterSchema";
 import type { Alt, Bracket, TableColumn } from "@/types";
 import { MINIMUM_NICKNAME_LENGTH, nickNameLenOnMobile } from "@/utils/common";
 
-interface IParams {
+interface Params {
   record: Alt;
+  soloBracket: string;
 }
 
-const renderName = ({ record: alt }: IParams, isMobile: boolean) => {
+const renderName = ({ record: alt }: Params, isMobile: boolean) => {
   const realm = alt.realm;
   const url = getAltProfileUrl(alt);
   let name = alt.name;
@@ -54,7 +55,7 @@ const bracketTypeTitleMap = {
 };
 
 const renderBracket = (
-  { record: alt }: IParams,
+  { record: alt }: Params,
   bracketName: keyof typeof bracketTypeTitleMap
 ) => {
   const bracket = alt?.brackets?.find(
@@ -85,27 +86,34 @@ const renderBracket = (
   );
 };
 
-const renderShuffle = ({ record: alt }: IParams, isMobile: boolean) => {
+const renderSoloBracket = (
+  soloBracket: string,
+  { record: alt }: Params,
+  isMobile: boolean
+) => {
   // @ts-ignore
   const classAndSpec = CLASS_AND_SPECS[alt.class] as string[];
-
   const sortedSpec = [...classAndSpec]
     .sort((a, b) => {
       const ratingA =
-        alt?.brackets?.find((bracket) => bracket.bracket_type.includes(a))
-          ?.rating || 0;
+        alt?.brackets?.find(
+          (bracket) =>
+            bracket.bracket_type.includes(a) &&
+            bracket.bracket_type.includes(soloBracket)
+        )?.rating || 0;
       const ratingB =
-        alt?.brackets?.find((bracket) => bracket.bracket_type.includes(b))
-          ?.rating || 0;
+        alt?.brackets?.find(
+          (bracket) =>
+            bracket.bracket_type.includes(b) &&
+            bracket.bracket_type.includes(soloBracket)
+        )?.rating || 0;
       return ratingA > ratingB ? -1 : 1;
     })
-    .slice(0, 3);
-
+    .slice(0, 2);
   if (isMobile) {
     let max = 0;
     let spec = sortedSpec[0];
     let bracket: Bracket | null = null;
-
     sortedSpec.forEach((spec) => {
       const altBracket = alt?.brackets?.find((b) =>
         b.bracket_type.includes(spec)
@@ -116,7 +124,6 @@ const renderShuffle = ({ record: alt }: IParams, isMobile: boolean) => {
       }
     });
     if (!bracket) return <></>;
-
     const specIcon = getSpecIcon(`${spec} ${alt.class}` || "");
     const ratingColor = bracketToColor(bracket);
     return (
@@ -131,8 +138,10 @@ const renderShuffle = ({ record: alt }: IParams, isMobile: boolean) => {
   return (
     <div className="flex md:gap-2">
       {sortedSpec.map((spec) => {
-        const altBracket = alt?.brackets?.find((b) =>
-          b.bracket_type.includes(spec)
+        const altBracket = alt?.brackets?.find(
+          (b) =>
+            b.bracket_type.includes(spec) &&
+            b.bracket_type.includes(soloBracket)
         );
         if (!altBracket?.rating) return <></>;
 
@@ -155,26 +164,31 @@ export const tableColumns = (isMobile: boolean): TableColumn[] => [
   {
     field: "name",
     label: "Name",
-    render: (params: IParams) => renderName(params, isMobile),
+    render: (params: Params) => renderName(params, isMobile),
   },
   {
     field: "SHUFFLE",
     label: "Shuffle",
-    render: (params: IParams) => renderShuffle(params, isMobile),
+    render: (params: Params) => renderSoloBracket("SHUFFLE", params, isMobile),
+  },
+  {
+    field: "BLITZ",
+    label: "Blitz",
+    render: (params: Params) => renderSoloBracket("BLITZ", params, isMobile),
   },
   {
     field: "ARENA_2v2",
     label: "2v2",
-    render: (params: IParams) => renderBracket(params, "2v2"),
+    render: (params: Params) => renderBracket(params, "2v2"),
   },
   {
     field: "ARENA_3v3",
     label: "3v3",
-    render: (params: IParams) => renderBracket(params, "3v3"),
+    render: (params: Params) => renderBracket(params, "3v3"),
   },
   {
     field: "BATTLEGROUNDS",
     label: "RBG",
-    render: (params: IParams) => renderBracket(params, "rbg"),
+    render: (params: Params) => renderBracket(params, "rbg"),
   },
 ];

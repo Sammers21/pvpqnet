@@ -11,11 +11,11 @@ import {
 
 import type { HistoryRow, Player, TableColumn } from "@/types";
 
-interface IParams {
+interface Params {
   record: HistoryRow;
 }
 
-const renderRank = ({ record }: IParams, isMobile: boolean) => {
+const renderRank = ({ record }: Params, isMobile: boolean) => {
   const pos = record.RANK.character?.pos ?? record.RANK.rank;
   const rankDiff = record.RANK.diff.rank_diff;
   return (
@@ -34,11 +34,10 @@ const renderRank = ({ record }: IParams, isMobile: boolean) => {
   );
 };
 
-const renderWinAndLoss = ({ record }: IParams) => {
+const renderWinAndLoss = ({ record }: Params) => {
   const won = record.WL.won;
   const loss = record.WL.lost;
   const { wonColor, lossColor } = getWonAndLossColors(won, loss);
-
   return (
     <div className="flex px-1">
       <span
@@ -53,7 +52,7 @@ const renderWinAndLoss = ({ record }: IParams) => {
   );
 };
 
-const renderRating = ({ record }: IParams) => {
+const renderRating = ({ record }: Params) => {
   const rating = record.RATING.character?.rating ?? record.RATING.rating;
   const ratingDiff = record.RATING.diff.rating_diff;
   return (
@@ -71,7 +70,7 @@ const renderRating = ({ record }: IParams) => {
   );
 };
 
-const renderWWho = ({ record }: IParams, player: Player, isMobile: boolean) => {
+const renderWWho = ({ record }: Params, player: Player, isMobile: boolean) => {
   return (
     <div className="flex md:gap-2">
       {record.WWHO.map((who) => (
@@ -87,9 +86,8 @@ const bracketTitleMap = {
   BATTLEGROUNDS: "RBG",
 };
 
-const renderSpec = ({ record }: IParams) => {
+const renderSpec = ({ record }: Params) => {
   const specIcon = getSpecIcon(`${record.RANK.character?.full_spec}` || "");
-
   return (
     <div className="flex md:gap-2 px-1">
       {record.bracket_type.includes("SHUFFLE") ? (
@@ -106,7 +104,7 @@ const renderSpec = ({ record }: IParams) => {
 };
 
 const renderServerTime = (
-  { record }: IParams,
+  { record }: Params,
   player: Player,
   isMobile: boolean
 ) => {
@@ -122,11 +120,7 @@ const renderServerTime = (
       return time.format("MMM DD, YYYY - hh:mm A");
     }
   };
-  return (
-    <span className="flex justify-center items-center">
-      {getDate(record.timestamp)}
-    </span>
-  );
+  return <span className="flex ">{getDate(record.timestamp)}</span>;
 };
 
 const shouldRenderWWho = (bracket: string, isMobile) => {
@@ -145,19 +139,20 @@ export const tableColumns = (
     field: "rank",
     label: "Rank",
     sortable: false,
-    render: (params: IParams) => renderRank(params, isMobile),
+    render: (params: Params) => renderRank(params, isMobile),
   },
   {
     field: "wl",
     label: "W/L",
     sortable: false,
-    render: (params: IParams) => renderWinAndLoss(params),
+    render: (params: Params) => renderWinAndLoss(params),
   },
   {
     field: "rating",
+    align: "left",
     label: isMobile ? "RTG" : "Rating",
     sortable: false,
-    render: (params: IParams) => renderRating(params),
+    render: (params: Params) => renderRating(params),
   },
   ...(bracket === "all"
     ? [
@@ -166,7 +161,7 @@ export const tableColumns = (
           label: "Bracket",
           sortable: false,
           width: 10,
-          render: (params: IParams) => renderSpec(params),
+          render: (params: Params) => renderSpec(params),
         },
       ]
     : []),
@@ -176,13 +171,14 @@ export const tableColumns = (
           field: "wwho",
           label: "With Who",
           sortable: false,
-          render: (params: IParams) => renderWWho(params, player, isMobile),
+          render: (params: Params) => renderWWho(params, player, isMobile),
         },
       ]
     : []),
   {
+    align: "right",
     field: "timestamp",
     label: isMobile ? "Time" : `Server Time ${player.region.toUpperCase()}`,
-    render: (params: IParams) => renderServerTime(params, player, isMobile),
+    render: (params: Params) => renderServerTime(params, player, isMobile),
   },
 ];

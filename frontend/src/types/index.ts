@@ -30,7 +30,7 @@ export interface CharacterAndDiff extends Character {
 export interface TableColumn {
   field: string;
   label: string;
-  align?: 'right' | 'left';
+  align?: 'right' | 'left' | 'center';
   sortable?: boolean;
   width?: -1 | number;
   render: (record: any) => JSX.Element;
