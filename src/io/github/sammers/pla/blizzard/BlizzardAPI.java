@@ -5,6 +5,7 @@ import io.github.sammers.pla.db.Character;
 import io.github.sammers.pla.logic.CharacterCache;
 import io.github.sammers.pla.logic.RateLimiter;
 import io.github.sammers.pla.logic.Refs;
+import io.prometheus.metrics.core.metrics.Counter;
 import io.prometheus.metrics.core.metrics.Gauge;
 import io.reactivex.Completable;
 import io.reactivex.Maybe;
@@ -48,6 +49,10 @@ public class BlizzardAPI {
     private final String clientId;
     private final AtomicReference<BlizzardAuthToken> token = new AtomicReference<>();
     private final RateLimiter rateLimiter;
+    private static final Counter rqCounter = Counter.builder()
+        .name("BlizzardAPIRequests")
+        .labelNames("type")
+        .build();
 
     public BlizzardAPI(Gauge permits, String clientId, String clientSecret, WebClient webClient, Refs refs, CharacterCache characterCache, Map<String, Cutoffs> cutoffs) {
         this.clientId = clientId;
@@ -101,6 +106,7 @@ public class BlizzardAPI {
         String absoluteURI = "https://" + realRegion + ".api.blizzard.com/profile/wow/character/" + realmSearch + "/" + nameSearch;
         return token().flatMapMaybe(blizzardAuthToken -> {
             long tick = System.nanoTime();
+            rqCounter.labelValues("character").inc();
             return maybeResponse(realNamespace, absoluteURI).flatMap(json -> {
                 Maybe<WowAPICharacter> res;
                 if (json.getInteger("code") != null && json.getInteger("code") == 404) {
@@ -114,10 +120,15 @@ public class BlizzardAPI {
                             bracketFromJson = new JsonArray();
                         }
                         Single<List<JsonObject>> bracketList = Maybe.concatEager(bracketFromJson.stream().map(o -> ((JsonObject) o).getString("href")).map(ref -> maybeResponse(realNamespace, ref)).toList()).toList();
+                        rqCounter.labelValues("brackets").inc(bracketList.blockingGet().size());
                         Maybe<JsonObject> achievementsRx = maybeResponse(realNamespace, absoluteURI + "/achievements");
+                        rqCounter.labelValues("achievements").inc();
                         Maybe<JsonObject> mediaRx = maybeResponse(realNamespace, absoluteURI + "/character-media").onErrorReturnItem(new JsonObject());
+                        rqCounter.labelValues("character-media").inc();
                         Maybe<JsonObject> petsRx = maybeResponse(realNamespace, absoluteURI + "/collections/pets");
+                        rqCounter.labelValues("pets").inc();
                         Maybe<JsonObject> specsRx = maybeResponse(realNamespace, absoluteURI + "/specializations");
+                        rqCounter.labelValues("specializations").inc();
                         return Single.zip(bracketList, Maybe.concatEager(List.of(achievementsRx, mediaRx, petsRx, specsRx)).toList(), Pair::new).flatMapMaybe(pair -> {
                             List<JsonObject> brackets = pair.getValue0();
                             List<JsonObject> otherStuff = pair.getValue1();
@@ -202,7 +213,12 @@ public class BlizzardAPI {
             realPvpBracket = pvpBracket;
         }
         String url = "https://" + realRegion + ".api.blizzard.com/data/wow/pvp-season/" + pvpSeasonId + "/pvp-leaderboard/" + realPvpBracket;
-        return Maybe.defer(() -> token().flatMapMaybe(blizzardAuthToken -> maybeResponse(realNamespace, url)).map(PvpLeaderBoard::fromJson)).doOnSubscribe(disposable -> log.info("Getting leaderboard for region={} ssn={} bracket={}", realRegion, pvpSeasonId, realPvpBracket)).doOnError(er -> log.error("Error fetching Blizzard PVP leaderboard", er)).onErrorResumeNext(Maybe.empty());
+        return Maybe.defer(() -> {
+            return token().flatMapMaybe(blizzardAuthToken -> {
+                rqCounter.labelValues("pvp-leaderboard").inc();
+                return maybeResponse(realNamespace, url);
+            }).map(PvpLeaderBoard::fromJson);
+        }).doOnSubscribe(disposable -> log.info("Getting leaderboard for region={} ssn={} bracket={}", realRegion, pvpSeasonId, realPvpBracket)).doOnError(er -> log.error("Error fetching Blizzard PVP leaderboard", er)).onErrorResumeNext(Maybe.empty());
     }
 
     private Single<BlizzardAuthToken> authorize() {
@@ -217,9 +233,13 @@ public class BlizzardAPI {
             String realRegion = realRegion(region);
             String namespace = "dynamic-" + realRegion;
             String url = "https://" + realRegion + ".api.blizzard.com/data/wow/connected-realm/index";
+            rqCounter.labelValues("connected-realm/index").inc();
             return maybeResponse(namespace, url).flatMapSingle(index -> {
                 List<String> hrefs = index.getJsonArray("connected_realms").stream().map(o -> ((JsonObject) o).getString("href")).toList();
-                List<Maybe<JsonObject>> list = hrefs.stream().map(href -> maybeResponse(namespace, href)).toList();
+                List<Maybe<JsonObject>> list = hrefs.stream().map(href -> {
+                    rqCounter.labelValues("connected-realm/href").inc();
+                    return maybeResponse(namespace, href);
+                }).toList();
                 return Maybe.merge(list).toList().map(responses -> {
                     log.info("Realms for {} fetched in {}ms", realRegion, System.currentTimeMillis() - tick);
                     return Realms.fromBlizzardJson(realRegion, index, responses);
