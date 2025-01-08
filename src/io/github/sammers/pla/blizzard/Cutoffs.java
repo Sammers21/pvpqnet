@@ -88,6 +88,13 @@ public class Cutoffs implements JsonConvertable {
 
     public static String specCodeNameById(String spec, Long id) {
         switch (spec) {
+            case "Protection" -> {
+                if (id == 66) {
+                    return "protpaladin";
+                } else {
+                    return "protwarrior";
+                }
+            }
             case "Frost" -> {
                 if (id == 251) {
                     return "frostd";
@@ -121,6 +128,8 @@ public class Cutoffs implements JsonConvertable {
             case "Frost Mage" -> "frostm";
             case "Frost Death Knight" -> "frostd";
             case "Holy Paladin" -> "holypala";
+            case "Protection Paladin" -> "protectionpaladin";
+            case "Protection Warrior" -> "protectionwarrior";
             case "Holy Priest" -> "holypri";
             case "Beast Mastery Hunter" -> "beastmastery";
             case "Restoration Druid" -> "restodruid";

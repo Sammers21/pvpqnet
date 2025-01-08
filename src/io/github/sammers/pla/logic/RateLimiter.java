@@ -1,5 +1,7 @@
 package io.github.sammers.pla.logic;
 
+import io.prometheus.metrics.core.metrics.Counter;
+import io.prometheus.metrics.core.metrics.Gauge;
 import io.reactivex.Completable;
 import io.reactivex.CompletableEmitter;
 import io.reactivex.Scheduler;
@@ -17,8 +19,13 @@ public class RateLimiter {
     private final ConcurrentLinkedQueue<CompletableEmitter> requestQes = new ConcurrentLinkedQueue<>();
     private final int maxRequestsTotal;
     private final Optional<RateLimiter> parent;
+    private final Gauge permitsMetric = Gauge.builder()
+        .name("RateLimiterPermits")
+        .help("How many permits are left in the rate limiter")
+        .labelNames("name")
+        .register();
 
-    public RateLimiter(int permits, TimeUnit per, int maxRequestsTotal, Optional<RateLimiter> parent, Scheduler scheduler) {
+    public RateLimiter(String name, int permits, TimeUnit per, int maxRequestsTotal, Optional<RateLimiter> parent, Scheduler scheduler) {
         this.maxRequestsTotal = maxRequestsTotal;
         this.parent = parent;
         long now = System.currentTimeMillis();
@@ -52,6 +59,7 @@ public class RateLimiter {
                     }
                     src = requestQes.poll();
                 }
+                permitsMetric.labelValues(name).set(permits - secondRing.size());
                 try {
                     log.trace("Sleeping for {} ms after processing all requests", 100);
                     Thread.sleep(100);

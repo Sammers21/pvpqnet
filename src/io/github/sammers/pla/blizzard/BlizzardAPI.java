@@ -46,8 +46,8 @@ public class BlizzardAPI {
     private final Map<String, Cutoffs> cutoffs;
     private final String clientId;
     private final AtomicReference<BlizzardAuthToken> token = new AtomicReference<>();
-    private final RateLimiter rateLimiter = new RateLimiter(100, TimeUnit.SECONDS, 1000,
-        Optional.of(new RateLimiter(36000, TimeUnit.HOURS, 1000, Optional.empty(), Main.VTHREAD_SCHEDULER)),
+    private final RateLimiter rateLimiter = new RateLimiter("100 per sec", 100, TimeUnit.SECONDS, 1000,
+        Optional.of(new RateLimiter("36000 per hr", 36000, TimeUnit.HOURS, 1000, Optional.empty(), Main.VTHREAD_SCHEDULER)),
         Main.VTHREAD_SCHEDULER);
 
     public BlizzardAPI(String clientId, String clientSecret, WebClient webClient, Refs refs, CharacterCache characterCache, Map<String, Cutoffs> cutoffs) {
