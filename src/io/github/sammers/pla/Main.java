@@ -8,6 +8,8 @@ import io.github.sammers.pla.http.Http;
 import io.github.sammers.pla.logic.CharacterCache;
 import io.github.sammers.pla.logic.Ladder;
 import io.github.sammers.pla.logic.Refs;
+import io.prometheus.metrics.exporter.httpserver.HTTPServer;
+import io.prometheus.metrics.instrumentation.jvm.JvmMetrics;
 import io.reactivex.Scheduler;
 import io.reactivex.plugins.RxJavaPlugins;
 import io.reactivex.schedulers.Schedulers;
@@ -19,7 +21,10 @@ import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.ext.mongo.MongoClient;
 import io.vertx.reactivex.ext.web.client.WebClient;
 import org.ocpsoft.prettytime.PrettyTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.util.Locale;
@@ -35,6 +40,7 @@ public class Main {
 
     public static final Executor VTHREAD_EXECUTOR = Executors.newVirtualThreadPerTaskExecutor();
     public static final Scheduler VTHREAD_SCHEDULER = Schedulers.from(VTHREAD_EXECUTOR);
+    private static final Logger log = LoggerFactory.getLogger(Main.class);
     public static PrettyTime PRETTY_TIME = new PrettyTime(new Locale("en"));
     public static DateTimeFormatter DATA_TIME = ISO_DATE_TIME;
     public static DateTimeFormatter DATA_TIME_WITH_WEEKDAY = new DateTimeFormatterBuilder()
@@ -42,7 +48,12 @@ public class Main {
         .append(ISO_DATE_TIME)
         .toFormatter();
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
+        JvmMetrics.builder().register();
+        HTTPServer.builder()
+            .port(9400)
+            .buildAndStart();
+        log.info("Starting Metrics server on port 9400");
         final Vertx vertx = Vertx.vertx(new VertxOptions()
                 .setBlockedThreadCheckInterval(10)
                 .setBlockedThreadCheckIntervalUnit(TimeUnit.SECONDS)

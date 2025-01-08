@@ -1,12 +1,12 @@
-FROM amazoncorretto:21 AS build_stage
+FROM amazoncorretto:23 AS build_stage
 WORKDIR /build
 COPY . .
 RUN ./gradlew --no-daemon clean test shadowJar --stacktrace
 
-FROM amazoncorretto:21
+FROM amazoncorretto:23
 WORKDIR /awg2
 COPY --from=build_stage /build/build/libs/wow-pla.jar wow-pla.jar
-EXPOSE 9000 5006
+EXPOSE 9000 9400
 CMD java \
     -jar \
     --add-opens java.base/java.lang=ALL-UNNAMED \
