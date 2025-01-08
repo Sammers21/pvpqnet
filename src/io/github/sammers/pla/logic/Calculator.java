@@ -206,7 +206,7 @@ public class Calculator {
     }
 
     public static SnapshotDiff calculateDiff(Snapshot oldChars, Snapshot newChars, String bracket) {
-        return calculateDiff(oldChars, newChars, bracket, false);
+        return calculateDiff(oldChars, newChars, bracket, true);
     }
 
     public static List<List<CharAndDiff>> whoPlayedWithWho(SnapshotDiff diff, int pplInTheGroup, CharacterCache cache) {
