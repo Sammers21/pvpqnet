@@ -50,7 +50,6 @@ public class Ladder {
     public final CharUpdater charUpdater;
     private final DB db;
     private final BlizzardAPI blizzardAPI;
-
     private final AtomicBoolean charsLoaded = new AtomicBoolean(false);
 
     public Ladder(WebClient web, DB db, BlizzardAPI blizzardAPI, CharacterCache characterCache, Refs refs, Map<String, Cutoffs> regionCutoff) {
@@ -576,7 +575,10 @@ public class Ladder {
                         emitter.onComplete();
                     });
                 }));
-        });
+        }).andThen(Completable.defer(() -> {
+            characterCache.calculateSizeMetrics();
+            return Completable.complete();
+        }));
     }
 
     private Completable loadLast(String bracket, String region) {

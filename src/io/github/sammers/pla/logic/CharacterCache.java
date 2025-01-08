@@ -3,6 +3,7 @@ package io.github.sammers.pla.logic;
 import io.github.sammers.pla.blizzard.BracketType;
 import io.github.sammers.pla.blizzard.WowAPICharacter;
 import io.github.sammers.pla.db.Character;
+import io.prometheus.metrics.core.metrics.Gauge;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -15,11 +16,22 @@ public class CharacterCache {
     public final Map<Integer, Set<Long>> alts;
     public final RealmStats realmStats;
 
+    public final Gauge idCacheSize = Gauge.builder()
+        .name("IdGzipCacheSize")
+        .help("How many characters are in the id cache")
+        .labelNames()
+        .register();
+
     public CharacterCache() {
         nameCache = new ConcurrentHashMap<>();
         idCache = new ConcurrentHashMap<>();
         alts = new ConcurrentHashMap<>();
         realmStats = new RealmStats();
+    }
+
+    public void calculateSizeMetrics() {
+        long bytes = idCache.values().stream().mapToLong(b -> b.length).sum();
+        idCacheSize.set(bytes);
     }
 
     public WowAPICharacter getByFullName(String name) {
@@ -91,7 +103,7 @@ public class CharacterCache {
             WowAPICharacter changedAlts = ch.changeAlts(longs);
             return changedAlts;
         }).collect(Collectors.toSet());
-            return resm;
+        return resm;
     }
 
     public Collection<byte[]> values() {

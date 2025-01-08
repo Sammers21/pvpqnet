@@ -128,6 +128,7 @@ public class CharUpdater {
                     merged.add(randomNotUpdatedIt.next());
                 }
             }
+            characterCache.calculateSizeMetrics();
             // merged into list of nickNames
             log.info("There is {} new chars, {} existing chars and {} random not updated chars in region {} that need to be updated. We have {} {} to do it",
                 newCharsSorted.size(), existingSorted.size(), randomNotUpdatedChars.size(), region, timeout, timeoutUnits.name());
