@@ -8,6 +8,7 @@ import io.github.sammers.pla.http.Http;
 import io.github.sammers.pla.logic.CharacterCache;
 import io.github.sammers.pla.logic.Ladder;
 import io.github.sammers.pla.logic.Refs;
+import io.prometheus.metrics.core.metrics.Gauge;
 import io.prometheus.metrics.exporter.httpserver.HTTPServer;
 import io.prometheus.metrics.instrumentation.jvm.JvmMetrics;
 import io.reactivex.Scheduler;
@@ -81,7 +82,12 @@ public class Main {
         final Refs refs = new Refs();
         final Map<String, Cutoffs> cutoffsMap = new ConcurrentHashMap<>();
         final ExtCharacterSearcher extSearch = new ExtCharacterSearcher(webClient);
-        final BlizzardAPI blizzardAPI = new BlizzardAPI(clientId, clientSecret, webClient, refs, characterCache, cutoffsMap);
+        Gauge permitsMetric = Gauge.builder()
+            .name("RateLimiterPermits")
+            .help("How many permits are left in the rate limiter")
+            .labelNames("name")
+            .register();
+        final BlizzardAPI blizzardAPI = new BlizzardAPI(permitsMetric, clientId, clientSecret, webClient, refs, characterCache, cutoffsMap);
         DB db = new DB(mongoClient);
         Ladder ladder = new Ladder(webClient, db, blizzardAPI, characterCache, refs, cutoffsMap);
         ladder.start();

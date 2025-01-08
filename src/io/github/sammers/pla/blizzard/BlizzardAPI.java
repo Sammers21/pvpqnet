@@ -5,6 +5,7 @@ import io.github.sammers.pla.db.Character;
 import io.github.sammers.pla.logic.CharacterCache;
 import io.github.sammers.pla.logic.RateLimiter;
 import io.github.sammers.pla.logic.Refs;
+import io.prometheus.metrics.core.metrics.Gauge;
 import io.reactivex.Completable;
 import io.reactivex.Maybe;
 import io.reactivex.Single;
@@ -46,17 +47,18 @@ public class BlizzardAPI {
     private final Map<String, Cutoffs> cutoffs;
     private final String clientId;
     private final AtomicReference<BlizzardAuthToken> token = new AtomicReference<>();
-    private final RateLimiter rateLimiter = new RateLimiter("100 per sec", 100, TimeUnit.SECONDS, 1000,
-        Optional.of(new RateLimiter("36000 per hr", 36000, TimeUnit.HOURS, 1000, Optional.empty(), Main.VTHREAD_SCHEDULER)),
-        Main.VTHREAD_SCHEDULER);
+    private final RateLimiter rateLimiter;
 
-    public BlizzardAPI(String clientId, String clientSecret, WebClient webClient, Refs refs, CharacterCache characterCache, Map<String, Cutoffs> cutoffs) {
+    public BlizzardAPI(Gauge permits, String clientId, String clientSecret, WebClient webClient, Refs refs, CharacterCache characterCache, Map<String, Cutoffs> cutoffs) {
         this.clientId = clientId;
         this.clientSecret = clientSecret;
         this.webClient = webClient;
         this.refs = refs;
         this.characterCache = characterCache;
         this.cutoffs = cutoffs;
+        rateLimiter = new RateLimiter("100 per sec", permits, 100, TimeUnit.SECONDS, 1000,
+            Optional.of(new RateLimiter("36000 per hr", permits, 36000, TimeUnit.HOURS, 1000, Optional.empty(), Main.VTHREAD_SCHEDULER)),
+            Main.VTHREAD_SCHEDULER);
     }
 
     public Completable rpsToken() {

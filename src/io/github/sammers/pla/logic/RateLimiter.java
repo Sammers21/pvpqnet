@@ -19,13 +19,10 @@ public class RateLimiter {
     private final ConcurrentLinkedQueue<CompletableEmitter> requestQes = new ConcurrentLinkedQueue<>();
     private final int maxRequestsTotal;
     private final Optional<RateLimiter> parent;
-    private final Gauge permitsMetric = Gauge.builder()
-        .name("RateLimiterPermits")
-        .help("How many permits are left in the rate limiter")
-        .labelNames("name")
-        .register();
+    private final Gauge permitsMetric;
 
-    public RateLimiter(String name, int permits, TimeUnit per, int maxRequestsTotal, Optional<RateLimiter> parent, Scheduler scheduler) {
+    public RateLimiter(String name, Gauge permitsMetric, int permits, TimeUnit per, int maxRequestsTotal, Optional<RateLimiter> parent, Scheduler scheduler) {
+        this.permitsMetric = permitsMetric;
         this.maxRequestsTotal = maxRequestsTotal;
         this.parent = parent;
         long now = System.currentTimeMillis();
