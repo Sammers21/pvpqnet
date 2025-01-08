@@ -24,7 +24,7 @@ record GamingHistory(List<DiffAndWithWho> hist) implements JsonConvertable {
         } else {
             List<DiffAndWithWho> newHist = new ArrayList<>(hist);
             newHist.add(diff);
-            if(newHist.size() > 10_000){
+            if (newHist.size() > 10_000) {
                 newHist.remove(0);
             }
             res = newHist;
@@ -37,6 +37,9 @@ record GamingHistory(List<DiffAndWithWho> hist) implements JsonConvertable {
             .filter(diff -> {
                 Diff d = diff.diff();
                 return !(d.won() < 0 || d.lost() < 0);
+            }).filter(diff -> {
+                Diff d = diff.diff();
+                return d.won() + d.lost() < 60;
             })
             .collect(Collectors.toList()));
     }
