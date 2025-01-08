@@ -89,6 +89,7 @@ const renderBracket = (
 const renderSoloBracket = (
   soloBracket: string,
   { record: alt }: Params,
+  limit: number,
   isMobile: boolean
 ) => {
   // @ts-ignore
@@ -109,7 +110,7 @@ const renderSoloBracket = (
         )?.rating || 0;
       return ratingA > ratingB ? -1 : 1;
     })
-    .slice(0, 2);
+    .slice(0, limit);
   if (isMobile) {
     let max = 0;
     let spec = sortedSpec[0];
@@ -169,12 +170,12 @@ export const tableColumns = (isMobile: boolean): TableColumn[] => [
   {
     field: "SHUFFLE",
     label: "Shuffle",
-    render: (params: Params) => renderSoloBracket("SHUFFLE", params, isMobile),
+    render: (params: Params) => renderSoloBracket("SHUFFLE", params, 2, isMobile),
   },
   {
     field: "BLITZ",
     label: "Blitz",
-    render: (params: Params) => renderSoloBracket("BLITZ", params, isMobile),
+    render: (params: Params) => renderSoloBracket("BLITZ", params, 1, isMobile),
   },
   {
     field: "ARENA_2v2",
