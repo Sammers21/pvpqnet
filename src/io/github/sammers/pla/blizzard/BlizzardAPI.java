@@ -120,7 +120,7 @@ public class BlizzardAPI {
                             bracketFromJson = new JsonArray();
                         }
                         Single<List<JsonObject>> bracketList = Maybe.concatEager(bracketFromJson.stream().map(o -> ((JsonObject) o).getString("href")).map(ref -> maybeResponse(realNamespace, ref)).toList()).toList();
-                        rqCounter.labelValues("brackets").inc(bracketList.blockingGet().size());
+                        rqCounter.labelValues("brackets").inc(bracketFromJson.size());
                         Maybe<JsonObject> achievementsRx = maybeResponse(realNamespace, absoluteURI + "/achievements");
                         rqCounter.labelValues("achievements").inc();
                         Maybe<JsonObject> mediaRx = maybeResponse(realNamespace, absoluteURI + "/character-media").onErrorReturnItem(new JsonObject());
