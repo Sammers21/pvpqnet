@@ -49,9 +49,10 @@ public class BlizzardAPI {
     private final String clientId;
     private final AtomicReference<BlizzardAuthToken> token = new AtomicReference<>();
     private final RateLimiter rateLimiter;
-    private static final Counter rqCounter = Counter.builder()
+    public static final Counter rqCounter = Counter.builder()
         .name("BlizzardAPIRequests")
         .labelNames("type")
+        .help("Blizzard API requests counter")
         .build();
 
     public BlizzardAPI(Gauge permits, String clientId, String clientSecret, WebClient webClient, Refs refs, CharacterCache characterCache, Map<String, Cutoffs> cutoffs) {
