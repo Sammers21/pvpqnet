@@ -8,6 +8,7 @@ import io.github.sammers.pla.http.Http;
 import io.github.sammers.pla.logic.CharacterCache;
 import io.github.sammers.pla.logic.Ladder;
 import io.github.sammers.pla.logic.Refs;
+import io.prometheus.metrics.core.metrics.Counter;
 import io.prometheus.metrics.core.metrics.Gauge;
 import io.prometheus.metrics.exporter.httpserver.HTTPServer;
 import io.prometheus.metrics.instrumentation.jvm.JvmMetrics;
@@ -56,19 +57,19 @@ public class Main {
             .buildAndStart();
         log.info("Starting Metrics server on port 9400");
         final Vertx vertx = Vertx.vertx(new VertxOptions()
-                .setBlockedThreadCheckInterval(10)
-                .setBlockedThreadCheckIntervalUnit(TimeUnit.SECONDS)
-                .setWarningExceptionTime(10)
-                .setWarningExceptionTimeUnit(TimeUnit.SECONDS)
-                .setMaxEventLoopExecuteTime(10)
-                .setMaxEventLoopExecuteTimeUnit(TimeUnit.SECONDS)
-                .setEventLoopPoolSize(32)
+            .setBlockedThreadCheckInterval(10)
+            .setBlockedThreadCheckIntervalUnit(TimeUnit.SECONDS)
+            .setWarningExceptionTime(10)
+            .setWarningExceptionTimeUnit(TimeUnit.SECONDS)
+            .setMaxEventLoopExecuteTime(10)
+            .setMaxEventLoopExecuteTimeUnit(TimeUnit.SECONDS)
+            .setEventLoopPoolSize(32)
         );
         RxJavaPlugins.setComputationSchedulerHandler(s -> RxHelper.scheduler(vertx));
         RxJavaPlugins.setIoSchedulerHandler(s -> RxHelper.blockingScheduler(vertx));
         RxJavaPlugins.setNewThreadSchedulerHandler(s -> RxHelper.scheduler(vertx));
         final WebClient webClient = WebClient.create(vertx,
-          new WebClientOptions().setMaxPoolSize(100)
+            new WebClientOptions().setMaxPoolSize(100)
         );
         final String dbUri = System.getenv("DB_URI");
         final String clientId = System.getenv("CLIENT_ID");
@@ -87,7 +88,12 @@ public class Main {
             .help("How many permits are left in the rate limiter")
             .labelNames("name")
             .register();
-        final BlizzardAPI blizzardAPI = new BlizzardAPI(permitsMetric, clientId, clientSecret, webClient, refs, characterCache, cutoffsMap);
+        Counter rqCounter = Counter.builder()
+            .name("BlizzardAPIRequests")
+            .labelNames("type")
+            .help("Blizzard API requests counter")
+            .build();
+        final BlizzardAPI blizzardAPI = new BlizzardAPI(permitsMetric, rqCounter, clientId, clientSecret, webClient, refs, characterCache, cutoffsMap);
         DB db = new DB(mongoClient);
         Ladder ladder = new Ladder(webClient, db, blizzardAPI, characterCache, refs, cutoffsMap);
         ladder.start();

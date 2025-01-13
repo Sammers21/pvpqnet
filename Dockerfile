@@ -11,7 +11,7 @@ EXPOSE 9000 9400
 CMD java \
     -jar \
     --add-opens java.base/java.lang=ALL-UNNAMED \
-    -Xmx7g \
+    -Xmx6g \
     -Xms1g \
     -XX:+UseG1GC \
     wow-pla.jar

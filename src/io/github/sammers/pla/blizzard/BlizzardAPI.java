@@ -49,20 +49,19 @@ public class BlizzardAPI {
     private final String clientId;
     private final AtomicReference<BlizzardAuthToken> token = new AtomicReference<>();
     private final RateLimiter rateLimiter;
-    public static final Counter rqCounter = Counter.builder()
-        .name("BlizzardAPIRequests")
-        .labelNames("type")
-        .help("Blizzard API requests counter")
-        .build();
+    private final Counter rqCounter;
 
-    public BlizzardAPI(Gauge permits, String clientId, String clientSecret, WebClient webClient, Refs refs, CharacterCache characterCache, Map<String, Cutoffs> cutoffs) {
+    public BlizzardAPI(Gauge permits, Counter rqCounter,
+                       String clientId, String clientSecret, WebClient webClient, Refs refs,
+                       CharacterCache characterCache, Map<String, Cutoffs> cutoffs) {
+        this.rqCounter = rqCounter;
         this.clientId = clientId;
         this.clientSecret = clientSecret;
         this.webClient = webClient;
         this.refs = refs;
         this.characterCache = characterCache;
         this.cutoffs = cutoffs;
-        rateLimiter = new RateLimiter("100 per sec", permits, 100, TimeUnit.SECONDS, 1000,
+        this.rateLimiter = new RateLimiter("100 per sec", permits, 100, TimeUnit.SECONDS, 1000,
             Optional.of(new RateLimiter("36000 per hr", permits, 36000, TimeUnit.HOURS, 1000, Optional.empty(), Main.VTHREAD_SCHEDULER)),
             Main.VTHREAD_SCHEDULER);
     }
