@@ -10,7 +10,8 @@ import {
   styled,
 } from "@mui/material";
 import { ActivityBox } from "./ActivityBox";
-
+import react from "react";
+import { useState, useEffect } from "react";
 interface IProps {
   player: Player;
   year?: number;
@@ -46,7 +47,9 @@ function getDayOfWeekRender(numberOfDay) {
     return <div></div>;
   }
 }
-
+function ChangeYear(year: string, setLookingYear) {
+  return setLookingYear(year);
+}
 export function gamesPlayedByActivityArray(activityArray) {
   return activityArray
     .map((entry) => entry.diff.won + entry.diff.lost)
@@ -54,6 +57,7 @@ export function gamesPlayedByActivityArray(activityArray) {
 }
 
 const ActivityDiagram = ({ player, year = currentYear }: IProps) => {
+  const [lookingYear, setLookingYear] = useState("2025");
   if (false) {
     return <> </>;
   } else {
@@ -129,6 +133,7 @@ const ActivityDiagram = ({ player, year = currentYear }: IProps) => {
       monthAndWeekCount[11] = monthAndWeekCount[-1];
       delete monthAndWeekCount[-1];
     }
+
     weekWithActivity.forEach((week) => {
       monthAndWeekCount[
         week.find((d) => d != null).date.getMonth()
@@ -137,90 +142,133 @@ const ActivityDiagram = ({ player, year = currentYear }: IProps) => {
     let monthNumbers = Array.from(Array(12).keys());
     let totalGamesPlayed = fullHistory
       .filter((activity) => {
-        return new Date(activity.diff.timestamp) > start;
+        let someDate = new Date(activity.diff.timestamp)
+          .toString()
+          .split(" ")[3];
+        if (someDate === lookingYear) {
+          return new Date(activity.diff.timestamp) > start;
+        }
       })
       .map((activity) => {
         return activity.diff.won + activity.diff.lost;
       })
       .reduce((a, b) => a + b, 0);
+    const years = [];
+    fullHistory.map((item) => {
+      let someDate = new Date(item.diff.timestamp).toString().split(" ")[3];
+      if (!years.includes(someDate) && someDate !== "2023") {
+        years.push(someDate);
+      }
+    });
+    years.reverse();
     return (
-      <div className="flex flex-col py-2 md:px-3 border border-solid border-[#37415180] rounded-lg bg-[#030303e6] ">
-        <span className="text-2xl mr-4">
-          {totalGamesPlayed} games played in the last year
-        </span>
-        <TableContainer component={Paper}>
-          <Table
-            sx={{
-              backgroundColor: "#030303e6",
-            }}
-            aria-label="simple table"
-          >
-            <TableHead>
-              <TableRow>
-                <div></div>
-                {Object.keys(monthNumbers).map((month) => {
-                  return (
-                    <StyledTableCell
-                      component="th"
-                      scope="row"
-                      size="small"
-                      padding="none"
-                      align="left"
-                      colSpan={monthAndWeekCount[month].weekCount}
-                    >
-                      {monthAndWeekCount[month].name}
-                    </StyledTableCell>
-                  );
-                })}
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {Array.from(Array(7).keys()).map((row) => {
-                return (
-                  <TableRow key={row} sx={{}}>
-                    {getDayOfWeekRender(row)}
-                    {Array.from(Array(weekWithActivity.length).keys()).map(
-                      (col) => {
-                        if (
-                          weekWithActivity[col] !== undefined &&
-                          weekWithActivity[col][row] !== undefined
-                        ) {
-                          const dna = weekWithActivity[col][row];
-                          return (
-                            <StyledTableCell
-                              component="th"
-                              scope="row"
-                              size="small"
-                              padding="none"
-                            >
-                              <ActivityBox
-                                maxIntensity={maxIntensity}
-                                activity={dna.activity}
-                                date={dna.date}
-                              />
-                            </StyledTableCell>
-                          );
-                        } else {
-                          return (
-                            <StyledTableCell
-                              component="th"
-                              scope="row"
-                              size="small"
-                              padding="none"
-                            >
-                              <ActivityBox activity={[]} date={undefined} />
-                            </StyledTableCell>
-                          );
-                        }
-                      }
-                    )}
+      <>
+        <div className="lg:grid grid-cols-[30fr_10px]">
+          <div className="flex flex-col py-2 md:px-3 border border-solid border-[#37415180] rounded-lg bg-[#030303e6]">
+            <span className="text-2xl mr-4">
+              {totalGamesPlayed} games played in the {lookingYear}
+            </span>
+            <TableContainer component={Paper}>
+              <Table
+                sx={{
+                  backgroundColor: "#030303e6",
+                }}
+                aria-label="simple table"
+              >
+                <TableHead>
+                  <TableRow>
+                    <div></div>
+                    {Object.keys(monthNumbers).map((month) => {
+                      return (
+                        <StyledTableCell
+                          component="th"
+                          scope="row"
+                          size="small"
+                          padding="none"
+                          align="left"
+                          colSpan={monthAndWeekCount[month].weekCount}
+                        >
+                          {monthAndWeekCount[month].name}
+                        </StyledTableCell>
+                      );
+                    })}
                   </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </div>
+                </TableHead>
+                <TableBody>
+                  {Array.from(Array(7).keys()).map((row) => {
+                    return (
+                      <TableRow key={row} sx={{}}>
+                        {getDayOfWeekRender(row)}
+                        {Array.from(Array(weekWithActivity.length).keys()).map(
+                          (col) => {
+                            if (
+                              weekWithActivity[col] !== undefined &&
+                              weekWithActivity[col][row] !== undefined
+                            ) {
+                              const dna = weekWithActivity[col][row];
+                              return (
+                                <>
+                                  <StyledTableCell
+                                    component="th"
+                                    scope="row"
+                                    size="small"
+                                    padding="none"
+                                  >
+                                    <ActivityBox
+                                      maxIntensity={maxIntensity}
+                                      activity={dna.activity}
+                                      date={dna.date}
+                                      year={dna.date.toString().split(" ")[3]}
+                                      lookingYear={lookingYear}
+                                    />
+                                  </StyledTableCell>
+                                </>
+                              );
+                            } else {
+                              return (
+                                <>
+                                  <StyledTableCell
+                                    component="th"
+                                    scope="row"
+                                    size="small"
+                                    padding="none"
+                                  >
+                                    <ActivityBox
+                                      maxIntensity={0}
+                                      activity={[]}
+                                      date={undefined}
+                                      year={0}
+                                      lookingYear={lookingYear}
+                                    />
+                                  </StyledTableCell>
+                                </>
+                              );
+                            }
+                          }
+                        )}
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </div>
+          <div className="flex lg:flex-col gap-2 lg:ml-[15px] mg:mt-[10px]">
+            {years.map((item) => (
+              <button
+                className={` pl-[12px] block w-[100px] p-[8px] text-[13px] text-left font-sans rounded-[6px] ${
+                  String(item) == String(lookingYear)
+                    ? "bg-[#3f6ba3] text-white"
+                    : ""
+                }`}
+                onClick={() => ChangeYear(item, setLookingYear)}
+              >
+                {item}
+              </button>
+            ))}
+          </div>
+        </div>
+      </>
     );
   }
 };

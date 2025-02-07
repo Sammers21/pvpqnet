@@ -6,9 +6,17 @@ import { gamesPlayedByActivityArray } from ".";
  * @param intensity 0-4 (0 = no activity, 4 = high activity)
  * @returns colored box
  */
-export const ActivityBox = ({ maxIntensity = 5, activity = undefined, date = undefined }) => {
-    let hoverText;
-    if (activity != undefined && date != undefined) {
+export const ActivityBox = ({
+  maxIntensity = 5,
+  activity = [],
+  date = undefined,
+  year = undefined,
+  lookingYear = undefined,
+}) => {
+  let hoverText;
+  let intensity = 0;
+  if (year === lookingYear || year === 0) {
+    if (activity !== undefined && date !== undefined) {
       const monthAndDate =
         date.toLocaleDateString("en-US", { month: "short", day: "numeric" }) +
         "th";
@@ -23,29 +31,42 @@ export const ActivityBox = ({ maxIntensity = 5, activity = undefined, date = und
       hoverText = `No activity`;
     }
     let colors = {
-        0: "bg-gray-600",
-        1: "bg-sky-300",
-        2: "bg-sky-400",
-        3: "bg-sky-600",
-        4: "bg-sky-700",
-    }
-    let intensity = Math.min(maxIntensity, Math.round((gamesPlayedByActivityArray(activity) / maxIntensity) * 4))
-    if (intensity === 0 && gamesPlayedByActivityArray(activity) !== 0) {
-        intensity = 1
-    }
-    let className = `ml-[1px] mr-[1px] mt-[2px] mb-[2px] w-[10px] h-[10px] ${colors[intensity]} rounded-md}`
-    if (date == undefined) {
-       return (
-        <div></div>
-    )
-    } else{
-     return (
+      0: "bg-gray-600",
+      1: "bg-sky-300",
+      2: "bg-sky-400",
+      3: "bg-sky-600",
+      4: "bg-sky-700",
+    };
+    if (date === undefined) {
+      intensity = 0;
+      let className = `ml-[1px] mr-[1px] mt-[2px] mb-[2px] w-[10px] h-[10px] ${colors[intensity]} rounded-md}`;
+      return (
         <Tooltip title={hoverText} placement="top">
-          <div className={className}>
-          </div>
+          <div></div>
         </Tooltip>
-    );
+      );
+    } else {
+      intensity = Math.min(
+        maxIntensity,
+        Math.round((gamesPlayedByActivityArray(activity) / maxIntensity) * 4)
+      );
+      if (intensity === 0 && gamesPlayedByActivityArray(activity) !== 0) {
+        intensity = 1;
+      }
+      let className = `ml-[1px] mr-[1px] mt-[2px] mb-[2px] w-[10px] h-[10px] ${colors[intensity]} rounded-[2px]}`;
+      return (
+        <Tooltip title={hoverText} placement="top">
+          <div className={className}></div>
+        </Tooltip>
+      );
     }
-}
+  }
+  hoverText = "No activity";
+  return (
+    <Tooltip title={hoverText} placement="top">
+      <div className="ml-[1px] mr-[1px] mt-[2px] mb-[2px] w-[10px] h-[10px] bg-gray-600 rounded-[2px] "></div>
+    </Tooltip>
+  );
+};
 
 export default ActivityBox;
