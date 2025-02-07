@@ -10,7 +10,8 @@ import {
   styled,
 } from "@mui/material";
 import { ActivityBox } from "./ActivityBox";
-
+import react from 'react';
+import {useState, useEffect} from 'react';
 interface IProps {
   player: Player;
   year?: number;
@@ -28,10 +29,10 @@ const currentYear = new Date().getFullYear();
 function activityHistoryForPlayer(player: Player) {
   let totalPlayers = [player, ...player.alts];
   return totalPlayers
-    .map((p) =>
-      p.brackets.map((bracket) => bracket.gaming_history.history).flat()
-    )
-    .flat();
+  .map((p) =>
+    p.brackets.map((bracket) => bracket.gaming_history.history).flat()
+)
+.flat();
 }
 function getDayOfWeekRender(numberOfDay) {
   let days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -46,14 +47,18 @@ function getDayOfWeekRender(numberOfDay) {
     return <div></div>;
   }
 }
-
+function ChangeYear(year:string, setLookingYear) {
+  return setLookingYear(year)
+  
+}
 export function gamesPlayedByActivityArray(activityArray) {
   return activityArray
-    .map((entry) => entry.diff.won + entry.diff.lost)
-    .reduce((a, b) => a + b, 0);
+  .map((entry) => entry.diff.won + entry.diff.lost)
+  .reduce((a, b) => a + b, 0);
 }
 
 const ActivityDiagram = ({ player, year = currentYear }: IProps) => {
+  const [lookingYear,setLookingYear] = useState('2025');
   if (false) {
     return <> </>;
   } else {
@@ -129,6 +134,7 @@ const ActivityDiagram = ({ player, year = currentYear }: IProps) => {
       monthAndWeekCount[11] = monthAndWeekCount[-1];
       delete monthAndWeekCount[-1];
     }
+    
     weekWithActivity.forEach((week) => {
       monthAndWeekCount[
         week.find((d) => d != null).date.getMonth()
@@ -137,16 +143,29 @@ const ActivityDiagram = ({ player, year = currentYear }: IProps) => {
     let monthNumbers = Array.from(Array(12).keys());
     let totalGamesPlayed = fullHistory
       .filter((activity) => {
-        return new Date(activity.diff.timestamp) > start;
+        let someDate = new Date(activity.diff.timestamp).toString().split(' ')[3]
+        if (someDate === lookingYear){
+          return new Date(activity.diff.timestamp) > start;
+        }
       })
       .map((activity) => {
         return activity.diff.won + activity.diff.lost;
       })
       .reduce((a, b) => a + b, 0);
+    const years = []
+    fullHistory.map((item) => {
+      let someDate = new Date(item.diff.timestamp).toString().split(' ')[3]
+      if (!years.includes(someDate) && someDate!=='2023'){
+        years.push(someDate)
+      }
+    })
+    years.reverse()
     return (
-      <div className="flex flex-col py-2 md:px-3 border border-solid border-[#37415180] rounded-lg bg-[#030303e6] ">
+      <>
+      <div className="lg:grid grid-cols-[30fr_10px]">
+      <div className="flex flex-col py-2 md:px-3 border border-solid border-[#37415180] rounded-lg bg-[#030303e6]">
         <span className="text-2xl mr-4">
-          {totalGamesPlayed} games played in the last year
+          {totalGamesPlayed} games played in the {lookingYear}
         </span>
         <TableContainer component={Paper}>
           <Table
@@ -154,19 +173,19 @@ const ActivityDiagram = ({ player, year = currentYear }: IProps) => {
               backgroundColor: "#030303e6",
             }}
             aria-label="simple table"
-          >
+            >
             <TableHead>
               <TableRow>
                 <div></div>
                 {Object.keys(monthNumbers).map((month) => {
                   return (
                     <StyledTableCell
-                      component="th"
-                      scope="row"
-                      size="small"
-                      padding="none"
-                      align="left"
-                      colSpan={monthAndWeekCount[month].weekCount}
+                    component="th"
+                    scope="row"
+                    size="small"
+                    padding="none"
+                    align="left"
+                    colSpan={monthAndWeekCount[month].weekCount}
                     >
                       {monthAndWeekCount[month].name}
                     </StyledTableCell>
@@ -187,29 +206,41 @@ const ActivityDiagram = ({ player, year = currentYear }: IProps) => {
                         ) {
                           const dna = weekWithActivity[col][row];
                           return (
+                            <>
                             <StyledTableCell
-                              component="th"
-                              scope="row"
-                              size="small"
-                              padding="none"
+                            component="th"
+                            scope="row"
+                            size="small"
+                            padding="none"
                             >
                               <ActivityBox
                                 maxIntensity={maxIntensity}
                                 activity={dna.activity}
                                 date={dna.date}
-                              />
+                                year={dna.date.toString().split(' ')[3]}
+                                lookingYear={lookingYear}
+                                />
                             </StyledTableCell>
+                            </>
                           );
                         } else {
                           return (
+                            <>
                             <StyledTableCell
-                              component="th"
-                              scope="row"
-                              size="small"
-                              padding="none"
+                            component="th"
+                            scope="row"
+                            size="small"
+                            padding="none"
                             >
-                              <ActivityBox activity={[]} date={undefined} />
+                              <ActivityBox 
+                              maxIntensity={0} 
+                              activity={[]} 
+                              date={undefined} 
+                              year={0} 
+                              lookingYear={lookingYear} 
+                              />
                             </StyledTableCell>
+                            </>
                           );
                         }
                       }
@@ -221,6 +252,13 @@ const ActivityDiagram = ({ player, year = currentYear }: IProps) => {
           </Table>
         </TableContainer>
       </div>
+      <div className='flex lg:flex-col gap-2 lg:ml-[15px] mg:mt-[10px]'>
+          {years.map((item) => (
+            <button className={` pl-[12px] block w-[100px] p-[8px] text-[13px] text-left font-sans rounded-[6px] ${String(item) == String(lookingYear) ? 'bg-[#3f6ba3] text-white' : ''}`} onClick={() => ChangeYear(item,setLookingYear)}>{item}</button>
+          ))}
+      </div>
+      </div>
+      </>
     );
   }
 };
