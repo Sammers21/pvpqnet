@@ -51,6 +51,7 @@ function getDayOfWeekRender(numberOfDay) {
 function ChangeYear(year: string, setSelectedYear) {
   return setSelectedYear(year);
 }
+
 export function gamesPlayedByActivityArray(activityArray) {
   return activityArray
     .map((entry) => entry.diff.won + entry.diff.lost)
@@ -59,6 +60,11 @@ export function gamesPlayedByActivityArray(activityArray) {
 
 const ActivityDiagram = ({ player, year = currentYear }: IProps) => {
   const [selectedYear , setSelectedYear ] = useState('0');
+  useEffect(() => {
+    if (player){
+      setSelectedYear('0')
+    }
+  },[player])
   if (false) {
     return <></>;
   } else {
