@@ -66,9 +66,9 @@ const ActivityDiagram = ({ player, year = currentYear }: IProps) => {
     let weeks = [];
     var currentWeek = [];
     let dateAndActivity = {};
-    let start = new Date(new Date().setFullYear(new Date().getFullYear() - 1));
-    let end = new Date();
-    let currentMonth = start.getMonth();
+    let start = new Date(selectedYear);
+    let end = new Date((Number(selectedYear)+1).toString());
+    let currentMonth = new Date((Number(start)).toString()).getMonth();
     var loop = new Date(start);
     while (loop <= end) {
       let dt = loop.toLocaleDateString();
@@ -141,13 +141,15 @@ const ActivityDiagram = ({ player, year = currentYear }: IProps) => {
       ].weekCount += 1;
     });
     let monthNumbers = Array.from(Array(12).keys());
+    console.log(start)
+    console.log(end)
     let totalGamesPlayed = fullHistory
       .filter((activity) => {
         let displayedYear = new Date(activity.diff.timestamp)
           .toString()
           .split(" ")[3];
         if (displayedYear === selectedYear) {
-          return new Date(activity.diff.timestamp) > start;
+          return (new Date(activity.diff.timestamp) > start && new Date(activity.diff.timestamp) < end);
         }
       })
       .map((activity) => {
@@ -157,13 +159,18 @@ const ActivityDiagram = ({ player, year = currentYear }: IProps) => {
     const years = [];
     fullHistory.map((item) => {
       let yearButtonValue = new Date(item.diff.timestamp).toString().split(" ")[3];
-      if (item.character !== undefined && item.character.pethash !== -1){
-        if (!years.includes(yearButtonValue)) {
-          years.push(yearButtonValue);
-        }
+      if (!years.includes(yearButtonValue)) {
+        years.push(yearButtonValue);
       }
     });
-    years.sort((a,b) => b-a)
+    years.forEach((item) => {
+      let GamesAtSelectedYear = fullHistory.filter(activity => item === new Date(activity.diff.timestamp).toString().split(" ")[3])
+      .map((activity) => activity.diff.won + activity.diff.lost)
+      .reduce((a,b) => a+b,0)
+      return GamesAtSelectedYear>0;
+    })
+    years.sort((a,b) => b-a);
+    
     if (!years.includes(selectedYear)){
       setSelectedYear(years[0])
     }
