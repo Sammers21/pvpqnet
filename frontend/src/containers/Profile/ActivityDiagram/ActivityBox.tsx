@@ -15,7 +15,7 @@ export const ActivityBox = ({
 }) => {
   let hoverText;
   let intensity = 0;
-  if (year === selectedYear || year === 0) {
+  if (selectedYear === '0' || year === selectedYear || year === 0) {
     if (activity !== undefined && date !== undefined) {
       const monthAndDate =
         date.toLocaleDateString("en-US", { month: "short", day: "numeric" }) +

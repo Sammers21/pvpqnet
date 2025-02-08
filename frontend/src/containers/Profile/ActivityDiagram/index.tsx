@@ -58,7 +58,7 @@ export function gamesPlayedByActivityArray(activityArray) {
 }
 
 const ActivityDiagram = ({ player, year = currentYear }: IProps) => {
-  const [selectedYear , setSelectedYear ] = useState(currentYear.toString());
+  const [selectedYear , setSelectedYear ] = useState('0');
   if (false) {
     return <></>;
   } else {
@@ -66,9 +66,18 @@ const ActivityDiagram = ({ player, year = currentYear }: IProps) => {
     let weeks = [];
     var currentWeek = [];
     let dateAndActivity = {};
-    let start = new Date(selectedYear);
-    let end = new Date((Number(selectedYear)+1).toString());
-    let currentMonth = new Date((Number(start)).toString()).getMonth();
+    let start;
+    let end;
+    let currentMonth;
+    if (selectedYear != '0'){
+      start = new Date(selectedYear);
+      end = new Date((Number(selectedYear)+1).toString());
+    }
+    else{
+      start = new Date(new Date().setFullYear(new Date().getFullYear() - 1));
+      end = new Date()
+      currentMonth = start.getMonth();
+    }
     var loop = new Date(start);
     while (loop <= end) {
       let dt = loop.toLocaleDateString();
@@ -140,17 +149,13 @@ const ActivityDiagram = ({ player, year = currentYear }: IProps) => {
         week.find((d) => d != null).date.getMonth()
       ].weekCount += 1;
     });
-    let monthNumbers = Array.from(Array(12).keys());
-    console.log(start)
-    console.log(end)
+    let monthNumbers = Array.from(Array(12).keys())
     let totalGamesPlayed = fullHistory
       .filter((activity) => {
         let displayedYear = new Date(activity.diff.timestamp)
           .toString()
           .split(" ")[3];
-        if (displayedYear === selectedYear) {
-          return (new Date(activity.diff.timestamp) > start && new Date(activity.diff.timestamp) < end);
-        }
+        return (new Date(activity.diff.timestamp) > start && new Date(activity.diff.timestamp) < end);
       })
       .map((activity) => {
         return activity.diff.won + activity.diff.lost;
@@ -170,16 +175,12 @@ const ActivityDiagram = ({ player, year = currentYear }: IProps) => {
       return GamesAtSelectedYear>0;
     })
     years.sort((a,b) => b-a);
-    
-    if (!years.includes(selectedYear)){
-      setSelectedYear(years[0])
-    }
     return (
       <>
         <div className="lg:grid grid-cols-[30fr_10px]">
           <div className="flex flex-col py-2 md:px-3 border border-solid border-[#37415180] rounded-lg bg-[#030303e6]">
             <span className="text-2xl mr-4">
-              {totalGamesPlayed} games played in the {selectedYear}
+              {totalGamesPlayed} games played in the {selectedYear === '0' ? 'last year' : selectedYear}
             </span>
             <TableContainer component={Paper}>
               <Table
