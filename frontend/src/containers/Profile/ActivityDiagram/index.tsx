@@ -47,8 +47,9 @@ function getDayOfWeekRender(numberOfDay) {
     return <div></div>;
   }
 }
-function ChangeYear(year: string, setLookingYear) {
-  return setLookingYear(year);
+
+function ChangeYear(year: string, setSelectedYear) {
+  return setSelectedYear(year);
 }
 export function gamesPlayedByActivityArray(activityArray) {
   return activityArray
@@ -57,13 +58,13 @@ export function gamesPlayedByActivityArray(activityArray) {
 }
 
 const ActivityDiagram = ({ player, year = currentYear }: IProps) => {
-  const [lookingYear, setLookingYear] = useState("2025");
+  const [selectedYear , setSelectedYear ] = useState(currentYear.toString());
   if (false) {
-    return <> </>;
+    return <></>;
   } else {
+    let fullHistory = activityHistoryForPlayer(player);
     let weeks = [];
     var currentWeek = [];
-    let fullHistory = activityHistoryForPlayer(player);
     let dateAndActivity = {};
     let start = new Date(new Date().setFullYear(new Date().getFullYear() - 1));
     let end = new Date();
@@ -142,10 +143,10 @@ const ActivityDiagram = ({ player, year = currentYear }: IProps) => {
     let monthNumbers = Array.from(Array(12).keys());
     let totalGamesPlayed = fullHistory
       .filter((activity) => {
-        let someDate = new Date(activity.diff.timestamp)
+        let displayedYear = new Date(activity.diff.timestamp)
           .toString()
           .split(" ")[3];
-        if (someDate === lookingYear) {
+        if (displayedYear === selectedYear) {
           return new Date(activity.diff.timestamp) > start;
         }
       })
@@ -155,18 +156,23 @@ const ActivityDiagram = ({ player, year = currentYear }: IProps) => {
       .reduce((a, b) => a + b, 0);
     const years = [];
     fullHistory.map((item) => {
-      let someDate = new Date(item.diff.timestamp).toString().split(" ")[3];
-      if (!years.includes(someDate) && someDate !== "2023") {
-        years.push(someDate);
+      let yearButtonValue = new Date(item.diff.timestamp).toString().split(" ")[3];
+      if (item.character !== undefined && item.character.pethash !== -1){
+        if (!years.includes(yearButtonValue)) {
+          years.push(yearButtonValue);
+        }
       }
     });
-    years.reverse();
+    years.sort((a,b) => b-a)
+    if (!years.includes(selectedYear)){
+      setSelectedYear(years[0])
+    }
     return (
       <>
         <div className="lg:grid grid-cols-[30fr_10px]">
           <div className="flex flex-col py-2 md:px-3 border border-solid border-[#37415180] rounded-lg bg-[#030303e6]">
             <span className="text-2xl mr-4">
-              {totalGamesPlayed} games played in the {lookingYear}
+              {totalGamesPlayed} games played in the {selectedYear}
             </span>
             <TableContainer component={Paper}>
               <Table
@@ -219,7 +225,7 @@ const ActivityDiagram = ({ player, year = currentYear }: IProps) => {
                                       activity={dna.activity}
                                       date={dna.date}
                                       year={dna.date.toString().split(" ")[3]}
-                                      lookingYear={lookingYear}
+                                      selectedYear={selectedYear}
                                     />
                                   </StyledTableCell>
                                 </>
@@ -238,7 +244,7 @@ const ActivityDiagram = ({ player, year = currentYear }: IProps) => {
                                       activity={[]}
                                       date={undefined}
                                       year={0}
-                                      lookingYear={lookingYear}
+                                      selectedYear={selectedYear}
                                     />
                                   </StyledTableCell>
                                 </>
@@ -257,11 +263,11 @@ const ActivityDiagram = ({ player, year = currentYear }: IProps) => {
             {years.map((item) => (
               <button
                 className={` pl-[12px] block w-[100px] p-[8px] text-[13px] text-left font-sans rounded-[6px] ${
-                  String(item) == String(lookingYear)
+                  String(item) == String(selectedYear)
                     ? "bg-[#3f6ba3] text-white"
                     : ""
                 }`}
-                onClick={() => ChangeYear(item, setLookingYear)}
+                onClick={() => ChangeYear(item, setSelectedYear)}
               >
                 {item}
               </button>

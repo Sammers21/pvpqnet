@@ -11,11 +11,11 @@ export const ActivityBox = ({
   activity = [],
   date = undefined,
   year = undefined,
-  lookingYear = undefined,
+  selectedYear = undefined,
 }) => {
   let hoverText;
   let intensity = 0;
-  if (year === lookingYear || year === 0) {
+  if (year === selectedYear || year === 0) {
     if (activity !== undefined && date !== undefined) {
       const monthAndDate =
         date.toLocaleDateString("en-US", { month: "short", day: "numeric" }) +
@@ -39,7 +39,6 @@ export const ActivityBox = ({
     };
     if (date === undefined) {
       intensity = 0;
-      let className = `ml-[1px] mr-[1px] mt-[2px] mb-[2px] w-[10px] h-[10px] ${colors[intensity]} rounded-md}`;
       return (
         <Tooltip title={hoverText} placement="top">
           <div></div>
