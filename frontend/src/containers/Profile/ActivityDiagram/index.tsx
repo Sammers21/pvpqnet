@@ -59,10 +59,10 @@ export function gamesPlayedByActivityArray(activityArray) {
 }
 
 const ActivityDiagram = ({ player, year = currentYear }: IProps) => {
-  const [selectedYear , setSelectedYear ] = useState('0');
+  const [selectedYear , setSelectedYear ] = useState(currentYear);
   useEffect(() => {
     if (player){
-      setSelectedYear('0')
+      setSelectedYear(currentYear)
     }
   },[player])
   if (false) {
@@ -75,7 +75,7 @@ const ActivityDiagram = ({ player, year = currentYear }: IProps) => {
     let start;
     let end;
     let currentMonth;
-    if (selectedYear != '0'){
+    if (selectedYear != currentYear){
       start = new Date(selectedYear);
       end = new Date((Number(selectedYear)+1).toString());
     }
@@ -180,33 +180,35 @@ const ActivityDiagram = ({ player, year = currentYear }: IProps) => {
       .reduce((a,b) => a+b,0)
       return GamesAtSelectedYear>0;
     })
+    
     years.sort((a,b) => b-a);
     return (
       <>
-        <div className="lg:grid grid-cols-[30fr_10px]">
-          <div className="flex flex-col py-2 md:px-3 border border-solid border-[#37415180] rounded-lg bg-[#030303e6]">
+          <div className="lg:flex justify-between py-2 md:px-3 border border-solid border-[#37415180] rounded-lg bg-[#030303e6] w-[111%]">
+            <div className="flex flex-col w-[100%]">
             <span className="text-2xl mr-4">
-              {totalGamesPlayed} games played in the {selectedYear === '0' ? 'last year' : selectedYear}
+              {totalGamesPlayed} games played in the {selectedYear === currentYear ? 'last year' : selectedYear}
             </span>
+            
             <TableContainer component={Paper}>
               <Table
                 sx={{
                   backgroundColor: "#030303e6",
                 }}
                 aria-label="simple table"
-              >
+                >
                 <TableHead>
                   <TableRow>
                     <div></div>
                     {Object.keys(monthNumbers).map((month) => {
                       return (
                         <StyledTableCell
-                          component="th"
-                          scope="row"
-                          size="small"
-                          padding="none"
-                          align="left"
-                          colSpan={monthAndWeekCount[month].weekCount}
+                        component="th"
+                        scope="row"
+                        size="small"
+                        padding="none"
+                        align="left"
+                        colSpan={monthAndWeekCount[month].weekCount}
                         >
                           {monthAndWeekCount[month].name}
                         </StyledTableCell>
@@ -233,14 +235,14 @@ const ActivityDiagram = ({ player, year = currentYear }: IProps) => {
                                     scope="row"
                                     size="small"
                                     padding="none"
-                                  >
+                                    >
                                     <ActivityBox
                                       maxIntensity={maxIntensity}
                                       activity={dna.activity}
                                       date={dna.date}
                                       year={dna.date.toString().split(" ")[3]}
                                       selectedYear={selectedYear}
-                                    />
+                                      />
                                   </StyledTableCell>
                                 </>
                               );
@@ -252,14 +254,14 @@ const ActivityDiagram = ({ player, year = currentYear }: IProps) => {
                                     scope="row"
                                     size="small"
                                     padding="none"
-                                  >
+                                    >
                                     <ActivityBox
                                       maxIntensity={0}
                                       activity={[]}
                                       date={undefined}
                                       year={0}
                                       selectedYear={selectedYear}
-                                    />
+                                      />
                                   </StyledTableCell>
                                 </>
                               );
@@ -273,15 +275,15 @@ const ActivityDiagram = ({ player, year = currentYear }: IProps) => {
               </Table>
             </TableContainer>
           </div>
-          <div className="flex lg:flex-col gap-2 lg:ml-[15px] mg:mt-[10px]">
+          <div className="flex lg:flex-col gap-1 lg:ml-[15px] mg:mt-[10px]">
             {years.map((item) => (
               <button
-                className={` pl-[12px] block w-[100px] p-[8px] text-[13px] text-left font-sans rounded-[6px] ${
-                  String(item) == String(selectedYear)
-                    ? "bg-[#3f6ba3] text-white"
-                    : ""
-                }`}
-                onClick={() => ChangeYear(item, setSelectedYear)}
+              className={`pl-[12px] block w-[100px] p-[8px] text-[13px] text-left font-sans rounded-[6px] ${
+                String(item) === String(selectedYear) || (selectedYear === currentYear && String(item) === years[0])
+                ? "bg-[#3f6ba3] text-white" 
+                : "hover:bg-gray-800"
+              }`}
+              onClick={() => ChangeYear(item, setSelectedYear)}
               >
                 {item}
               </button>
