@@ -7,7 +7,6 @@ import { gamesPlayedByActivityArray } from ".";
  * @returns colored box
  */
 
-
 export const ActivityBox = ({
   maxIntensity = 5,
   activity = [],
@@ -38,14 +37,6 @@ export const ActivityBox = ({
       3: "bg-sky-600",
       4: "bg-sky-700",
     };
-    if (date === undefined) {
-      intensity = 0;
-      return (
-        <Tooltip title={hoverText} placement="top">
-          <div></div>
-        </Tooltip>
-      );
-    } else {
       intensity = Math.min(
         maxIntensity,
         Math.round((gamesPlayedByActivityArray(activity) / maxIntensity) * 4)
@@ -59,7 +50,6 @@ export const ActivityBox = ({
           <div className={className}></div>
         </Tooltip>
       );
-    }
   }
   hoverText = "No activity";
   if (selectedYear !== currentDate && year !== 0){

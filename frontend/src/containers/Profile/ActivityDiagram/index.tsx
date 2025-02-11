@@ -10,7 +10,6 @@ import {
   styled,
 } from "@mui/material";
 import { ActivityBox } from "./ActivityBox";
-import react from "react";
 import { useState, useEffect } from "react";
 interface IProps {
   player: Player;
@@ -23,9 +22,6 @@ const StyledTableCell = styled(TableCell)({
   width: "10px",
   height: "10px",
 });
-
-const currentYear = new Date().getFullYear();
-
 function activityHistoryForPlayer(player: Player) {
   let totalPlayers = [player, ...player.alts];
   return totalPlayers
@@ -36,7 +32,7 @@ function activityHistoryForPlayer(player: Player) {
 }
 function getDayOfWeekRender(numberOfDay) {
   let days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-  if (numberOfDay % 2 == 0) {
+  if (numberOfDay % 2 === 0) {
     return (
       <StyledTableCell component="th" scope="row" size="small" align="left">
         {" "}
@@ -48,27 +44,18 @@ function getDayOfWeekRender(numberOfDay) {
   }
 }
 
-function ChangeYear(year: string, setSelectedYear) {
-  return setSelectedYear(year);
-}
-
 export function gamesPlayedByActivityArray(activityArray) {
   return activityArray
     .map((entry) => entry.diff.won + entry.diff.lost)
     .reduce((a, b) => a + b, 0);
 }
-const currentDate = new Date().toString()
 
-const ActivityDiagram = ({ player, year = currentYear }: IProps) => {
-  const [selectedYear , setSelectedYear ] = useState(currentDate);
+const ActivityDiagram = ({player}: IProps) => {
+  const currentDate = new Date().toString()
+  const [selectedYear,setSelectedYear ] = useState(currentDate);
   useEffect(() => {
-    if (player){
-      setSelectedYear(currentDate)
-    }
+    setSelectedYear(currentDate)
   },[player])
-  if (false) {
-    return <></>;
-  } else {
     let fullHistory = activityHistoryForPlayer(player);
     let weeks = [];
     var currentWeek = [];
@@ -90,8 +77,7 @@ const ActivityDiagram = ({ player, year = currentYear }: IProps) => {
       let dt = loop.toLocaleDateString();
       let dayOfWeek = loop.getDay();
       currentWeek[dayOfWeek] = loop;
-      // currentWeek.push(loop);
-      if (dayOfWeek == 6) {
+      if (dayOfWeek === 6) {
         weeks.push(currentWeek);
         currentWeek = [];
       }
@@ -150,7 +136,6 @@ const ActivityDiagram = ({ player, year = currentYear }: IProps) => {
       monthAndWeekCount[11] = monthAndWeekCount[-1];
       delete monthAndWeekCount[-1];
     }
-
     weekWithActivity.forEach((week) => {
       monthAndWeekCount[
         week.find((d) => d != null).date.getMonth()
@@ -159,9 +144,6 @@ const ActivityDiagram = ({ player, year = currentYear }: IProps) => {
     let monthNumbers = Array.from(Array(12).keys())
     let totalGamesPlayed = fullHistory
       .filter((activity) => {
-        let displayedYear = new Date(activity.diff.timestamp)
-          .toString()
-          .split(" ")[3];
         return (new Date(activity.diff.timestamp) > start && new Date(activity.diff.timestamp) < end);
       })
       .map((activity) => {
@@ -170,18 +152,17 @@ const ActivityDiagram = ({ player, year = currentYear }: IProps) => {
       .reduce((a, b) => a + b, 0);
     const years = [];
     fullHistory.map((item) => {
-      let yearButtonValue = new Date(item.diff.timestamp).toString().split(" ")[3];
+      const yearButtonValue = new Date(item.diff.timestamp).getFullYear().toString();
       if (!years.includes(yearButtonValue)) {
-        years.push(yearButtonValue);
+        return years.push(yearButtonValue);
       }
     });
     years.forEach((item) => {
-      let GamesAtSelectedYear = fullHistory.filter(activity => item === new Date(activity.diff.timestamp).toString().split(" ")[3])
+      let GamesAtSelectedYear = fullHistory.filter(activity => item === new Date(activity.diff.timestamp).getFullYear().toString())
       .map((activity) => activity.diff.won + activity.diff.lost)
       .reduce((a,b) => a+b,0)
       return GamesAtSelectedYear>0;
     })
-    
     years.sort((a,b) => b-a);
     return (
       <>
@@ -241,7 +222,7 @@ const ActivityDiagram = ({ player, year = currentYear }: IProps) => {
                                       maxIntensity={maxIntensity}
                                       activity={dna.activity}
                                       date={dna.date}
-                                      year={dna.date.toString().split(" ")[3]}
+                                      year={dna.date.getFullYear().toString()}
                                       selectedYear={selectedYear}
                                       currentDate={currentDate}
                                       />
@@ -283,11 +264,11 @@ const ActivityDiagram = ({ player, year = currentYear }: IProps) => {
             {years.map((item) => (
               <button
               className={`pl-[12px] block w-[100px] p-[8px] text-[13px] text-left font-sans rounded-[6px] select-none ${
-                String(item) === String(selectedYear) || (selectedYear == currentDate && String(item) === years[0])
+                String(item) === String(selectedYear) || (selectedYear === currentDate && String(item) === years[0])
                 ? "bg-[#3f6ba3] text-white" 
                 : "hover:bg-gray-800"
               }`}
-              onClick={() => ChangeYear(item, setSelectedYear)}
+              onClick={() => setSelectedYear(item)}
               >
                 {item}
               </button>
@@ -296,7 +277,6 @@ const ActivityDiagram = ({ player, year = currentYear }: IProps) => {
         </div>
       </>
     );
-  }
 };
 
 export default ActivityDiagram;
