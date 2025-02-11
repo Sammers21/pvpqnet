@@ -57,12 +57,13 @@ export function gamesPlayedByActivityArray(activityArray) {
     .map((entry) => entry.diff.won + entry.diff.lost)
     .reduce((a, b) => a + b, 0);
 }
+const currentDate = new Date().toString()
 
 const ActivityDiagram = ({ player, year = currentYear }: IProps) => {
-  const [selectedYear , setSelectedYear ] = useState(currentYear);
+  const [selectedYear , setSelectedYear ] = useState(currentDate);
   useEffect(() => {
     if (player){
-      setSelectedYear(currentYear)
+      setSelectedYear(currentDate)
     }
   },[player])
   if (false) {
@@ -75,7 +76,7 @@ const ActivityDiagram = ({ player, year = currentYear }: IProps) => {
     let start;
     let end;
     let currentMonth;
-    if (selectedYear != currentYear){
+    if (selectedYear !== currentDate){
       start = new Date(selectedYear);
       end = new Date((Number(selectedYear)+1).toString());
     }
@@ -187,7 +188,7 @@ const ActivityDiagram = ({ player, year = currentYear }: IProps) => {
           <div className="lg:flex justify-between py-2 md:px-3 border border-solid border-[#37415180] rounded-lg bg-[#030303e6] w-[111%]">
             <div className="flex flex-col w-[100%]">
             <span className="text-2xl mr-4">
-              {totalGamesPlayed} games played in the {selectedYear === currentYear ? 'last year' : selectedYear}
+              {totalGamesPlayed} games played in the {selectedYear === currentDate ? 'last year' : selectedYear}
             </span>
             
             <TableContainer component={Paper}>
@@ -242,6 +243,7 @@ const ActivityDiagram = ({ player, year = currentYear }: IProps) => {
                                       date={dna.date}
                                       year={dna.date.toString().split(" ")[3]}
                                       selectedYear={selectedYear}
+                                      currentDate={currentDate}
                                       />
                                   </StyledTableCell>
                                 </>
@@ -261,6 +263,7 @@ const ActivityDiagram = ({ player, year = currentYear }: IProps) => {
                                       date={undefined}
                                       year={0}
                                       selectedYear={selectedYear}
+                                      currentDate={currentDate}
                                       />
                                   </StyledTableCell>
                                 </>
@@ -279,7 +282,7 @@ const ActivityDiagram = ({ player, year = currentYear }: IProps) => {
             {years.map((item) => (
               <button
               className={`pl-[12px] block w-[100px] p-[8px] text-[13px] text-left font-sans rounded-[6px] ${
-                String(item) === String(selectedYear) || (selectedYear === currentYear && String(item) === years[0])
+                String(item) === String(selectedYear) || (selectedYear == currentDate && String(item) === years[0])
                 ? "bg-[#3f6ba3] text-white" 
                 : "hover:bg-gray-800"
               }`}

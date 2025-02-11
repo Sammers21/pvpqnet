@@ -6,16 +6,19 @@ import { gamesPlayedByActivityArray } from ".";
  * @param intensity 0-4 (0 = no activity, 4 = high activity)
  * @returns colored box
  */
+
+
 export const ActivityBox = ({
   maxIntensity = 5,
   activity = [],
   date = undefined,
   year = undefined,
   selectedYear = undefined,
+  currentDate = undefined
 }) => {
   let hoverText;
   let intensity = 0;
-  if (selectedYear === new Date().getFullYear() || year === selectedYear || year === 0) {
+  if (selectedYear === currentDate || year === selectedYear) {
     if (activity !== undefined && date !== undefined) {
       const monthAndDate =
         date.toLocaleDateString("en-US", { month: "short", day: "numeric" }) +
@@ -26,7 +29,7 @@ export const ActivityBox = ({
       } else {
         totalArenaGames = 0;
       }
-      hoverText = `${totalArenaGames} games on ${monthAndDate}`;
+      hoverText = `${totalArenaGames} games on ${monthAndDate} at ${year}`;
     } else {
       hoverText = `No activity`;
     }
