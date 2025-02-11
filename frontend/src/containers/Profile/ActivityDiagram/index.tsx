@@ -185,12 +185,12 @@ const ActivityDiagram = ({ player, year = currentYear }: IProps) => {
     years.sort((a,b) => b-a);
     return (
       <>
-          <div className="lg:flex justify-between py-2 md:px-3 border border-solid border-[#37415180] rounded-lg bg-[#030303e6] w-[111%]">
+      <div className="flex">
+          <div className="lg:flex justify-between py-2 md:px-3 border border-solid border-[#37415180] w-[86.7%] rounded-lg bg-[#030303e6]">
             <div className="flex flex-col w-[100%]">
             <span className="text-2xl mr-4">
-              {totalGamesPlayed} games played in the {selectedYear === currentDate ? 'last year' : selectedYear}
+              {totalGamesPlayed} games played in {selectedYear === currentDate ? 'the last year' : selectedYear}
             </span>
-            
             <TableContainer component={Paper}>
               <Table
                 sx={{
@@ -278,7 +278,8 @@ const ActivityDiagram = ({ player, year = currentYear }: IProps) => {
               </Table>
             </TableContainer>
           </div>
-          <div className="flex lg:flex-col gap-1 lg:ml-[15px] mg:mt-[10px]">
+        </div>
+          <div className="flex lg:flex-col gap-1 lg:ml-[10px] mg:mt-[10px]">
             {years.map((item) => (
               <button
               className={`pl-[12px] block w-[100px] p-[8px] text-[13px] text-left font-sans rounded-[6px] ${

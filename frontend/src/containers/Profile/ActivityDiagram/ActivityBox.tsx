@@ -55,7 +55,7 @@ export const ActivityBox = ({
       if (intensity === 0 && gamesPlayedByActivityArray(activity) !== 0) {
         intensity = 1;
       }
-      let className = `ml-[1px] mr-[1px] mt-[2px] mb-[2px] w-[10px] h-[10px] ${colors[intensity]} rounded-[2px]}`;
+      let className = `ml-[1px] mr-[1px] mt-[2px] mb-[2px] w-[9px] h-[9px] ${colors[intensity]} rounded-[1px]`;
       return (
         <Tooltip title={hoverText} placement="top">
           <div className={className}></div>
@@ -66,7 +66,7 @@ export const ActivityBox = ({
   hoverText = "No activity";
   return (
     <Tooltip title={hoverText} placement="top">
-      <div className="ml-[1px] mr-[1px] mt-[2px] mb-[2px] w-[10px] h-[10px] bg-gray-600 rounded-[2px] "></div>
+      <div className="ml-[1px] mr-[1px] mt-[2px] mb-[2px] w-[9px] h-[9px] bg-gray-600 rounded-[1px]"></div>
     </Tooltip>
   );
 };
