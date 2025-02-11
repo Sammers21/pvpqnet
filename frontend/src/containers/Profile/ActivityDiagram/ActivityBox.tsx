@@ -30,8 +30,6 @@ export const ActivityBox = ({
         totalArenaGames = 0;
       }
       hoverText = `${totalArenaGames} games on ${monthAndDate} at ${year}`;
-    } else {
-      hoverText = `No activity`;
     }
     let colors = {
       0: "bg-gray-600",
@@ -64,11 +62,13 @@ export const ActivityBox = ({
     }
   }
   hoverText = "No activity";
-  return (
-    <Tooltip title={hoverText} placement="top">
+  if (selectedYear !== currentDate && year !== 0){
+    return (
+      <Tooltip title={hoverText} placement="top">
       <div className="ml-[1px] mr-[1px] mt-[2px] mb-[2px] w-[9px] h-[9px] bg-gray-600 rounded-[1px]"></div>
     </Tooltip>
   );
+}
 };
 
 export default ActivityBox;

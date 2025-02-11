@@ -77,8 +77,8 @@ const ActivityDiagram = ({ player, year = currentYear }: IProps) => {
     let end;
     let currentMonth;
     if (selectedYear !== currentDate){
-      start = new Date(selectedYear);
-      end = new Date((Number(selectedYear)+1).toString());
+      start = new Date(Number(selectedYear),0,0,0,0,0);
+      end = new Date(new Date(Number(selectedYear),11,30).toString());
     }
     else{
       start = new Date(new Date().setFullYear(new Date().getFullYear() - 1));
@@ -185,8 +185,8 @@ const ActivityDiagram = ({ player, year = currentYear }: IProps) => {
     years.sort((a,b) => b-a);
     return (
       <>
-      <div className="flex">
-          <div className="lg:flex justify-between py-2 md:px-3 border border-solid border-[#37415180] w-[86.7%] rounded-lg bg-[#030303e6]">
+      <div className="lg:flex">
+          <div className="lg:flex justify-between py-2 md:px-3 border border-solid border-[#37415180] lg:w-[86.7%] rounded-lg bg-[#030303e6]">
             <div className="flex flex-col w-[100%]">
             <span className="text-2xl mr-4">
               {totalGamesPlayed} games played in {selectedYear === currentDate ? 'the last year' : selectedYear}
@@ -282,7 +282,7 @@ const ActivityDiagram = ({ player, year = currentYear }: IProps) => {
           <div className="flex lg:flex-col gap-1 lg:ml-[10px] mg:mt-[10px]">
             {years.map((item) => (
               <button
-              className={`pl-[12px] block w-[100px] p-[8px] text-[13px] text-left font-sans rounded-[6px] ${
+              className={`pl-[12px] block w-[100px] p-[8px] text-[13px] text-left font-sans rounded-[6px] select-none ${
                 String(item) === String(selectedYear) || (selectedYear == currentDate && String(item) === years[0])
                 ? "bg-[#3f6ba3] text-white" 
                 : "hover:bg-gray-800"
