@@ -50,8 +50,8 @@ export function gamesPlayedByActivityArray(activityArray) {
     .reduce((a, b) => a + b, 0);
 }
 
+const currentDate = new Date().toString()
 const ActivityDiagram = ({player}: IProps) => {
-  const currentDate = new Date().toString()
   const [selectedYear,setSelectedYear ] = useState(currentDate);
   useEffect(() => {
     setSelectedYear(currentDate)
@@ -146,12 +146,9 @@ const ActivityDiagram = ({player}: IProps) => {
       .filter((activity) => {
         return (new Date(activity.diff.timestamp) > start && new Date(activity.diff.timestamp) < end);
       })
-      .map((activity) => {
-        return activity.diff.won + activity.diff.lost;
-      })
-      .reduce((a, b) => a + b, 0);
+      .reduce((sum, activity) => sum + activity.diff.won + activity.diff.lost, 0);
     const years = [];
-    fullHistory.map((item) => {
+    fullHistory.forEach((item) => {
       const yearButtonValue = new Date(item.diff.timestamp).getFullYear().toString();
       if (!years.includes(yearButtonValue)) {
         return years.push(yearButtonValue);
@@ -159,8 +156,7 @@ const ActivityDiagram = ({player}: IProps) => {
     });
     years.forEach((item) => {
       let GamesAtSelectedYear = fullHistory.filter(activity => item === new Date(activity.diff.timestamp).getFullYear().toString())
-      .map((activity) => activity.diff.won + activity.diff.lost)
-      .reduce((a,b) => a+b,0)
+      .reduce((sum,activity) => sum + activity.diff.won + activity.diff.lost,0);
       return GamesAtSelectedYear>0;
     })
     years.sort((a,b) => b-a);
