@@ -260,6 +260,12 @@ public record WowAPICharacter(long id,
         return Character.fullNameByRealmAndName(name, realm);
     }
 
+    public Set<Long> altsAndItself() {
+        Set<Long> all = new HashSet<>(alts);
+        all.add(id);
+        return all;
+    }
+
     public static WowAPICharacter fromJson(JsonObject entries) {
         List<PvpBracket> brcktsFromJson;
         JsonArray array = entries.getJsonArray("brackets");

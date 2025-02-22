@@ -36,26 +36,52 @@ public class Calculator {
         if (shuffleSnapshot == null) {
             return new Multiclassers(List.of());
         }
-        Map<Integer, List<Character>> charsGrpd = new HashMap<>();
+        // charter_id -> alt group
+        Map<Long, Set<Long>> charsGrpd = new HashMap<>();
         for (Character character : shuffleSnapshot.characters()) {
             WowAPICharacter wowAPICharacter = cache.getByFullName(character.fullName());
             if (wowAPICharacter != null) {
-                charsGrpd.compute(wowAPICharacter.petHash(), (k, v) -> {
-                    if (k == -1) {
-                        return null;
-                    } else if (v == null) {
-                        ArrayList<Character> characters = new ArrayList<>();
-                        characters.add(character);
-                        return characters;
-                    } else {
-                        v.add(character);
-                        return v;
+                Set<Long> alts = null;
+                Set<Long> altsAndItself = wowAPICharacter.altsAndItself();
+                // first try to find an existing group
+                for (Long charId : altsAndItself) {
+                    alts = charsGrpd.get(charId);
+                    if (alts != null) {
+                        break;
                     }
-                });
+                }
+                // if no group found, create a new one
+                if (alts == null) {
+                    for (Long charId : altsAndItself) {
+                        charsGrpd.put(charId, altsAndItself);
+                    }
+                } else {
+                    // if group found, merge it with the new one
+                    alts.addAll(altsAndItself);
+                }
             }
         }
-        Map<String, Multiclassers.Info> res = new HashMap<>();
-        for (Map.Entry<Integer, List<Character>> entry : charsGrpd.entrySet()) {
+        Map<String, List<Character>> groups = new HashMap<>();
+        for (Character character : shuffleSnapshot.characters()) {
+            WowAPICharacter wowAPICharacter = cache.getByFullName(character.fullName());
+            if (wowAPICharacter != null) {
+                Set<Long> alts = charsGrpd.get(wowAPICharacter.id());
+                if (alts == null) {
+                    alts = Set.of(wowAPICharacter.id());
+                }
+                String key = alts.stream().sorted().map(Object::toString).collect(Collectors.joining(","));
+                List<Character> characters = groups.get(key);
+                if (characters == null) {
+                    characters = new ArrayList<>();
+                    characters.add(character);
+                } else {
+                    characters.add(character);
+                }
+                groups.put(key, characters);
+            }
+        }
+        List<Multiclassers.Info> res = new ArrayList<>();
+        for (Map.Entry<String, List<Character>> entry : groups.entrySet()) {
             List<Character> characters = entry.getValue();
             // group by spec
             Map<String, List<Character>> specGrpd = characters.stream().collect(Collectors.groupingBy(Character::fullSpec));
@@ -75,10 +101,10 @@ public class Calculator {
             int totalScore = specAndScore.values().stream().mapToInt(Multiclassers.CharAndScore::score).sum();
             Character main = specAndScore.values().stream().max(Comparator.comparing(Multiclassers.CharAndScore::score)).orElseThrow().character();
             Multiclassers.Info info = new Multiclassers.Info(-1, totalScore, main, specAndScore);
-            res.put(entry.getKey().toString(), info);
+            res.add(info);
         }
         // sort by total score
-        List<Info> list = res.values().stream().sorted(Comparator.comparing(Multiclassers.Info::totalScore).reversed()).toList();
+        List<Info> list = res.stream().sorted(Comparator.comparing(Multiclassers.Info::totalScore).reversed()).toList();
         List<Info> resList = new ArrayList<>(list.size());
         for (int i = 0; i < list.size(); i++) {
             Info info = list.get(i);
@@ -471,7 +497,7 @@ public class Calculator {
     }
 
     public static byte[] gzipUncompress(byte[] compressedData) {
-        if (compressedData ==null ) {
+        if (compressedData == null) {
             return null;
         }
         byte[] result = new byte[]{};
