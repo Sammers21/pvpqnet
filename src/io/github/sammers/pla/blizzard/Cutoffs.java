@@ -65,16 +65,16 @@ public class Cutoffs implements JsonConvertable {
         for (int i = 0; i < rewards.size(); i++) {
             JsonObject reward = rewards.getJsonObject(i);
             String bracket = reward.getJsonObject("bracket").getString("type");
-            if (bracket.equals("ARENA_3v3")) {
-                cfs.put(bracket, reward.getLong("rating_cutoff"));
-            } else if (bracket.equals("BATTLEGROUNDS")) {
-                cfs.put(bracket + "/" + reward.getJsonObject("faction").getString("name").toLowerCase(), reward.getLong("rating_cutoff"));
-            } else if (bracket.equals("SHUFFLE") || bracket.equals("BLITZ")) {
-                String spec = reward.getJsonObject("specialization").getString("name");
-                Long id = reward.getJsonObject("specialization").getLong("id");
-                cfs.put(bracket + "/" + specCodeNameById(spec, id), reward.getLong("rating_cutoff"));
-            } else {
-                log.error("Unknown bracket type: " + bracket);
+            switch (bracket) {
+                case "ARENA_3v3" -> cfs.put(bracket, reward.getLong("rating_cutoff"));
+                case "BATTLEGROUNDS" ->
+                    cfs.put(bracket + "/" + reward.getJsonObject("faction").getString("name").toLowerCase(), reward.getLong("rating_cutoff"));
+                case "SHUFFLE", "BLITZ" -> {
+                    String spec = reward.getJsonObject("specialization").getString("name");
+                    Long id = reward.getJsonObject("specialization").getLong("id");
+                    cfs.put(bracket + "/" + specCodeNameById(spec, id), reward.getLong("rating_cutoff"));
+                }
+                default -> log.error("Unknown bracket type: " + bracket);
             }
         }
         long now = System.currentTimeMillis();
