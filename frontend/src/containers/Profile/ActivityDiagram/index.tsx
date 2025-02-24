@@ -11,6 +11,7 @@ import {
 } from "@mui/material";
 import { ActivityBox } from "./ActivityBox";
 import { useState, useEffect } from "react";
+import RadarChart from "./RadarChart";
 interface IProps {
   player: Player;
   year?: number;
@@ -271,6 +272,7 @@ const ActivityDiagram = ({player}: IProps) => {
             ))}
           </div>
         </div>
+          <RadarChart player={player} fullHistory = {fullHistory} selectedYear={selectedYear} start={start} end={end} currentDate={currentDate}></RadarChart>
       </>
     );
 };
