@@ -11,9 +11,7 @@ import {
   plugins,
 } from 'chart.js';
 import { Radar } from 'react-chartjs-2';
-import { size } from 'lodash';
 import { getDetaisImages } from '@/utils/table';
-import { callback } from 'node_modules/chart.js/dist/helpers/helpers.core';
 ChartJS.register(
   ArcElement,
   RadialLinearScale,
@@ -115,7 +113,6 @@ function getBrackets(totalPlayers,selectedYear,start,end,currentDate){
   let BracketObjects = [];
   totalPlayers.forEach((element) => {
     element.brackets.forEach((item:{bracket_type:string;won:number;lost:number; gaming_history: {history : {session: {diff: {won:number;lost:number;timestamp:number}}}}}) => {
-      console.log(item)
       let sum = 0;
       let won = 0;
       let lost = 0;
@@ -196,11 +193,11 @@ function RadarChart({player,fullHistory,selectedYear,start,end,currentDate}){
         }
       })
       if (!bracketNamesArray.includes('ARENA 2v2')){
-        bracketNamesArray.includes('ARENA 2v2')
+        bracketNamesArray.push('ARENA 2v2')
         bracketSumArray.push(0)
       }
       if (!bracketNamesArray.includes('ARENA 3v3')){
-        bracketNamesArray.includes('ARENA 3v3')
+        bracketNamesArray.push('ARENA 3v3')
         bracketSumArray.push(0)
       }
       if (!bracketNamesArray.includes('BATTLEGROUNDS')){
@@ -210,15 +207,27 @@ function RadarChart({player,fullHistory,selectedYear,start,end,currentDate}){
       bracketNamesArray.push('BLITZ');
       bracketSumArray.push(sumOfBracketBLITZArray*2)
       bracketNamesArray.push('SHUFFLE');
-      bracketSumArray.push(sumOfBracketShuffleArray*3.6)
-    
+      bracketSumArray.push(sumOfBracketShuffleArray/1.7)
+    let FinalBracketArrayNames = [];
+    let FinalBracketArrayValues = [];
+    bracketNamesArray.map((item,index) => {
+      return {
+        name: item,
+        value: bracketSumArray[index]
+      }
+    }).sort((a,b) => {
+      return a.name < b.name ? 1 : -1;
+    }).forEach((item) => {
+      FinalBracketArrayNames.push(item.name)
+      FinalBracketArrayValues.push(item.value)
+    })
     
     const dataBrackets = {
-      labels: bracketNamesArray,
+      labels: FinalBracketArrayNames,
       datasets:[
         {
           label: 'Games',
-          data: bracketSumArray,
+          data: FinalBracketArrayValues,
           backgroundColor: 'rgba(63, 106, 163, 0.73)',
           borderColor: 'rgba(5, 113, 255, 0.73)',
           borderWidth: 2,
@@ -276,6 +285,9 @@ function RadarChart({player,fullHistory,selectedYear,start,end,currentDate}){
     const optionsBrackets = {
       type: 'radar',
       plugins: {
+        legend: {
+          display: false
+        },
         tooltip: {
           callbacks:{
             label: function (tooltipItem) {
@@ -285,7 +297,7 @@ function RadarChart({player,fullHistory,selectedYear,start,end,currentDate}){
                 return `Games: ${Math.floor(value/4)}`
               }
               else if (label === 'SHUFFLE'){
-                return `Games: ${Math.floor(value/3.6)}`
+                return `Games: ${Math.floor(value*1.7)}`
               }
               else if (label === 'BLITZ'){
                 return `Games: ${Math.floor(value/2)}`
@@ -299,17 +311,17 @@ function RadarChart({player,fullHistory,selectedYear,start,end,currentDate}){
                 pointLabels: {
                     color: "white",
                     font: {
-                      size: 8, 
+                      size: 10, 
                     },
                   },
               angleLines: {
                 display: true,
                 color: 'rgb(47, 70, 100)',
-                lineWidth: 1,
+                lineWidth: 2,
               },
               grid: {
-                circular: true,
-                color: 'rgba(28, 31, 123, 0)',
+                display: true,
+                color: 'rgba(58, 58, 58, 0.98)',
                 lineWidth: 1, 
               },
               ticks:{
@@ -320,8 +332,8 @@ function RadarChart({player,fullHistory,selectedYear,start,end,currentDate}){
     }
     return (
         <>
-        <div className='flex w-[100%]'>
-          <div className='w-[550px]'>
+        <div className='flex w-[100%] flex-col sm:flex-row'>
+          <div className='w-[550px] hidden'>
             <Radar data={dataSpecs} options={options}></Radar>
           </div>
           <div className='w-[550px]'>
