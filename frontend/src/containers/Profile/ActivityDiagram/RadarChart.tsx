@@ -84,7 +84,7 @@ function getSpecStatisticPlayer(
         if (start < new Date(item.diff.timestamp) < end) {
           if (
             currentSpec !== item.character.full_spec &&
-            currentSpec !== undefined
+            currentSpec !== undefined && item.character.full_spec !== '{spec} {class}'
           ) {
             const character_Class = item.character.class;
           const character_Race = item.character.race;
@@ -111,18 +111,29 @@ function getSpecStatisticPlayer(
     });
   return SpecsObjects;
 }
-function getBrackets(totalPlayers){
+function getBrackets(totalPlayers,selectedYear,start,end,currentDate){
   let BracketObjects = [];
   totalPlayers.forEach((element) => {
-    element.brackets.forEach((item:{bracket_type:string;won:number;lost:number}) => {
+    element.brackets.forEach((item:{bracket_type:string;won:number;lost:number; gaming_history: {history : {session: {diff: {won:number;lost:number;timestamp:number}}}}}) => {
       let sum = 0;
-      let won = item.won ?? 0;
-      let lost = item.lost ?? 0;
-      sum = won+lost;
+      let won = 0;
+      let lost = 0;
+      Object.values(item.gaming_history.history).forEach((session) => {
+        if (end < new Date(session.diff.timestamp).toString < start && selectedYear === currentDate){
+          won = session.diff.won ?? 0;
+          lost = session.diff.won ?? 0;
+          sum = sum + won + lost
+        }
+        else if (selectedYear !== currentDate && new Date(session.diff.timestamp).getFullYear().toString() === selectedYear){
+          won = session.diff.won ?? 0;
+          lost = session.diff.won ?? 0;
+          sum = sum + won + lost
+        }
+      })
       BracketObjects.push({
         bracket_Name: item.bracket_type,
-        games_count: sum
-      })
+        games_count: sum,
+      });
     })
   });
   let currentName;
@@ -130,18 +141,27 @@ function getBrackets(totalPlayers){
   let sum = 0;
   Object.values(BracketObjects).sort((a,b) => {
     return a.bracket_Name > b.bracket_Name ? 1 : -1;
-  }).forEach((item: {games_count:number;bracket_Name:string}) => {
+  }).forEach((item: {games_count:number;bracket_Name:string},index, array) => {
     if (currentName === item.bracket_Name && currentName !== undefined){
       sum = sum + item.games_count;
     }
-    else if(currentName !== item.bracket_Name && sum !== 0){
+    else if((currentName !== item.bracket_Name) && sum > 0 ){
       newObjectBracket.push({
-        name: item.bracket_Name,
+        name: currentName,
         count: sum
       })
-      sum = 0;
+      sum = item.games_count;
+    }
+    else{
+      sum = item.games_count
     }
     currentName = item.bracket_Name;
+    if (index === array.length -1){
+      newObjectBracket.push({
+        name: currentName,
+        count: sum
+      })
+    }
   })
   return newObjectBracket;
 }
@@ -150,20 +170,38 @@ function RadarChart({player,fullHistory,selectedYear,start,end,currentDate}){
     let StaticArrayImages = []
     let StatisticArrayGames = [];
     const totalPlayers = [player,...player.alts];
-    const chartRef = useRef(null);
       Object.values(getSpecStatisticPlayer(fullHistory,selectedYear,start,end,currentDate)).forEach((item) => {
         StaticArrayImages.push(item.spec)
         StatisticArrayGames.push(item.gamesAtSpec.sum)
         StatisticArrayNames.push(item.name);
       })
+    
     let bracketNamesArray = [];
     let bracketSumArray = [];
-    Object.values(getBrackets(totalPlayers)).sort((a,b) => {
-      return a.count > b.count ? 1 : -1;
-    }).forEach((item) => {
-      bracketNamesArray.push(item.name);
-      bracketSumArray.push(item.count)
-    })
+    let sumOfBracketShuffleArray = 0;
+    let sumOfBracketBLITZArray = 0;
+      Object.values(getBrackets(totalPlayers,selectedYear,start,end,currentDate)).sort((a: {name:string},b: {name:string}) => {
+        return a > b ? 1 : -1;
+      }).forEach((item) => {
+        if ((item.name).split('-')[0] === 'SHUFFLE'){
+          sumOfBracketShuffleArray = sumOfBracketShuffleArray + item.count
+        }
+        if ((item.name).split('-')[0] === 'BLITZ'){
+          sumOfBracketBLITZArray = sumOfBracketBLITZArray + item.count
+        }
+        if (item.name.split('-')[0] !== 'SHUFFLE' && item.name.split('-')[0] !== 'BLITZ'){
+          bracketNamesArray.push(item.name.replace('-',' ').replace('_',' '));
+          bracketSumArray.push(item.count)
+        }
+      })
+    if (sumOfBracketBLITZArray){
+      bracketNamesArray.push('BLITZ');
+      bracketSumArray.push(sumOfBracketBLITZArray*2)
+    }
+    if (sumOfBracketShuffleArray > 0){
+      bracketNamesArray.push('SHUFFLE');
+      bracketSumArray.push(sumOfBracketShuffleArray)
+    }
     const dataBrackets = {
       labels: bracketNamesArray,
       datasets:[
@@ -171,8 +209,8 @@ function RadarChart({player,fullHistory,selectedYear,start,end,currentDate}){
           label: 'Games',
           data: bracketSumArray,
           backgroundColor: 'rgba(63, 106, 163, 0.73)',
-          borderColor: '',
-          borderWidth: 0,
+          borderColor: 'rgba(5, 113, 255, 0.73)',
+          borderWidth: 1,
         },
       ]
     }
@@ -196,8 +234,9 @@ function RadarChart({player,fullHistory,selectedYear,start,end,currentDate}){
             r: {
               min: 0,
                 pointLabels: {
-                  display:false,
+                  display:true,
                     font: {
+                      color: 'white',
                       size: 8, 
                     },
                   },
@@ -249,34 +288,11 @@ function RadarChart({player,fullHistory,selectedYear,start,end,currentDate}){
             }
         },
     }
-    useEffect(() => {
-      const chart = chartRef.current;
-    if (!chart) return;
-
-    chart.options.plugins.tooltip = {
-      afterDraw: (chart) => {
-        const ctx = chart.ctx;
-        const chartArea = chart.chartArea;
-        if (!chartArea) return;
-    
-        chart.scales.r.getLabels().forEach((point, index) => {
-          const label = chart.scales.r.getPointPosition(index, chart.scales.r.min);
-          const img = new Image();
-          img.src = StaticArrayImages[index];
-          img.onload = () => {
-            ctx.drawImage(img, label.x - 15, label.y - 15, 30, 30);
-          };
-        });
-      },
-    };
-
-    chart.update();
-    }, []);
     return (
         <>
         <div className='flex w-[100%]'>
           <div className='w-[550px]'>
-            <Radar ref={chartRef} data={dataSpecs} options={options}></Radar>
+            <Radar data={dataSpecs} options={options}></Radar>
           </div>
           <div className='w-[550px]'>
             <Radar data={dataBrackets} options={optionsBrackets}></Radar>
