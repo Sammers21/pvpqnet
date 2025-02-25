@@ -115,6 +115,7 @@ function getBrackets(totalPlayers,selectedYear,start,end,currentDate){
   let BracketObjects = [];
   totalPlayers.forEach((element) => {
     element.brackets.forEach((item:{bracket_type:string;won:number;lost:number; gaming_history: {history : {session: {diff: {won:number;lost:number;timestamp:number}}}}}) => {
+      console.log(item)
       let sum = 0;
       let won = 0;
       let lost = 0;
@@ -145,7 +146,7 @@ function getBrackets(totalPlayers,selectedYear,start,end,currentDate){
     if (currentName === item.bracket_Name && currentName !== undefined){
       sum = sum + item.games_count;
     }
-    else if((currentName !== item.bracket_Name) && sum > 0 ){
+    else if(currentName !== item.bracket_Name){
       newObjectBracket.push({
         name: currentName,
         count: sum
@@ -183,25 +184,35 @@ function RadarChart({player,fullHistory,selectedYear,start,end,currentDate}){
       Object.values(getBrackets(totalPlayers,selectedYear,start,end,currentDate)).sort((a: {name:string},b: {name:string}) => {
         return a > b ? 1 : -1;
       }).forEach((item) => {
-        if ((item.name).split('-')[0] === 'SHUFFLE'){
+        if (item.name !== undefined && (item.name).split('-')[0] === 'SHUFFLE'){
           sumOfBracketShuffleArray = sumOfBracketShuffleArray + item.count
         }
-        if ((item.name).split('-')[0] === 'BLITZ'){
+        if (item.name !== undefined && (item.name).split('-')[0] === 'BLITZ'){
           sumOfBracketBLITZArray = sumOfBracketBLITZArray + item.count
         }
-        if (item.name.split('-')[0] !== 'SHUFFLE' && item.name.split('-')[0] !== 'BLITZ'){
+        if (item.name !== undefined && item.name.split('-')[0] !== 'SHUFFLE' && item.name.split('-')[0] !== 'BLITZ'){
           bracketNamesArray.push(item.name.replace('-',' ').replace('_',' '));
-          bracketSumArray.push(item.count)
+          bracketSumArray.push(item.name === 'BATTLEGROUNDS' ? item.count*4 : item.count)
         }
       })
-    if (sumOfBracketBLITZArray){
+      if (!bracketNamesArray.includes('ARENA 2v2')){
+        bracketNamesArray.includes('ARENA 2v2')
+        bracketSumArray.push(0)
+      }
+      if (!bracketNamesArray.includes('ARENA 3v3')){
+        bracketNamesArray.includes('ARENA 3v3')
+        bracketSumArray.push(0)
+      }
+      if (!bracketNamesArray.includes('BATTLEGROUNDS')){
+        bracketNamesArray.push('BATTLEGROUNDS')
+        bracketSumArray.push(0)
+      }
       bracketNamesArray.push('BLITZ');
       bracketSumArray.push(sumOfBracketBLITZArray*2)
-    }
-    if (sumOfBracketShuffleArray > 0){
       bracketNamesArray.push('SHUFFLE');
-      bracketSumArray.push(sumOfBracketShuffleArray)
-    }
+      bracketSumArray.push(sumOfBracketShuffleArray*3.6)
+    
+    
     const dataBrackets = {
       labels: bracketNamesArray,
       datasets:[
@@ -210,7 +221,7 @@ function RadarChart({player,fullHistory,selectedYear,start,end,currentDate}){
           data: bracketSumArray,
           backgroundColor: 'rgba(63, 106, 163, 0.73)',
           borderColor: 'rgba(5, 113, 255, 0.73)',
-          borderWidth: 1,
+          borderWidth: 2,
         },
       ]
     }
@@ -251,6 +262,7 @@ function RadarChart({player,fullHistory,selectedYear,start,end,currentDate}){
                 lineWidth: 1, 
               },
               ticks:{
+                
                 display: false
               }
             }
@@ -263,6 +275,24 @@ function RadarChart({player,fullHistory,selectedYear,start,end,currentDate}){
     }
     const optionsBrackets = {
       type: 'radar',
+      plugins: {
+        tooltip: {
+          callbacks:{
+            label: function (tooltipItem) {
+              const label = tooltipItem.label;
+              let value = tooltipItem.raw;
+              if (label === 'BATTLEGROUNDS'){
+                return `Games: ${Math.floor(value/4)}`
+              }
+              else if (label === 'SHUFFLE'){
+                return `Games: ${Math.floor(value/3.6)}`
+              }
+              else if (label === 'BLITZ'){
+                return `Games: ${Math.floor(value/2)}`
+              }
+          }}
+        }
+      },
         scales: {
             r: { 
               min: 0,
