@@ -216,7 +216,7 @@ function RadarChart({player,fullHistory,selectedYear,start,end,currentDate}){
         value: bracketSumArray[index]
       }
     }).sort((a,b) => {
-      return a.name < b.name ? 1 : -1;
+      return a.name > b.name ? 1 : -1;
     }).forEach((item) => {
       FinalBracketArrayNames.push(item.name)
       FinalBracketArrayValues.push(item.value)
