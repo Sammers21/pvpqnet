@@ -255,6 +255,7 @@ const ActivityDiagram = ({player}: IProps) => {
                 </TableBody>
               </Table>
             </TableContainer>
+            <RadarChart player={player} fullHistory = {fullHistory} selectedYear={selectedYear} start={start} end={end} currentDate={currentDate}></RadarChart>
           </div>
         </div>
           <div className="flex lg:flex-col gap-1 lg:ml-[10px] mg:mt-[10px]">
@@ -272,7 +273,6 @@ const ActivityDiagram = ({player}: IProps) => {
             ))}
           </div>
         </div>
-          <RadarChart player={player} fullHistory = {fullHistory} selectedYear={selectedYear} start={start} end={end} currentDate={currentDate}></RadarChart>
       </>
     );
 };

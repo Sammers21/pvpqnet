@@ -235,8 +235,7 @@ function RadarChart({player,fullHistory,selectedYear,start,end,currentDate}){
     FinalBracketArrayValues.forEach((item) => {
       ModifiedArrayValuesBrackets.push(Math.log(item) !== -Infinity ? Math.log(item)/(Math.E/2) : 0)
     })
-    console.log(FinalBracketArrayValues)
-    console.log(ModifiedArrayValuesBrackets)
+    
     const dataBrackets = {
       labels: FinalBracketArrayNames,
       datasets:[
@@ -286,7 +285,6 @@ function RadarChart({player,fullHistory,selectedYear,start,end,currentDate}){
                 lineWidth: 1, 
               },
               ticks:{
-                
                 display: false
               }
             }
@@ -368,11 +366,11 @@ function RadarChart({player,fullHistory,selectedYear,start,end,currentDate}){
     }
     return (
         <>
-        <div className='flex w-[100%] flex-col sm:flex-row'>
-          <div className='w-[550px] hidden'>
+        <div className='mt-[5px] flex w-[100%] flex-col sm:flex-row bg-black border-t-[2px] border-solid border-[#37415180] justify-end'>
+          <div className='w-[300px] hidden'>
             <Radar data={dataSpecs} options={options}></Radar>
           </div>
-          <div className='w-[550px]'>
+          <div className='w-[325px]'>
             <Radar data={dataBrackets} options={optionsBrackets}></Radar>
           </div>
         </div>
