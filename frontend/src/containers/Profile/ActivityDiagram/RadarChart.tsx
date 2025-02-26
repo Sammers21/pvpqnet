@@ -216,7 +216,12 @@ function RadarChart({player,fullHistory,selectedYear,start,end,currentDate}){
         value: bracketSumArray[index]
       }
     }).sort((a,b) => {
-      return a.name > b.name ? 1 : -1;
+      if (a.name === 'ARENA 2v2' && b.name === 'ARENA 3v3'){
+        return a.name < b.name ? 1 : -1;
+      }
+      else{
+        return a.name > b.name ? 1 : -1;
+      }
     }).forEach((item) => {
       FinalBracketArrayNames.push(item.name)
       FinalBracketArrayValues.push(item.value)
