@@ -110,9 +110,11 @@ function getSpecStatisticPlayer(
   return SpecsObjects;
 }
 function getBrackets(totalPlayers,selectedYear,start,end,currentDate){
+  
   let BracketObjects = [];
   totalPlayers.forEach((element) => {
     element.brackets.forEach((item:{bracket_type:string;won:number;lost:number; gaming_history: {history : {session: {diff: {won:number;lost:number;timestamp:number}}}}}) => {
+      
       let sum = 0;
       let won = 0;
       let lost = 0;
@@ -128,6 +130,9 @@ function getBrackets(totalPlayers,selectedYear,start,end,currentDate){
           sum = sum + won + lost
         }
       })
+      if (sum === 0 && (item.lost > 0 || item.won > 0) && selectedYear === currentDate){
+        sum = item.lost + item.won
+      }
       BracketObjects.push({
         bracket_Name: item.bracket_type,
         games_count: sum,
@@ -226,13 +231,18 @@ function RadarChart({player,fullHistory,selectedYear,start,end,currentDate}){
       FinalBracketArrayNames.push(item.name)
       FinalBracketArrayValues.push(item.value)
     })
-    
+    let ModifiedArrayValuesBrackets =[]
+    FinalBracketArrayValues.forEach((item) => {
+      ModifiedArrayValuesBrackets.push(Math.log(item) !== -Infinity ? Math.log(item)/(Math.E/2) : 0)
+    })
+    console.log(FinalBracketArrayValues)
+    console.log(ModifiedArrayValuesBrackets)
     const dataBrackets = {
       labels: FinalBracketArrayNames,
       datasets:[
         {
           label: 'Games',
-          data: FinalBracketArrayValues,
+          data: ModifiedArrayValuesBrackets,
           backgroundColor: 'rgba(63, 106, 163, 0.73)',
           borderColor: 'rgba(5, 113, 255, 0.73)',
           borderWidth: 2,
@@ -297,27 +307,48 @@ function RadarChart({player,fullHistory,selectedYear,start,end,currentDate}){
           callbacks:{
             label: function (tooltipItem) {
               const label = tooltipItem.label;
-              let value = tooltipItem.raw;
+              let value = Math.exp(tooltipItem.raw *(Math.E/2));
               if (label === 'BATTLEGROUNDS'){
-                return `Games: ${Math.floor(value/4)}`
+                return [`Games: ${Math.floor(value/4)}`,
+                  `Estimated time: ${value/4*20 > 100 ? Math.round((value/4*20) /60*100)/100+' hours' : Math.round(value/4*20)+' minutes'}`]
               }
               else if (label === 'SHUFFLE'){
-                return `Games: ${Math.floor(value*1.7)}`
+                return [`Rounds: ${Math.floor(value/1.7)} Lobbies: ${Math.floor(value/1.7/6)}`,
+                  `Estimated time: ${value/1.7*3 > 100 ? Math.round((value/1.7*3)/60*100)/100+' hours' : Math.round(value/1.7*3)-3+' minutes'}`]
               }
               else if (label === 'BLITZ'){
-                return `Games: ${Math.floor(value/2)}`
+                return [`Games: ${Math.floor(value/2)}`,
+                `Estimated time: ${value/2*10 > 100 ? Math.round(value/2 /60*100)/100+' hours' : Math.round(value/2*10)-10+' minutes'}`]
+              }
+              else if (label === 'ARENA 3v3'){
+                return [`Games: ${Math.floor(value)}`,
+                  `Estimated time: ${value*5 > 100 ? Math.round(value*5/60*100)/100 + ' hours' : Math.round(value*5)+' minutes'}`]
+              }
+              else if (label === 'ARENA 2v2'){
+                return [`Games: ${Math.floor(value)}`,
+                  `Estimated time: ${value*5 > 100 ? Math.round(value*5/60*100)/100+' hours' : Math.round(value*5)+' minutes'}`]
               }
           }}
         }
       },
         scales: {
             r: { 
+              
               min: 0,
                 pointLabels: {
                     color: "white",
                     font: {
                       size: 10, 
                     },
+                    callback: function (label,index){
+                      let sum = 0;
+                      let percent = 0;
+                      FinalBracketArrayValues.forEach((item) => {
+                        sum = sum + item
+                      })
+                      percent = FinalBracketArrayValues[index]/sum * 100
+                      return [`${percent < 6 ? String(percent).slice(0,4) : Math.floor(percent)}%`,`${label}`]
+                    }
                   },
               angleLines: {
                 display: true,
