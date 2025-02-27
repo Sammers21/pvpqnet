@@ -164,8 +164,8 @@ const ActivityDiagram = ({player}: IProps) => {
     return (
       <>
       <div className="lg:flex">
-          <div className="lg:flex justify-between py-2 md:px-3 border border-solid border-[#37415180] lg:w-[99%] rounded-lg bg-[#030303e6]">
-            <div className="flex flex-col w-[100%] lg:border-r-[2px] border-[#37415180] border-solid p-[1px]">
+          <div className="lg:flex justify-between py-2 md:px-3 border border-solid border-[#37415180] lg:w-[99%] rounded-lg bg-[#030303e6] p-[10px]">
+            <div className="flex flex-col w-[100%] lg:border-[2px] border-[#37415180] border-solid rounded-lg p-[10px]">
             <span className="text-2xl mr-4">
               {totalGamesPlayed} games played in {selectedYear === currentDate ? 'the last year' : selectedYear}
             </span>
@@ -257,7 +257,7 @@ const ActivityDiagram = ({player}: IProps) => {
             </TableContainer>
             <RadarChart player={player} fullHistory = {fullHistory} selectedYear={selectedYear} start={start} end={end} currentDate={currentDate}></RadarChart>
           </div>
-          <div className="flex lg:flex-col gap-1 lg:ml-[10px] mg:mt-[11px]">
+          <div className="flex lg:flex-col gap-1 lg:ml-[10px] mt-[10px]">
             {years.map((item) => (
               <button
               className={`pl-[12px] block w-[100px] p-[8px] text-[13px] text-left font-sans rounded-[6px] select-none ${

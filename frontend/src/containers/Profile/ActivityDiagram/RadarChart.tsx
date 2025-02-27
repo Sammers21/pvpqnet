@@ -233,7 +233,7 @@ function RadarChart({player,fullHistory,selectedYear,start,end,currentDate}){
     })
     let ModifiedArrayValuesBrackets =[]
     FinalBracketArrayValues.forEach((item) => {
-      ModifiedArrayValuesBrackets.push(Math.log(item) !== -Infinity ? Math.log(item)/(Math.E/2) : 0)
+      ModifiedArrayValuesBrackets.push(Math.log(item) !== (-Infinity || Infinity) ? Math.log(item)/(Math.E/2) : 0)
     })
     
     const dataBrackets = {
@@ -260,18 +260,16 @@ function RadarChart({player,fullHistory,selectedYear,start,end,currentDate}){
           },
         ]
       };
-    
     const options = {
-      responsive: true,
       type: 'radar',
         scales: {
             r: {
               min: 0,
                 pointLabels: {
                   display:true,
+                  color: "white",
                     font: {
-                      color: 'white',
-                      size: 8, 
+                      size: 6, 
                     },
                   },
               angleLines: {
@@ -280,8 +278,8 @@ function RadarChart({player,fullHistory,selectedYear,start,end,currentDate}){
                 lineWidth: 2,
               },
               grid: {
-                circular: true,
-                color: 'rgba(28, 31, 123, 0)',
+                display: true,
+                color: 'rgba(58, 58, 58, 0.98)',
                 lineWidth: 1, 
               },
               ticks:{
@@ -366,8 +364,8 @@ function RadarChart({player,fullHistory,selectedYear,start,end,currentDate}){
     }
     return (
         <>
-        <div className='flex  flex-col sm:flex-row justify-end border-t-[2px] border-solid border-[#37415180]'>
-          <div className='w-[300px] hidden'>
+        <div className='flex flex-col sm:flex-row w-[102.8%] -ml-[10px] justify-end border-t-[2px] mt-[20px] border-solid border-[#37415180] p-[10px]'>
+          <div className='w-[325px]'>
             <Radar data={dataSpecs} options={options}></Radar>
           </div>
           <div className='w-[325px]'>
