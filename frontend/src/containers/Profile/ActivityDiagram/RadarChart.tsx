@@ -312,11 +312,11 @@ function RadarChart({player,fullHistory,selectedYear,start,end,currentDate}){
               }
               else if (label === 'SHUFFLE'){
                 return [`Rounds: ${Math.floor(value/1.7)} Lobbies: ${Math.floor(value/1.7/6)}`,
-                  `Estimated time: ${value/1.7*3 > 100 ? Math.round((value/1.7*3)/60*100)/100+' hours' : Math.round(value/1.7*3)-3+' minutes'}`]
+                  `Estimated time: ${value/1.7*3 > 100 ? Math.round((value/1.7*3)/60*100)/100+' hours' : Math.round(value/1.7*3)+' minutes'}`]
               }
               else if (label === 'BLITZ'){
                 return [`Games: ${Math.floor(value/2)}`,
-                `Estimated time: ${value/2*10 > 100 ? Math.round(value/2 /60*100)/100+' hours' : Math.round(value/2*10)-10+' minutes'}`]
+                `Estimated time: ${value/2*10 > 100 ? Math.round(value/2 /60*100)/100+' hours' : Math.round(value/2*10)+' minutes'}`]
               }
               else if (label === 'ARENA 3v3'){
                 return [`Games: ${Math.floor(value)}`,
@@ -366,7 +366,7 @@ function RadarChart({player,fullHistory,selectedYear,start,end,currentDate}){
     }
     return (
         <>
-        <div className='mt-[5px] flex w-[100%] flex-col sm:flex-row bg-black border-t-[2px] border-solid border-[#37415180] justify-end'>
+        <div className='flex  flex-col sm:flex-row justify-end border-t-[2px] border-solid border-[#37415180]'>
           <div className='w-[300px] hidden'>
             <Radar data={dataSpecs} options={options}></Radar>
           </div>
