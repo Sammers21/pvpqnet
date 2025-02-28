@@ -12,6 +12,8 @@ import {
 } from 'chart.js';
 import { Radar } from 'react-chartjs-2';
 import { getDetaisImages } from '@/utils/table';
+import { CLASS_AND_SPECS } from '@/constants/filterSchema';
+import { callback } from 'node_modules/chart.js/dist/helpers/helpers.core';
 ChartJS.register(
   ArcElement,
   RadialLinearScale,
@@ -173,12 +175,24 @@ function RadarChart({player,fullHistory,selectedYear,start,end,currentDate}){
     let StaticArrayImages = []
     let StatisticArrayGames = [];
     const totalPlayers = [player,...player.alts];
-      Object.values(getSpecStatisticPlayer(fullHistory,selectedYear,start,end,currentDate)).forEach((item) => {
-        StaticArrayImages.push(item.spec)
-        StatisticArrayGames.push(item.gamesAtSpec.sum)
-        StatisticArrayNames.push(item.name);
+      Object.values(getSpecStatisticPlayer(fullHistory,selectedYear,start,end,currentDate)).sort((a,b) => {
+        return a.gamesAtSpec.sum < b.gamesAtSpec.sum ? 1 : -1;
+      }).forEach((item,index) => {
+        if (index < 5 || index === item.length){
+          StaticArrayImages.push(item.spec)
+          StatisticArrayGames.push(item.gamesAtSpec.sum)
+          StatisticArrayNames.push(item.name);
+        }
       })
-    
+    if (StatisticArrayNames.length < 3){
+      const SpecsOfPlayerClass = CLASS_AND_SPECS[player.class]
+      SpecsOfPlayerClass.forEach(element => {
+        if (!StatisticArrayNames.includes(element + ' ' + player.class)){
+          StatisticArrayNames.push(element + ' ' + player.class)
+          StatisticArrayGames.push(0)
+        }
+      });
+    }
     let bracketNamesArray = [];
     let bracketSumArray = [];
     let sumOfBracketShuffleArray = 0;
@@ -235,7 +249,6 @@ function RadarChart({player,fullHistory,selectedYear,start,end,currentDate}){
     FinalBracketArrayValues.forEach((item) => {
       ModifiedArrayValuesBrackets.push(Math.log(item) !== (-Infinity || Infinity) ? Math.log(item)/(Math.E/2) : 0)
     })
-    
     const dataBrackets = {
       labels: FinalBracketArrayNames,
       datasets:[
@@ -254,14 +267,20 @@ function RadarChart({player,fullHistory,selectedYear,start,end,currentDate}){
           {
             label: 'Games',
             data: StatisticArrayGames,
-            backgroundColor: 'rgba(75, 192, 192, 0.2)',
-            pointBackgroundColor: 'rgb(83, 83, 83)',
+            backgroundColor: 'rgba(63, 106, 163, 0.73)',
+            borderColor: 'rgba(5, 113, 255, 0.73)',
+            borderWidth: 2,
             fill: true,
           },
         ]
       };
     const options = {
       type: 'radar',
+      plugins:{   
+        legend: {
+          display: false
+        },
+      },
         scales: {
             r: {
               min: 0,
@@ -269,9 +288,12 @@ function RadarChart({player,fullHistory,selectedYear,start,end,currentDate}){
                   display:true,
                   color: "white",
                     font: {
-                      size: 6, 
+                      size: 10, 
                     },
-                  },
+                    callback: function(label,index){
+                      return `${label}`
+                    }
+                },
               angleLines: {
                 display: true,
                 color: 'rgb(47, 70, 100)',
@@ -287,11 +309,7 @@ function RadarChart({player,fullHistory,selectedYear,start,end,currentDate}){
               }
             }
         },
-        plugins: {
-          tooltip: {
-            enabled: true
-          }
-        }
+       
     }
     const optionsBrackets = {
       type: 'radar',
@@ -364,8 +382,8 @@ function RadarChart({player,fullHistory,selectedYear,start,end,currentDate}){
     }
     return (
         <>
-        <div className='flex flex-col sm:flex-row w-[102.8%] -ml-[10px] justify-end border-t-[2px] mt-[20px] border-solid border-[#37415180] p-[10px]'>
-          <div className='w-[325px]'>
+        <div className='flex flex-col sm:flex-row w-[102.8%] -ml-[10px]  border-t-[2px] mt-[20px] border-solid border-[#37415180] p-[10px]'>
+          <div className='w-[350px]'>
             <Radar data={dataSpecs} options={options}></Radar>
           </div>
           <div className='w-[325px]'>
