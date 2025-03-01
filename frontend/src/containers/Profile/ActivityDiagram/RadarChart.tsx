@@ -184,15 +184,19 @@ function RadarChart({player,fullHistory,selectedYear,start,end,currentDate}){
           StatisticArrayNames.push(item.name);
         }
       })
-    if (StatisticArrayNames.length < 3){
-      const SpecsOfPlayerClass = CLASS_AND_SPECS[player.class]
-      SpecsOfPlayerClass.forEach(element => {
-        if (!StatisticArrayNames.includes(element + ' ' + player.class)){
-          StatisticArrayNames.push(element + ' ' + player.class)
-          StatisticArrayGames.push(0)
-        }
-      });
-    }
+      let ModifiedArraySpecsValues = [];
+      if (StatisticArrayNames.length < 3){
+        const SpecsOfPlayerClass = CLASS_AND_SPECS[player.class]
+        SpecsOfPlayerClass.forEach(element => {
+          if (!StatisticArrayNames.includes(element + ' ' + player.class)){
+            StatisticArrayNames.push(element + ' ' + player.class)
+            StatisticArrayGames.push(0)
+          }
+        });
+      }
+      StatisticArrayGames.forEach((item) => {
+          ModifiedArraySpecsValues.push((Math.log(item)/(Math.E/2)))
+        })
     let bracketNamesArray = [];
     let bracketSumArray = [];
     let sumOfBracketShuffleArray = 0;
@@ -266,7 +270,7 @@ function RadarChart({player,fullHistory,selectedYear,start,end,currentDate}){
         datasets: [
           {
             label: 'Games',
-            data: StatisticArrayGames,
+            data: ModifiedArraySpecsValues,
             backgroundColor: 'rgba(63, 106, 163, 0.73)',
             borderColor: 'rgba(5, 113, 255, 0.73)',
             borderWidth: 2,
@@ -280,6 +284,16 @@ function RadarChart({player,fullHistory,selectedYear,start,end,currentDate}){
         legend: {
           display: false
         },
+        tooltip: {
+          callbacks: {
+            label: function(tooltipItem){
+              const label = tooltipItem.label;
+              const value = tooltipItem.raw;
+              return `Games: ${Math.round(Math.exp(value*(Math.E/2)))}`
+            }
+          }
+        },
+        
       },
         scales: {
             r: {
@@ -291,7 +305,13 @@ function RadarChart({player,fullHistory,selectedYear,start,end,currentDate}){
                       size: 10, 
                     },
                     callback: function(label,index){
-                      return `${label}`
+                      let sum = 0;
+                      const img = new Image()
+                      img.src = StaticArrayImages[index]
+                      StatisticArrayGames.forEach((item) => {
+                        sum = sum + item
+                      })
+                      return [`${img}`,`${Math.round(((StatisticArrayGames[index]/sum)*100))}%`]
                     }
                 },
               angleLines: {
@@ -332,7 +352,7 @@ function RadarChart({player,fullHistory,selectedYear,start,end,currentDate}){
               }
               else if (label === 'BLITZ'){
                 return [`Games: ${Math.floor(value/2)}`,
-                `Estimated time: ${value/2*10 > 100 ? Math.round(value/2 /60*100)/100+' hours' : Math.round(value/2*10)+' minutes'}`]
+                `Estimated time: ${value/2*10 > 100 ? Math.round(value/2 /60*100)/10+' hours' : Math.round(value/2*10)+' minutes'}`]
               }
               else if (label === 'ARENA 3v3'){
                 return [`Games: ${Math.floor(value)}`,
