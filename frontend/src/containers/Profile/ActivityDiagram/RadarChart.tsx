@@ -195,7 +195,7 @@ function RadarChart({player,fullHistory,selectedYear,start,end,currentDate}){
         });
       }
       StatisticArrayGames.forEach((item) => {
-          ModifiedArraySpecsValues.push((Math.log(item)/(Math.E/2)))
+          ModifiedArraySpecsValues.push((Math.log(item)/(Math.E/2) !== (-Infinity || Infinity) ? Math.log(item)/(Math.E/2):0))
         })
     let bracketNamesArray = [];
     let bracketSumArray = [];
@@ -302,16 +302,17 @@ function RadarChart({player,fullHistory,selectedYear,start,end,currentDate}){
                   display:true,
                   color: "white",
                     font: {
-                      size: 10, 
+                      size: 8, 
                     },
                     callback: function(label,index){
                       let sum = 0;
-                      const img = new Image()
+                      const img = new Image();
+                      let labelArr = label.split(' ')
                       img.src = StaticArrayImages[index]
                       StatisticArrayGames.forEach((item) => {
                         sum = sum + item
                       })
-                      return [`${img}`,`${Math.round(((StatisticArrayGames[index]/sum)*100))}%`]
+                      return [`${Math.round(((StatisticArrayGames[index]/sum)*100))}%`,`${labelArr[0]}`,`${labelArr[1]}`]
                     }
                 },
               angleLines: {
@@ -402,11 +403,12 @@ function RadarChart({player,fullHistory,selectedYear,start,end,currentDate}){
     }
     return (
         <>
-        <div className='flex flex-col sm:flex-row w-[102.8%] -ml-[10px]  border-t-[2px] mt-[20px] border-solid border-[#37415180] p-[10px]'>
-          <div className='w-[350px]'>
+        <div className='flex flex-col sm:flex-row w-[102.8%] -ml-[10px] border-t-[2px] mt-[20px] border-solid border-[#37415180] p-[10px] justify-around'>
+          <div className='flex-none w-[300px] h-[300px]'>
             <Radar data={dataSpecs} options={options}></Radar>
           </div>
-          <div className='w-[325px]'>
+          <div className='border-r-[2px] border-solid border-[#37415180]'></div>
+          <div className='flex-none w-[300px] h-[300px]'>
             <Radar data={dataBrackets} options={optionsBrackets}></Radar>
           </div>
         </div>
