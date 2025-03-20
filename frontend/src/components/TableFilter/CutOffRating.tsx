@@ -1,12 +1,10 @@
-import {getRatingColor, getSeasonRankImageFromRating} from "@/utils/table";
+import {getRatingColor} from "@/utils/table";
 import {useSearchParams} from "react-router-dom";
 import {getFromSearchParams} from "../DataTable";
 import {useEffect, useState} from "react";
 import {
-  SEARCH_PARAM_TO_FULL_SPEC,
   SEARCH_PARAM_TO_SPEC,
 } from "@/constants/filterSchema";
-import {title} from "process";
 
 interface IProps {
   bracket: string;
@@ -31,50 +29,54 @@ const CutOffText = ({bracket, stats}: IProps) => {
   useEffect(() => {
     setSelectedSpecs(getFromSearchParams(searchParams, "specs"));
   }, [searchParams]);
-
-  const ssnName = "Forged";
   if (bracket === "rbg" || bracket === "3v3") {
     const cutOffRating = rewards?.[ratingRewardMap[bracket]];
     const spotsWithNoAlts = spotWithNoAlts?.[ratingRewardMap[bracket]];
     const predictedCutoff = predictions?.[`${ratingRewardMap[bracket]}`];
-    const title =
-      bracket === "3v3" ? `${ssnName} Gladiator` : `Hero: ${ssnName}`;
-    var text;
-    if (predictedCutoff === undefined || predictedCutoff === cutOffRating) {
-      text = `${title} - Rating: ${cutOffRating}. Spots: ${spotsWithNoAlts}`;
-    } else {
-      text = `${title} - Rating by BlizzardAPI: ${cutOffRating} / Predicted: ${predictedCutoff}. Spots: ${spotsWithNoAlts}`;
-    }
     return (
-      <span
-        className="text-xs sm:text-lg font-light"
-        style={{color: rankOneTitleColor}}
-      >
-        {text}
-      </span>
+      <>
+        <span
+          className="text-xs sm:text-lg font-light gap-[5px] flex"
+          >
+          <div className="p-[5px] border border-solid border-[#3f6ba3] flex justify-between rounded bg-gray-900 w-[200px]">
+            3x3 R1: <span className="text-[20px]" style={{color: rankOneTitleColor}}>{cutOffRating}</span>
+          </div>
+          <div className="p-[5px] border border-solid border-[#3f6ba3] flex justify-between rounded bg-gray-900 w-[200px]">
+            Predicted cutoff: <span className="text-[20px]" style={{color: rankOneTitleColor}}>{predictedCutoff}</span>
+          </div>
+          <div className="p-[5px] border border-solid border-[#3f6ba3] flex justify-between rounded bg-gray-900 w-[200px]">
+            Spots:
+            <span className="text-[20px]">
+              {spotsWithNoAlts}</span>
+          </div>
+        </span>
+      </>
     );
-  } else if (bracket === "shuffle" && selectedSpecs.length == 1) {
-    const specName = SEARCH_PARAM_TO_FULL_SPEC[selectedSpecs[0]];
-    const key = `SHUFFLE/${SEARCH_PARAM_TO_SPEC[selectedSpecs[0]]}`;
+  } else if ((bracket === "shuffle" || bracket === 'blitz') && selectedSpecs.length === 1) {
+    const key = `${bracket === 'shuffle' ?'SHUFFLE' : 'BLITZ'}/${SEARCH_PARAM_TO_SPEC[selectedSpecs[0]]}`;
     const cutOffRating = rewards?.[key];
     const spotsWithNoAlts = spotWithNoAlts?.[key];
     const predictedCutoff = predictions?.[key];
-    const title = `${ssnName} Legend`;
-    var text;
-    if (predictedCutoff === undefined || predictedCutoff === cutOffRating) {
-      text = `${title} for ${specName} - Rating: ${cutOffRating}. Spots: ${spotsWithNoAlts}`;
-    } else {
-      text = `${title} for ${specName} - Rating by BlizzardAPI: ${cutOffRating} / Predicted: ${predictedCutoff}. Spots: ${spotsWithNoAlts}`;
-    }
     return (
-      <span
-        className="text-xs sm:text-lg font-light"
-        style={{color: rankOneTitleColor}}
-      >
-        {text}
-      </span>
+      <>
+        <span
+          className="text-xs sm:text-lg font-light gap-[5px] flex"
+          >
+          <div className="p-[5px] border border-solid border-[#3f6ba3] flex justify-between rounded bg-gray-900 w-[200px]">
+             {bracket === 'shuffle' ? 'R1 Legend': "R1 Blitz"}: <span className="text-[20px]" style={{color: rankOneTitleColor}}>{cutOffRating}</span>
+          </div>
+          <div className="p-[5px] border border-solid border-[#3f6ba3] flex justify-between rounded bg-gray-900 w-[200px]">
+            Predicted cutoff: <span className="text-[20px]" style={{color: rankOneTitleColor}}>{predictedCutoff}</span>
+          </div>
+          <div className="p-[5px] border border-solid border-[#3f6ba3] flex justify-between rounded bg-gray-900 w-[200px]">
+            Spots:
+            <span className="text-[20px]">
+              {spotsWithNoAlts}</span>
+          </div>
+        </span>
+      </>
     );
-  } else if ((bracket === "shuffle" || bracket === "blitz") && selectedSpecs.length == 0) {
+  } else if ((bracket === "shuffle" || bracket === "blitz") && selectedSpecs.length === 0) {
     return (
       <span
         className="text-xs sm:text-lg font-light"
@@ -104,14 +106,9 @@ const CutOffRating = ({bracket, stats}: IProps) => {
   ) {
     return <div></div>;
   }
-  // return <div></div>;
   return (
     <div className="flex items-center mr-2">
-      <img
-        className="w-7 h-7 mr-2"
-        src={getSeasonRankImageFromRating(0, true)}
-        alt="Season Rank"
-      />
+      
       <CutOffText stats={stats} bracket={bracket}/>
     </div>
   );
