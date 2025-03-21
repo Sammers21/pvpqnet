@@ -1,10 +1,14 @@
+
 import {getRatingColor} from "@/utils/table";
 import {useSearchParams} from "react-router-dom";
 import {getFromSearchParams} from "../DataTable";
 import {useEffect, useState} from "react";
+
 import {
   SEARCH_PARAM_TO_SPEC,
 } from "@/constants/filterSchema";
+import { title } from "process";
+import { toUpper } from "lodash";
 
 interface IProps {
   bracket: string;
@@ -16,7 +20,7 @@ const ratingRewardMap = {
   rbg: "BATTLEGROUNDS/alliance",
 };
 
-const CutOffText = ({bracket, stats}: IProps) => {
+const CutOffText = ({ bracket, stats }: IProps) => {
   const [searchParams] = useSearchParams();
   const [selectedSpecs, setSelectedSpecs] = useState(
     getFromSearchParams(searchParams, "specs")
@@ -34,6 +38,7 @@ const CutOffText = ({bracket, stats}: IProps) => {
     const spotsWithNoAlts = spotWithNoAlts?.[ratingRewardMap[bracket]];
     const predictedCutoff = predictions?.[`${ratingRewardMap[bracket]}`];
     return (
+
       <>
         <span
           className="text-xs sm:text-lg font-light gap-[5px] flex"
@@ -77,19 +82,23 @@ const CutOffText = ({bracket, stats}: IProps) => {
       </>
     );
   } else if ((bracket === "shuffle" || bracket === "blitz") && selectedSpecs.length === 0) {
+
     return (
       <span
         className="text-xs sm:text-lg font-light"
-        style={{color: rankOneTitleColor}}
+        style={{ color: rankOneTitleColor }}
       >
         Select the spec filter to see the cutoff rating
       </span>
     );
-  } else if ((bracket === "shuffle" || bracket === "blitz") && selectedSpecs.length > 1) {
+  } else if (
+    (bracket === "shuffle" || bracket === "blitz") &&
+    selectedSpecs.length > 1
+  ) {
     return (
       <span
         className="text-xs sm:text-lg font-light"
-        style={{color: rankOneTitleColor}}
+        style={{ color: rankOneTitleColor }}
       >
         Select only one spec to see the cutoff rating
       </span>
@@ -99,7 +108,7 @@ const CutOffText = ({bracket, stats}: IProps) => {
   }
 };
 
-const CutOffRating = ({bracket, stats}: IProps) => {
+const CutOffRating = ({ bracket, stats }: IProps) => {
   if (
     !stats?.cutoffs?.rewards?.ARENA_3v3 ||
     !["shuffle", "rbg", "3v3", "blitz"].includes(bracket)
@@ -108,8 +117,8 @@ const CutOffRating = ({bracket, stats}: IProps) => {
   }
   return (
     <div className="flex items-center mr-2">
-      
       <CutOffText stats={stats} bracket={bracket}/>
+
     </div>
   );
 };
