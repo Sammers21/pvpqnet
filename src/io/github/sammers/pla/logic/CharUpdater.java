@@ -63,7 +63,7 @@ public class CharUpdater {
             List<Triplet<String, String, Long>> newChars = new ArrayList<>();
             // nickName, realm, lastUpdate, rating
             Map<Pair<String, String>, Pair<Long, Long>> existing = new HashMap<>();
-            for (String bracket : List.of(THREE_V_THREE, TWO_V_TWO, RBG, SHUFFLE)) {
+            for (String bracket : BRACKETS) {
                 Snapshot snapshot = refs.refByBracket(bracket, region).get();
                 if (snapshot == null) {
                     log.warn("No data for bracket {}-{}", region, bracket);

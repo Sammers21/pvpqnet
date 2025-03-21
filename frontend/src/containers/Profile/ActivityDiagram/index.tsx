@@ -11,6 +11,7 @@ import {
 } from "@mui/material";
 import { ActivityBox } from "./ActivityBox";
 import { useState, useEffect } from "react";
+
 import RadarChart from "./RadarChart";
 interface IProps {
   player: Player;
@@ -258,6 +259,7 @@ const ActivityDiagram = ({player}: IProps) => {
             <RadarChart player={player} fullHistory = {fullHistory} selectedYear={selectedYear} start={start} end={end} currentDate={currentDate}></RadarChart>
           </div>
           <div className="flex lg:flex-col gap-1 lg:ml-[10px] mt-[10px]">
+
             {years.map((item) => (
               <button
               className={`pl-[12px] block w-[100px] p-[8px] text-[13px] text-left font-sans rounded-[6px] select-none ${
