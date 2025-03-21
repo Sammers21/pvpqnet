@@ -10,7 +10,7 @@ import {
   plugins,
 } from "chart.js";
 import { Radar } from "react-chartjs-2";
-import { getDetaisImages } from "@/utils/table";
+import { getDetaisImages, getSpecIcon } from "@/utils/table";
 import { CLASS_AND_SPECS } from "@/constants/filterSchema";
 import { useEffect } from "react";
 ChartJS.register(
@@ -82,7 +82,7 @@ function getSpecStatisticPlayer(
         sum = sum + won + lost;
         currentSpec = item.character.full_spec;
       } else if (selectedYear === currentDate && item.character !== undefined) {
-        if (start < new Date(item.diff.timestamp) < end) {
+        if (start <= new Date(item.diff.timestamp) <= end) {
           if (
             currentSpec !== item.character.full_spec &&
             currentSpec !== undefined &&
@@ -223,6 +223,8 @@ function RadarChart({
     SpecsOfPlayerClass.forEach((element) => {
       if (!StatisticArrayNames.includes(element + " " + player.class)) {
         StatisticArrayNames.push(element + " " + player.class);
+        console.log(element + ' ' +player.class)
+        StaticArrayImages.push(getSpecIcon(element + ' ' +player.class))
         StatisticArrayGames.push(0);
       }
     });
