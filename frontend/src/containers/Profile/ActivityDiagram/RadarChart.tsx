@@ -223,7 +223,6 @@ function RadarChart({
     SpecsOfPlayerClass.forEach((element) => {
       if (!StatisticArrayNames.includes(element + " " + player.class)) {
         StatisticArrayNames.push(element + " " + player.class);
-        console.log(element + ' ' +player.class)
         StaticArrayImages.push(getSpecIcon(element + ' ' +player.class))
         StatisticArrayGames.push(0);
       }
