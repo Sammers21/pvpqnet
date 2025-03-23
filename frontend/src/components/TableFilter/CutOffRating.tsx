@@ -1,12 +1,13 @@
-import {getRatingColor, getSeasonRankImageFromRating} from "@/utils/table";
-import {useSearchParams} from "react-router-dom";
-import {getFromSearchParams} from "../DataTable";
-import {useEffect, useState} from "react";
+import { getRatingColor, getSeasonRankImageFromRating } from "@/utils/table";
+import { useSearchParams } from "react-router-dom";
+import { getFromSearchParams } from "../DataTable";
+import { useEffect, useState } from "react";
 import {
   SEARCH_PARAM_TO_FULL_SPEC,
   SEARCH_PARAM_TO_SPEC,
 } from "@/constants/filterSchema";
-import {title} from "process";
+import { title } from "process";
+import { toUpper } from "lodash";
 
 interface IProps {
   bracket: string;
@@ -18,7 +19,7 @@ const ratingRewardMap = {
   rbg: "BATTLEGROUNDS/alliance",
 };
 
-const CutOffText = ({bracket, stats}: IProps) => {
+const CutOffText = ({ bracket, stats }: IProps) => {
   const [searchParams] = useSearchParams();
   const [selectedSpecs, setSelectedSpecs] = useState(
     getFromSearchParams(searchParams, "specs")
@@ -32,7 +33,7 @@ const CutOffText = ({bracket, stats}: IProps) => {
     setSelectedSpecs(getFromSearchParams(searchParams, "specs"));
   }, [searchParams]);
 
-  const ssnName = "Forged";
+  const ssnName = "Prized";
   if (bracket === "rbg" || bracket === "3v3") {
     const cutOffRating = rewards?.[ratingRewardMap[bracket]];
     const spotsWithNoAlts = spotWithNoAlts?.[ratingRewardMap[bracket]];
@@ -48,46 +49,61 @@ const CutOffText = ({bracket, stats}: IProps) => {
     return (
       <span
         className="text-xs sm:text-lg font-light"
-        style={{color: rankOneTitleColor}}
+        style={{ color: rankOneTitleColor }}
       >
         {text}
       </span>
     );
-  } else if (bracket === "shuffle" && selectedSpecs.length == 1) {
+  } else if (
+    (bracket === "shuffle" || bracket === "blitz") &&
+    selectedSpecs.length === 1
+  ) {
     const specName = SEARCH_PARAM_TO_FULL_SPEC[selectedSpecs[0]];
-    const key = `SHUFFLE/${SEARCH_PARAM_TO_SPEC[selectedSpecs[0]]}`;
+    const key = `${toUpper(bracket)}/${SEARCH_PARAM_TO_SPEC[selectedSpecs[0]]}`;
     const cutOffRating = rewards?.[key];
     const spotsWithNoAlts = spotWithNoAlts?.[key];
     const predictedCutoff = predictions?.[key];
-    const title = `${ssnName} Legend`;
+    const title =
+      bracket === "shuffle"
+        ? `${ssnName} Legend`
+        : `${ssnName} Marshal/Warlord`;
     var text;
     if (predictedCutoff === undefined || predictedCutoff === cutOffRating) {
-      text = `${title} for ${specName} - Rating: ${cutOffRating}. Spots: ${spotsWithNoAlts}`;
+      text = `${title} for ${specName} - Rating: ${cutOffRating}`;
     } else {
-      text = `${title} for ${specName} - Rating by BlizzardAPI: ${cutOffRating} / Predicted: ${predictedCutoff}. Spots: ${spotsWithNoAlts}`;
+      text = `${title} for ${specName} - Rating by BlizzardAPI: ${cutOffRating} / Predicted: ${predictedCutoff}`;
+    }
+    if (spotsWithNoAlts !== undefined) {
+      text += `. Spots: ${spotsWithNoAlts}`;
     }
     return (
       <span
         className="text-xs sm:text-lg font-light"
-        style={{color: rankOneTitleColor}}
+        style={{ color: rankOneTitleColor }}
       >
         {text}
       </span>
     );
-  } else if ((bracket === "shuffle" || bracket === "blitz") && selectedSpecs.length == 0) {
+  } else if (
+    (bracket === "shuffle" || bracket === "blitz") &&
+    selectedSpecs.length === 0
+  ) {
     return (
       <span
         className="text-xs sm:text-lg font-light"
-        style={{color: rankOneTitleColor}}
+        style={{ color: rankOneTitleColor }}
       >
         Select the spec filter to see the cutoff rating
       </span>
     );
-  } else if ((bracket === "shuffle" || bracket === "blitz") && selectedSpecs.length > 1) {
+  } else if (
+    (bracket === "shuffle" || bracket === "blitz") &&
+    selectedSpecs.length > 1
+  ) {
     return (
       <span
         className="text-xs sm:text-lg font-light"
-        style={{color: rankOneTitleColor}}
+        style={{ color: rankOneTitleColor }}
       >
         Select only one spec to see the cutoff rating
       </span>
@@ -97,7 +113,7 @@ const CutOffText = ({bracket, stats}: IProps) => {
   }
 };
 
-const CutOffRating = ({bracket, stats}: IProps) => {
+const CutOffRating = ({ bracket, stats }: IProps) => {
   if (
     !stats?.cutoffs?.rewards?.ARENA_3v3 ||
     !["shuffle", "rbg", "3v3", "blitz"].includes(bracket)
@@ -112,7 +128,7 @@ const CutOffRating = ({bracket, stats}: IProps) => {
         src={getSeasonRankImageFromRating(0, true)}
         alt="Season Rank"
       />
-      <CutOffText stats={stats} bracket={bracket}/>
+      <CutOffText stats={stats} bracket={bracket} />
     </div>
   );
 };
