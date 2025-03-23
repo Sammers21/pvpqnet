@@ -223,7 +223,6 @@ function RadarChart({
     SpecsOfPlayerClass.forEach((element) => {
       if (!StatisticArrayNames.includes(element + " " + player.class)) {
         StatisticArrayNames.push(element + " " + player.class);
-        console.log(element + ' ' +player.class)
         StaticArrayImages.push(getSpecIcon(element + ' ' +player.class))
         StatisticArrayGames.push(0);
       }
@@ -231,8 +230,8 @@ function RadarChart({
   }
   StatisticArrayGames.forEach((item) => {
     ModifiedArraySpecsValues.push(
-      Math.log(item) / (Math.E / 2) !== (-Infinity || Infinity)
-        ? Math.log(item) / (Math.E / 2)
+      Math.log(item) / Math.log(Math.E / 2) !== (-Infinity || Infinity)
+        ? Math.log(item) / Math.log(Math.E / 2)
         : 0
     );
   });
@@ -300,11 +299,12 @@ function RadarChart({
       FinalBracketArrayNames.push(item.name);
       FinalBracketArrayValues.push(item.value);
     });
+  
   let ModifiedArrayValuesBrackets = [];
   FinalBracketArrayValues.forEach((item) => {
     ModifiedArrayValuesBrackets.push(
       Math.log(item) !== (-Infinity || Infinity)
-        ? Math.log(item) / (Math.E / 2)
+        ? Math.log(item) / Math.log(Math.E / 2)
         : 0
     );
   });
@@ -319,15 +319,15 @@ function RadarChart({
       chart.data.labels.forEach((label, index) => {
         const angle = Math.PI / 2 - (2 * Math.PI * index) / labelCount;
         const xLabel =
-          xCenter + Math.cos(angle) * (chart.scales.r.drawingArea + 10);
+          xCenter + Math.cos(angle) * (chart.scales.r.drawingArea + 5);
         const yLabel =
           yCenter - Math.sin(angle) * (chart.scales.r.drawingArea + 10);
         const img = new Image();
         img.src = StaticArrayImages[index];
         ctx.drawImage(
           img,
-          xLabel - 10,
-          index >= 2 && index < 4 ? yLabel - 30 : yLabel + 10,
+          index === 0? xLabel - 35 : (index < 5 && index >=2 ? xLabel-10: xLabel),
+          index >= 2 && index < 4 ? yLabel - 30 : (index == 0 ? yLabel - 10 : yLabel+5),
           20,
           20
         );
@@ -372,9 +372,8 @@ function RadarChart({
       tooltip: {
         callbacks: {
           label: function (tooltipItem) {
-            const label = tooltipItem.label;
-            const value = tooltipItem.raw;
-            return `Games: ${Math.round(Math.exp(value * (Math.E / 2)))}`;
+            
+            return `Games: ${StatisticArrayGames[tooltipItem.dataIndex]}`;
           },
         },
       },
@@ -423,14 +422,15 @@ function RadarChart({
         display: false,
       },
       tooltip: {
+        displayColors: false,
         callbacks: {
-          label: function (tooltipItem) {
+          label: (tooltipItem) => {
             const label = tooltipItem.label;
-            let value = Math.exp(tooltipItem.raw * (Math.E / 2));
+            let value = FinalBracketArrayValues[tooltipItem.dataIndex];
             if (label === "BATTLEGROUNDS") {
               return [
-                `Games: ${Math.floor(value / 4)}`,
-                `Estimated time: ${
+                `🎯Games: ${Math.floor(value / 4)}`,
+                `⏳Estimated time: ${
                   (value / 4) * 20 > 100
                     ? Math.round((((value / 4) * 20) / 60) * 100) / 100 +
                       " hours"
@@ -439,10 +439,10 @@ function RadarChart({
               ];
             } else if (label === "SHUFFLE") {
               return [
-                `Rounds: ${Math.floor(value / 1.7)} Lobbies: ${Math.floor(
+                `🎯Rounds: ${Math.floor(value / 1.7)} Lobbies: ${Math.floor(
                   value / 1.7 / 6
                 )}`,
-                `Estimated time: ${
+                `⏳Estimated time: ${
                   (value / 1.7) * 3 > 100
                     ? Math.round((((value / 1.7) * 3) / 60) * 100) / 100 +
                       " hours"
@@ -451,8 +451,8 @@ function RadarChart({
               ];
             } else if (label === "BLITZ") {
               return [
-                `Games: ${Math.floor(value / 2)}`,
-                `Estimated time: ${
+                `🎯Games: ${Math.floor(value / 2)}`,
+                `⏳Estimated time: ${
                   (value / 2) * 10 > 100
                     ? Math.round((value / 2 / 60) * 100) / 10 + " hours"
                     : Math.round((value / 2) * 10) + " minutes"
@@ -460,8 +460,8 @@ function RadarChart({
               ];
             } else if (label === "ARENA 3v3") {
               return [
-                `Games: ${Math.floor(value)}`,
-                `Estimated time: ${
+                `🎯Games: ${Math.floor(value)}`,
+                `⏳Estimated time: ${
                   value * 5 > 100
                     ? Math.round(((value * 5) / 60) * 100) / 100 + " hours"
                     : Math.round(value * 5) + " minutes"
@@ -469,8 +469,8 @@ function RadarChart({
               ];
             } else if (label === "ARENA 2v2") {
               return [
-                `Games: ${Math.floor(value)}`,
-                `Estimated time: ${
+                `🎯Games: ${Math.floor(value)}`,
+                `⏳Estimated time: ${
                   value * 5 > 100
                     ? Math.round(((value * 5) / 60) * 100) / 100 + " hours"
                     : Math.round(value * 5) + " minutes"
@@ -523,11 +523,11 @@ function RadarChart({
   return (
     <>
       <div className="flex flex-col sm:flex-row w-[102.8%] -ml-[10px] border-t-[2px] mt-[20px] border-solid border-[#37415180] p-[10px] justify-around">
-        <div className="flex-none w-[300px] h-[300px]">
+        <div className="flex-none w-[300px] h-[300px] border border-solid border-[#37415180] p-[5px] rounded ">
           <Radar data={dataSpecs} options={options}></Radar>
         </div>
         <div className="border-r-[2px] border-solid border-[#37415180]"></div>
-        <div className="flex-none w-[300px] h-[300px]">
+        <div className="flex-none w-[300px] h-[300px] border border-solid border-[#37415180] p-[5px] rounded">
           <Radar data={dataBrackets} options={optionsBrackets}></Radar>
         </div>
       </div>
