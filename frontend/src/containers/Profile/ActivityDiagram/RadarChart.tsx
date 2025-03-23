@@ -396,7 +396,7 @@ function RadarChart({
               sum = sum + item;
             });
             let percentValue = Math.round((StatisticArrayGames[index] / sum) * 100) ?? 0
-            return [`${percentValue !== 0 && !Number.isNaN(percentValue) ? percentValue+'%' : ''}`];
+            return [`${percentValue !== 0 && !Number.isNaN(percentValue) ? percentValue+'%' : '0%'}`];
           },
         },
         angleLines: {
