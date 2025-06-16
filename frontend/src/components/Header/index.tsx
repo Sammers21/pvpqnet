@@ -101,27 +101,11 @@ const Header = () => {
     navigateToPage({ activity: "ladder", bracket: "shuffle-multiclass" });
   }
 
-  function redirectToSkillCapped() {
-    window.open(
-      "https://www.skill-capped.com/wow/pricing/plans#pvpq",
-      "_blank"
-    );
-  }
-
-  function redirectToPvpAssistant() {
-    window.open(
-      "https://www.curseforge.com/wow/addons/pvpassistant",
-      "_blank"
-    );
-  }
-
   const menuItems = [
     { label: "Activity", onClick: redirectToActivity },
     { label: "Leaderboards", onClick: redirectToLadder },
     { label: "Multiclassers", onClick: redirectToMulticlassers },
     { label: "Meta", onClick: redirectToMeta },
-    // { label: "Skill-Сapped", onClick: redirectToSkillCapped },
-    // { label: "PvP-Assistant", onClick: redirectToPvpAssistant },
   ];
   
   const isMobile = breakpoint === "mobile" || breakpoint === "tablet"
