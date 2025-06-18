@@ -52,12 +52,19 @@ function columns(region): GridColDef[] {
           keys.sort((a, b) => {
             return params.row.specs[b].score - params.row.specs[a].score
           });
-          const text = `Score = ` + keys.map((key) => {
-            return params.row.specs[key].score + " (" + key + ")";
-          }).join(" + ");
+          
           return (
             <div>
-              <Typography>{text}</Typography>
+              <Typography className="flex p-[7px] rounded-[5px] bg-gray-900 border border-solid border-[#3f6ba3] gap-[5px]">
+                {keys.map((item,index) => (
+                <>
+                <div className="flex flex-col justify-center text-center">
+                  <img className="w-[30px] h-[30px]" src={getSpecIcon(item)} alt="" />
+                  <span>{params.row.specs[item].score}</span>
+                </div>
+                <span className="text-[25px]">{index === keys.length-1 ? '' : '+'}</span>
+                </>
+              ))}</Typography>
             </div>
           );
         };

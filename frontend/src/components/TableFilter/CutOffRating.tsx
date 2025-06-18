@@ -33,7 +33,7 @@ const CutOffText = ({ bracket, stats }: IProps) => {
     setSelectedSpecs(getFromSearchParams(searchParams, "specs"));
   }, [searchParams]);
 
-  const ssnName = "Forged";
+  const ssnName = "Prized";
   if (bracket === "rbg" || bracket === "3v3") {
     const cutOffRating = rewards?.[ratingRewardMap[bracket]];
     const spotsWithNoAlts = spotWithNoAlts?.[ratingRewardMap[bracket]];
