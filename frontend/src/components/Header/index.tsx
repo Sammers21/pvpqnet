@@ -3,7 +3,7 @@ import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { generatePath } from "react-router";
 import { createBreakpoint } from "react-use";
 
-import { AppBar, Container, Toolbar } from "@mui/material";
+import { AppBar, Toolbar } from "@mui/material";
 import { styled } from "@mui/system";
 import MobileView from "./MobileView";
 import DesktopView from "./DesktopView";
@@ -100,19 +100,9 @@ const Header = () => {
   function redirectToMulticlassers() {
     navigateToPage({ activity: "ladder", bracket: "shuffle-multiclass" });
   }
-
-  function redirectToSkillCapped() {
-    window.open(
-      "https://www.skill-capped.com/wow/pricing/plans#pvpq",
-      "_blank"
-    );
-  }
-
-  function redirectToPvpAssistant() {
-    window.open(
-      "https://www.curseforge.com/wow/addons/pvpassistant",
-      "_blank"
-    );
+  
+  function redirectToOBSWidget() {
+    window.open("https://github.com/Sammers21/pvpqnet/wiki/Obs-Widget", "_blank");
   }
 
   const menuItems = [
@@ -120,8 +110,7 @@ const Header = () => {
     { label: "Leaderboards", onClick: redirectToLadder },
     { label: "Multiclassers", onClick: redirectToMulticlassers },
     { label: "Meta", onClick: redirectToMeta },
-    // { label: "Skill-Сapped", onClick: redirectToSkillCapped },
-    // { label: "PvP-Assistant", onClick: redirectToPvpAssistant },
+    { label: "Widget", onClick: redirectToOBSWidget },
   ];
   
   const isMobile = breakpoint === "mobile" || breakpoint === "tablet"
