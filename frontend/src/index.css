@@ -2,6 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
+
 body {
   margin: 0;
   font-family: 'Nunito', sans-serif;
@@ -35,7 +36,7 @@ code {
 }
 
 ::-webkit-scrollbar {
-  width: 5px;
+  width: 0px;
   height: 5px;
 }
 

@@ -40,22 +40,18 @@ function Activity() {
   if (bracket === "shuffle-multiclass") {
     return (
       <>
-        <Header />
         <MClassLeaderboard />
-        <Footer />
       </>
     );
   } else {
     return (
       <>
-        <Header />
         <div className="mt-24 mx-auto mb-11 w-full lg:w-[85%]">
           <ActivityTabs
             bracketActivity={activity === "activity" ? bracketActivity : undefined}
           />
           <DataTable data={bracketActivity} />
         </div>
-        <Footer />
       </>
     );
   }

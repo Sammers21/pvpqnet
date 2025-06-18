@@ -4,6 +4,8 @@ import { BrowserRouter, Routes as ReactRouterDomRoutes, Route } from 'react-rout
 import BlizzardLoader from '@/components/BlizzardLoader';
 import { publicUrls } from '@/config';
 import { ObsWidget } from '@/containers/Profile/ObsWidget';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
 
 const { page } = publicUrls;
 const ActivityScreen = loadable(() => import('@/containers/Activity'), {
@@ -19,6 +21,7 @@ const ProfileScreen = loadable(() => import('@/containers/Profile'), {
 const AppRoutes = () => {
   return (
     <BrowserRouter>
+    <Header></Header>
       <ReactRouterDomRoutes>
         <Route path={'/'} element={<ActivityScreen />} />
         <Route path={'/meta'} element={<MetaScreen />} />
@@ -42,6 +45,7 @@ const AppRoutes = () => {
         <Route path={page} element={<ActivityScreen />} />
         <Route path="*" element={<ActivityScreen />} />
       </ReactRouterDomRoutes>
+      <Footer></Footer>
     </BrowserRouter>
   );
 };

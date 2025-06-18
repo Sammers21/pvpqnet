@@ -55,7 +55,6 @@ const Profile = () => {
 
   return (
     <>
-      <Header />
       {playerStatus === 404 ? (
         <PlayerNotFound
           loading={loading}
@@ -85,7 +84,6 @@ const Profile = () => {
           Player profile successfully updated!
         </Alert>
       </Snackbar>
-      <Footer />
     </>
   );
 };

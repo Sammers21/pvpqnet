@@ -11,9 +11,7 @@ const Meta = () => {
 
   return (
     <>
-      <Header />
       <Grid />
-      <Footer />
     </>
   );
 };
