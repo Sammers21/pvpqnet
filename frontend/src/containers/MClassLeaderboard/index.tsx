@@ -16,7 +16,6 @@ import * as React from "react";
 import { useParams } from "react-router-dom";
 import { StripedDataGrid } from "../Meta/Grid";
 import InfoIcon from "@mui/icons-material/Info";
-import Row from "@/components/AltsTable/Row";
 
 function columns(region): GridColDef[] {
   return [

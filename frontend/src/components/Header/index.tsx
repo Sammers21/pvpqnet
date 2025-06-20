@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { generatePath } from "react-router";
 import { createBreakpoint } from "react-use";
@@ -35,10 +35,9 @@ const Header = () => {
     region: regionFromUrl = REGION.eu,
     bracket = getBracket(),
   } = useParams();
-  const region = getRegion(regionFromUrl);
+  const [region,setRegion] = useState(getRegion(regionFromUrl));
   const activity = getActivityFromUrl();
   const breakpoint = useBreakpoint();
-
   const isMeta = useMemo(() => {
     return location.pathname.includes("meta");
   }, [location]);
@@ -57,6 +56,7 @@ const Header = () => {
       newPath = generatePath(publicUrls.page, { region: rg , activity, bracket });
     }
     navigate(newPath + window.location.search);
+    setRegion(rg)
   }
 
   function navigateToPage({

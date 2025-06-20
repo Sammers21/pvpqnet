@@ -1,6 +1,4 @@
 import { useEffect } from 'react';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
 
 import Grid from './Grid';
 
@@ -11,9 +9,7 @@ const Meta = () => {
 
   return (
     <>
-      <Header />
       <Grid />
-      <Footer />
     </>
   );
 };

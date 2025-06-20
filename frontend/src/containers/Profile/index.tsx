@@ -1,14 +1,9 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import axios from "axios";
 
 import { Alert, Snackbar as MuiSnackbar, styled } from "@mui/material";
-import Header from "@/components/Header";
 import Armory from "./Armory";
 import PlayerNotFound from "./PlayerNotFound";
-import Footer from "@/components/Footer";
-
-import { baseUrl } from "@/config";
 import { capitalizeFirstLetter } from "@/utils/common";
 import type { Player } from "@/types";
 import { getProfile } from "@/services/stats.service";
@@ -55,7 +50,6 @@ const Profile = () => {
 
   return (
     <>
-      <Header />
       {playerStatus === 404 ? (
         <PlayerNotFound
           loading={loading}
@@ -85,7 +79,6 @@ const Profile = () => {
           Player profile successfully updated!
         </Alert>
       </Snackbar>
-      <Footer />
     </>
   );
 };
