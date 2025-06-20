@@ -3,7 +3,6 @@ import { Player } from "@/types";
 import { Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
-import { baseUrl } from "@/config";
 import { groupBy } from "lodash";
 import { DPS_SPECS, HEAL_SPECS } from "@/constants/filterSchema";
 import { SpecChip } from "./Alts/SpecChip";

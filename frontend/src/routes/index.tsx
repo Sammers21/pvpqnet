@@ -11,6 +11,8 @@ import BlizzardLoader from "@/components/BlizzardLoader";
 import { publicUrls } from "@/config";
 import { ObsWidget } from "@/containers/Profile/ObsWidget";
 import TwitchCorner from "@/components/TwitchCorner";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 
 const { page } = publicUrls;
 const ActivityScreen = loadable(() => import("@/containers/Activity"), {
@@ -105,10 +107,10 @@ const AppContent = () => {
 
   return (
     <>
+    <Header></Header>
       <ReactRouterDomRoutes>
         <Route path={"/"} element={<ActivityScreen />} />
         <Route path={"/meta"} element={<MetaScreen />} />
-
         <Route path=":region">
           <Route path="meta" element={<MetaScreen />} />
           <Route path="activity" element={<ActivityScreen />}>
@@ -124,11 +126,10 @@ const AppContent = () => {
             </Route>
           </Route>
         </Route>
-
         <Route path={page} element={<ActivityScreen />} />
         <Route path="*" element={<ActivityScreen />} />
       </ReactRouterDomRoutes>
-
+      <Footer></Footer>
       {/* TwitchPlayer in corner only when streamer is online, not on obs-widget page, and not in loading or error state */}
       {!isObsWidget && !isLoading && !hasError && isStreamerOnline && (
         <TwitchCorner channel={streamerChannel} />

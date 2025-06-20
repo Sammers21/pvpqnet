@@ -1,10 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 
-import Header from '@/components/Header';
 import ActivityTabs from './Tabs';
 import DataTable from '@/components/DataTable';
-import Footer from '@/components/Footer';
 
 import { REGION } from '@/constants/region';
 import { BRACKETS } from '@/constants/pvp-activity';
@@ -40,22 +38,18 @@ function Activity() {
   if (bracket === "shuffle-multiclass") {
     return (
       <>
-        <Header />
         <MClassLeaderboard />
-        <Footer />
       </>
     );
   } else {
     return (
       <>
-        <Header />
         <div className="mt-24 mx-auto mb-11 w-full lg:w-[85%]">
           <ActivityTabs
             bracketActivity={activity === "activity" ? bracketActivity : undefined}
           />
           <DataTable data={bracketActivity} />
         </div>
-        <Footer />
       </>
     );
   }
