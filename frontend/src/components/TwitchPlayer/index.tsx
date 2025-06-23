@@ -26,6 +26,8 @@ const TwitchPlayer: React.FC<TwitchPlayerProps> = ({
   const embedRef = useRef<any>(null);
   const isInitializedRef = useRef<boolean>(false);
   const scriptRef = useRef<HTMLScriptElement | null>(null);
+  const playerRef = useRef<any>(null);
+  const volumeCheckIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     // Only initialize once
@@ -58,9 +60,30 @@ const TwitchPlayer: React.FC<TwitchPlayerProps> = ({
             window.Twitch.Embed.VIDEO_READY,
             () => {
               const player = embedRef.current.getPlayer();
+              playerRef.current = player;
+
               if (autoplay) {
                 player.play();
               }
+
+              // Always keep the player muted
+              player.setVolume(0);
+
+              // Periodically check and reset volume to ensure it stays muted
+              volumeCheckIntervalRef.current = setInterval(() => {
+                if (
+                  playerRef.current &&
+                  typeof playerRef.current.getVolume === "function"
+                ) {
+                  try {
+                    if (playerRef.current.getVolume() > 0) {
+                      playerRef.current.setVolume(0);
+                    }
+                  } catch (error) {
+                    console.warn("Error checking/setting volume:", error);
+                  }
+                }
+              }, 500); // Check every 500ms
             }
           );
 
@@ -72,6 +95,12 @@ const TwitchPlayer: React.FC<TwitchPlayerProps> = ({
     }
 
     return () => {
+      // Clear the volume check interval
+      if (volumeCheckIntervalRef.current) {
+        clearInterval(volumeCheckIntervalRef.current);
+        volumeCheckIntervalRef.current = null;
+      }
+
       // Only clean up when component is fully unmounted
       if (
         scriptRef.current &&
@@ -81,6 +110,7 @@ const TwitchPlayer: React.FC<TwitchPlayerProps> = ({
         document.body.removeChild(scriptRef.current);
         scriptRef.current = null;
         embedRef.current = null;
+        playerRef.current = null;
         isInitializedRef.current = false;
       }
     };
@@ -93,7 +123,8 @@ const TwitchPlayer: React.FC<TwitchPlayerProps> = ({
       const player = embedRef.current.getPlayer();
       if (player) {
         player.setChannel(channel);
-        // You can add other property updates as needed
+        // Ensure the player stays muted when channel changes
+        player.setVolume(0);
       }
     }
   }, [channel]); // Only re-run if channel changes
