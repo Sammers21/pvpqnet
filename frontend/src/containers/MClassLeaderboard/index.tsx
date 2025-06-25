@@ -1,6 +1,6 @@
 import { REGION } from "@/constants/region";
 import { getMulticlasserLeaderboard } from "@/services/stats.service";
-import { capitalizeFirstLetter } from "@/utils/common";
+import { capitalizeFirstLetter, nickNameLenOnMobile } from "@/utils/common";
 import {
   getAltProfileUrl,
   getClassNameColor,
@@ -16,22 +16,79 @@ import * as React from "react";
 import { useParams } from "react-router-dom";
 import { StripedDataGrid } from "../Meta/Grid";
 import InfoIcon from "@mui/icons-material/Info";
-import Row from "@/components/AltsTable/Row";
+
+function ChipWithPopover({specsLength,index, specIcon, ratingColor, pos, label }) {
+  const [anchorEl, setAnchorEl] = React.useState(null);
+  const open = Boolean(anchorEl);
+
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  return (
+    <>
+      <Chip
+        avatar={
+          <Avatar
+            alt="class"
+            className="md:!w-[px] md:!h-[px] md:!translate-x-0 !translate-x-[5px] !w-[17px] !h-[17px]"
+            src={specIcon}
+          />
+        }
+        label={window.innerWidth > 600 ? label : ""}
+        onClick={handleClick}
+        variant="outlined"
+        style={{
+          color: ratingColor,
+          borderColor: ratingColor,
+          width: window.innerWidth < 600 ? "20px" : "auto",
+          height: window.innerWidth < 600 ? "20px" : "auto"
+        }}
+        size="small"
+      />
+      {window.innerWidth < 600 ? <Popover
+        anchorEl={anchorEl}
+        open={open}
+        onClose={handleClose}
+        anchorOrigin={{
+          vertical: "top",
+          horizontal: "center",
+        }}
+        transformOrigin={{
+          vertical: "bottom",
+          horizontal: "center",
+        }}
+      >
+        <Typography className="!px-[5px] !py-1">#{pos}</Typography>
+      </Popover> : ""}
+    </>
+  );
+}
+
 
 function columns(region): GridColDef[] {
   return [
     {
       field: "rank",
       headerName: "Rank",
-      width: 90,
+      width: window.innerWidth > 600 ?  90 : 55,
+      sortable: window.innerWidth < 600 ?false : true,
       valueFormatter: (params: GridValueGetterParams) => {
         return `#${params.value}`;
       },
+      headerClassName: "text-[10px] md: text-[15px]"
+      
     },
     {
       field: "total_score",
       headerName: "Score",
-      width: 90,
+      sortable: window.innerWidth <600 ? false : true,
+      headerClassName: "text-[12px] md:text-[15px]",
+      width: window.innerWidth > 600 ? 90 : 55,
       renderCell: (params: GridValueGetterParams) => {
         // eslint-disable-next-line react-hooks/rules-of-hooks
         const [anchorEl, setAnchorEl] =  React.useState<HTMLButtonElement | null>(null);
@@ -48,9 +105,11 @@ function columns(region): GridColDef[] {
         const id = open ? "simple-popover" : undefined;
         const renderPopoverContent = () => {
           const keys = Object.keys(params.row.specs);
+          
           // sort keys by score
           keys.sort((a, b) => {
-            return params.row.specs[b].score - params.row.specs[a].score
+            const score = params.row.specs[a].score - params.row.specs[b].score
+            return score
           });
           
           return (
@@ -71,10 +130,10 @@ function columns(region): GridColDef[] {
 
         return (
           <div className="flex flex-row gap-1">
-            <Typography variant="body1">{params.value}</Typography>
-            <div onClick={handleClick}>
+            <Typography className="!text-[15px]" variant="body1">{params.value}</Typography>
+            {window.innerWidth > 600 ? <div onClick={handleClick}>
               <InfoIcon fontSize="small" color="primary" />
-            </div>
+            </div> : ""}
             <Popover
               id={id}
               open={open}
@@ -94,15 +153,20 @@ function columns(region): GridColDef[] {
     {
       field: "main",
       headerName: "Main",
-      width: 200,
+      width: window.innerWidth > 600 ? 200 : 100,
       valueFormatter: (params: GridValueGetterParams) => {
         return capitalizeFirstLetter(
-          params.value.name + "-" + params.value.realm
+          params.value.name + (window.innerWidth > 600 ?  ("-" + params.value.realm) : "")
         );
       },
       renderCell: (params: GridValueGetterParams) => {
         params.value.region = region;
         const url = getAltProfileUrl(params.value);
+        let name = params.value.name;
+        if (window.innerWidth < 600) {
+                const max = nickNameLenOnMobile();
+                name = `${name.substring(0, max)}`;
+              }
         return (
           <a
             target="_blank"
@@ -111,7 +175,7 @@ function columns(region): GridColDef[] {
             className="text-base no-underline"
             style={{ color: getClassNameColor(params.value.class) }}
           >
-            {params.value.name + "-" + params.value.realm}
+            {name + (window.innerWidth > 600 ?  ("-" + params.value.realm) : "")}
           </a>
         );
       },
@@ -136,22 +200,16 @@ function columns(region): GridColDef[] {
         });
         return (
           <div className="flex flex-row gap-1">
-            {keys.map((key) => {
+            {keys.map((key,index) => {
               const specIcon = getSpecIcon(key);
+              const pos = params.value[key].character.pos;
+              
+              const label = window.innerWidth > 600  || Object.values(params.value).length <=4? `#${pos}` : ""
               const ratingColor = ratingToColor(
                 params.value[key].character.rating,
                 params.value[key].character.in_cutoff
               );
-              const chip = (
-                <Chip
-                  avatar={<Avatar alt="class" src={specIcon} />}
-                  label={`#${params.value[key].character.pos}`}
-                  variant="outlined"
-                  style={{ color: ratingColor, borderColor: ratingColor }}
-                  size="small"
-                />
-              );
-              return <div>{chip}</div>;
+              return <ChipWithPopover specsLength={Object.values(params.value).length} index={index} key={key} specIcon={specIcon} ratingColor={ratingColor} pos={pos} label={label}></ChipWithPopover>
             })}
           </div>
         );
@@ -187,7 +245,7 @@ function MClassLeaderboard() {
       onChange={(e, p) => setPage(p)}
     />
   );
-  const height = rowsToShow.length == 0 ? "500px" : "auto";
+  const height = rowsToShow.length === 0 ? "500px" : "auto";
   return (
     <div className="flex w-full justify-center bg-[#030303e6] pt-24 pb-11">
       <div className="w-full h-full md:w-10/12">
@@ -229,14 +287,14 @@ function MClassLeaderboard() {
 
         </div>
 
-        <div className="mx-2 my-2 px-4 py-4 rounded-2xl bg-[#2f384d4d]">
+        <div className="mx-2 my-2 md:px-4 py-4 rounded-2xl bg-[#2f384d4d]">
           <Box
             sx={{
               width: "100%",
               height: height,
             }}
           >
-            <div className="flex flex-row justify-between">
+            <div className="flex flex-col gap-[10px] md:gap-0 md:flex-row justify-between">
               <Tabs
                 value={role}
                 onChange={(event: React.SyntheticEvent, newValue: string) => {
@@ -262,7 +320,7 @@ function MClassLeaderboard() {
               columns={columns(region)}
               disableColumnMenu={true}
               hideFooter={true}
-              sx={{ "&, [class^=MuiDataGrid]": { border: "none" } }}
+              sx={{ "&, [class^=MuiDataGrid]": { border: "none" }, }}
               loading={loading}
               initialState={{
                 pagination: {
@@ -282,7 +340,7 @@ function MClassLeaderboard() {
               }
             />
           </Box>
-          <div className="flex flex-row flex-row-reverse mt-1">
+          <div className="flex flex-row-reverse mt-1">
             {pagination}
           </div>
         </div>
@@ -292,3 +350,5 @@ function MClassLeaderboard() {
 }
 
 export default MClassLeaderboard;
+
+
