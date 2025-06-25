@@ -3,6 +3,7 @@ import PlayersSearch from "@/components/SearchBar";
 import RegionButtons from "./RegionButtons";
 
 import { REGION } from "@/constants/region";
+import { Link } from "react-router-dom";
 
 interface IProps {
   host: string;
@@ -16,12 +17,12 @@ const DesktopView = ({ menuItems, host, region, setRegion }: IProps) => {
     <div className="flex items-center justify-between w-full">
       <div className="flex items-center justify-start">
         <div className="flex items-center justify-start">
-          <a
-            href="/"
+          <Link
+            to={"/"}
             className="sm:flex hidden ml-20 mr-5 font-bold tracking-wider text-xl"
           >
             {host}
-          </a>
+          </Link>
 
           {menuItems.map((item) => (
             <Button
