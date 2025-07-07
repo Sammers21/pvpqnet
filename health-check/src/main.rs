@@ -50,9 +50,16 @@ async fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-async fn send_tg_notification(text: &str, chat_id: &str, token: &str) -> Result<(), Box<dyn Error>> {
-    let textUrlEncoded = urlencoding::encode(text).to_string();
-    let url = format!("https://api.telegram.org/bot{}/sendMessage?chat_id={}&parse_mode=MarkdownV2&text={}", token, chat_id, textUrlEncoded);
+async fn send_tg_notification(
+    text: &str,
+    chat_id: &str,
+    token: &str,
+) -> Result<(), Box<dyn Error>> {
+    let text_url_encoded = urlencoding::encode(text).to_string();
+    let url = format!(
+        "https://api.telegram.org/bot{}/sendMessage?chat_id={}&parse_mode=MarkdownV2&text={}",
+        token, chat_id, text_url_encoded
+    );
     let resp = reqwest::get(url).await?;
     println!("Telegram sendMessages Response status: {:?}", resp.status());
     if resp.status().is_success() {
@@ -64,15 +71,20 @@ async fn send_tg_notification(text: &str, chat_id: &str, token: &str) -> Result<
 }
 
 async fn last_updated(region: &str, bracket: &str) -> Result<NaiveDateTime, Box<dyn Error>> {
-    let url = format!("https://pvpq.net/api/{}/activity/{}?page=1", region, bracket);
-    let resp = reqwest::get(url)
-        .await?
-        .text()
-        .await?;
-    let parsed = serde_json::from_str::<Value>(&resp);
-    let timestamp = parsed.unwrap()["timestamp"].as_i64().unwrap();
-    let date = chrono::NaiveDateTime::from_timestamp_millis(timestamp).unwrap();
+    let url = format!(
+        "https://pvpq.net/api/{}/activity/{}?page=1",
+        region, bracket
+    );
+    let resp = reqwest::get(url).await?.text().await?;
+
+    // Debug: print the response to see what we're getting
+    println!("Response from {}: {}", url, resp);
+
+    let parsed = serde_json::from_str::<Value>(&resp)?;
+    let timestamp = parsed["timestamp"]
+        .as_i64()
+        .ok_or("timestamp field not found or not an integer")?;
+    let date =
+        chrono::NaiveDateTime::from_timestamp_millis(timestamp).ok_or("invalid timestamp")?;
     Ok(date)
 }
-
-
