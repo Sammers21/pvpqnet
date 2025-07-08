@@ -7,8 +7,7 @@ import {
   getSpecIcon,
   ratingToColor,
 } from "@/utils/table";
-import { Avatar, Chip, Pagination, Popover, Typography } from "@mui/material";
-import Box from "@mui/material/Box";
+import { Avatar, Chip, Pagination, Popover, Typography, Card, CardContent, Box } from "@mui/material";
 import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
 import { GridColDef, GridValueGetterParams } from "@mui/x-data-grid";
@@ -16,7 +15,9 @@ import * as React from "react";
 import { useParams } from "react-router-dom";
 import { StripedDataGrid } from "../Meta/Grid";
 import InfoIcon from "@mui/icons-material/Info";
-import Row from "@/components/AltsTable/Row";
+import { createBreakpoint } from "react-use";
+
+const useBreakpoint = createBreakpoint({ mobile: 0, tablet: 768, desktop: 1280 });
 
 function columns(region): GridColDef[] {
   return [
@@ -188,45 +189,51 @@ function MClassLeaderboard() {
     />
   );
   const height = rowsToShow.length == 0 ? "500px" : "auto";
+  const breakpoint = useBreakpoint();
+  const isMobile = breakpoint === "mobile" || breakpoint === "tablet";
+
   return (
     <div className="flex w-full justify-center bg-[#030303e6] pt-24 pb-11">
-      <div className="w-full h-full md:w-10/12">
+      <div className="w-full h-full md:w-10/12 px-2 md:px-0">
         <div className="mx-2 my-2 mb-10 px-4 py-4 rounded-2xl bg-[#2f384d4d]">
-          <Typography variant="h4">Multiclassers</Typography>
-          <Typography variant="body1">
+          <Typography variant={isMobile ? "h5" : "h4"}>Multiclassers</Typography>
+          <Typography variant="body1" className={isMobile ? "text-sm" : ""}>
             Top multiclassers in {region.toUpperCase()} based on their highest
             ladder spots on every unique spec.
           </Typography>
-          <Typography variant="body1">
+          <Typography variant="body1" className={isMobile ? "text-sm" : ""}>
              Each spec is counted only once,
             and the maximum score per each spec is 1000 for rank #1.
           </Typography>
-          <br />
-          <Typography variant="h5" sx={{ }}>      
-             The spec score is calculated as follows:
-          </Typography>
-          <Typography variant="body2">
-            1. above 0.1% is 900-1000 score
-          </Typography>
-          <Typography variant="body2">
-            2. from 0.1% to 0.2% is 750-900 score
-          </Typography>
-          <Typography variant="body2">
-            3. from 0.2% to 0.5% is 550-750 score
-          </Typography>
-          <Typography variant="body2">
-            4. from 0.5% to 1% is 300-550 score
-          </Typography>
-          <Typography variant="body2">
-            5. from 1% to 2% is 150-300 score
-          </Typography>
-          <Typography variant="body2">
-            6. from 2% to 5% is 50-150 score
-          </Typography>
-          <Typography variant="body2">
-            7. from 5% to 100% is 0-50 score
-          </Typography>
-
+          {!isMobile && (
+            <>
+              <br />
+              <Typography variant="h5" sx={{ }}>      
+                 The spec score is calculated as follows:
+              </Typography>
+              <Typography variant="body2">
+                1. above 0.1% is 900-1000 score
+              </Typography>
+              <Typography variant="body2">
+                2. from 0.1% to 0.2% is 750-900 score
+              </Typography>
+              <Typography variant="body2">
+                3. from 0.2% to 0.5% is 550-750 score
+              </Typography>
+              <Typography variant="body2">
+                4. from 0.5% to 1% is 300-550 score
+              </Typography>
+              <Typography variant="body2">
+                5. from 1% to 2% is 150-300 score
+              </Typography>
+              <Typography variant="body2">
+                6. from 2% to 5% is 50-150 score
+              </Typography>
+              <Typography variant="body2">
+                7. from 5% to 100% is 0-50 score
+              </Typography>
+            </>
+          )}
         </div>
 
         <div className="mx-2 my-2 px-4 py-4 rounded-2xl bg-[#2f384d4d]">
@@ -236,7 +243,7 @@ function MClassLeaderboard() {
               height: height,
             }}
           >
-            <div className="flex flex-row justify-between">
+            <div className={`flex ${isMobile ? 'flex-col gap-4' : 'flex-row justify-between'}`}>
               <Tabs
                 value={role}
                 onChange={(event: React.SyntheticEvent, newValue: string) => {
@@ -246,6 +253,7 @@ function MClassLeaderboard() {
                 scrollButtons
                 allowScrollButtonsMobile
                 aria-label="scrollable force tabs example"
+                sx={isMobile ? { width: '100%' } : {}}
               >
                 <Tab label="All" value="all" />
                 <Tab label="DPS" value="dps" />
@@ -256,31 +264,105 @@ function MClassLeaderboard() {
               </Tabs>
               {pagination}
             </div>
-            <StripedDataGrid
-              rows={rowsToShow}
-              getRowId={(row) => row.rank}
-              columns={columns(region)}
-              disableColumnMenu={true}
-              hideFooter={true}
-              sx={{ "&, [class^=MuiDataGrid]": { border: "none" } }}
-              loading={loading}
-              initialState={{
-                pagination: {
-                  paginationModel: {
-                    pageSize: 100,
+                         {isMobile ? (
+               <div className="grid gap-3">
+                 {loading ? (
+                   <div className="flex justify-center items-center py-8">
+                     <Typography variant="h6" className="text-[#3f6ba3]">
+                       Loading multiclassers...
+                     </Typography>
+                   </div>
+                 ) : (
+                   rowsToShow.map((row) => (
+                   <Card key={row.rank} className="bg-[#1a1a1a] border border-[#3f6ba3] hover:border-[#5a8bd4] transition-colors">
+                     <CardContent className="p-3">
+                       <div className="flex items-center justify-between mb-2">
+                         <Typography variant="h6" className="text-[#3f6ba3] font-bold text-lg">
+                           #{row.rank}
+                         </Typography>
+                         <div className="flex items-center gap-2">
+                           <Typography variant="h6" className="font-bold text-lg">
+                             {row.total_score}
+                           </Typography>
+                           <div 
+                             onClick={() => {
+                               const keys = Object.keys(row.specs);
+                               keys.sort((a, b) => row.specs[b].score - row.specs[a].score);
+                               alert(`Score breakdown:\n${keys.map(key => `${key}: ${row.specs[key].score}`).join('\n')}`);
+                             }}
+                             className="cursor-pointer p-1 hover:bg-[#3f6ba3] hover:bg-opacity-20 rounded"
+                           >
+                             <InfoIcon fontSize="small" color="primary" />
+                           </div>
+                         </div>
+                       </div>
+                       
+                       <div className="mb-2">
+                         <a
+                           target="_blank"
+                           rel="noopener noreferrer"
+                           href={getAltProfileUrl({ ...row.main, region })}
+                           className="text-base no-underline font-semibold hover:underline"
+                           style={{ color: getClassNameColor(row.main.class) }}
+                         >
+                           {row.main.name}-{row.main.realm}
+                         </a>
+                       </div>
+                       
+                       <div className="flex flex-wrap gap-1">
+                         {Object.keys(row.specs)
+                           .sort((a, b) => row.specs[b].score - row.specs[a].score)
+                           .map((key) => {
+                             const specIcon = getSpecIcon(key);
+                             const ratingColor = ratingToColor(
+                               row.specs[key].character.rating,
+                               row.specs[key].character.in_cutoff
+                             );
+                             return (
+                               <Chip
+                                 key={key}
+                                 avatar={<Avatar alt="class" src={specIcon} className="w-5 h-5" />}
+                                 label={`#${row.specs[key].character.pos}`}
+                                 variant="outlined"
+                                 style={{ color: ratingColor, borderColor: ratingColor }}
+                                 size="small"
+                                 className="text-xs"
+                               />
+                             );
+                           })}
+                       </div>
+                     </CardContent>
+                   </Card>
+                 ))
+                 )}
+               </div>
+             ) : (
+              <StripedDataGrid
+                rows={rowsToShow}
+                getRowId={(row) => row.rank}
+                columns={columns(region)}
+                disableColumnMenu={true}
+                hideFooter={true}
+                sx={{ "&, [class^=MuiDataGrid]": { border: "none" } }}
+                loading={loading}
+                initialState={{
+                  pagination: {
+                    paginationModel: {
+                      pageSize: 100,
+                    },
                   },
-                },
-                sorting: {
-                  sortModel: [{ field: "total_score", sort: "desc" }],
-                },
-              }}
-              pageSizeOptions={[100]}
-              rowHeight={33.5}
-              disableRowSelectionOnClick
-              getRowClassName={(params) =>
-                params.indexRelativeToCurrentPage % 2 === 0 ? "even" : "odd"
-              }
-            />
+                  sorting: {
+                    sortModel: [{ field: "total_score", sort: "desc" }],
+                  },
+                }}
+                pageSizeOptions={[100]}
+                rowHeight={33.5}
+                disableRowSelectionOnClick
+                getRowClassName={(params) =>
+                  params.indexRelativeToCurrentPage % 2 === 0 ? "even" : "odd"
+                }
+              />
+            )}
           </Box>
           <div className="flex flex-row flex-row-reverse mt-1">
             {pagination}
