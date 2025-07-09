@@ -75,11 +75,9 @@ async fn last_updated(region: &str, bracket: &str) -> Result<NaiveDateTime, Box<
         "https://pvpq.net/api/{}/activity/{}?page=1",
         region, bracket
     );
-    let resp = reqwest::get(url).await?.text().await?;
-
+    let resp = reqwest::get(url.clone()).await?.text().await?;
     // Debug: print the response to see what we're getting
-    println!("Response from {}: {}", url, resp);
-
+    println!("Response from {}: {}", url.clone(), resp);
     let parsed = serde_json::from_str::<Value>(&resp)?;
     let timestamp = parsed["timestamp"]
         .as_i64()
