@@ -195,16 +195,20 @@ function MClassLeaderboard() {
   return (
     <div className="flex w-full justify-center bg-[#030303e6] pt-24 pb-11">
       <div className="w-full h-full md:w-10/12 px-2 md:px-0">
-        <div className={`mx-2 my-2 ${isMobile ? 'mb-4' : 'mb-10'} px-4 ${isMobile ? 'py-2' : 'py-4'} rounded-2xl bg-[#2f384d4d]`}>
+        <div className={`mx-2 my-2 ${isMobile ? 'mb-2' : 'mb-10'} px-4 ${isMobile ? 'py-1' : 'py-4'} rounded-2xl bg-[#2f384d4d]`}>
           <Typography variant={isMobile ? "h6" : "h4"}>Multiclassers</Typography>
-          <Typography variant="body1" className={isMobile ? "text-sm" : ""}>
-            Top multiclassers in {region.toUpperCase()} based on their highest
-            ladder spots on every unique spec.
-          </Typography>
-          <Typography variant="body1" className={isMobile ? "text-sm" : ""}>
-             Each spec is counted only once,
-            and the maximum score per each spec is 1000 for rank #1.
-          </Typography>
+          {!isMobile && (
+            <>
+              <Typography variant="body1">
+                Top multiclassers in {region.toUpperCase()} based on their highest
+                ladder spots on every unique spec.
+              </Typography>
+              <Typography variant="body1">
+                 Each spec is counted only once,
+                and the maximum score per each spec is 1000 for rank #1.
+              </Typography>
+            </>
+          )}
           {!isMobile && (
             <>
               <br />
@@ -236,14 +240,14 @@ function MClassLeaderboard() {
           )}
         </div>
 
-        <div className={`mx-2 my-2 px-4 ${isMobile ? 'py-2' : 'py-4'} rounded-2xl bg-[#2f384d4d]`}>
+        <div className={`mx-2 my-2 px-4 ${isMobile ? 'py-1' : 'py-4'} rounded-2xl bg-[#2f384d4d]`}>
           <Box
             sx={{
               width: "100%",
               height: height,
             }}
           >
-            <div className={`flex ${isMobile ? 'flex-col gap-2' : 'flex-row justify-between'}`}>
+            <div className={`flex ${isMobile ? 'flex-col gap-1' : 'flex-row justify-between'}`}>
               <Tabs
                 value={role}
                 onChange={(event: React.SyntheticEvent, newValue: string) => {
@@ -265,74 +269,71 @@ function MClassLeaderboard() {
               {pagination}
             </div>
                                       {isMobile ? (
-               <div className="grid gap-2">
+               <div className="grid gap-1">
                  {loading ? (
-                   <div className="flex justify-center items-center py-4">
+                   <div className="flex justify-center items-center py-2">
                      <Typography variant="h6" className="text-[#3f6ba3]">
                        Loading multiclassers...
                      </Typography>
                    </div>
                  ) : (
                    rowsToShow.map((row) => (
-                     <Card key={row.rank} className="bg-[#1a1a1a] border border-[#3f6ba3] hover:border-[#5a8bd4] transition-colors">
-                       <CardContent className="p-2">
-                         <div className="flex items-center justify-between mb-1">
-                           <Typography variant="h6" className="text-[#3f6ba3] font-bold text-base">
+                     <div key={row.rank} className="bg-[#1a1a1a] border border-[#3f6ba3] rounded p-2 hover:border-[#5a8bd4] transition-colors">
+                       <div className="flex items-center justify-between">
+                         <div className="flex items-center gap-2 flex-1 min-w-0">
+                           <span className="text-[#3f6ba3] font-bold text-sm whitespace-nowrap">
                              #{row.rank}
-                           </Typography>
-                           <div className="flex items-center gap-1">
-                             <Typography variant="h6" className="font-bold text-base">
-                               {row.total_score}
-                             </Typography>
-                             <div 
-                               onClick={() => {
-                                 const keys = Object.keys(row.specs);
-                                 keys.sort((a, b) => row.specs[b].score - row.specs[a].score);
-                                 alert(`Score breakdown:\n${keys.map(key => `${key}: ${row.specs[key].score}`).join('\n')}`);
-                               }}
-                               className="cursor-pointer p-0.5 hover:bg-[#3f6ba3] hover:bg-opacity-20 rounded"
-                             >
-                               <InfoIcon fontSize="small" color="primary" />
-                             </div>
-                           </div>
-                         </div>
-                         
-                         <div className="mb-1">
+                           </span>
                            <a
                              target="_blank"
                              rel="noopener noreferrer"
                              href={getAltProfileUrl({ ...row.main, region })}
-                             className="text-sm no-underline font-semibold hover:underline"
+                             className="text-sm no-underline font-semibold hover:underline truncate"
                              style={{ color: getClassNameColor(row.main.class) }}
                            >
                              {row.main.name}-{row.main.realm}
                            </a>
                          </div>
-                         
-                         <div className="flex flex-wrap gap-0.5">
-                           {Object.keys(row.specs)
-                             .sort((a, b) => row.specs[b].score - row.specs[a].score)
-                             .map((key) => {
-                               const specIcon = getSpecIcon(key);
-                               const ratingColor = ratingToColor(
-                                 row.specs[key].character.rating,
-                                 row.specs[key].character.in_cutoff
-                               );
-                               return (
-                                 <Chip
-                                   key={key}
-                                   avatar={<Avatar alt="class" src={specIcon} className="w-4 h-4" />}
-                                   label={`#${row.specs[key].character.pos}`}
-                                   variant="outlined"
-                                   style={{ color: ratingColor, borderColor: ratingColor }}
-                                   size="small"
-                                   className="text-xs"
-                                 />
-                               );
-                             })}
+                         <div className="flex items-center gap-1">
+                           <span className="font-bold text-sm">
+                             {row.total_score}
+                           </span>
+                           <div 
+                             onClick={() => {
+                               const keys = Object.keys(row.specs);
+                               keys.sort((a, b) => row.specs[b].score - row.specs[a].score);
+                               alert(`Score breakdown:\n${keys.map(key => `${key}: ${row.specs[key].score}`).join('\n')}`);
+                             }}
+                             className="cursor-pointer p-0.5 hover:bg-[#3f6ba3] hover:bg-opacity-20 rounded"
+                           >
+                             <InfoIcon fontSize="small" color="primary" />
+                           </div>
                          </div>
-                       </CardContent>
-                     </Card>
+                       </div>
+                       
+                       <div className="flex flex-wrap gap-0.5 mt-1">
+                         {Object.keys(row.specs)
+                           .sort((a, b) => row.specs[b].score - row.specs[a].score)
+                           .map((key) => {
+                             const specIcon = getSpecIcon(key);
+                             const ratingColor = ratingToColor(
+                               row.specs[key].character.rating,
+                               row.specs[key].character.in_cutoff
+                             );
+                             return (
+                               <Chip
+                                 key={key}
+                                 avatar={<Avatar alt="class" src={specIcon} className="w-3 h-3" />}
+                                 label={`#${row.specs[key].character.pos}`}
+                                 variant="outlined"
+                                 style={{ color: ratingColor, borderColor: ratingColor }}
+                                 size="small"
+                                 className="text-xs"
+                               />
+                             );
+                           })}
+                       </div>
+                     </div>
                    ))
                  )}
                </div>
