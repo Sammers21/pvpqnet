@@ -269,32 +269,42 @@ function MClassLeaderboard() {
               {pagination}
             </div>
                                       {isMobile ? (
-               <div className="grid gap-1">
+               <div className="relative pt-3 pb-8 px-2 bg-[#030303e6]" style={{ minHeight: "250px" }}>
                  {loading ? (
-                   <div className="flex justify-center items-center py-2">
+                   <div className="flex justify-center items-center py-4">
                      <Typography variant="h6" className="text-[#3f6ba3]">
                        Loading multiclassers...
                      </Typography>
                    </div>
                  ) : (
-                   rowsToShow.map((row) => (
-                     <div key={row.rank} className="bg-[#1a1a1a] border border-[#3f6ba3] rounded p-2 hover:border-[#5a8bd4] transition-colors">
-                       <div className="flex items-center justify-between">
-                         <div className="flex items-center gap-2 flex-1 min-w-0">
-                           <span className="text-[#3f6ba3] font-bold text-sm whitespace-nowrap">
+                   <div className="space-y-0">
+                     {rowsToShow.map((row, index) => (
+                       <div 
+                         key={row.rank} 
+                         className={`flex items-center py-2 px-3 border-b border-[#37415180] hover:bg-[#1a1a1a] transition-colors ${index % 2 === 0 ? 'bg-[#0e1216]' : 'bg-transparent'}`}
+                       >
+                         {/* Rank */}
+                         <div className="w-12 flex-shrink-0">
+                           <span className="text-[#3f6ba3] font-bold text-sm">
                              #{row.rank}
                            </span>
+                         </div>
+                         
+                         {/* Player Name */}
+                         <div className="flex-1 min-w-0 mr-3">
                            <a
                              target="_blank"
                              rel="noopener noreferrer"
                              href={getAltProfileUrl({ ...row.main, region })}
-                             className="text-sm no-underline font-semibold hover:underline truncate"
+                             className="text-sm no-underline font-semibold hover:underline truncate block"
                              style={{ color: getClassNameColor(row.main.class) }}
                            >
                              {row.main.name}-{row.main.realm}
                            </a>
                          </div>
-                         <div className="flex items-center gap-1">
+                         
+                         {/* Score */}
+                         <div className="flex items-center gap-1 mr-2">
                            <span className="font-bold text-sm">
                              {row.total_score}
                            </span>
@@ -309,32 +319,38 @@ function MClassLeaderboard() {
                              <InfoIcon fontSize="small" color="primary" />
                            </div>
                          </div>
+                         
+                         {/* Specs */}
+                         <div className="flex gap-1 flex-shrink-0">
+                           {Object.keys(row.specs)
+                             .sort((a, b) => row.specs[b].score - row.specs[a].score)
+                             .slice(0, 3) // Show only first 3 specs to save space
+                             .map((key) => {
+                               const specIcon = getSpecIcon(key);
+                               const ratingColor = ratingToColor(
+                                 row.specs[key].character.rating,
+                                 row.specs[key].character.in_cutoff
+                               );
+                               return (
+                                 <div
+                                   key={key}
+                                   className="flex items-center gap-1 px-1 py-0.5 border border-current rounded text-xs"
+                                   style={{ color: ratingColor, borderColor: ratingColor }}
+                                 >
+                                   <img src={specIcon} alt="" className="w-3 h-3" />
+                                   <span>#{row.specs[key].character.pos}</span>
+                                 </div>
+                               );
+                             })}
+                           {Object.keys(row.specs).length > 3 && (
+                             <div className="flex items-center px-1 py-0.5 border border-[#6b7280] rounded text-xs text-[#6b7280]">
+                               <span>+{Object.keys(row.specs).length - 3}</span>
+                             </div>
+                           )}
+                         </div>
                        </div>
-                       
-                       <div className="flex flex-wrap gap-0.5 mt-1">
-                         {Object.keys(row.specs)
-                           .sort((a, b) => row.specs[b].score - row.specs[a].score)
-                           .map((key) => {
-                             const specIcon = getSpecIcon(key);
-                             const ratingColor = ratingToColor(
-                               row.specs[key].character.rating,
-                               row.specs[key].character.in_cutoff
-                             );
-                             return (
-                               <Chip
-                                 key={key}
-                                 avatar={<Avatar alt="class" src={specIcon} className="w-3 h-3" />}
-                                 label={`#${row.specs[key].character.pos}`}
-                                 variant="outlined"
-                                 style={{ color: ratingColor, borderColor: ratingColor }}
-                                 size="small"
-                                 className="text-xs"
-                               />
-                             );
-                           })}
-                       </div>
-                     </div>
-                   ))
+                     ))}
+                   </div>
                  )}
                </div>
              ) : (
