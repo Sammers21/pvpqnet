@@ -130,11 +130,9 @@ const AppContent = () => {
       </ReactRouterDomRoutes>
 
       {/* TwitchPlayer in corner only when streamer is online, not on obs-widget page, and not in loading or error state */}
-      {/* Temporarily commented out iSquare stream popup
-      {!isObsWidget && !isLoading && !hasError && isStreamerOnline && (
+      {!isObsWidget && !isLoading && !hasError && isStreamerOnline && new Date() < new Date('2025-08-19T20:00:00') && (
         <TwitchCorner channel={streamerChannel} />
       )}
-      */}
     </>
   );
 };
