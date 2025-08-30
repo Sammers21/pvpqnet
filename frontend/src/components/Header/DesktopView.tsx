@@ -19,8 +19,15 @@ const DesktopView = ({ menuItems, host, region, setRegion }: IProps) => {
         <div className="flex items-center justify-start">
           <Link
             to={"/"}
-            className="sm:flex hidden ml-20 mr-5 font-bold tracking-wider text-xl"
+            className="sm:flex hidden ml-20 mr-5 font-bold tracking-wider text-xl items-center gap-2"
           >
+            <img
+              src="/icons/128x128.png"
+              alt="site icon"
+              width={40}
+              height={40}
+              className="inline-block"
+            />
             {host}
           </Link>
 
@@ -36,7 +43,7 @@ const DesktopView = ({ menuItems, host, region, setRegion }: IProps) => {
         </div>
       </div>
       <div className="flex items-center w-[356px]">
-          <PlayersSearch />
+        <PlayersSearch />
       </div>
       <div className="flex items-center justify-end mr-20">
         <RegionButtons region={region} setRegion={setRegion} />
