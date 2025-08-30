@@ -31,9 +31,9 @@ const DATA_BORDER = "rgba(5, 113, 255, 0.73)"; // line
 // --- Generic helpers ---
 const isWithinRange = (ts: Date, start: Date, end: Date) =>
   ts >= start && ts <= end;
-const safeLog = (value: number, base = Math.E / 2) => {
+const safeLog = (value: number) => {
   if (!value || value <= 0) return 0;
-  const v = Math.log(value) / Math.log(base);
+  const v = Math.log2(value);
   return Number.isFinite(v) ? v : 0;
 };
 const sumGames = (won?: number, lost?: number) => (won ?? 0) + (lost ?? 0);
@@ -204,10 +204,10 @@ function RadarChart({
     end,
     currentDate
   );
-    // Sort by games desc and keep top 10
-    const topSpecs = aggregatedSpecs
-      .sort((a, b) => b.gamesAtSpec.sum - a.gamesAtSpec.sum)
-      .slice(0, 10);
+  // Sort by games desc and keep top 10
+  const topSpecs = aggregatedSpecs
+    .sort((a, b) => b.gamesAtSpec.sum - a.gamesAtSpec.sum)
+    .slice(0, 10);
   // Ensure at least 3 specs of player's class are shown by padding with zero-count specs
   if (topSpecs.length < 3) {
     const classSpecs = CLASS_AND_SPECS[player.class] || [];
