@@ -39,24 +39,30 @@ const safeLog = (value: number) => {
 };
 const sumGames = (won?: number, lost?: number) => (won ?? 0) + (lost ?? 0);
 
-// Custom plugin to draw icons at the ends of the radar axes.
+// Custom plugin to draw icons and optional labels at the ends of the radar axes.
 // Expects `options.plugins.iconPlugin.images` to be an array of image URLs aligned with labels.
-  // Optional: `options.plugins.iconPlugin.size` (number or {width,height}) and `...padding` to override defaults per chart.
+// Optional:
+// - `options.plugins.iconPlugin.size` (number or {width,height})
+// - `options.plugins.iconPlugin.padding` (number)
+// - `options.plugins.iconPlugin.labelsUnderIcons` (string[])
+// - `options.plugins.iconPlugin.labelColor` (string)
+// - `options.plugins.iconPlugin.labelFont` (string canvas font)
+// - `options.plugins.iconPlugin.labelOffset` (number px inward from icon center along radial)
 const iconPlugin = {
   id: "iconPlugin",
   afterDraw: (chart) => {
     const pluginOpts = chart?.options?.plugins?.iconPlugin || {};
     const images = pluginOpts?.images || [];
     if (!images.length) return;
-    const ctx = chart.ctx;
-    const xCenter = chart.scales.r.xCenter;
-    const yCenter = chart.scales.r.yCenter;
-    const labelCount = chart.data.labels.length;
+  const ctx = chart.ctx;
+  const scale = chart.scales.r;
+  const xCenter = scale.xCenter;
+  const yCenter = scale.yCenter;
+  const labelCount = chart.data.labels.length;
     const sizeOpt = pluginOpts?.size ?? ICON_SIZE;
     const sizeW = typeof sizeOpt === "number" ? sizeOpt : sizeOpt?.width ?? ICON_SIZE;
     const sizeH = typeof sizeOpt === "number" ? sizeOpt : sizeOpt?.height ?? ICON_SIZE;
     const padding = pluginOpts?.padding ?? ICON_PADDING;
-  const meta = chart.getDatasetMeta(0);
   // Simple per-chart image cache to avoid recreating Image() and triggering redraws
   const cache = (chart)._iconCache || ((chart)._iconCache = new Map());
       // Extract chart layout padding to avoid drawing outside canvas
@@ -66,9 +72,11 @@ const iconPlugin = {
       const pBottom = typeof lp === "number" ? lp : lp?.bottom ?? 0;
       const pLeft = typeof lp === "number" ? lp : lp?.left ?? 0;
 
-    chart.data.labels.forEach((_, index) => {
+  chart.data.labels.forEach((_, index) => {
   // Use the actual angle computed by Chart.js when available to avoid drift
-  const angle = meta?.data?.[index]?.angle ?? Math.PI / 2 - (2 * Math.PI * index) / labelCount;
+      const angle = (typeof scale.getIndexAngle === "function"
+        ? scale.getIndexAngle(index)
+        : undefined) ?? Math.PI / 2 - (2 * Math.PI * index) / labelCount;
         const cosA = Math.cos(angle);
         const yDir = -Math.sin(angle); // positive when pointing up
         const xPadDir = cosA >= 0 ? pRight : pLeft;
@@ -94,7 +102,44 @@ const iconPlugin = {
           cache.set(srcOrImg, img);
         }
       }
+      // Draw icon
       if (img && img.complete) ctx.drawImage(img, x, y, sizeW, sizeH);
+
+      // Draw label under icon (towards center)
+      const labels = pluginOpts?.labelsUnderIcons as string[] | undefined;
+      if (labels && labels[index] != null) {
+        const iconCenterX = x + sizeW / 2;
+        const iconCenterY = y + sizeH / 2;
+        const inward = (pluginOpts?.labelOffset ?? 12) + sizeH / 2;
+        const tx = iconCenterX - Math.cos(angle) * inward;
+        const ty = iconCenterY + Math.sin(angle) * inward;
+        ctx.save();
+        ctx.globalAlpha = 1;
+        const text = String(labels[index]);
+        ctx.font = pluginOpts?.labelFont || "600 10px system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        // Background pill for readability
+        const metrics = ctx.measureText(text);
+        const tw = metrics.width + 8; // padding
+        const th = 14; // approx height
+        const rx = tx - tw / 2;
+        const ry = ty - th / 2;
+        const r = 6;
+        ctx.fillStyle = "rgba(0,0,0,0.45)";
+        ctx.beginPath();
+        ctx.moveTo(rx + r, ry);
+        ctx.arcTo(rx + tw, ry, rx + tw, ry + th, r);
+        ctx.arcTo(rx + tw, ry + th, rx, ry + th, r);
+        ctx.arcTo(rx, ry + th, rx, ry, r);
+        ctx.arcTo(rx, ry, rx + tw, ry, r);
+        ctx.closePath();
+        ctx.fill();
+        // Text
+        ctx.fillStyle = pluginOpts?.labelColor || "#ffffff";
+        ctx.fillText(text, tx, ty);
+        ctx.restore();
+      }
     });
   },
 };
@@ -390,7 +435,7 @@ function RadarChart({
     pointLabelCallback,
     layoutPadding,
   }: {
-    iconPluginOptions?: { images: string[]; size?: number | { width: number; height: number }; padding?: number } | false;
+    iconPluginOptions?: { images: string[]; size?: number | { width: number; height: number }; padding?: number; labelsUnderIcons?: string[]; labelColor?: string; labelFont?: string; labelOffset?: number } | false;
     tooltipLabel: (ctx: any) => string | string[];
     pointLabelCallback: (label: any, index: number) => string | string[];
     layoutPadding?: { top?: number; right?: number; bottom?: number; left?: number };
@@ -414,13 +459,13 @@ function RadarChart({
       iconPlugin: iconPluginOptions || false,
     },
     scales: {
-      r: {
+    r: {
         min: 0,
         pointLabels: {
-          display: true,
+          display: false,
           color: "white",
-          font: { size: 8 },
-          padding: 4,
+          font: { size: 9 },
+          padding: 12,
           callback: pointLabelCallback,
         },
         angleLines: { display: false },
@@ -435,8 +480,17 @@ function RadarChart({
     },
   });
 
+  const percentLabelsSpecs = useMemo(() => {
+    const sum = StatisticArrayGames.reduce((a, b) => a + b, 0) || 1;
+    return StatisticArrayGames.map((g) => {
+      const percent = (g / sum) * 100;
+      if (!Number.isFinite(percent) || percent <= 0) return "0%";
+      return percent < 1 ? `${percent.toFixed(2)}%` : `${Math.round(percent)}%`;
+    });
+  }, [StatisticArrayGames]);
+
   const options = useMemo(() => makeRadarOptions({
-    iconPluginOptions: { images: StaticArrayImages, size: 18, padding: 40 },
+    iconPluginOptions: { images: StaticArrayImages, size: 18, padding: 46, labelsUnderIcons: percentLabelsSpecs, labelOffset: 10 },
     tooltipLabel: (ti) => `Games: ${StatisticArrayGames[ti.dataIndex]}`,
     pointLabelCallback: (_label, index) => {
   const sum = StatisticArrayGames.reduce((a, b) => a + b, 0) || 1;
@@ -449,11 +503,20 @@ function RadarChart({
     },
   // Add extra padding so top/bottom icons are not clipped
   layoutPadding: { top: 44, bottom: 44, left: 32, right: 32 },
-  }), [StaticArrayImages, StatisticArrayGames]);
+  }), [StaticArrayImages, StatisticArrayGames, percentLabelsSpecs]);
+
+  const percentLabelsBrackets = useMemo(() => {
+    const total = FinalBracketArrayValues.reduce((a, b) => a + b, 0) || 1;
+    return FinalBracketArrayValues.map((v) => {
+      const p = (v / total) * 100;
+      if (p < 1) return `${p.toFixed(2)}%`;
+      return `${p < 6 ? String(p).slice(0, 4) : Math.floor(p)}%`;
+    });
+  }, [FinalBracketArrayValues]);
 
   const optionsBrackets = useMemo(() => makeRadarOptions({
     // Push icons further out and make them a bit larger to avoid percentage overlap
-  iconPluginOptions: { images: bracketIconImages, size: { width: 40, height: 22 }, padding: 56 },
+  iconPluginOptions: { images: bracketIconImages, size: { width: 40, height: 22 }, padding: 62, labelsUnderIcons: percentLabelsBrackets, labelOffset: 14 },
     tooltipLabel: (tooltipItem) => {
       const label = tooltipItem.label;
       let value = FinalBracketArrayValues[tooltipItem.dataIndex];
@@ -514,7 +577,7 @@ function RadarChart({
     },
   // Extra padding for larger bracket icons (give more room on sides)
   layoutPadding: { top: 56, bottom: 56, left: 48, right: 48 },
-  }), [bracketIconImages, FinalBracketArrayValues]);
+  }), [bracketIconImages, FinalBracketArrayValues, percentLabelsBrackets]);
   return (
     <>
       <div className="flex flex-col sm:flex-row w-full mt-[20px] border-t border-[#37415180] p-2 sm:p-3 justify-center gap-4">
