@@ -9,7 +9,7 @@ import {
   Legend,
 } from "chart.js";
 import { Radar } from "react-chartjs-2";
-import { getDetaisImages, getSpecIcon } from "@/utils/table";
+import { getSpecIcon } from "@/utils/table";
 import { CLASS_AND_SPECS } from "@/constants/filterSchema";
 ChartJS.register(
   ArcElement,
@@ -76,11 +76,10 @@ function getSpecStatisticPlayer(
     .sort((a, b) => {
       if (a.character !== undefined && b.character !== undefined) {
         return a.character.full_spec >= b.character.full_spec ? 1 : -1;
-      } else {
-        return a < b ? 1 : -1;
       }
+      return 0;
     })
-    .forEach((item) => {
+    .forEach((item, index, array) => {
       if (
         item.character !== undefined &&
         item.character.full_spec !== "{spec} {class}" &&
@@ -90,16 +89,8 @@ function getSpecStatisticPlayer(
           currentSpec !== item.character.full_spec &&
           currentSpec !== undefined
         ) {
-          const character_Class = item.character.class;
-          const character_Race = item.character.race;
-          const character_Gender = item.character.gender;
           SpecsObjects.push({
-            spec: getDetaisImages({
-              wowClass: character_Class,
-              wowGender: character_Gender,
-              wowRace: character_Race,
-              wowSpec: currentSpec,
-            }).specIcon,
+            spec: getSpecIcon(currentSpec),
             gamesAtSpec: { sum },
             name: currentSpec,
           });
@@ -110,22 +101,15 @@ function getSpecStatisticPlayer(
         sum = sum + won + lost;
         currentSpec = item.character.full_spec;
       } else if (selectedYear === currentDate && item.character !== undefined) {
-        if (start <= new Date(item.diff.timestamp) <= end) {
+        const ts = new Date(item.diff.timestamp);
+        if (ts >= start && ts <= end) {
           if (
             currentSpec !== item.character.full_spec &&
             currentSpec !== undefined &&
             item.character.full_spec !== "{spec} {class}"
           ) {
-            const character_Class = item.character.class;
-            const character_Race = item.character.race;
-            const character_Gender = item.character.gender;
             SpecsObjects.push({
-              spec: getDetaisImages({
-                wowClass: character_Class,
-                wowGender: character_Gender,
-                wowRace: character_Race,
-                wowSpec: currentSpec,
-              }).specIcon,
+              spec: getSpecIcon(currentSpec),
               gamesAtSpec: { sum },
               name: currentSpec,
             });
@@ -136,6 +120,14 @@ function getSpecStatisticPlayer(
           sum = sum + won + lost;
           currentSpec = item.character.full_spec;
         }
+      }
+      // Push the last spec when reaching the end of the array
+      if (index === array.length - 1 && currentSpec !== undefined) {
+        SpecsObjects.push({
+          spec: getSpecIcon(currentSpec),
+          gamesAtSpec: { sum },
+          name: currentSpec,
+        });
       }
     });
   return SpecsObjects;
@@ -158,20 +150,20 @@ function getBrackets(totalPlayers, selectedYear, start, end, currentDate) {
         let won = 0;
         let lost = 0;
         Object.values(item.gaming_history.history).forEach((session) => {
-          if (
-            end < new Date(session.diff.timestamp).toString < start &&
-            selectedYear === currentDate
-          ) {
-            won = session.diff.won ?? 0;
-            lost = session.diff.won ?? 0;
-            sum = sum + won + lost;
+          if (selectedYear === currentDate) {
+            const ts = new Date(session.diff.timestamp);
+            if (ts >= start && ts <= end) {
+              won = session.diff.won ?? 0;
+              lost = session.diff.lost ?? 0;
+              sum = sum + won + lost;
+            }
           } else if (
             selectedYear !== currentDate &&
             new Date(session.diff.timestamp).getFullYear().toString() ===
               selectedYear
           ) {
             won = session.diff.won ?? 0;
-            lost = session.diff.won ?? 0;
+            lost = session.diff.lost ?? 0;
             sum = sum + won + lost;
           }
         });
