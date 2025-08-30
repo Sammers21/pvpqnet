@@ -9,7 +9,7 @@ import {
   Legend,
 } from "chart.js";
 import { Radar } from "react-chartjs-2";
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import { getSpecIcon } from "@/utils/table";
 import { CLASS_AND_SPECS } from "@/constants/filterSchema";
 ChartJS.register(
@@ -24,7 +24,7 @@ ChartJS.register(
 
 // --- Visual constants ---
 const ICON_SIZE = 18; // px (default, can be overridden per chart)
-const ICON_PADDING = 36; // distance from outer radius (default, can be overridden per chart)
+const ICON_PADDING = 35; // distance from outer radius (default, can be overridden per chart)
 const GRID_COLOR = "rgba(55, 65, 81, 0.5)"; // tailwind gray-700 ~50%
 const DATA_BG = "rgba(63, 106, 163, 0.73)"; // fill
 const DATA_BORDER = "rgba(5, 113, 255, 0.73)"; // line
@@ -54,41 +54,23 @@ const iconPlugin = {
     const pluginOpts = chart?.options?.plugins?.iconPlugin || {};
     const images = pluginOpts?.images || [];
     if (!images.length) return;
-  const ctx = chart.ctx;
-  const scale = chart.scales.r;
-  const xCenter = scale.xCenter;
-  const yCenter = scale.yCenter;
-  const labelCount = chart.data.labels.length;
+    const ctx = chart.ctx;
+    const xCenter = chart.scales.r.xCenter;
+    const yCenter = chart.scales.r.yCenter;
+    const labelCount = chart.data.labels.length;
     const sizeOpt = pluginOpts?.size ?? ICON_SIZE;
-    const sizeW = typeof sizeOpt === "number" ? sizeOpt : sizeOpt?.width ?? ICON_SIZE;
-    const sizeH = typeof sizeOpt === "number" ? sizeOpt : sizeOpt?.height ?? ICON_SIZE;
-    const padding = pluginOpts?.padding ?? ICON_PADDING;
-  // Simple per-chart image cache to avoid recreating Image() and triggering redraws
-  const cache = (chart)._iconCache || ((chart)._iconCache = new Map());
-      // Extract chart layout padding to avoid drawing outside canvas
-      const lp = chart?.options?.layout?.padding;
-      const pTop = typeof lp === "number" ? lp : lp?.top ?? 0;
-      const pRight = typeof lp === "number" ? lp : lp?.right ?? 0;
-      const pBottom = typeof lp === "number" ? lp : lp?.bottom ?? 0;
-      const pLeft = typeof lp === "number" ? lp : lp?.left ?? 0;
-
-  chart.data.labels.forEach((_, index) => {
-  // Use the actual angle computed by Chart.js when available to avoid drift
-      const angle = (typeof scale.getIndexAngle === "function"
-        ? scale.getIndexAngle(index)
-        : undefined) ?? Math.PI / 2 - (2 * Math.PI * index) / labelCount;
-    const cosA = Math.cos(angle);
-    const yDir = Math.sin(angle); // positive is downward in canvas coords
-    const xPadDir = cosA >= 0 ? pRight : pLeft;
-    const yPadDir = yDir < 0 ? pTop : pBottom;
-        // Do not exceed the available padding on either axis; also keep half the icon size inside canvas
-        const safeOutset = Math.max(
-          0,
-          Math.min(padding, xPadDir - sizeW / 2, yPadDir - sizeH / 2)
-        );
-        const radius = chart.scales.r.drawingArea + safeOutset;
-  const x = xCenter + Math.cos(angle) * radius - sizeW / 2;
-  const y = yCenter + Math.sin(angle) * radius - sizeH / 2;
+    const sizeW =
+      typeof sizeOpt === "number" ? sizeOpt : sizeOpt?.width ?? ICON_SIZE;
+    const sizeH =
+      typeof sizeOpt === "number" ? sizeOpt : sizeOpt?.height ?? ICON_SIZE;
+    const cache = chart._iconCache || (chart._iconCache = new Map());
+    // Extract chart layout padding to avoid drawing outside canvas
+    chart.data.labels.forEach((_, index) => {
+      const angle = Math.PI / 2 - (2 * Math.PI * index) / labelCount;
+      // Do not exceed the available padding on either axis; also keep half the icon size inside canvas
+      const radius = chart.scales.r.drawingArea + ICON_PADDING;
+      const x = xCenter + Math.cos(angle) * radius - ICON_SIZE / 2;
+      const y = yCenter - Math.sin(angle) * radius - ICON_SIZE / 2;
       let img: HTMLImageElement | undefined;
       const srcOrImg: any = images[index];
       if (srcOrImg instanceof HTMLImageElement) {
@@ -105,27 +87,34 @@ const iconPlugin = {
       // Draw icon
       if (img && img.complete) ctx.drawImage(img, x, y, sizeW, sizeH);
 
-      // Draw label under icon (towards center)
       const labels = pluginOpts?.labelsUnderIcons as string[] | undefined;
       if (labels && labels[index] != null) {
-        const iconCenterX = x + sizeW / 2;
-        const iconCenterY = y + sizeH / 2;
-        const inward = (pluginOpts?.labelOffset ?? 12) + sizeH / 2;
-  const tx = iconCenterX - Math.cos(angle) * inward;
-  const ty = iconCenterY - Math.sin(angle) * inward;
+        const deg = (angle * 180) / Math.PI;
+        const verticalOffset = pluginOpts?.labelOffset ?? 6;
+        let textX = x + sizeW / 2;
+        let textY;
+        if (deg > 135 || deg < -135) {
+          textY = y + sizeH + verticalOffset;
+        } else if (deg === -90){
+          textY = y+sizeH-verticalOffset-10
+        }
+          else{
+          textY = y + sizeH / 2 +20;
+        }
         ctx.save();
         ctx.globalAlpha = 1;
-        const text = String(labels[index]);
-        ctx.font = pluginOpts?.labelFont || "600 10px system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif";
+        ctx.font =
+          pluginOpts?.labelFont ||
+          "600 10px system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        // Background pill for readability
+        const text = String(labels[index]);
         const metrics = ctx.measureText(text);
-        const tw = metrics.width + 8; // padding
-        const th = 14; // approx height
-        const rx = tx - tw / 2;
-        const ry = ty - th / 2;
-        const r = 6;
+        const tw = metrics.width + 8;
+        const th = 12;
+        const rx = textX - tw / 2;
+        const ry = textY - th / 2;
+        const r = 10;
         ctx.fillStyle = "rgba(0,0,0,0.45)";
         ctx.beginPath();
         ctx.moveTo(rx + r, ry);
@@ -137,7 +126,7 @@ const iconPlugin = {
         ctx.fill();
         // Text
         ctx.fillStyle = pluginOpts?.labelColor || "#ffffff";
-        ctx.fillText(text, tx, ty);
+        ctx.fillText(text, textX, textY);
         ctx.restore();
       }
     });
@@ -274,7 +263,10 @@ function RadarChart({
   end,
   currentDate,
 }) {
-  const totalPlayers = useMemo(() => [player, ...(player?.alts || [])], [player]);
+  const totalPlayers = useMemo(
+    () => [player, ...(player?.alts || [])],
+    [player]
+  );
   // --- Specs aggregation ---
   const aggregatedSpecs = useMemo(
     () =>
@@ -296,14 +288,23 @@ function RadarChart({
     [aggregatedSpecs]
   );
   // Ensure at least 3 specs of player's class are shown by padding with zero-count specs
-  const { StatisticArrayNames, StaticArrayImages, StatisticArrayGames, ModifiedArraySpecsValues } = useMemo(() => {
+  const {
+    StatisticArrayNames,
+    StaticArrayImages,
+    StatisticArrayGames,
+    ModifiedArraySpecsValues,
+  } = useMemo(() => {
     const padded = [...topSpecs];
     if (padded.length < 3) {
       const classSpecs = CLASS_AND_SPECS[player.class] || [];
       classSpecs.forEach((spec: string) => {
         const full = `${spec} ${player.class}`;
         if (!padded.find((s) => s.name === full)) {
-          padded.push({ name: full, gamesAtSpec: { sum: 0 }, spec: getSpecIcon(full) });
+          padded.push({
+            name: full,
+            gamesAtSpec: { sum: 0 },
+            spec: getSpecIcon(full),
+          });
         }
       });
     }
@@ -311,7 +312,12 @@ function RadarChart({
     const images = padded.map((s) => s.spec);
     const games = padded.map((s) => s.gamesAtSpec.sum);
     const values = games.map((g) => safeLog(g));
-    return { StatisticArrayNames: names, StaticArrayImages: images, StatisticArrayGames: games, ModifiedArraySpecsValues: values };
+    return {
+      StatisticArrayNames: names,
+      StaticArrayImages: images,
+      StatisticArrayGames: games,
+      ModifiedArraySpecsValues: values,
+    };
   }, [topSpecs, player.class]);
   const { FinalBracketArrayNames, FinalBracketArrayValues } = useMemo(() => {
     let bracketNamesArray: string[] = [];
@@ -383,51 +389,61 @@ function RadarChart({
     const w = 40;
     const h = 22;
     const fontSize = 8; // slightly smaller to avoid clipping
-  const svg = `<?xml version="1.0" encoding="UTF-8"?><svg xmlns='http://www.w3.org/2000/svg' width='${w}' height='${h}' viewBox='0 0 ${w} ${h}'><rect x='0' y='0' width='${w}' height='${h}' rx='5' ry='5' fill='${bg}'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-family='system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif' font-size='${fontSize}' font-weight='700' fill='${fg}'>${text}</text></svg>`;
+    const svg = `<?xml version="1.0" encoding="UTF-8"?><svg xmlns='http://www.w3.org/2000/svg' width='${w}' height='${h}' viewBox='0 0 ${w} ${h}'><rect x='0' y='0' width='${w}' height='${h}' rx='5' ry='5' fill='${bg}'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-family='system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif' font-size='${fontSize}' font-weight='700' fill='${fg}'>${text}</text></svg>`;
     return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
   };
-  const bracketIconImages = useMemo(() => FinalBracketArrayNames.map((name) => {
-    switch (name) {
-      case "ARENA 2v2":
-        return svgDataUri("2v2", "#1f6feb");
-      case "ARENA 3v3":
-        return svgDataUri("3v3", "#2ea043");
-      case "BATTLEGROUNDS":
-        return svgDataUri("BG", "#8957e5");
-      case "SHUFFLE":
-        return svgDataUri("Shuffle", "#f59e0b");
-      case "BLITZ":
-        return svgDataUri("Blitz", "#e11d48");
-      default:
-        return svgDataUri("?", "#6b7280");
-    }
-  }), [FinalBracketArrayNames]);
+  const bracketIconImages = useMemo(
+    () =>
+      FinalBracketArrayNames.map((name) => {
+        switch (name) {
+          case "ARENA 2v2":
+            return svgDataUri("2v2", "#1f6feb");
+          case "ARENA 3v3":
+            return svgDataUri("3v3", "#2ea043");
+          case "BATTLEGROUNDS":
+            return svgDataUri("BG", "#8957e5");
+          case "SHUFFLE":
+            return svgDataUri("Shuffle", "#f59e0b");
+          case "BLITZ":
+            return svgDataUri("Blitz", "#e11d48");
+          default:
+            return svgDataUri("?", "#6b7280");
+        }
+      }),
+    [FinalBracketArrayNames]
+  );
   // Plugin is registered globally above; we pass images via options to keep icons in sync.
-  const dataBrackets = useMemo(() => ({
-    labels: FinalBracketArrayNames,
-    datasets: [
-      {
-        label: "Games",
-        data: ModifiedArrayValuesBrackets,
-        backgroundColor: DATA_BG,
-        borderColor: DATA_BORDER,
-        borderWidth: 2,
-      },
-    ],
-  }), [FinalBracketArrayNames, ModifiedArrayValuesBrackets]);
-  const dataSpecs = useMemo(() => ({
-    labels: StatisticArrayNames,
-    datasets: [
-      {
-        label: "Games",
-        data: ModifiedArraySpecsValues,
-        backgroundColor: DATA_BG,
-        borderColor: DATA_BORDER,
-        borderWidth: 2,
-        fill: true,
-      },
-    ],
-  }), [StatisticArrayNames, ModifiedArraySpecsValues]);
+  const dataBrackets = useMemo(
+    () => ({
+      labels: FinalBracketArrayNames,
+      datasets: [
+        {
+          label: "Games",
+          data: ModifiedArrayValuesBrackets,
+          backgroundColor: DATA_BG,
+          borderColor: DATA_BORDER,
+          borderWidth: 2,
+        },
+      ],
+    }),
+    [FinalBracketArrayNames, ModifiedArrayValuesBrackets]
+  );
+  const dataSpecs = useMemo(
+    () => ({
+      labels: StatisticArrayNames,
+      datasets: [
+        {
+          label: "Games",
+          data: ModifiedArraySpecsValues,
+          backgroundColor: DATA_BG,
+          borderColor: DATA_BORDER,
+          borderWidth: 2,
+          fill: true,
+        },
+      ],
+    }),
+    [StatisticArrayNames, ModifiedArraySpecsValues]
+  );
   // Shared builder for radar chart options
   const makeRadarOptions = ({
     iconPluginOptions,
@@ -435,10 +451,25 @@ function RadarChart({
     pointLabelCallback,
     layoutPadding,
   }: {
-    iconPluginOptions?: { images: string[]; size?: number | { width: number; height: number }; padding?: number; labelsUnderIcons?: string[]; labelColor?: string; labelFont?: string; labelOffset?: number } | false;
+    iconPluginOptions?:
+      | {
+          images: string[];
+          size?: number | { width: number; height: number };
+          padding?: number;
+          labelsUnderIcons?: string[];
+          labelColor?: string;
+          labelFont?: string;
+          labelOffset?: number;
+        }
+      | false;
     tooltipLabel: (ctx: any) => string | string[];
     pointLabelCallback: (label: any, index: number) => string | string[];
-    layoutPadding?: { top?: number; right?: number; bottom?: number; left?: number };
+    layoutPadding?: {
+      top?: number;
+      right?: number;
+      bottom?: number;
+      left?: number;
+    };
   }) => ({
     type: "radar",
     maintainAspectRatio: false,
@@ -459,7 +490,7 @@ function RadarChart({
       iconPlugin: iconPluginOptions || false,
     },
     scales: {
-    r: {
+      r: {
         min: 0,
         pointLabels: {
           display: false,
@@ -489,21 +520,31 @@ function RadarChart({
     });
   }, [StatisticArrayGames]);
 
-  const options = useMemo(() => makeRadarOptions({
-    iconPluginOptions: { images: StaticArrayImages, size: 18, padding: 46, labelsUnderIcons: percentLabelsSpecs, labelOffset: 10 },
-    tooltipLabel: (ti) => `Games: ${StatisticArrayGames[ti.dataIndex]}`,
-    pointLabelCallback: (_label, index) => {
-  const sum = StatisticArrayGames.reduce((a, b) => a + b, 0) || 1;
-  const percent = ((StatisticArrayGames[index] || 0) / sum) * 100;
-  if (!Number.isFinite(percent) || percent <= 0) return ["0%"];
-  // If < 1%, show two decimals (e.g., 0.25%)
-  if (percent < 1) return [`${percent.toFixed(2)}%`];
-  // Otherwise show rounded integer
-  return [`${Math.round(percent)}%`];
-    },
-  // Add extra padding so top/bottom icons are not clipped
-  layoutPadding: { top: 44, bottom: 44, left: 32, right: 32 },
-  }), [StaticArrayImages, StatisticArrayGames, percentLabelsSpecs]);
+  const options = useMemo(
+    () =>
+      makeRadarOptions({
+        iconPluginOptions: {
+          images: StaticArrayImages,
+          size: 18,
+          padding: 46,
+          labelsUnderIcons: percentLabelsSpecs,
+          labelOffset: 16,
+        },
+        tooltipLabel: (ti) => `Games: ${StatisticArrayGames[ti.dataIndex]}`,
+        pointLabelCallback: (_label, index) => {
+          const sum = StatisticArrayGames.reduce((a, b) => a + b, 0) || 1;
+          const percent = ((StatisticArrayGames[index] || 0) / sum) * 100;
+          if (!Number.isFinite(percent) || percent <= 0) return ["0%"];
+          // If < 1%, show two decimals (e.g., 0.25%)
+          if (percent < 1) return [`${percent.toFixed(2)}%`];
+          // Otherwise show rounded integer
+          return [`${Math.round(percent)}%`];
+        },
+        // Add extra padding so top/bottom icons are not clipped
+        layoutPadding: { top: 44, bottom: 44, left: 32, right: 32 },
+      }),
+    [StaticArrayImages, StatisticArrayGames, percentLabelsSpecs]
+  );
 
   const percentLabelsBrackets = useMemo(() => {
     const total = FinalBracketArrayValues.reduce((a, b) => a + b, 0) || 1;
@@ -514,70 +555,81 @@ function RadarChart({
     });
   }, [FinalBracketArrayValues]);
 
-  const optionsBrackets = useMemo(() => makeRadarOptions({
-    // Push icons further out and make them a bit larger to avoid percentage overlap
-  iconPluginOptions: { images: bracketIconImages, size: { width: 40, height: 22 }, padding: 62, labelsUnderIcons: percentLabelsBrackets, labelOffset: 14 },
-    tooltipLabel: (tooltipItem) => {
-      const label = tooltipItem.label;
-      let value = FinalBracketArrayValues[tooltipItem.dataIndex];
-      if (label === "BATTLEGROUNDS") {
-        return [
-          `🎯Games: ${Math.floor(value / 4)}`,
-          `⏳Estimated time: ${
-            (value / 4) * 20 > 100
-              ? Math.round((((value / 4) * 20) / 60) * 100) / 100 + " hours"
-              : Math.round((value / 4) * 20) + " minutes"
-          }`,
-        ];
-      } else if (label === "SHUFFLE") {
-        return [
-          `🎯Rounds: ${Math.floor(value / 1.7)} Lobbies: ${Math.floor(
-            value / 1.7 / 6
-          )}`,
-          `⏳Estimated time: ${
-            (value / 1.7) * 3 > 100
-              ? Math.round((((value / 1.7) * 3) / 60) * 100) / 100 + " hours"
-              : Math.round((value / 1.7) * 3) + " minutes"
-          }`,
-        ];
-      } else if (label === "BLITZ") {
-        return [
-          `🎯Games: ${Math.floor(value / 2)}`,
-          `⏳Estimated time: ${
-            (value / 2) * 10 > 100
-              ? Math.round((value / 2 / 60) * 100) / 10 + " hours"
-              : Math.round((value / 2) * 10) + " minutes"
-          }`,
-        ];
-      } else if (label === "ARENA 3v3") {
-        return [
-          `🎯Games: ${Math.floor(value)}`,
-          `⏳Estimated time: ${
-            value * 5 > 100
-              ? Math.round(((value * 5) / 60) * 100) / 100 + " hours"
-              : Math.round(value * 5) + " minutes"
-          }`,
-        ];
-      } else if (label === "ARENA 2v2") {
-        return [
-          `🎯Games: ${Math.floor(value)}`,
-          `⏳Estimated time: ${
-            value * 5 > 100
-              ? Math.round(((value * 5) / 60) * 100) / 100 + " hours"
-              : Math.round(value * 5) + " minutes"
-          }`,
-        ];
-      }
-      return `Games: ${Math.floor(value)}`;
-    },
-    pointLabelCallback: (_label, index) => {
-      const total = FinalBracketArrayValues.reduce((a, b) => a + b, 0) || 1;
-      const p = (FinalBracketArrayValues[index] / total) * 100;
-      return [`${p < 6 ? String(p).slice(0, 4) : Math.floor(p)}%`];
-    },
-  // Extra padding for larger bracket icons (give more room on sides)
-  layoutPadding: { top: 56, bottom: 56, left: 48, right: 48 },
-  }), [bracketIconImages, FinalBracketArrayValues, percentLabelsBrackets]);
+  const optionsBrackets = useMemo(
+    () =>
+      makeRadarOptions({
+        // Push icons further out and make them a bit larger to avoid percentage overlap
+        iconPluginOptions: {
+          images: bracketIconImages,
+          size: { width: 40, height: 20 },
+          padding: 32,
+          labelsUnderIcons: percentLabelsBrackets,
+          labelOffset: 24,
+        },
+        tooltipLabel: (tooltipItem) => {
+          const label = tooltipItem.label;
+          let value = FinalBracketArrayValues[tooltipItem.dataIndex];
+          if (label === "BATTLEGROUNDS") {
+            return [
+              `🎯Games: ${Math.floor(value / 4)}`,
+              `⏳Estimated time: ${
+                (value / 4) * 20 > 100
+                  ? Math.round((((value / 4) * 20) / 60) * 100) / 100 + " hours"
+                  : Math.round((value / 4) * 20) + " minutes"
+              }`,
+            ];
+          } else if (label === "SHUFFLE") {
+            return [
+              `🎯Rounds: ${Math.floor(value / 1.7)} Lobbies: ${Math.floor(
+                value / 1.7 / 6
+              )}`,
+              `⏳Estimated time: ${
+                (value / 1.7) * 3 > 100
+                  ? Math.round((((value / 1.7) * 3) / 60) * 100) / 100 +
+                    " hours"
+                  : Math.round((value / 1.7) * 3) + " minutes"
+              }`,
+            ];
+          } else if (label === "BLITZ") {
+            return [
+              `🎯Games: ${Math.floor(value / 2)}`,
+              `⏳Estimated time: ${
+                (value / 2) * 10 > 100
+                  ? Math.round((value / 2 / 60) * 100) / 10 + " hours"
+                  : Math.round((value / 2) * 10) + " minutes"
+              }`,
+            ];
+          } else if (label === "ARENA 3v3") {
+            return [
+              `🎯Games: ${Math.floor(value)}`,
+              `⏳Estimated time: ${
+                value * 5 > 100
+                  ? Math.round(((value * 5) / 60) * 100) / 100 + " hours"
+                  : Math.round(value * 5) + " minutes"
+              }`,
+            ];
+          } else if (label === "ARENA 2v2") {
+            return [
+              `🎯Games: ${Math.floor(value)}`,
+              `⏳Estimated time: ${
+                value * 5 > 100
+                  ? Math.round(((value * 5) / 60) * 100) / 100 + " hours"
+                  : Math.round(value * 5) + " minutes"
+              }`,
+            ];
+          }
+          return `Games: ${Math.floor(value)}`;
+        },
+        pointLabelCallback: (_label, index) => {
+          const total = FinalBracketArrayValues.reduce((a, b) => a + b, 0) || 1;
+          const p = (FinalBracketArrayValues[index] / total) * 100;
+          return [`${p < 6 ? String(p).slice(0, 4) : Math.floor(p)}%`];
+        },
+        // Extra padding for larger bracket icons (give more room on sides)
+        layoutPadding: { top: 56, bottom: 56, left: 46, right: 56 },
+      }),
+    [bracketIconImages, FinalBracketArrayValues, percentLabelsBrackets]
+  );
   return (
     <>
       <div className="flex flex-col sm:flex-row w-full mt-[20px] border-t border-[#37415180] p-2 sm:p-3 justify-center gap-4">
@@ -588,7 +640,7 @@ function RadarChart({
           className="shrink-0 bg-[#37415180]/60 w-full h-px sm:w-px sm:h-[300px]"
           aria-hidden="true"
         />
-        <div className="flex-none w-[300px] h-[300px] rounded-lg bg-[#0b1326]/30 p-1 shadow-sm">
+        <div className="flex-none w-[300px] h-[300px] rounded-lg bg-[#0b1326]/30 p-1 shadow-sm ">
           <Radar data={dataBrackets} options={optionsBrackets}></Radar>
         </div>
       </div>
