@@ -51,96 +51,30 @@ const sumGames = (won?: number, lost?: number) => (won ?? 0) + (lost ?? 0);
 const iconPlugin = {
   id: "iconPlugin",
   afterDraw: (chart) => {
-    const pluginOpts = chart?.options?.plugins?.iconPlugin || {};
-    const images = pluginOpts?.images || [];
+    const images = chart?.options?.plugins?.iconPlugin?.images || [];
     if (!images.length) return;
-  const ctx = chart.ctx;
-  const scale = chart.scales.r;
-  const xCenter = scale.xCenter;
-  const yCenter = scale.yCenter;
-  const labelCount = chart.data.labels.length;
-    const sizeOpt = pluginOpts?.size ?? ICON_SIZE;
-    const sizeW = typeof sizeOpt === "number" ? sizeOpt : sizeOpt?.width ?? ICON_SIZE;
-    const sizeH = typeof sizeOpt === "number" ? sizeOpt : sizeOpt?.height ?? ICON_SIZE;
-    const padding = pluginOpts?.padding ?? ICON_PADDING;
-  // Simple per-chart image cache to avoid recreating Image() and triggering redraws
-  const cache = (chart)._iconCache || ((chart)._iconCache = new Map());
-      // Extract chart layout padding to avoid drawing outside canvas
-      const lp = chart?.options?.layout?.padding;
-      const pTop = typeof lp === "number" ? lp : lp?.top ?? 0;
-      const pRight = typeof lp === "number" ? lp : lp?.right ?? 0;
-      const pBottom = typeof lp === "number" ? lp : lp?.bottom ?? 0;
-      const pLeft = typeof lp === "number" ? lp : lp?.left ?? 0;
+    
+    const ctx = chart.ctx;
+    const xCenter = chart.scales.r.xCenter;
+    const yCenter = chart.scales.r.yCenter;
+    const labelCount = chart.data.labels.length;
 
-  chart.data.labels.forEach((_, index) => {
-  // Use the actual angle computed by Chart.js when available to avoid drift
-      const angle = (typeof scale.getIndexAngle === "function"
-        ? scale.getIndexAngle(index)
-        : undefined) ?? Math.PI / 2 - (2 * Math.PI * index) / labelCount;
-        const cosA = Math.cos(angle);
-        const yDir = -Math.sin(angle); // positive when pointing up
-        const xPadDir = cosA >= 0 ? pRight : pLeft;
-        const yPadDir = yDir >= 0 ? pTop : pBottom;
-        // Do not exceed the available padding on either axis; also keep half the icon size inside canvas
-        const safeOutset = Math.max(
-          0,
-          Math.min(padding, xPadDir - sizeW / 2, yPadDir - sizeH / 2)
-        );
-        const radius = chart.scales.r.drawingArea + safeOutset;
-      const x = xCenter + Math.cos(angle) * radius - sizeW / 2;
-      const y = yCenter - Math.sin(angle) * radius - sizeH / 2;
-      let img: HTMLImageElement | undefined;
-      const srcOrImg: any = images[index];
-      if (srcOrImg instanceof HTMLImageElement) {
-        img = srcOrImg;
-      } else if (typeof srcOrImg === "string") {
-        img = cache.get(srcOrImg);
-        if (!img) {
-          img = new Image();
-          img.onload = () => chart.draw();
-          img.src = srcOrImg;
-          cache.set(srcOrImg, img);
-        }
-      }
-      // Draw icon
-      if (img && img.complete) ctx.drawImage(img, x, y, sizeW, sizeH);
-
-      // Draw label under icon (towards center)
-      const labels = pluginOpts?.labelsUnderIcons as string[] | undefined;
-      if (labels && labels[index] != null) {
-        const iconCenterX = x + sizeW / 2;
-        const iconCenterY = y + sizeH / 2;
-        const inward = (pluginOpts?.labelOffset ?? 12) + sizeH / 2;
-        const tx = iconCenterX - Math.cos(angle) * inward;
-        const ty = iconCenterY + Math.sin(angle) * inward;
-        ctx.save();
-        ctx.globalAlpha = 1;
-        const text = String(labels[index]);
-        ctx.font = pluginOpts?.labelFont || "600 10px system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        // Background pill for readability
-        const metrics = ctx.measureText(text);
-        const tw = metrics.width + 8; // padding
-        const th = 14; // approx height
-        const rx = tx - tw / 2;
-        const ry = ty - th / 2;
-        const r = 6;
-        ctx.fillStyle = "rgba(0,0,0,0.45)";
-        ctx.beginPath();
-        ctx.moveTo(rx + r, ry);
-        ctx.arcTo(rx + tw, ry, rx + tw, ry + th, r);
-        ctx.arcTo(rx + tw, ry + th, rx, ry + th, r);
-        ctx.arcTo(rx, ry + th, rx, ry, r);
-        ctx.arcTo(rx, ry, rx + tw, ry, r);
-        ctx.closePath();
-        ctx.fill();
-        // Text
-        ctx.fillStyle = pluginOpts?.labelColor || "#ffffff";
-        ctx.fillText(text, tx, ty);
-        ctx.restore();
-      }
+    const loadedImages = images.map(src => {
+      const img = new Image();
+      img.src = src;
+      return img;
     });
+
+    if (loadedImages.every(img => img.complete)) {
+      chart.data.labels.forEach((_, index) => {
+        const angle = Math.PI / 2 - (2 * Math.PI * index) / labelCount;
+        const radius = chart.scales.r.drawingArea + ICON_PADDING;
+        const x = xCenter + Math.cos(angle) * radius - ICON_SIZE / 2;
+        const y = yCenter - Math.sin(angle) * radius - ICON_SIZE / 2;
+        
+        ctx.drawImage(loadedImages[index], x, y, ICON_SIZE, ICON_SIZE);
+      });
+    }
   },
 };
 ChartJS.register(iconPlugin);
