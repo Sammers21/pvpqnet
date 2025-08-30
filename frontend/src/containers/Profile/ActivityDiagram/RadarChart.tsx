@@ -24,92 +24,68 @@ ChartJS.register(
 );
 
 function getSpecStatisticPlayer(
-  fullHistory: {
-    item: {
-      character: {
-        full_spec: string;
-        class: string;
-        race: string;
-        gender: string;
-        name: string;
-      };
-      diff: { lost: number; won: number; timestamp: number };
-    };
-  },
-  selectedYear,
-  start,
-  end,
-  currentDate
+  fullHistory:any,
+  selectedYear: string,
+  start: Date,
+  end: Date,
+  currentDate: string
 ) {
-  let currentSpec;
-  let SpecsObjects = [];
+  const SpecsObjects = [];
+  let currentSpec: string | undefined;
   let sum = 0;
-  Object.values(fullHistory)
-    .sort((a, b) => {
-      if (a.character !== undefined && b.character !== undefined) {
-        return a.character.full_spec >= b.character.full_spec ? 1 : -1;
-      } else {
-        return a < b ? 1 : -1;
-      }
-    })
-    .forEach((item) => {
-      if (
-        item.character !== undefined &&
-        item.character.full_spec !== "{spec} {class}" &&
-        new Date(item.diff.timestamp).getFullYear().toString() === selectedYear
-      ) {
-        if (
-          currentSpec !== item.character.full_spec &&
-          currentSpec !== undefined
-        ) {
-          const character_Class = item.character.class;
-          const character_Race = item.character.race;
-          const character_Gender = item.character.gender;
-          SpecsObjects.push({
-            spec: getDetaisImages({
-              wowClass: character_Class,
-              wowGender: character_Gender,
-              wowRace: character_Race,
-              wowSpec: currentSpec,
-            }).specIcon,
-            gamesAtSpec: { sum },
-            name: currentSpec,
-          });
-          sum = 0;
-        }
-        const won = item.diff.won ?? 0;
-        const lost = item.diff.lost ?? 0;
-        sum = sum + won + lost;
-        currentSpec = item.character.full_spec;
-      } else if (selectedYear === currentDate && item.character !== undefined) {
-        if (start <= new Date(item.diff.timestamp) <= end) {
-          if (
-            currentSpec !== item.character.full_spec &&
-            currentSpec !== undefined &&
-            item.character.full_spec !== "{spec} {class}"
-          ) {
-            const character_Class = item.character.class;
-            const character_Race = item.character.race;
-            const character_Gender = item.character.gender;
-            SpecsObjects.push({
-              spec: getDetaisImages({
-                wowClass: character_Class,
-                wowGender: character_Gender,
-                wowRace: character_Race,
-                wowSpec: currentSpec,
-              }).specIcon,
-              gamesAtSpec: { sum },
-              name: currentSpec,
-            });
-            sum = 0;
-          }
-          const won = item.diff.won ?? 0;
-          const lost = item.diff.lost ?? 0;
-          sum = sum + won + lost;
-          currentSpec = item.character.full_spec;
-        }
-      }
+
+  const history:any = Object.values(fullHistory).sort((a: any, b: any) =>
+    a.character?.full_spec?.localeCompare(b.character?.full_spec ?? "") ?? 0
+  );
+
+  for (const item of history) {
+    if (!item.character || item.character.full_spec === "{spec} {class}") continue;
+
+    const itemYear = new Date(item.diff.timestamp).getFullYear().toString();
+    const isCurrentYear = selectedYear === currentDate;
+
+    // фильтрация по годам и датам
+    const inSelectedPeriod =
+      (!isCurrentYear && itemYear === selectedYear) ||
+      (isCurrentYear &&
+        new Date(item.diff.timestamp) >= start &&
+        new Date(item.diff.timestamp) <= end);
+
+    if (!inSelectedPeriod) continue;
+
+    // если спек изменился — зафиксировать предыдущий
+    if (currentSpec && currentSpec !== item.character.full_spec) {
+      SpecsObjects.push({
+        spec: getDetaisImages({
+          wowClass: item.character.class,
+          wowGender: item.character.gender,
+          wowRace: item.character.race,
+          wowSpec: currentSpec,
+        }).specIcon,
+        gamesAtSpec: { sum },
+        name: currentSpec,
+      });
+      sum = 0;
+    }
+
+    sum += (item.diff.won ?? 0) + (item.diff.lost ?? 0);
+    currentSpec = item.character.full_spec;
+  }
+
+  // добавить последний спек
+  if (currentSpec) {
+    SpecsObjects.push({
+      spec: getDetaisImages({
+        wowClass: history.at(-1).character.class,
+        wowGender: history.at(-1).character.gender,
+        wowRace: history.at(-1).character.race,
+        wowSpec: currentSpec,
+      }).specIcon,
+      gamesAtSpec: { sum },
+      name: currentSpec,
     });
+  }
+
   return SpecsObjects;
 }
 function getBrackets(totalPlayers, selectedYear, start, end, currentDate) {
@@ -131,7 +107,8 @@ function getBrackets(totalPlayers, selectedYear, start, end, currentDate) {
         let lost = 0;
         Object.values(item.gaming_history.history).forEach((session) => {
           if (
-            end < new Date(session.diff.timestamp).toString < start &&
+            new Date(session.diff.timestamp) >= start &&
+            new Date(session.diff.timestamp) <= end &&
             selectedYear === currentDate
           ) {
             won = session.diff.won ?? 0;
@@ -223,7 +200,7 @@ function RadarChart({
     SpecsOfPlayerClass.forEach((element) => {
       if (!StatisticArrayNames.includes(element + " " + player.class)) {
         StatisticArrayNames.push(element + " " + player.class);
-        StaticArrayImages.push(getSpecIcon(element + ' ' +player.class))
+        StaticArrayImages.push(getSpecIcon(element + " " + player.class));
         StatisticArrayGames.push(0);
       }
     });
@@ -299,7 +276,7 @@ function RadarChart({
       FinalBracketArrayNames.push(item.name);
       FinalBracketArrayValues.push(item.value);
     });
-  
+
   let ModifiedArrayValuesBrackets = [];
   FinalBracketArrayValues.forEach((item) => {
     ModifiedArrayValuesBrackets.push(
@@ -326,8 +303,16 @@ function RadarChart({
         img.src = StaticArrayImages[index];
         ctx.drawImage(
           img,
-          index === 0? xLabel - 35 : (index < 5 && index >=2 ? xLabel-10: xLabel),
-          index >= 2 && index < 4 ? yLabel - 30 : (index == 0 ? yLabel - 10 : yLabel+5),
+          index === 0
+            ? xLabel - 35
+            : index < 5 && index >= 2
+            ? xLabel - 10
+            : xLabel,
+          index >= 2 && index < 4
+            ? yLabel - 30
+            : index == 0
+            ? yLabel - 10
+            : yLabel + 5,
           20,
           20
         );
@@ -372,7 +357,6 @@ function RadarChart({
       tooltip: {
         callbacks: {
           label: function (tooltipItem) {
-            
             return `Games: ${StatisticArrayGames[tooltipItem.dataIndex]}`;
           },
         },
@@ -395,8 +379,15 @@ function RadarChart({
             StatisticArrayGames.forEach((item) => {
               sum = sum + item;
             });
-            let percentValue = Math.round((StatisticArrayGames[index] / sum) * 100) ?? 0
-            return [`${percentValue !== 0 && !Number.isNaN(percentValue) ? percentValue+'%' : '0%'}`];
+            let percentValue =
+              Math.round((StatisticArrayGames[index] / sum) * 100) ?? 0;
+            return [
+              `${
+                percentValue !== 0 && !Number.isNaN(percentValue)
+                  ? percentValue + "%"
+                  : "0%"
+              }`,
+            ];
           },
         },
         angleLines: {

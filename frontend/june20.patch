@@ -1,0 +1,275 @@
+commit 23c3517f497bd71eb65ecd9813fa027f02718190
+Author: Medivero <artembolyachinov@gmail.com>
+Date:   Fri Jun 20 22:35:08 2025 +0300
+
+    Fixed routes for header, refactoring, smooth block for header
+
+diff --git a/frontend/src/components/Header/DesktopView.tsx b/frontend/src/components/Header/DesktopView.tsx
+index d23cf85..c13f84f 100644
+--- a/frontend/src/components/Header/DesktopView.tsx
++++ b/frontend/src/components/Header/DesktopView.tsx
+@@ -3,6 +3,8 @@ import PlayersSearch from "@/components/SearchBar";
+ import RegionButtons from "./RegionButtons";
+ 
+ import { REGION } from "@/constants/region";
++import { Link} from "react-router-dom";
++import { useEffect, useRef, useState } from "react";
+ 
+ interface IProps {
+   host: string;
+@@ -11,23 +13,47 @@ interface IProps {
+   setRegion: (r: REGION) => void;
+ }
+ 
++
++
++
+ const DesktopView = ({ menuItems, host, region, setRegion }: IProps) => {
++  const [pageNow,setPageNow] = useState<number>(0);
++  const [blockPosition,setBlockPosition] = useState<number>(0);
++  const [BlockWidth,setBlockWidth] = useState(0);
++  const buttonRefs = useRef<HTMLButtonElement[]>([]);
++  useEffect(() => {
++    const currButton = buttonRefs.current[pageNow]
++    if (currButton){
++      const par = currButton.parentElement?.parentElement;
++      const parRect = par?.getBoundingClientRect()
++      const btnRect = currButton?.getBoundingClientRect();
++      setBlockPosition(btnRect.left - (parRect?.left || 0))
++      setBlockWidth(btnRect.width);
++    }
++  },[pageNow])
+   return (
+     <div className="flex items-center justify-between w-full">
+       <div className="flex items-center justify-start">
+-        <div className="flex items-center justify-start">
+-          <a
+-            href="/"
++        <div className="flex items-center justify-start relative">
++          <Link
++            to={"/"}
++            onClick={() => setPageNow(0)}
+             className="sm:flex hidden ml-20 mr-5 font-bold tracking-wider text-xl"
+           >
+             {host}
+-          </a>
+-
+-          {menuItems.map((item) => (
+-            <Button
++          </Link>
++          <div style={{transform: `translateX(${blockPosition}px)`,width: `${BlockWidth}px`}} className="transition-all duration-500 rounded-lg  absolute z-100 bg-gray-800 h-[35px]"></div>
++          {menuItems.map((item,index) => (
++            <Button disableRipple 
++              ref={(el) => {
++                      buttonRefs.current[index] = el
++                    }}
+               key={item.label}
+-              className="!text-[#60a5fa]"
+-              onClick={item.onClick}
++              className={`!text-[#60a5fa] hover:!bg-transparent`}
++              onClick={() => {
++                item.onClick();
++                setPageNow(index)
++              }}
+             >
+               {item.label}
+             </Button>
+diff --git a/frontend/src/components/Header/index.tsx b/frontend/src/components/Header/index.tsx
+index 75e702a..441ad88 100644
+--- a/frontend/src/components/Header/index.tsx
++++ b/frontend/src/components/Header/index.tsx
+@@ -1,4 +1,4 @@
+-import { useMemo } from "react";
++import { useMemo, useState } from "react";
+ import { useNavigate, useParams, useLocation } from "react-router-dom";
+ import { generatePath } from "react-router";
+ import { createBreakpoint } from "react-use";
+@@ -35,10 +35,9 @@ const Header = () => {
+     region: regionFromUrl = REGION.eu,
+     bracket = getBracket(),
+   } = useParams();
+-  const region = getRegion(regionFromUrl);
++  const [region,setRegion] = useState(getRegion(regionFromUrl));
+   const activity = getActivityFromUrl();
+   const breakpoint = useBreakpoint();
+-
+   const isMeta = useMemo(() => {
+     return location.pathname.includes("meta");
+   }, [location]);
+@@ -57,6 +56,7 @@ const Header = () => {
+       newPath = generatePath(publicUrls.page, { region: rg , activity, bracket });
+     }
+     navigate(newPath + window.location.search);
++    setRegion(rg)
+   }
+ 
+   function navigateToPage({
+diff --git a/frontend/src/containers/Activity/index.tsx b/frontend/src/containers/Activity/index.tsx
+index ca21faa..fcd0680 100644
+--- a/frontend/src/containers/Activity/index.tsx
++++ b/frontend/src/containers/Activity/index.tsx
+@@ -1,10 +1,8 @@
+ import { useState, useEffect } from 'react';
+ import { useParams } from 'react-router-dom';
+ 
+-import Header from '@/components/Header';
+ import ActivityTabs from './Tabs';
+ import DataTable from '@/components/DataTable';
+-import Footer from '@/components/Footer';
+ 
+ import { REGION } from '@/constants/region';
+ import { BRACKETS } from '@/constants/pvp-activity';
+@@ -40,22 +38,18 @@ function Activity() {
+   if (bracket === "shuffle-multiclass") {
+     return (
+       <>
+-        <Header />
+         <MClassLeaderboard />
+-        <Footer />
+       </>
+     );
+   } else {
+     return (
+       <>
+-        <Header />
+         <div className="mt-24 mx-auto mb-11 w-full lg:w-[85%]">
+           <ActivityTabs
+             bracketActivity={activity === "activity" ? bracketActivity : undefined}
+           />
+           <DataTable data={bracketActivity} />
+         </div>
+-        <Footer />
+       </>
+     );
+   }
+diff --git a/frontend/src/containers/MClassLeaderboard/index.tsx b/frontend/src/containers/MClassLeaderboard/index.tsx
+index 6eed26d..d7ed943 100644
+--- a/frontend/src/containers/MClassLeaderboard/index.tsx
++++ b/frontend/src/containers/MClassLeaderboard/index.tsx
+@@ -16,7 +16,6 @@ import * as React from "react";
+ import { useParams } from "react-router-dom";
+ import { StripedDataGrid } from "../Meta/Grid";
+ import InfoIcon from "@mui/icons-material/Info";
+-import Row from "@/components/AltsTable/Row";
+ 
+ function columns(region): GridColDef[] {
+   return [
+diff --git a/frontend/src/containers/Meta/index.tsx b/frontend/src/containers/Meta/index.tsx
+index eca077d..c88aac3 100644
+--- a/frontend/src/containers/Meta/index.tsx
++++ b/frontend/src/containers/Meta/index.tsx
+@@ -1,6 +1,4 @@
+ import { useEffect } from 'react';
+-import Header from '@/components/Header';
+-import Footer from '@/components/Footer';
+ 
+ import Grid from './Grid';
+ 
+@@ -11,9 +9,7 @@ const Meta = () => {
+ 
+   return (
+     <>
+-      <Header />
+       <Grid />
+-      <Footer />
+     </>
+   );
+ };
+diff --git a/frontend/src/containers/Profile/ObsWidget.tsx b/frontend/src/containers/Profile/ObsWidget.tsx
+index 9c19612..a380afb 100644
+--- a/frontend/src/containers/Profile/ObsWidget.tsx
++++ b/frontend/src/containers/Profile/ObsWidget.tsx
+@@ -3,7 +3,6 @@ import { Player } from "@/types";
+ import { Typography } from "@mui/material";
+ import { useEffect, useState } from "react";
+ import { useParams, useSearchParams } from "react-router-dom";
+-import { baseUrl } from "@/config";
+ import { groupBy } from "lodash";
+ import { DPS_SPECS, HEAL_SPECS } from "@/constants/filterSchema";
+ import { SpecChip } from "./Alts/SpecChip";
+diff --git a/frontend/src/containers/Profile/index.tsx b/frontend/src/containers/Profile/index.tsx
+index 4862766..6360c2c 100644
+--- a/frontend/src/containers/Profile/index.tsx
++++ b/frontend/src/containers/Profile/index.tsx
+@@ -1,14 +1,9 @@
+ import { useEffect, useState } from "react";
+ import { useParams } from "react-router-dom";
+-import axios from "axios";
+ 
+ import { Alert, Snackbar as MuiSnackbar, styled } from "@mui/material";
+-import Header from "@/components/Header";
+ import Armory from "./Armory";
+ import PlayerNotFound from "./PlayerNotFound";
+-import Footer from "@/components/Footer";
+-
+-import { baseUrl } from "@/config";
+ import { capitalizeFirstLetter } from "@/utils/common";
+ import type { Player } from "@/types";
+ import { getProfile } from "@/services/stats.service";
+@@ -55,7 +50,6 @@ const Profile = () => {
+ 
+   return (
+     <>
+-      <Header />
+       {playerStatus === 404 ? (
+         <PlayerNotFound
+           loading={loading}
+@@ -85,7 +79,6 @@ const Profile = () => {
+           Player profile successfully updated!
+         </Alert>
+       </Snackbar>
+-      <Footer />
+     </>
+   );
+ };
+diff --git a/frontend/src/index.css b/frontend/src/index.css
+index 1a72a2c..31f0a17 100644
+--- a/frontend/src/index.css
++++ b/frontend/src/index.css
+@@ -35,7 +35,7 @@ code {
+ }
+ 
+ ::-webkit-scrollbar {
+-  width: 5px;
++  width: 0;
+   height: 5px;
+ }
+ 
+diff --git a/frontend/src/routes/index.tsx b/frontend/src/routes/index.tsx
+index 4c66c71..1d70366 100644
+--- a/frontend/src/routes/index.tsx
++++ b/frontend/src/routes/index.tsx
+@@ -11,6 +11,8 @@ import BlizzardLoader from "@/components/BlizzardLoader";
+ import { publicUrls } from "@/config";
+ import { ObsWidget } from "@/containers/Profile/ObsWidget";
+ import TwitchCorner from "@/components/TwitchCorner";
++import Header from "@/components/Header";
++import Footer from "@/components/Footer";
+ 
+ const { page } = publicUrls;
+ const ActivityScreen = loadable(() => import("@/containers/Activity"), {
+@@ -105,10 +107,10 @@ const AppContent = () => {
+ 
+   return (
+     <>
++    <Header></Header>
+       <ReactRouterDomRoutes>
+         <Route path={"/"} element={<ActivityScreen />} />
+         <Route path={"/meta"} element={<MetaScreen />} />
+-
+         <Route path=":region">
+           <Route path="meta" element={<MetaScreen />} />
+           <Route path="activity" element={<ActivityScreen />}>
+@@ -124,11 +126,10 @@ const AppContent = () => {
+             </Route>
+           </Route>
+         </Route>
+-
+         <Route path={page} element={<ActivityScreen />} />
+         <Route path="*" element={<ActivityScreen />} />
+       </ReactRouterDomRoutes>
+-
++      <Footer></Footer>
+       {/* TwitchPlayer in corner only when streamer is online, not on obs-widget page, and not in loading or error state */}
+       {!isObsWidget && !isLoading && !hasError && isStreamerOnline && (
+         <TwitchCorner channel={streamerChannel} />
