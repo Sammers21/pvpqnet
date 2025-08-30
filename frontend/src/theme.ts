@@ -1,7 +1,8 @@
 import { createTheme } from '@mui/material/styles';
 
 export const headerButtonColor = 'rgb(96 165 250)';
-export const containerBg = '#030303e6';
+// Dark navy tone sampled from the provided image
+export const containerBg = '#000c19';
 export const borderColor = '#2f384de6';
 export const aroundColor = 'rgb(47,56,77)';
 export const borderRadius = 4;
