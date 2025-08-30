@@ -7,12 +7,10 @@ import {
   Filler,
   Tooltip,
   Legend,
-  plugins,
 } from "chart.js";
 import { Radar } from "react-chartjs-2";
 import { getDetaisImages, getSpecIcon } from "@/utils/table";
 import { CLASS_AND_SPECS } from "@/constants/filterSchema";
-import { useEffect } from "react";
 ChartJS.register(
   ArcElement,
   RadialLinearScale,
@@ -22,6 +20,36 @@ ChartJS.register(
   Tooltip,
   Legend
 );
+
+// Custom plugin to draw spec icons at the ends of the radar axes.
+// Expects `options.plugins.iconPlugin.images` to be an array of image URLs aligned with labels.
+const iconPlugin = {
+  id: "iconPlugin",
+  afterDraw: (chart) => {
+    const images = chart?.options?.plugins?.iconPlugin?.images || [];
+    if (!images.length) return;
+    const ctx = chart.ctx;
+    const xCenter = chart.scales.r.xCenter;
+    const yCenter = chart.scales.r.yCenter;
+    const labelCount = chart.data.labels.length;
+    const ICON_SIZE = 18; // px
+    const ICON_PADDING = 36; // distance from outer radius
+
+    chart.data.labels.forEach((_, index) => {
+      const angle = Math.PI / 2 - (2 * Math.PI * index) / labelCount;
+      const radius = chart.scales.r.drawingArea + ICON_PADDING;
+      const x = xCenter + Math.cos(angle) * radius - ICON_SIZE / 2;
+      const y = yCenter - Math.sin(angle) * radius - ICON_SIZE / 2;
+      const img = new Image();
+      img.onload = () => chart.draw();
+      img.src = images[index];
+      if (img.complete) {
+        ctx.drawImage(img, x, y, ICON_SIZE, ICON_SIZE);
+      }
+    });
+  },
+};
+ChartJS.register(iconPlugin);
 
 function getSpecStatisticPlayer(
   fullHistory: {
@@ -223,7 +251,7 @@ function RadarChart({
     SpecsOfPlayerClass.forEach((element) => {
       if (!StatisticArrayNames.includes(element + " " + player.class)) {
         StatisticArrayNames.push(element + " " + player.class);
-        StaticArrayImages.push(getSpecIcon(element + ' ' +player.class))
+        StaticArrayImages.push(getSpecIcon(element + " " + player.class));
         StatisticArrayGames.push(0);
       }
     });
@@ -299,7 +327,7 @@ function RadarChart({
       FinalBracketArrayNames.push(item.name);
       FinalBracketArrayValues.push(item.value);
     });
-  
+
   let ModifiedArrayValuesBrackets = [];
   FinalBracketArrayValues.forEach((item) => {
     ModifiedArrayValuesBrackets.push(
@@ -308,36 +336,7 @@ function RadarChart({
         : 0
     );
   });
-  const iconPlugin = {
-    id: "iconPlugin",
-    afterDraw: (chart) => {
-      const ctx = chart.ctx;
-      const xCenter = chart.scales.r.xCenter;
-      const yCenter = chart.scales.r.yCenter;
-      const labelCount = chart.data.labels.length;
-
-      chart.data.labels.forEach((label, index) => {
-        const angle = Math.PI / 2 - (2 * Math.PI * index) / labelCount;
-        const xLabel =
-          xCenter + Math.cos(angle) * (chart.scales.r.drawingArea + 5);
-        const yLabel =
-          yCenter - Math.sin(angle) * (chart.scales.r.drawingArea + 10);
-        const img = new Image();
-        img.src = StaticArrayImages[index];
-        ctx.drawImage(
-          img,
-          index === 0? xLabel - 35 : (index < 5 && index >=2 ? xLabel-10: xLabel),
-          index >= 2 && index < 4 ? yLabel - 30 : (index == 0 ? yLabel - 10 : yLabel+5),
-          20,
-          20
-        );
-      });
-    },
-  };
-  useEffect(() => {
-    ChartJS.unregister(iconPlugin);
-    ChartJS.register(iconPlugin);
-  }, [StaticArrayImages]);
+  // Plugin is registered globally above; we pass images via options to keep icons in sync.
   const dataBrackets = {
     labels: FinalBracketArrayNames,
     datasets: [
@@ -365,6 +364,10 @@ function RadarChart({
   };
   const options = {
     type: "radar",
+    maintainAspectRatio: false,
+    layout: {
+      padding: { top: 28, right: 28, bottom: 28, left: 28 },
+    },
     plugins: {
       legend: {
         display: false,
@@ -372,12 +375,11 @@ function RadarChart({
       tooltip: {
         callbacks: {
           label: function (tooltipItem) {
-            
             return `Games: ${StatisticArrayGames[tooltipItem.dataIndex]}`;
           },
         },
       },
-      iconPlugin: true,
+      iconPlugin: { images: StaticArrayImages },
     },
     scales: {
       r: {
@@ -388,26 +390,31 @@ function RadarChart({
           font: {
             size: 8,
           },
+          padding: 4,
           callback: function (label, index) {
             let sum = 0;
-            const img = new Image();
-            img.src = StaticArrayImages[index];
             StatisticArrayGames.forEach((item) => {
               sum = sum + item;
             });
-            let percentValue = Math.round((StatisticArrayGames[index] / sum) * 100) ?? 0
-            return [`${percentValue !== 0 && !Number.isNaN(percentValue) ? percentValue+'%' : '0%'}`];
+            let percentValue =
+              Math.round((StatisticArrayGames[index] / sum) * 100) ?? 0;
+            return [
+              `${
+                percentValue !== 0 && !Number.isNaN(percentValue)
+                  ? percentValue + "%"
+                  : "0%"
+              }`,
+            ];
           },
         },
         angleLines: {
-          display: true,
-          color: "rgb(47, 70, 100)",
-          lineWidth: 2,
+          display: false,
         },
         grid: {
           display: true,
-          color: "rgba(58, 58, 58, 0.98)",
+          color: "rgba(55, 65, 81, 0.5)",
           lineWidth: 1,
+          circular: true,
         },
         ticks: {
           display: false,
@@ -417,6 +424,7 @@ function RadarChart({
   };
   const optionsBrackets = {
     type: "radar",
+    maintainAspectRatio: false,
     plugins: {
       iconPlugin: false,
       legend: {
@@ -506,14 +514,13 @@ function RadarChart({
           },
         },
         angleLines: {
-          display: true,
-          color: "rgb(47, 70, 100)",
-          lineWidth: 2,
+          display: false,
         },
         grid: {
           display: true,
-          color: "rgba(58, 58, 58, 0.98)",
+          color: "rgba(55, 65, 81, 0.5)",
           lineWidth: 1,
+          circular: true,
         },
         ticks: {
           display: false,
@@ -523,12 +530,15 @@ function RadarChart({
   };
   return (
     <>
-      <div className="flex flex-col sm:flex-row w-[102.8%] -ml-[10px] border-t-[2px] mt-[20px] border-solid border-[#37415180] p-[10px] justify-around">
-        <div className="flex-none w-[300px] h-[300px] border border-solid border-[#37415180] p-[5px] rounded ">
+      <div className="flex flex-col sm:flex-row w-full mt-[20px] border-t border-[#37415180] p-2 sm:p-3 justify-center gap-4">
+        <div className="flex-none w-[300px] h-[300px] rounded-lg bg-[#0b1326]/30 p-1 shadow-sm ">
           <Radar data={dataSpecs} options={options}></Radar>
         </div>
-        <div className="border-r-[2px] border-solid border-[#37415180]"></div>
-        <div className="flex-none w-[300px] h-[300px] border border-solid border-[#37415180] p-[5px] rounded">
+        <div
+          className="shrink-0 bg-[#37415180]/60 w-full h-px sm:w-px sm:h-[300px]"
+          aria-hidden="true"
+        />
+        <div className="flex-none w-[300px] h-[300px] rounded-lg bg-[#0b1326]/30 p-1 shadow-sm">
           <Radar data={dataBrackets} options={optionsBrackets}></Radar>
         </div>
       </div>
