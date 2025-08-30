@@ -204,10 +204,10 @@ function RadarChart({
     end,
     currentDate
   );
-  // Sort by games desc and keep top 5
-  const topSpecs = aggregatedSpecs
-    .sort((a, b) => b.gamesAtSpec.sum - a.gamesAtSpec.sum)
-    .slice(0, 5);
+    // Sort by games desc and keep top 10
+    const topSpecs = aggregatedSpecs
+      .sort((a, b) => b.gamesAtSpec.sum - a.gamesAtSpec.sum)
+      .slice(0, 10);
   // Ensure at least 3 specs of player's class are shown by padding with zero-count specs
   if (topSpecs.length < 3) {
     const classSpecs = CLASS_AND_SPECS[player.class] || [];
