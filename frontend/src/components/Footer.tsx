@@ -34,7 +34,7 @@ const Footer = () => {
         <ExternalLink href="https://github.com/Sammers21/pvpqnet">
           <GitHubIcon />
         </ExternalLink>
-        <ExternalLink href="https://discord.com/users/343752113752506379">
+        <ExternalLink href="https://discord.gg/KcN4Na9A">
           <DiscordIcon />
         </ExternalLink>
       </div>
