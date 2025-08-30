@@ -77,18 +77,18 @@ const iconPlugin = {
       const angle = (typeof scale.getIndexAngle === "function"
         ? scale.getIndexAngle(index)
         : undefined) ?? Math.PI / 2 - (2 * Math.PI * index) / labelCount;
-        const cosA = Math.cos(angle);
-        const yDir = -Math.sin(angle); // positive when pointing up
-        const xPadDir = cosA >= 0 ? pRight : pLeft;
-        const yPadDir = yDir >= 0 ? pTop : pBottom;
+    const cosA = Math.cos(angle);
+    const yDir = Math.sin(angle); // positive is downward in canvas coords
+    const xPadDir = cosA >= 0 ? pRight : pLeft;
+    const yPadDir = yDir < 0 ? pTop : pBottom;
         // Do not exceed the available padding on either axis; also keep half the icon size inside canvas
         const safeOutset = Math.max(
           0,
           Math.min(padding, xPadDir - sizeW / 2, yPadDir - sizeH / 2)
         );
         const radius = chart.scales.r.drawingArea + safeOutset;
-      const x = xCenter + Math.cos(angle) * radius - sizeW / 2;
-      const y = yCenter - Math.sin(angle) * radius - sizeH / 2;
+  const x = xCenter + Math.cos(angle) * radius - sizeW / 2;
+  const y = yCenter + Math.sin(angle) * radius - sizeH / 2;
       let img: HTMLImageElement | undefined;
       const srcOrImg: any = images[index];
       if (srcOrImg instanceof HTMLImageElement) {
@@ -111,8 +111,8 @@ const iconPlugin = {
         const iconCenterX = x + sizeW / 2;
         const iconCenterY = y + sizeH / 2;
         const inward = (pluginOpts?.labelOffset ?? 12) + sizeH / 2;
-        const tx = iconCenterX - Math.cos(angle) * inward;
-        const ty = iconCenterY + Math.sin(angle) * inward;
+  const tx = iconCenterX - Math.cos(angle) * inward;
+  const ty = iconCenterY - Math.sin(angle) * inward;
         ctx.save();
         ctx.globalAlpha = 1;
         const text = String(labels[index]);
