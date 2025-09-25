@@ -8,17 +8,14 @@ import {
 } from "@/constants/filterSchema";
 import { title } from "process";
 import { toUpper } from "lodash";
-
 interface IProps {
   bracket: string;
   stats: any;
 }
-
 const ratingRewardMap = {
   "3v3": "ARENA_3v3",
   rbg: "BATTLEGROUNDS/alliance",
 };
-
 const CutOffText = ({ bracket, stats }: IProps) => {
   const [searchParams] = useSearchParams();
   const [selectedSpecs, setSelectedSpecs] = useState(
@@ -28,11 +25,9 @@ const CutOffText = ({ bracket, stats }: IProps) => {
   const rewards = stats?.cutoffs?.rewards;
   const spotWithNoAlts = stats?.cutoffs?.spotWithNoAlts;
   const predictions = stats?.cutoffs?.predictions;
-
   useEffect(() => {
     setSelectedSpecs(getFromSearchParams(searchParams, "specs"));
   }, [searchParams]);
-
   const ssnName = "Astral";
   if (bracket === "rbg" || bracket === "3v3") {
     const cutOffRating = rewards?.[ratingRewardMap[bracket]];
@@ -48,7 +43,7 @@ const CutOffText = ({ bracket, stats }: IProps) => {
     }
     return (
       <span
-        className="text-xs sm:text-lg font-light"
+        className="text-sm sm:text-base font-medium text-gray-200 leading-relaxed"
         style={{ color: rankOneTitleColor }}
       >
         {text}
@@ -78,7 +73,7 @@ const CutOffText = ({ bracket, stats }: IProps) => {
     }
     return (
       <span
-        className="text-xs sm:text-lg font-light"
+        className="text-sm sm:text-base font-medium text-gray-200 leading-relaxed"
         style={{ color: rankOneTitleColor }}
       >
         {text}
@@ -89,10 +84,7 @@ const CutOffText = ({ bracket, stats }: IProps) => {
     selectedSpecs.length === 0
   ) {
     return (
-      <span
-        className="text-xs sm:text-lg font-light"
-        style={{ color: rankOneTitleColor }}
-      >
+      <span className="text-sm sm:text-base font-medium text-gray-400 leading-relaxed">
         Select the spec filter to see the cutoff rating
       </span>
     );
@@ -101,10 +93,7 @@ const CutOffText = ({ bracket, stats }: IProps) => {
     selectedSpecs.length > 1
   ) {
     return (
-      <span
-        className="text-xs sm:text-lg font-light"
-        style={{ color: rankOneTitleColor }}
-      >
+      <span className="text-sm sm:text-base font-medium text-gray-400 leading-relaxed">
         Select only one spec to see the cutoff rating
       </span>
     );
@@ -112,7 +101,6 @@ const CutOffText = ({ bracket, stats }: IProps) => {
     return <div></div>;
   }
 };
-
 const CutOffRating = ({ bracket, stats }: IProps) => {
   if (
     !stats?.cutoffs?.rewards?.ARENA_3v3 ||
@@ -120,11 +108,10 @@ const CutOffRating = ({ bracket, stats }: IProps) => {
   ) {
     return <div></div>;
   }
-  // return <div></div>;
   return (
-    <div className="flex items-center mr-2">
+    <div className="flex items-center bg-gray-800/40 backdrop-blur-sm rounded-lg border border-gray-700/50 px-4 py-3 shadow-lg">
       <img
-        className="w-7 h-7 mr-2"
+        className="w-6 h-6 sm:w-7 sm:h-7 mr-3 filter drop-shadow-sm"
         src={getSeasonRankImageFromRating(0, true)}
         alt="Season Rank"
       />
@@ -132,5 +119,4 @@ const CutOffRating = ({ bracket, stats }: IProps) => {
     </div>
   );
 };
-
 export default CutOffRating;
