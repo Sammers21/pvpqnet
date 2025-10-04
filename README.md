@@ -22,7 +22,7 @@ In order to run the backend you need to have:
 ```
 docker build -t pvpq-backend .
 docker run  -e CLIENT_ID="" -e CLIENT_SECRET="" -e DB_URI="" --name pvpq -d -p9000:9000 pvpq-backend
-```
+``` 
 **CLIENT_ID** and **CLIENT_SECRET** are the Battle.net API keys. **DB_URI** is the MongoDB connection string.
 
 The backend will be available at http://localhost:9000. The backend will automatically create the database and populate it with data.
