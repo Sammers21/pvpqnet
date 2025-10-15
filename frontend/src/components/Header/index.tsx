@@ -12,7 +12,7 @@ import { borderColor, containerBg } from "@/theme";
 import { metaUrls, publicUrls, shuffleMulticlassUrls } from "@/config";
 import { REGION } from "@/constants/region";
 import { BRACKETS } from "@/constants/pvp-activity";
-import {getActivityFromUrl, getBracket, getRegion} from "@/utils/urlparts";
+import { getActivityFromUrl, getBracket, getRegion } from "@/utils/urlparts";
 
 const StyledAppBar = styled(AppBar)({
   backgroundImage: "none",
@@ -25,16 +25,18 @@ const StyledToolbar = styled(Toolbar)({
   minHeight: "48px !important",
 });
 
-const useBreakpoint = createBreakpoint({ mobile: 0, tablet: 768, desktop: 1280 });
+const useBreakpoint = createBreakpoint({
+  mobile: 0,
+  tablet: 768,
+  desktop: 1280,
+});
 
 const Header = () => {
   let navigate = useNavigate();
   const location = useLocation();
   const host = window.location.host.toUpperCase();
-  const {
-    region: regionFromUrl = REGION.eu,
-    bracket = getBracket(),
-  } = useParams();
+  const { region: regionFromUrl = REGION.eu, bracket = getBracket() } =
+    useParams();
   const region = getRegion(regionFromUrl);
   const activity = getActivityFromUrl();
   const breakpoint = useBreakpoint();
@@ -52,9 +54,13 @@ const Header = () => {
     if (isMeta) {
       newPath = generatePath(metaUrls.page, { region: rg });
     } else if (isShuffleMclass) {
-      newPath = generatePath(shuffleMulticlassUrls.page, { region: rg  });
+      newPath = generatePath(shuffleMulticlassUrls.page, { region: rg });
     } else {
-      newPath = generatePath(publicUrls.page, { region: rg , activity, bracket });
+      newPath = generatePath(publicUrls.page, {
+        region: rg,
+        activity,
+        bracket,
+      });
     }
     navigate(newPath + window.location.search);
   }
@@ -100,20 +106,27 @@ const Header = () => {
   function redirectToMulticlassers() {
     navigateToPage({ activity: "ladder", bracket: "shuffle-multiclass" });
   }
-  
+
+  function redirectToAI() {
+    window.location.href = "https://ai.pvpq.net";
+  }
   function redirectToOBSWidget() {
-    window.open("https://github.com/Sammers21/pvpqnet/wiki/Obs-Widget", "_blank");
+    window.open(
+      "https://github.com/Sammers21/pvpqnet/wiki/Obs-Widget",
+      "_blank"
+    );
   }
 
   const menuItems = [
+    { label: "AI", onClick: redirectToAI, isSpecial: true },
     { label: "Activity", onClick: redirectToActivity },
     { label: "Leaderboards", onClick: redirectToLadder },
     { label: "Multiclassers", onClick: redirectToMulticlassers },
     { label: "Meta", onClick: redirectToMeta },
     { label: "Widget", onClick: redirectToOBSWidget },
   ];
-  
-  const isMobile = breakpoint === "mobile" || breakpoint === "tablet"
+
+  const isMobile = breakpoint === "mobile" || breakpoint === "tablet";
   const View = isMobile ? MobileView : DesktopView;
   return (
     <StyledAppBar position="fixed">

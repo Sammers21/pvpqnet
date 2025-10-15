@@ -1,4 +1,4 @@
-import { DiscordIcon, GitHubIcon } from "@/components/IIcons";
+import { DiscordIcon, GitHubIcon, XIcon } from "@/components/IIcons";
 import ExternalLink from "@/components/ExternalLink";
 import { getClassIcon, getClassNameColor } from "@/utils/table";
 import { containerBg } from "@/theme";
@@ -23,19 +23,17 @@ const Footer = () => {
         >
           Sammers
         </ExternalLink>
-        {/*&nbsp; & &nbsp;*/}
-        {/*<img className="inline-block w-6 h-6 mx-1" src={deathKnight} alt="death knight" />*/}
-        {/*<ExternalLink className="text-[#3f50b5]" href="https://github.com/Starmordar" color={deathKnightColor}>*/}
-        {/*  Starmordar*/}
-        {/*</ExternalLink>*/}
       </div>
 
       <div className="flex items-center gap-4">
         <ExternalLink href="https://github.com/Sammers21/pvpqnet">
           <GitHubIcon />
         </ExternalLink>
-        <ExternalLink href="https://discord.gg/KcN4Na9A">
+        <ExternalLink href="https://discord.gg/TxaZQh88Uf">
           <DiscordIcon />
+        </ExternalLink>
+        <ExternalLink href="https://x.com/pvpqnet">
+          <XIcon />
         </ExternalLink>
       </div>
     </div>
