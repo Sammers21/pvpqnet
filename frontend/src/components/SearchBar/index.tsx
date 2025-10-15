@@ -7,11 +7,12 @@ import { Autocomplete, InputAdornment, TextField, Typography } from '@mui/materi
 import SearchIcon from '@mui/icons-material/Search';
 
 import { getClassIcon, getClassNameColor } from '@/utils/table';
-import { EuIcon, UsIcon } from '../IIcons';
+
 
 import { searchPlayers } from '@/services/stats.service';
 import { capitalizeNickname } from '@/utils/urlparts';
 import { capitalizeFirstLetter } from '@/utils/common';
+import { EuIcon, UsIcon } from '../IIcons';
 
 interface ISearchResults {
   nick: string;
@@ -21,7 +22,7 @@ interface ISearchResults {
 
 const renderSearchOption = (props: React.HTMLAttributes<HTMLLIElement>, option: ISearchResults) => {
   const icon = getClassIcon(option.class);
-  const RegionIcon = option.region === 'us' || option.region === 'en-us' ? UsIcon : EuIcon;
+  const RegionIcon = option.region === 'us' || option.region === 'en-us' ? <UsIcon/> : <EuIcon/>;
   var fullNick = capitalizeNickname(option.nick);
   return (
     <li className="flex items-center" {...props}>
@@ -31,7 +32,7 @@ const renderSearchOption = (props: React.HTMLAttributes<HTMLLIElement>, option: 
           <Typography color={getClassNameColor(option.class)}>{fullNick}</Typography>
         </div>
 
-        <RegionIcon className="self-center" />
+        {RegionIcon}
       </div>
     </li>
   );

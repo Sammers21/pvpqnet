@@ -1,20 +1,9 @@
-import { ReactComponent as USSvg } from './us.svg';
-import { ReactComponent as EUSvg } from './eu.svg';
+import USSvg from './us.svg';
+import EUSvg from './eu.svg';
+import DiscordSvg  from './discord.svg';
+import GitHubSvg from './github.svg';
 
-import { ReactComponent as DiscordSvg } from './discord.svg';
-import { ReactComponent as GitHubSvg } from './github.svg';
-
-export const UsIcon = (props: any) => {
-  return <USSvg {...props} height={32} width={32} />;
-};
-export const EuIcon = (props: any) => {
-  return <EUSvg {...props} height={32} width={32} />;
-};
-
-export const DiscordIcon = (props: any) => {
-  return <DiscordSvg {...props} />;
-};
-
-export const GitHubIcon = (props: any) => {
-  return <GitHubSvg {...props} />;
-};
+export const UsIcon = ({className}:{className?:string}) => <img className={className} src={USSvg}></img>
+export const EuIcon = ({className}:{className?:string}) => <img className={className} src={EUSvg}></img>
+export const DiscordIcon = (props: any) => <img {...props} src={DiscordSvg}></img>
+export const GitHubIcon = (props: any) => <img {...props} src={GitHubSvg}></img>

@@ -8,8 +8,8 @@ interface IProps {
 
 const HeaderCell = ({ column }: IProps) => {
   const { align = "left", label } = column;
-
-  return <TableCell align={align}>{label}</TableCell>;
+  
+  return  <TableCell align={align}>{label}</TableCell>
 };
 
 export default HeaderCell;

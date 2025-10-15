@@ -2,6 +2,13 @@
   "name": "frontend",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "express": "node server.js"
+  },
   "dependencies": {
     "@emotion/react": "^11.10.6",
     "@emotion/styled": "^11.10.6",
@@ -30,40 +37,13 @@
     "react-dom": "^18.2.0",
     "react-helmet": "^6.1.0",
     "react-router-dom": "^6.9.0",
-    "react-scripts": "^5.0.1",
     "react-twitch-embed-video": "^3.1.0",
     "react-use": "^17.4.0",
     "styled-components": "^5.3.9",
     "tailwind-merge": "^2.0.0",
     "web-vitals": "^2.1.4"
   },
-  "scripts": {
-    "express": "node server.js",
-    "start": "craco start",
-    "build": "craco build",
-    "test": "craco test",
-    "eject": "craco eject"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  },
   "devDependencies": {
-    "@craco/craco": "^7.1.0",
     "@tanstack/eslint-plugin-query": "^4.36.0",
     "@types/jest": "^29.5.5",
     "@types/loadable__component": "^5.13.5",
@@ -71,6 +51,7 @@
     "@types/node": "^20.7.0",
     "@types/react": "^18.2.23",
     "@types/react-dom": "^18.2.7",
+    "@vitejs/plugin-react": "^3.1.0",
     "autoprefixer": "^10.4.16",
     "eslint-plugin-flowtype": "^8.0.3",
     "eslint-plugin-import": "^2.27.5",
@@ -78,7 +59,9 @@
     "eslint-plugin-react": "^7.32.2",
     "postcss": "^8.4.30",
     "tailwindcss": "^3.3.3",
-    "typescript": "^5.2.2"
+    "typescript": "^5.2.2",
+    "vite": "^5.0.0",
+    "vite-plugin-svgr": "^4.5.0"
   },
   "overrides": {
     "typescript": "^5.2.2"

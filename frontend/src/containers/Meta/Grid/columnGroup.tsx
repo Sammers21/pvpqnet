@@ -132,11 +132,11 @@ export function getColumnGroup(
         <div className="flex flex-row items-center">
           <div className="flex justify-center">
             {rankIcons.map((icon) => (
-              <img
-                className="h-9 w-9 mr-2"
-                src={require("../../../assets/ranks/" + icon)}
-                alt="Rank icon"
-              />
+              <img key={icon}
+  className="h-9 w-9 mr-2"
+  src={new URL(`../../../assets/ranks/${icon}`, import.meta.url).href}
+  alt="Rank icon"
+/>
             ))}
           </div>
           {/* Text on top  */}

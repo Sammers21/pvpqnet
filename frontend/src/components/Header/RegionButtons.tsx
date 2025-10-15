@@ -18,7 +18,7 @@ const RegionButtons = ({
         disableRipple
         onClick={() => setRegion(REGION.eu)}
       >
-        <EuIcon />
+        <EuIcon className='w-[32px] h-[32px] self-center' />
       </IconButton>
       <IconButton
         aria-label="us"
@@ -26,7 +26,7 @@ const RegionButtons = ({
         disableRipple
         onClick={() => setRegion(REGION.us)}
       >
-        <UsIcon />
+        <UsIcon className='w-[32px] h-[32px] self-center' />
       </IconButton>
     </>
   );
