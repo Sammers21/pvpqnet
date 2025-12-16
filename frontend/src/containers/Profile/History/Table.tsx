@@ -29,7 +29,7 @@ const Table = styled(TableMui)({
     padding: "4px !important",
   },
   "& tr td,th": {
-    borderColor: "#37415180",
+    borderColor: "rgb(71 85 105 / 0.5)",
   },
 });
 
@@ -111,25 +111,25 @@ const HistoryTable = ({ columns, records = [], isMobile }: IProps) => {
   };
 
   const renderTable = () => (
-    <div className="px-2 md:px-0">
-      <Table padding={isMobile ? "none" : "normal"}>
-        {renderHeader()}
-        <colgroup>
-          {columns.map((_col, index) => (
-            <col key={index} />
-          ))}
-        </colgroup>
-        {records.length ? renderBody() : null}
-      </Table>
-    </div>
+    <Table padding={isMobile ? "none" : "normal"}>
+      {renderHeader()}
+      <colgroup>
+        {columns.map((_col, index) => (
+          <col key={index} />
+        ))}
+      </colgroup>
+      {records.length ? renderBody() : null}
+    </Table>
   );
 
   return (
-    <div className="relative bg-[#030303e6] w-full w-max-full">
-      {<TableContainer>{renderTable()}</TableContainer>}
+    <div className="relative w-full">
+      <TableContainer>{renderTable()}</TableContainer>
       {!records.length && (
         <div className="min-h-[100px] flex justify-center items-center">
-          <span className="text-lg">No history data available</span>
+          <span className="text-lg text-slate-400">
+            No history data available
+          </span>
         </div>
       )}
     </div>

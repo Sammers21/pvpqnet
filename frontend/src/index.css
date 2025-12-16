@@ -1,19 +1,40 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: #e5e7eb;
+  }
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+  input::placeholder,
+  textarea::placeholder {
+    color: #9ca3af;
+  }
+}
 
 body {
   margin: 0;
-  font-family: 'Nunito', sans-serif;
+  font-family: "Nunito", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  /* For cross-browser compatibility */
-  background-image: url(./assets/background/WoW_The_War_Within_Concept_IsleofDorn-min.jpg);
-  background-position: center;
-  background-repeat: no-repeat;
+  /* Modern gradient background */
+  background: linear-gradient(
+    135deg,
+    #0a0f1a 0%,
+    #0d1321 25%,
+    #111827 50%,
+    #0f172a 75%,
+    #0a0e17 100%
+  );
   background-attachment: fixed;
-  background-size: cover;
+  min-height: 100vh;
 }
 
 .smoke-bg {
@@ -31,7 +52,8 @@ body {
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+    monospace;
 }
 
 ::-webkit-scrollbar {
@@ -72,6 +94,11 @@ input:-internal-autofill-selected {
 
 body {
   scrollbar-width: thin;
+}
+
+.activity-table-wrapper {
+  /* Reserve space so the data table doesn't push content down once data loads */
+  min-height: clamp(1200px, 140vh, 1800px);
 }
 
 @keyframes rotate-one {
@@ -144,4 +171,246 @@ body {
 
 .MuiTextField-root {
   background-color: rgb(156 163 175 / 0.25);
+}
+
+/* Activity page table - force single-line rows on mobile */
+@media (max-width: 758px) {
+  .activity-table-wrapper table {
+    white-space: nowrap;
+  }
+  .activity-table-wrapper td,
+  .activity-table-wrapper th {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .activity-table-wrapper .MuiTableContainer-root {
+    overflow-x: auto;
+  }
+  /* Reduce internal table wrapper padding on mobile to maximize row space */
+  .activity-table-wrapper > div > div > div {
+    padding-left: 0.25rem !important;
+    padding-right: 0.25rem !important;
+  }
+}
+
+@keyframes profile-fade-up {
+  0% {
+    opacity: 0;
+    transform: translateY(32px) scale(0.94);
+    filter: blur(10px);
+  }
+
+  55% {
+    filter: blur(0);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+.profile-animate {
+  opacity: 0;
+  transform: translateY(32px) scale(0.94);
+  filter: blur(8px);
+  animation: profile-fade-up var(--profile-anim-duration, 0.85s)
+    cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation-delay: var(--profile-anim-delay, 0ms);
+  will-change: opacity, transform, filter;
+}
+
+.profile-hover {
+  transition: transform 260ms ease, box-shadow 260ms ease,
+    border-color 260ms ease, background 260ms ease;
+}
+
+.profile-hover:hover {
+  transform: translateY(-6px) scale(1.015);
+  box-shadow: 0 30px 50px rgba(0, 0, 0, 0.45);
+  border-color: rgba(96, 165, 250, 0.55) !important;
+}
+
+.profile-hover:active {
+  transform: translateY(-2px) scale(0.998);
+}
+
+.profile-animate-cascade > * {
+  opacity: 0;
+  transform: translateY(28px) scale(0.95);
+  filter: blur(8px);
+  animation: profile-fade-up 0.65s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation-delay: var(--profile-anim-delay, 0ms);
+  will-change: opacity, transform, filter;
+}
+
+.profile-animate-cascade > *:nth-child(2) {
+  animation-delay: calc(var(--profile-anim-delay, 0ms) + 90ms);
+}
+
+.profile-animate-cascade > *:nth-child(3) {
+  animation-delay: calc(var(--profile-anim-delay, 0ms) + 180ms);
+}
+
+.profile-animate-cascade > *:nth-child(4) {
+  animation-delay: calc(var(--profile-anim-delay, 0ms) + 270ms);
+}
+
+.profile-animate-cascade > *:nth-child(5) {
+  animation-delay: calc(var(--profile-anim-delay, 0ms) + 360ms);
+}
+
+.profile-animate-cascade > *:nth-child(6) {
+  animation-delay: calc(var(--profile-anim-delay, 0ms) + 450ms);
+}
+
+.profile-animate-cascade > *:nth-child(7) {
+  animation-delay: calc(var(--profile-anim-delay, 0ms) + 540ms);
+}
+
+/* Enhanced profile card styling */
+.profile-card-glow {
+  position: relative;
+}
+
+.profile-card-glow::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: linear-gradient(
+    135deg,
+    rgba(96, 165, 250, 0.1),
+    transparent,
+    rgba(96, 165, 250, 0.1)
+  );
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.profile-card-glow:hover::before {
+  opacity: 1;
+}
+
+/* Glassmorphism effect for profile sections */
+.profile-glass {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* Subtle gradient backgrounds for profile cards */
+.profile-gradient-bg {
+  background: linear-gradient(
+    135deg,
+    rgba(3, 3, 3, 0.9) 0%,
+    rgba(10, 15, 24, 0.9) 100%
+  );
+}
+
+/* Enhanced border glow effect */
+.profile-border-glow {
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.profile-border-glow:hover {
+  border-color: rgba(96, 165, 250, 0.4);
+  box-shadow: 0 0 20px rgba(96, 165, 250, 0.15), 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+/* Rating text glow effect */
+.rating-glow {
+  text-shadow: 0 0 20px currentColor;
+}
+
+/* Subtle shimmer effect for loading states */
+@keyframes profile-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.profile-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(55, 65, 81, 0.3) 25%,
+    rgba(96, 165, 250, 0.1) 50%,
+    rgba(55, 65, 81, 0.3) 75%
+  );
+  background-size: 200% 100%;
+  animation: profile-shimmer 2s infinite;
+}
+
+/* Enhanced scrollbar for profile sections */
+.profile-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.profile-scrollbar::-webkit-scrollbar-track {
+  background: rgba(55, 65, 81, 0.2);
+  border-radius: 3px;
+}
+
+.profile-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(96, 165, 250, 0.4);
+  border-radius: 3px;
+}
+
+.profile-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(96, 165, 250, 0.6);
+}
+
+/* Stat number animation */
+@keyframes stat-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+}
+
+.stat-number {
+  animation: stat-pulse 2s ease-in-out infinite;
+}
+
+/* Enhanced tooltip styling */
+.profile-tooltip {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(96, 165, 250, 0.2);
+}
+
+/* Mobile-first responsive improvements */
+@media (max-width: 640px) {
+  .profile-hover:hover {
+    transform: none;
+    box-shadow: none;
+  }
+
+  .profile-animate {
+    animation-duration: 0.6s;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-out forwards;
 }

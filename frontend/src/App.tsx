@@ -7,6 +7,7 @@ import AppRoutes from './routes';
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import appTheme from './theme';
+import ServerStatusPopup from './components/ServerStatusPopup';
 
 dayjs.extend(relativeTime);
 
@@ -18,6 +19,7 @@ function App() {
       <CssBaseline />
       <QueryClientProvider client={queryClient}>
         <AppRoutes />
+        <ServerStatusPopup />
       </QueryClientProvider>
     </ThemeProvider>
   );

@@ -1,6 +1,7 @@
 {
-  "short_name": "PvPQ.net",
-  "name": "PvPQ.net website",
+  "short_name": "PVPQ.NET",
+  "name": "PVPQ.NET - WoW PvP Ladder & Stats",
+  "description": "World of Warcraft PvP Ladder, Solo Shuffle rankings, Arena stats, Rated Battleground leaderboards, R1 cutoffs for all brackets with near real-time updates.",
   "icons": [
     {
       "src": "icons/32x32.png",

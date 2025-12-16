@@ -1,5 +1,5 @@
-import { useMemo } from "react";
-import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { useMemo, useEffect, useState } from "react";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { generatePath } from "react-router";
 import { createBreakpoint } from "react-use";
 
@@ -8,8 +8,14 @@ import { styled } from "@mui/system";
 import MobileView from "./MobileView";
 import DesktopView from "./DesktopView";
 
+
 import { borderColor, containerBg } from "@/theme";
-import { metaUrls, publicUrls, shuffleMulticlassUrls } from "@/config";
+import {
+  cutoffsUrls,
+  metaUrls,
+  publicUrls,
+  shuffleMulticlassUrls,
+} from "@/config";
 import { REGION } from "@/constants/region";
 import { BRACKETS } from "@/constants/pvp-activity";
 import { getActivityFromUrl, getBracket, getRegion } from "@/utils/urlparts";
@@ -35,11 +41,44 @@ const Header = () => {
   let navigate = useNavigate();
   const location = useLocation();
   const host = window.location.host.toUpperCase();
-  const { region: regionFromUrl = REGION.eu, bracket = getBracket() } =
-    useParams();
+  const { region: regionFromUrl, bracket = getBracket() } = useParams();
   const region = getRegion(regionFromUrl);
   const activity = getActivityFromUrl();
   const breakpoint = useBreakpoint();
+  const [battleTag, setBattleTag] = useState<string | null>(() => {
+    try {
+      return window.localStorage.getItem("pvpqnet_battletag");
+    } catch (e) {
+      return null;
+    }
+  });
+  const [isMeLoading, setIsMeLoading] = useState(true);
+
+  useEffect(() => {
+    setIsMeLoading(true);
+    fetch("/api/me")
+      .then((res) => {
+        if (res.ok) {
+          return res.json();
+        }
+        return null;
+      })
+      .then((data) => {
+        if (data && data.battletag) {
+          setBattleTag(data.battletag);
+          try {
+            window.localStorage.setItem("pvpqnet_battletag", data.battletag);
+          } catch (e) {}
+        } else {
+          setBattleTag(null);
+          try {
+            window.localStorage.removeItem("pvpqnet_battletag");
+          } catch (e) {}
+        }
+      })
+      .catch((err) => console.error("Error fetching user info", err))
+      .finally(() => setIsMeLoading(false));
+  }, []);
 
   const isMeta = useMemo(() => {
     return location.pathname.includes("meta");
@@ -48,6 +87,9 @@ const Header = () => {
   const isShuffleMclass = useMemo(() => {
     return location.pathname.includes("shuffle-multiclass");
   }, [location]);
+  const isCutoffs = useMemo(() => {
+    return location.pathname.includes("cutoffs");
+  }, [location]);
 
   function handleSetRegion(rg: REGION) {
     let newPath;
@@ -55,6 +97,8 @@ const Header = () => {
       newPath = generatePath(metaUrls.page, { region: rg });
     } else if (isShuffleMclass) {
       newPath = generatePath(shuffleMulticlassUrls.page, { region: rg });
+    } else if (isCutoffs) {
+      newPath = generatePath(cutoffsUrls.page, { region: rg });
     } else {
       newPath = generatePath(publicUrls.page, {
         region: rg,
@@ -65,77 +109,64 @@ const Header = () => {
     navigate(newPath + window.location.search);
   }
 
-  function navigateToPage({
-    activity,
-    bracket,
-  }: {
-    activity: string;
-    bracket: string;
-  }) {
-    let params = new URL(document.location.toString()).searchParams;
-    let specs = params.get("specs");
-    var newPath = generatePath(publicUrls.page, {
+  const activityHref =
+    generatePath(publicUrls.page, {
       region,
-      activity,
-      bracket,
-    });
-    if (specs !== undefined && specs !== null) {
-      newPath = newPath + "?specs=" + specs;
-    }
-    navigate(newPath);
-  }
-
-  function redirectToMeta() {
-    navigate("/" + region + "/meta" + window.location.search);
-  }
-
-  function redirectToLadder() {
-    navigateToPage({
-      activity: "ladder",
-      bracket: isMeta || isShuffleMclass ? BRACKETS.shuffle : bracket,
-    });
-  }
-
-  function redirectToActivity() {
-    navigateToPage({
       activity: "activity",
       bracket: isMeta || isShuffleMclass ? BRACKETS.shuffle : bracket,
-    });
-  }
+    }) + location.search;
+  const ladderHref =
+    generatePath(publicUrls.page, {
+      region,
+      activity: "ladder",
+      bracket: isMeta || isShuffleMclass ? BRACKETS.shuffle : bracket,
+    }) + location.search;
+  const multiclassHref = generatePath(publicUrls.page, {
+    region,
+    activity: "ladder",
+    bracket: "shuffle-multiclass",
+  });
+  const metaHref = "/" + region + "/meta";
+  const cutoffsHref = "/" + region + "/cutoffs";
 
-  function redirectToMulticlassers() {
-    navigateToPage({ activity: "ladder", bracket: "shuffle-multiclass" });
-  }
-
-  function redirectToAI() {
-    window.location.href = "https://ai.pvpq.net";
-  }
-  function redirectToOBSWidget() {
-    window.open(
-      "https://github.com/Sammers21/pvpqnet/wiki/Obs-Widget",
-      "_blank"
-    );
-  }
-
-  const menuItems = [
-    { label: "AI", onClick: redirectToAI, isSpecial: true },
-    { label: "Activity", onClick: redirectToActivity },
-    { label: "Leaderboards", onClick: redirectToLadder },
-    { label: "Multiclassers", onClick: redirectToMulticlassers },
-    { label: "Meta", onClick: redirectToMeta },
-    { label: "Widget", onClick: redirectToOBSWidget },
+  const menuItems: {
+    label: string;
+    href: string;
+    external?: boolean;
+    isSpecial?: boolean;
+    badge?: string;
+  }[] = [
+    {
+      label: "AI",
+      href: "https://ai.pvpq.net",
+      external: true,
+      isSpecial: true,
+    },
+    { label: "Activity", href: activityHref },
+    { label: "Leaderboards", href: ladderHref },
+    { label: "Multiclassers", href: multiclassHref },
+    { label: "Cutoffs", href: cutoffsHref },
+    { label: "Meta", href: metaHref },
+    {
+      label: "Widget",
+      href: "https://github.com/Sammers21/pvpqnet/wiki/Obs-Widget",
+      external: true,
+    },
   ];
 
   const isMobile = breakpoint === "mobile" || breakpoint === "tablet";
   const View = isMobile ? MobileView : DesktopView;
   return (
     <StyledAppBar position="fixed">
+
       <StyledToolbar disableGutters>
         <View
           region={region}
           setRegion={handleSetRegion}
           menuItems={menuItems}
           host={host}
+          battleTag={battleTag}
+          isMeLoading={isMeLoading}
         />
       </StyledToolbar>
     </StyledAppBar>

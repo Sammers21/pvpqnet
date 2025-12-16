@@ -6,24 +6,39 @@ import {
   IconButton,
   List,
   ListItem,
-  ListItemButton,
-  ListItemText,
   Tooltip,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import PlayersSearch from "@/components/SearchBar";
 import RegionButtons from "./RegionButtons";
+import BattleNetAccount from "./BattleNetAccount";
+import { Link } from "react-router-dom";
 
 import { REGION } from "@/constants/region";
 
 interface IProps {
   host: string;
-  menuItems: { label: string; onClick: () => void; isSpecial?: boolean }[];
+  menuItems: {
+    label: string;
+    href: string;
+    external?: boolean;
+    isSpecial?: boolean;
+    badge?: string;
+  }[];
   region: REGION;
   setRegion: (r: REGION) => void;
+  battleTag: string | null;
+  isMeLoading: boolean;
 }
 
-const MobileView = ({ menuItems, host, region, setRegion }: IProps) => {
+const MobileView = ({
+  menuItems,
+  host,
+  region,
+  setRegion,
+  battleTag,
+  isMeLoading,
+}: IProps) => {
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   return (
@@ -60,32 +75,67 @@ const MobileView = ({ menuItems, host, region, setRegion }: IProps) => {
           </h6>
           <Divider />
 
+          <div className="flex justify-center my-4">
+            <BattleNetAccount
+              battleTag={battleTag}
+              isMeLoading={isMeLoading}
+              onNavigate={() => setDrawerOpen(false)}
+            />
+          </div>
+
           <RegionButtons region={region} setRegion={setRegion} />
 
           <List>
             {menuItems.map((item) => {
+              const linkContent = (
+                <>
+                  <span className="flex items-center justify-center gap-2 w-full py-2">
+                    <span>{item.label}</span>
+                    {!item.isSpecial && item.badge ? (
+                      <span className="rounded-full bg-amber-400/90 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-900">
+                        {item.badge}
+                      </span>
+                    ) : null}
+                  </span>
+                  {item.isSpecial ? (
+                    <span className="absolute -top-1 right-2 bg-red-500 text-white text-[8px] font-bold px-1 py-0.5 rounded-full shadow-md leading-none">
+                      NEW
+                    </span>
+                  ) : null}
+                </>
+              );
+              const linkClass = item.isSpecial
+                ? "block w-full text-center bg-gradient-to-r from-purple-500 to-blue-500 text-white font-semibold rounded-lg mx-2 my-1 uppercase text-sm tracking-wide"
+                : "block w-full text-center text-[#60a5fa] hover:bg-white/5 uppercase text-sm font-medium tracking-wide";
               const listItem = (
                 <ListItem
                   key={item.label}
                   disablePadding
                   className={item.isSpecial ? "!relative" : ""}
                 >
-                  <ListItemButton
-                    sx={{ textAlign: "center" }}
-                    onClick={item.onClick}
-                    className={
-                      item.isSpecial
-                        ? "!bg-gradient-to-r !from-purple-500 !to-blue-500 !text-white !font-semibold !rounded-lg !mx-2 !my-1"
-                        : ""
-                    }
-                  >
-                    <ListItemText primary={item.label} />
-                    {item.isSpecial && (
-                      <span className="absolute top-0 right-4 bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow-md">
-                        NEW
-                      </span>
-                    )}
-                  </ListItemButton>
+                  {item.external ? (
+                    <a
+                      href={item.href}
+                      target={item.label === "Widget" ? "_blank" : undefined}
+                      rel={
+                        item.label === "Widget"
+                          ? "noopener noreferrer"
+                          : undefined
+                      }
+                      className={linkClass}
+                      onClick={() => setDrawerOpen(false)}
+                    >
+                      {linkContent}
+                    </a>
+                  ) : (
+                    <Link
+                      to={item.href}
+                      className={linkClass}
+                      onClick={() => setDrawerOpen(false)}
+                    >
+                      {linkContent}
+                    </Link>
+                  )}
                 </ListItem>
               );
               return item.isSpecial ? (
@@ -126,19 +176,20 @@ const MobileView = ({ menuItems, host, region, setRegion }: IProps) => {
                   componentsProps={{
                     tooltip: {
                       sx: {
-                        background: 'linear-gradient(135deg, #9333ea 0%, #3b82f6 100%)',
-                        boxShadow: '0 10px 25px rgba(147, 51, 234, 0.4)',
-                        borderRadius: '12px',
-                        border: '1px solid rgba(255, 255, 255, 0.2)',
-                        maxWidth: '280px',
-                        backdropFilter: 'blur(10px)',
+                        background:
+                          "linear-gradient(135deg, #9333ea 0%, #3b82f6 100%)",
+                        boxShadow: "0 10px 25px rgba(147, 51, 234, 0.4)",
+                        borderRadius: "12px",
+                        border: "1px solid rgba(255, 255, 255, 0.2)",
+                        maxWidth: "280px",
+                        backdropFilter: "blur(10px)",
                       },
                     },
                     arrow: {
                       sx: {
-                        color: '#9333ea',
-                        '&::before': {
-                          border: '1px solid rgba(255, 255, 255, 0.2)',
+                        color: "#9333ea",
+                        "&::before": {
+                          border: "1px solid rgba(255, 255, 255, 0.2)",
                         },
                       },
                     },

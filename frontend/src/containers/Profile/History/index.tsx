@@ -3,6 +3,7 @@ import { createBreakpoint } from "react-use";
 
 import Table from "./Table";
 import BracketTabs from "./BracketTabs";
+import HistoryIcon from "@mui/icons-material/History";
 
 import type { Player } from "@/types";
 import { tableColumns } from "./columns";
@@ -18,41 +19,36 @@ const GamingHistory = ({
   isMobile: boolean;
 }) => {
   const breakpoints = useBreakpoint();
-  var initialBracket;
+  let initialBracket = "all";
   try {
-    initialBracket = !!player.brackets.find(
+    const has3v3History = player.brackets.find(
       (bracket) =>
         bracket.bracket_type === "ARENA_3v3" &&
         bracket.gaming_history.history.length > 0
-    )
-      ? "ARENA_3v3"
-      : player.brackets
-          .filter((bracket) => bracket.gaming_history.history.length > 0)
-          .sort(
-            (a, b) =>
-              b.gaming_history.history[0].diff.timestamp -
-              a.gaming_history.history[0].diff.timestamp
-          )[0].bracket_type;
-    if (initialBracket.includes("SHUFFLE-")) {
-      initialBracket = initialBracket.split("SHUFFLE-")[1];
+    );
+
+    if (has3v3History) {
+      initialBracket = "ARENA_3v3";
+    } else {
+      // Default to "all" if no 3v3 history
+      const bracketsWithHistory = player.brackets.filter(
+        (bracket) => bracket.gaming_history.history.length > 0
+      );
+      if (bracketsWithHistory.length > 0) initialBracket = "all";
     }
   } catch (e) {
     initialBracket = "all";
   }
   const [activeBracketName, setBracketName] = useState(initialBracket);
   const bracket = useMemo(() => {
-    // console.log("active_bracket_name", activeBracketName);
-    // const arenaBrackets = ["ARENA_2v2", "ARENA_3v3", "BATTLEGROUNDS"];
-    // const soloBarackets = ["SHUFFLE", "BLITZ"];
-    // const search = arenaBrackets.includes(activeBracketName)
-    //   ? activeBracketName
-    //   : `SHUFFLE-${activeBracketName}`;
-    // return player.brackets.find((history) => history.bracket_type === search);
     return player.brackets.find(
       (bracket) => bracket.bracket_type === activeBracketName
     );
   }, [player, activeBracketName]);
-  const handleHistBracketChange = (_evt: React.SyntheticEvent, newValue: string) => {
+  const handleHistBracketChange = (
+    _evt: React.SyntheticEvent,
+    newValue: string
+  ) => {
     setBracketName(newValue);
   };
   const records = useMemo(() => {
@@ -64,9 +60,17 @@ const GamingHistory = ({
     return getGamingHistoryRows(bracket);
   }, [player, bracket, activeBracketName]);
   return (
-    <div className="flex flex-col py-2 md:px-3 border border-solid border-[#37415180] rounded-lg bg-[#030303e6] ">
-      <div className="flex justify-between items-center px-3 md:px-0">
-        <span className="text-2xl mr-4">History</span>
+    <div className="flex flex-col p-3 md:p-4 border border-solid border-slate-600/40 rounded-xl bg-gradient-to-br from-slate-900/90 to-slate-800/70 shadow-lg">
+      <div className="flex justify-between items-center mb-2">
+        <div className="flex items-center gap-2">
+          <HistoryIcon className="!w-6 !h-6 text-[#60A5FACC]" />
+          <span className="text-2xl font-semibold text-white">History</span>
+          {records.length > 0 && (
+            <span className="text-sm text-slate-400 ml-2">
+              ({records.length} games)
+            </span>
+          )}
+        </div>
         <BracketTabs
           player={player}
           onChange={handleHistBracketChange}
@@ -74,7 +78,7 @@ const GamingHistory = ({
           isMobile={isMobile}
         />
       </div>
-      <hr className="h-px md:mb-2 bg-[#37415180] border-0" />
+      <hr className="h-px md:mb-3 bg-slate-600/40 border-0" />
       <Table
         columns={tableColumns(player, activeBracketName, breakpoints === "sm")}
         records={records}

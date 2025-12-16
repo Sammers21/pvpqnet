@@ -132,11 +132,72 @@ interface TitleHistory {
   expansions: Expansion[];
 }
 
+export interface Achievement {
+  id: number;
+  name: string;
+  completed_timestamp: number;
+}
+
 interface PlayerAchievements {
+  achievements: Achievement[];
   titles_history: TitleHistory;
 }
 
 export type Alt = Exclude<Player, 'alts'>;
+
+export interface PlayerMulticlassStanding {
+  role: string;
+  rank: number;
+  score: number;
+}
+
+// Equipment Types
+export interface EquippedItemEnchantment {
+  enchantmentId: number;
+  displayString: string;
+}
+
+export interface EquippedItemSocket {
+  socketType: string;
+  gemId?: number;
+  icon?: string;
+}
+
+export interface EquippedItemSetInfo {
+  setId: number;
+  displayString: string;
+  equippedCount: number;
+}
+
+export interface EquippedItemStat {
+  type: string;
+  value: number;
+}
+
+export interface EquippedItem {
+  itemId: number;
+  slot: string;
+  name: string;
+  quality: string;
+  itemLevel: number;
+  bonusList: number[];
+  enchantments: EquippedItemEnchantment[];
+  sockets: EquippedItemSocket[];
+  setInfo?: EquippedItemSetInfo;
+  stats: EquippedItemStat[];
+  tooltip?: string;
+  icon?: string;
+}
+
+// PvP Talent Types
+export interface PvpTalent {
+  talentId: number;
+  name: string;
+  spellId: number;
+  description: string;
+  castTime: string;
+  slotNumber: number;
+}
 
 export interface Player {
   id: number;
@@ -153,9 +214,13 @@ export interface Player {
   talents: string;
 
   brackets?: Bracket[];
+  level?: number;
   media?: CharacterMedia;
   achievements: PlayerAchievements;
   alts?: Alt[];
+  multiclassers?: PlayerMulticlassStanding[];
+  pvpTalents?: PvpTalent[];
+  loadouts?: { name: string; code: string; isActive: boolean }[];
 
   SHUFFLE?: number;
   ARENA_2v2?: number;

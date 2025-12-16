@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const baseUrl = process.env.REACT_APP_BASE_API_URL;
+const baseUrl = import.meta.env.REACT_APP_BASE_API_URL;
 
 axios.defaults.baseURL = baseUrl;
 
@@ -26,9 +26,12 @@ const publicUrls = {
 const metaUrls = {
   page: '/:region/meta',
 };
-
-const shuffleMulticlassUrls = {
-  page: '/:region/ladder/shuffle-multiclass'
+const cutoffsUrls = {
+  page: '/:region/cutoffs',
 };
 
-export { baseUrl, urls, publicUrls, metaUrls, shuffleMulticlassUrls };
+const shuffleMulticlassUrls = {
+  page: '/:region/ladder/shuffle-multiclass',
+};
+
+export { baseUrl, urls, publicUrls, metaUrls, cutoffsUrls, shuffleMulticlassUrls };

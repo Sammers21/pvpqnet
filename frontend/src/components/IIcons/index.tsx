@@ -1,9 +1,9 @@
-import { ReactComponent as USSvg } from "./us.svg";
-import { ReactComponent as EUSvg } from "./eu.svg";
+import USSvg from "./us.svg?react";
+import EUSvg from "./eu.svg?react";
 
-import { ReactComponent as DiscordSvg } from "./discord.svg";
-import { ReactComponent as GitHubSvg } from "./github.svg";
-import { ReactComponent as XSvg } from "./x.svg";
+import DiscordSvg from "./discord.svg?react";
+import GitHubSvg from "./github.svg?react";
+import XSvg from "./x.svg?react";
 
 export const UsIcon = (props: any) => {
   return <USSvg {...props} height={32} width={32} />;

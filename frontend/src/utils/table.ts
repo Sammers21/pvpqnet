@@ -1,11 +1,44 @@
 import { FRACTION, WOW_CLASS, WOW_CLASS_ICON, WOW_RACE, WOW_SPEC } from '../constants/table';
 import type { CharacterAndDiff, Player, Bracket } from '../types';
+import unknownIcon from '../assets/unknown.png';
+import allianceIcon from '../assets/fraction/alliance.png';
+import hordeIcon from '../assets/fraction/horde.png';
 
 export const winGreen = '#32CD32';
 export const lossRed = '#ff0000';
 
-export const hordeRed = '#d23636'
-export const allianceBlue = '#4accff'
+export const hordeRed = '#d23636';
+export const allianceBlue = '#4accff';
+
+const classIcons = import.meta.glob('../assets/classicons/*.png', {
+  eager: true,
+  import: 'default',
+}) as Record<string, string>;
+
+const specIcons = import.meta.glob('../assets/specicons/*.png', {
+  eager: true,
+  import: 'default',
+}) as Record<string, string>;
+
+const raceIconsWebp = import.meta.glob('../assets/raceicons/*.webp', {
+  eager: true,
+  import: 'default',
+}) as Record<string, string>;
+
+const raceIconsPng = import.meta.glob('../assets/raceicons/*.png', {
+  eager: true,
+  import: 'default',
+}) as Record<string, string>;
+
+const raceIconsJpg = import.meta.glob('../assets/raceicons/*.jpg', {
+  eager: true,
+  import: 'default',
+}) as Record<string, string>;
+
+const rankIcons = import.meta.glob('../assets/ranks/*.{png,webp,jpg}', {
+  eager: true,
+  import: 'default',
+}) as Record<string, string>;
 
 export const getProfileUrl = (record: CharacterAndDiff, region: string) => {
   const name = record?.character?.name || record?.name;
@@ -14,9 +47,7 @@ export const getProfileUrl = (record: CharacterAndDiff, region: string) => {
 };
 
 export const getFractionIcon = (fraction: string) => {
-  return fraction.toUpperCase() === FRACTION.ALLIANCE
-    ? require(`../assets/fraction/alliance.png`)
-    : require('../assets/fraction/horde.png');
+  return fraction.toUpperCase() === FRACTION.ALLIANCE ? allianceIcon : hordeIcon;
 };
 
 export const getRealmColor = (fraction?: string) => {
@@ -79,29 +110,41 @@ export const getDiffCell = (diff: number): string | number => {
 
 export const getClassIcon = (wowClass: string) => {
   const className = specNameFromFullSpec(wowClass).toUpperCase() as WOW_CLASS_ICON;
-
-  return Object.values(WOW_CLASS_ICON).includes(className)
-    ? require(`../assets/classicons/${specNameFromFullSpec(wowClass)}.png`)
-    : require('../assets/unknown.png');
+  if (!Object.values(WOW_CLASS_ICON).includes(className)) return unknownIcon;
+  const iconKey = `../assets/classicons/${specNameFromFullSpec(wowClass)}.png`;
+  return classIcons[iconKey] || unknownIcon;
 };
 
 export const getSpecIcon = (wowSpec: string) => {
   const specName = specNameFromFullSpec(wowSpec) as WOW_SPEC;
-
-  return Object.values(WOW_SPEC).includes(specName)
-    ? require(`../assets/specicons/${specNameFromFullSpec(wowSpec)}.png`)
-    : require('../assets/unknown.png');
+  if (!Object.values(WOW_SPEC).includes(specName)) return unknownIcon;
+  const iconKey = `../assets/specicons/${specNameFromFullSpec(wowSpec)}.png`;
+  return specIcons[iconKey] || unknownIcon;
 };
 
-const getRaceIcon = (wowGender: string, wowRace: string) => {
-  const raceName = `${wowGender.toLowerCase().charAt(0)}${wowRace
-    .replaceAll(' ', '')
-    .replaceAll("'", '')
-    .toLowerCase()}` as WOW_RACE;
+const raceIconOverrides: Partial<Record<WOW_RACE, string>> = {
+  fhighmountaintauren: raceIconsJpg['../assets/raceicons/fhighmountaintauren.jpg'],
+  mhighmountaintauren: raceIconsJpg['../assets/raceicons/mhighmountaintauren.jpg'],
+};
 
-  return Object.values(WOW_RACE).includes(raceName)
-    ? require(`../assets/raceicons/${raceName}.webp`)
-    : require('../assets/unknown.png');
+const raceIconAliases: Record<string, string> = {
+  lightforgeddraenei: 'lightforged',
+};
+
+export const getRaceIcon = (wowGender: string, wowRace: string) => {
+  const genderKey = wowGender.toLowerCase().charAt(0);
+  const normalizedRace = wowRace.replaceAll(' ', '').replaceAll("'", '').toLowerCase();
+  const raceKey = raceIconAliases[normalizedRace] || normalizedRace;
+  const raceName = `${genderKey}${raceKey}` as WOW_RACE;
+  if (!Object.values(WOW_RACE).includes(raceName)) return unknownIcon;
+  if (raceIconOverrides[raceName]) return raceIconOverrides[raceName] as string;
+  const webpKey = `../assets/raceicons/${raceName}.webp`;
+  if (raceIconsWebp[webpKey]) return raceIconsWebp[webpKey];
+  const pngKey = `../assets/raceicons/${raceName}.png`;
+  if (raceIconsPng[pngKey]) return raceIconsPng[pngKey];
+  const jpgKey = `../assets/raceicons/${raceName}.jpg`;
+  if (raceIconsJpg[jpgKey]) return raceIconsJpg[jpgKey];
+  return unknownIcon;
 };
 
 export const getDetaisImages = ({
@@ -148,7 +191,7 @@ export const ratingToColor = (rating: number, is_rank_one_range = false) => {
     return '#FFFFFF';
   }
   return '#FFFFFF';
-}
+};
 
 export const bracketToColor = (bracket: Partial<Bracket>) => {
   const { rating = 0, is_rank_one_range = false } = bracket;
@@ -182,7 +225,13 @@ export const getRankImageName = (rank: string): string => {
 };
 
 export const getSeasonRankImage = (rank: string) => {
-  return require('../assets/ranks/' + getRankImageName(rank));
+  const iconKey = `../assets/ranks/${getRankImageName(rank)}`;
+  return rankIcons[iconKey] || unknownIcon;
+};
+
+export const getRankIconByFileName = (fileName: string) => {
+  const iconKey = `../assets/ranks/${fileName}`;
+  return rankIcons[iconKey] || unknownIcon;
 };
 
 export const getSeasonRankImageFromRating = (rating: number, is_rank_one_range: boolean) => {
@@ -211,6 +260,8 @@ export const getSeasonRankImageFromRating = (rating: number, is_rank_one_range: 
   return getSeasonRankImage('Unranked');
 };
 
-export const getAltProfileUrl = (alt: Player) => {
+type AltProfileTarget = Pick<Player, "region" | "realm" | "name">;
+
+export const getAltProfileUrl = (alt: AltProfileTarget) => {
   return window.location.origin + `/${alt.region}/${alt.realm}/${alt.name}`;
 };

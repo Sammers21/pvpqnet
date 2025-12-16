@@ -2,6 +2,39 @@ import { Player } from '@/types';
 import { BRACKETS } from '../constants/pvp-activity';
 import { REGION } from '../constants/region';
 
+const US_TIMEZONE_PREFIXES = [
+  'America/',
+  'US/',
+  'Canada/',
+  'Pacific/Honolulu',
+  'Pacific/Guam',
+  'Pacific/Samoa',
+];
+const AUSTRALIA_TIMEZONE_PREFIXES = [
+  'Australia/',
+  'Pacific/Auckland',
+  'Pacific/Fiji',
+  'Pacific/Port_Moresby',
+];
+const INDONESIA_TIMEZONES = [
+  'Asia/Jakarta',
+  'Asia/Jayapura',
+  'Asia/Makassar',
+  'Asia/Pontianak',
+];
+
+function detectDefaultRegion(): REGION {
+  try {
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const isNorthOrSouthAmerica = timezone ? US_TIMEZONE_PREFIXES.some(prefix => timezone.startsWith(prefix)) : false;
+    const isAustralia = timezone ? AUSTRALIA_TIMEZONE_PREFIXES.some(prefix => timezone.startsWith(prefix)) : false;
+    const isIndonesia = timezone ? INDONESIA_TIMEZONES.includes(timezone) : false;
+    return (isNorthOrSouthAmerica || isAustralia || isIndonesia) ? REGION.us : REGION.eu;
+  } catch {
+    return REGION.eu;
+  }
+}
+
 export function getBracket(bracket?: string) {
   const validBracket = Object.values(BRACKETS).find((r) => bracket === r);
   return validBracket ?? BRACKETS.shuffle;
@@ -9,7 +42,7 @@ export function getBracket(bracket?: string) {
 
 export function getRegion(region?: string) {
   const validRegion = Object.values(REGION).find((r) => region === r);
-  return validRegion ?? REGION.eu;
+  return validRegion ?? detectDefaultRegion();
 }
 
 export function getActivityFromUrl() {

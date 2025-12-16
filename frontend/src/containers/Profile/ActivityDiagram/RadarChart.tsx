@@ -54,6 +54,7 @@ const iconPlugin = {
     const pluginOpts = chart?.options?.plugins?.iconPlugin || {};
     const images = pluginOpts?.images || [];
     if (!images.length) return;
+    if (!chart.ctx) return;
     const ctx = chart.ctx;
     const xCenter = chart.scales.r.xCenter;
     const yCenter = chart.scales.r.yCenter;
@@ -79,7 +80,9 @@ const iconPlugin = {
         img = cache.get(srcOrImg);
         if (!img) {
           img = new Image();
-          img.onload = () => chart.draw();
+          img.onload = () => {
+            if (chart.ctx) chart.draw();
+          };
           img.src = srcOrImg;
           cache.set(srcOrImg, img);
         }
@@ -95,11 +98,10 @@ const iconPlugin = {
         let textY;
         if (deg > 135 || deg < -135) {
           textY = y + sizeH + verticalOffset;
-        } else if (deg === -90){
-          textY = y+sizeH-verticalOffset-10
-        }
-          else{
-          textY = y + sizeH / 2 +20;
+        } else if (deg === -90) {
+          textY = y + sizeH - verticalOffset - 10;
+        } else {
+          textY = y + sizeH / 2 + 20;
         }
         ctx.save();
         ctx.globalAlpha = 1;
@@ -203,7 +205,7 @@ function getBrackets(totalPlayers, selectedYear, start, end, currentDate) {
           } else if (
             selectedYear !== currentDate &&
             new Date(session.diff.timestamp).getFullYear().toString() ===
-              selectedYear
+            selectedYear
           ) {
             won = session.diff.won ?? 0;
             lost = session.diff.lost ?? 0;
@@ -343,9 +345,7 @@ function RadarChart({
           item.name.split("-")[0] !== "BLITZ"
         ) {
           bracketNamesArray.push(item.name.replace("-", " ").replace("_", " "));
-          bracketSumArray.push(
-            item.name === "BATTLEGROUNDS" ? item.count * 4 : item.count
-          );
+          bracketSumArray.push(item.count);
         }
       });
     if (!bracketNamesArray.includes("ARENA 2v2")) {
@@ -361,9 +361,9 @@ function RadarChart({
       bracketSumArray.push(0);
     }
     bracketNamesArray.push("BLITZ");
-    bracketSumArray.push(sumOfBracketBLITZArray * 2);
+    bracketSumArray.push(sumOfBracketBLITZArray);
     bracketNamesArray.push("SHUFFLE");
-    bracketSumArray.push(sumOfBracketShuffleArray / 1.7);
+    bracketSumArray.push(sumOfBracketShuffleArray);
     const pairs = bracketNamesArray
       .map((item, index) => ({ name: item, value: bracketSumArray[index] }))
       .sort((a, b) => {
@@ -452,16 +452,16 @@ function RadarChart({
     layoutPadding,
   }: {
     iconPluginOptions?:
-      | {
-          images: string[];
-          size?: number | { width: number; height: number };
-          padding?: number;
-          labelsUnderIcons?: string[];
-          labelColor?: string;
-          labelFont?: string;
-          labelOffset?: number;
-        }
-      | false;
+    | {
+      images: string[];
+      size?: number | { width: number; height: number };
+      padding?: number;
+      labelsUnderIcons?: string[];
+      labelColor?: string;
+      labelFont?: string;
+      labelOffset?: number;
+    }
+    | false;
     tooltipLabel: (ctx: any) => string | string[];
     pointLabelCallback: (label: any, index: number) => string | string[];
     layoutPadding?: {
@@ -473,6 +473,9 @@ function RadarChart({
   }) => ({
     type: "radar",
     maintainAspectRatio: false,
+    animation: {
+      duration: 0,
+    },
     layout: {
       padding: {
         top: layoutPadding?.top ?? 28,
@@ -516,7 +519,8 @@ function RadarChart({
     return StatisticArrayGames.map((g) => {
       const percent = (g / sum) * 100;
       if (!Number.isFinite(percent) || percent <= 0) return "0%";
-      return percent < 1 ? `${percent.toFixed(2)}%` : `${Math.round(percent)}%`;
+      if (percent < 1) return `${percent.toFixed(1)}%`;
+      return `${Math.round(percent)}%`;
     });
   }, [StatisticArrayGames]);
 
@@ -526,22 +530,21 @@ function RadarChart({
         iconPluginOptions: {
           images: StaticArrayImages,
           size: 18,
-          padding: 46,
+          padding: 25,
           labelsUnderIcons: percentLabelsSpecs,
-          labelOffset: 16,
+          labelOffset: 10,
         },
-        tooltipLabel: (ti) => `Games: ${StatisticArrayGames[ti.dataIndex]}`,
+        tooltipLabel: (ti) =>
+          `🎯 Games: ${StatisticArrayGames[ti.dataIndex].toLocaleString()}`,
         pointLabelCallback: (_label, index) => {
           const sum = StatisticArrayGames.reduce((a, b) => a + b, 0) || 1;
           const percent = ((StatisticArrayGames[index] || 0) / sum) * 100;
           if (!Number.isFinite(percent) || percent <= 0) return ["0%"];
-          // If < 1%, show two decimals (e.g., 0.25%)
-          if (percent < 1) return [`${percent.toFixed(2)}%`];
-          // Otherwise show rounded integer
+          if (percent < 1) return [`${percent.toFixed(1)}%`];
           return [`${Math.round(percent)}%`];
         },
         // Add extra padding so top/bottom icons are not clipped
-        layoutPadding: { top: 44, bottom: 44, left: 32, right: 32 },
+        layoutPadding: { top: 50, bottom: 50, left: 30, right: 30 },
       }),
     [StaticArrayImages, StatisticArrayGames, percentLabelsSpecs]
   );
@@ -550,8 +553,9 @@ function RadarChart({
     const total = FinalBracketArrayValues.reduce((a, b) => a + b, 0) || 1;
     return FinalBracketArrayValues.map((v) => {
       const p = (v / total) * 100;
-      if (p < 1) return `${p.toFixed(2)}%`;
-      return `${p < 6 ? String(p).slice(0, 4) : Math.floor(p)}%`;
+      if (!Number.isFinite(p) || p <= 0) return "0%";
+      if (p < 1) return `${p.toFixed(1)}%`;
+      return `${Math.round(p)}%`;
     });
   }, [FinalBracketArrayValues]);
 
@@ -561,61 +565,49 @@ function RadarChart({
         // Push icons further out and make them a bit larger to avoid percentage overlap
         iconPluginOptions: {
           images: bracketIconImages,
-          size: { width: 40, height: 20 },
-          padding: 32,
+          size: { width: 32, height: 16 },
+          padding: 20,
           labelsUnderIcons: percentLabelsBrackets,
-          labelOffset: 24,
+          labelOffset: 16,
         },
         tooltipLabel: (tooltipItem) => {
           const label = tooltipItem.label;
-          let value = FinalBracketArrayValues[tooltipItem.dataIndex];
+          const value = FinalBracketArrayValues[tooltipItem.dataIndex];
+          const formatTime = (minutes: number) => {
+            if (minutes >= 60) {
+              const hours = Math.round((minutes / 60) * 10) / 10;
+              return `${hours} hours`;
+            }
+            return `${Math.round(minutes)} minutes`;
+          };
           if (label === "BATTLEGROUNDS") {
+            const games = Math.floor(value);
+            const timeMin = games * 20;
             return [
-              `🎯Games: ${Math.floor(value / 4)}`,
-              `⏳Estimated time: ${
-                (value / 4) * 20 > 100
-                  ? Math.round((((value / 4) * 20) / 60) * 100) / 100 + " hours"
-                  : Math.round((value / 4) * 20) + " minutes"
-              }`,
+              `🎯 Games: ${games}`,
+              `⏳ Est. time: ${formatTime(timeMin)}`,
             ];
           } else if (label === "SHUFFLE") {
+            const rounds = Math.floor(value);
+            const lobbies = Math.floor(rounds / 6);
+            const timeMin = rounds * 3;
             return [
-              `🎯Rounds: ${Math.floor(value / 1.7)} Lobbies: ${Math.floor(
-                value / 1.7 / 6
-              )}`,
-              `⏳Estimated time: ${
-                (value / 1.7) * 3 > 100
-                  ? Math.round((((value / 1.7) * 3) / 60) * 100) / 100 +
-                    " hours"
-                  : Math.round((value / 1.7) * 3) + " minutes"
-              }`,
+              `🎯 Rounds: ${rounds}  Lobbies: ${lobbies}`,
+              `⏳ Est. time: ${formatTime(timeMin)}`,
             ];
           } else if (label === "BLITZ") {
+            const games = Math.floor(value);
+            const timeMin = games * 10;
             return [
-              `🎯Games: ${Math.floor(value / 2)}`,
-              `⏳Estimated time: ${
-                (value / 2) * 10 > 100
-                  ? Math.round((value / 2 / 60) * 100) / 10 + " hours"
-                  : Math.round((value / 2) * 10) + " minutes"
-              }`,
+              `🎯 Games: ${games}`,
+              `⏳ Est. time: ${formatTime(timeMin)}`,
             ];
-          } else if (label === "ARENA 3v3") {
+          } else if (label === "ARENA 3v3" || label === "ARENA 2v2") {
+            const games = Math.floor(value);
+            const timeMin = games * 5;
             return [
-              `🎯Games: ${Math.floor(value)}`,
-              `⏳Estimated time: ${
-                value * 5 > 100
-                  ? Math.round(((value * 5) / 60) * 100) / 100 + " hours"
-                  : Math.round(value * 5) + " minutes"
-              }`,
-            ];
-          } else if (label === "ARENA 2v2") {
-            return [
-              `🎯Games: ${Math.floor(value)}`,
-              `⏳Estimated time: ${
-                value * 5 > 100
-                  ? Math.round(((value * 5) / 60) * 100) / 100 + " hours"
-                  : Math.round(value * 5) + " minutes"
-              }`,
+              `🎯 Games: ${games}`,
+              `⏳ Est. time: ${formatTime(timeMin)}`,
             ];
           }
           return `Games: ${Math.floor(value)}`;
@@ -623,28 +615,62 @@ function RadarChart({
         pointLabelCallback: (_label, index) => {
           const total = FinalBracketArrayValues.reduce((a, b) => a + b, 0) || 1;
           const p = (FinalBracketArrayValues[index] / total) * 100;
-          return [`${p < 6 ? String(p).slice(0, 4) : Math.floor(p)}%`];
+          if (!Number.isFinite(p) || p <= 0) return ["0%"];
+          if (p < 1) return [`${p.toFixed(1)}%`];
+          return [`${Math.round(p)}%`];
         },
         // Extra padding for larger bracket icons (give more room on sides)
-        layoutPadding: { top: 56, bottom: 56, left: 46, right: 56 },
+        layoutPadding: { top: 50, bottom: 50, left: 50, right: 50 },
       }),
     [bracketIconImages, FinalBracketArrayValues, percentLabelsBrackets]
   );
+  const totalSpecGames = StatisticArrayGames.reduce((a, b) => a + b, 0);
+  const totalBracketGames = FinalBracketArrayValues.reduce((a, b) => a + b, 0);
   return (
-    <>
-      <div className="flex flex-col sm:flex-row w-full mt-[20px] border-t border-[#37415180] p-2 sm:p-3 justify-center gap-4">
-        <div className="flex-none w-[300px] h-[300px] rounded-lg bg-[#0b1326]/30 p-1 shadow-sm ">
-          <Radar data={dataSpecs} options={options}></Radar>
-        </div>
-        <div
-          className="shrink-0 bg-[#37415180]/60 w-full h-px sm:w-px sm:h-[300px]"
-          aria-hidden="true"
-        />
-        <div className="flex-none w-[300px] h-[300px] rounded-lg bg-[#0b1326]/30 p-1 shadow-sm ">
-          <Radar data={dataBrackets} options={optionsBrackets}></Radar>
+    <div className="flex flex-col lg:flex-row w-full mt-4 pt-4 border-t border-slate-600/40 justify-center items-stretch gap-6">
+      {/* Specs Radar */}
+      <div className="flex-1 min-w-0 max-w-[360px] mx-auto lg:mx-0">
+        <div className="flex flex-col h-full rounded-xl bg-gradient-to-br from-slate-800/60 to-slate-900/80 border border-slate-600/30 shadow-lg overflow-hidden">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-slate-600/30 bg-slate-800/40">
+            <h3 className="text-sm font-semibold text-slate-200 tracking-wide">
+              Specs Played
+            </h3>
+            <span className="text-xs font-medium text-slate-400 bg-slate-700/50 px-2 py-0.5 rounded-full">
+              {totalSpecGames.toLocaleString()} games
+            </span>
+          </div>
+          <div
+            className="flex-1 flex items-center justify-center p-2"
+            style={{ minHeight: "280px" }}
+          >
+            <div className="w-full aspect-square max-w-[360px] sm:max-w-[400px]">
+              <Radar data={dataSpecs} options={options} />
+            </div>
+          </div>
         </div>
       </div>
-    </>
+      {/* Brackets Radar */}
+      <div className="flex-1 min-w-0 max-w-[360px] mx-auto lg:mx-0">
+        <div className="flex flex-col h-full rounded-xl bg-gradient-to-br from-slate-800/60 to-slate-900/80 border border-slate-600/30 shadow-lg overflow-hidden">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-slate-600/30 bg-slate-800/40">
+            <h3 className="text-sm font-semibold text-slate-200 tracking-wide">
+              Brackets
+            </h3>
+            <span className="text-xs font-medium text-slate-400 bg-slate-700/50 px-2 py-0.5 rounded-full">
+              {Math.floor(totalBracketGames).toLocaleString()} total
+            </span>
+          </div>
+          <div
+            className="flex-1 flex items-center justify-center p-2"
+            style={{ minHeight: "280px" }}
+          >
+            <div className="w-full aspect-square max-w-[360px] sm:max-w-[400px]">
+              <Radar data={dataBrackets} options={optionsBrackets} />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 

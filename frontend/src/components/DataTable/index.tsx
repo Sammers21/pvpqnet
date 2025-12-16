@@ -23,9 +23,10 @@ const useBreakpoint = createBreakpoint({ S: 758, L: 900, XL: 1280 });
 
 interface IProps {
   data: Record<BRACKETS, string> | undefined;
+  onDataLoaded?: (timestamp: number) => void;
 }
 
-const DataList = ({ data: statistics }: IProps) => {
+const DataList = ({ data: statistics, onDataLoaded }: IProps) => {
   const { region = getRegion(), bracket = getBracket() } = useParams();
   const activity = getActivityFromUrl();
   const [searchParams] = useSearchParams();
@@ -33,7 +34,8 @@ const DataList = ({ data: statistics }: IProps) => {
 
   const [data, setData] = useState<CharacterAndDiff[]>([]);
   const [totalPages, setTotalPages] = useState(0);
-  const [loading, setLoading] = useState(false);
+  // Start in loading state to reserve space for the table and avoid CLS on first paint
+  const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [selectedSpecs, setSelectedSpecs] = useState(
     getFromSearchParams(searchParams, "specs")
@@ -53,9 +55,20 @@ const DataList = ({ data: statistics }: IProps) => {
       setLoading(true);
 
       const filter = { page, region, activity, bracket, specs: selectedSpecs };
-      const { records, totalPages } = await getLadder(filter as any);
+      const { records, totalPages, timestamp } = await getLadder(filter as any);
 
-      setData(records);
+      if (timestamp && onDataLoaded) {
+        onDataLoaded(timestamp);
+      }
+
+      // Filter out records with negative wins or losses
+      const filteredRecords = records.filter((record: CharacterAndDiff) => {
+        const won = record?.diff?.won ?? record?.wins ?? 0;
+        const loss = record?.diff?.lost ?? record?.losses ?? 0;
+        return won >= 0 && loss >= 0;
+      });
+
+      setData(filteredRecords);
       setTotalPages(totalPages);
       setLoading(false);
     }
@@ -74,6 +87,10 @@ const DataList = ({ data: statistics }: IProps) => {
         onSpecsChange={setSelectedSpecs}
         bracket={bracket}
         statistics={statistics}
+        page={page}
+        totalPages={totalPages}
+        onPageChange={handlePageChange}
+        showPagination={data.length > 0}
       />
       <Table
         loading={loading}
@@ -85,6 +102,7 @@ const DataList = ({ data: statistics }: IProps) => {
         onPageChange={handlePageChange}
         onRowOver={(record) => setDiff(record)}
         diff={diff}
+        hideTopPagination
       />
     </>
   );

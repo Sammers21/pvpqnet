@@ -92,7 +92,7 @@ const renderSpec = ({ record }: Params) => {
     <div className="flex md:gap-2 px-1">
       {record.bracket_type.includes("SHUFFLE") ? (
         <img
-          className=" h-7 w-7 rounded border border-solid border-[#37415180]"
+          className=" h-7 w-7 rounded border border-solid border-slate-600/50"
           src={specIcon}
           alt="spec icon"
         />

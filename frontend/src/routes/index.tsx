@@ -14,13 +14,19 @@ import TwitchCorner from "@/components/TwitchCorner";
 
 const { page } = publicUrls;
 const ActivityScreen = loadable(() => import("@/containers/Activity"), {
-  fallback: <BlizzardLoader />,
+  fallback: null,
 });
 const MetaScreen = loadable(() => import("@/containers/Meta"), {
-  fallback: <BlizzardLoader />,
+  fallback: null,
 });
 const ProfileScreen = loadable(() => import("@/containers/Profile"), {
-  fallback: <BlizzardLoader />,
+  fallback: null,
+});
+const CutoffsScreen = loadable(() => import("@/containers/Cutoffs"), {
+  fallback: null,
+});
+const CabinetScreen = loadable(() => import("@/containers/Cabinet"), {
+  fallback: null,
 });
 
 const AppRoutes = () => {
@@ -37,9 +43,12 @@ const AppContent = () => {
     <>
       <ReactRouterDomRoutes>
         <Route path={"/"} element={<ActivityScreen />} />
+        <Route path={"/cabinet"} element={<CabinetScreen />} />
+        <Route path={"/cutoffs"} element={<CutoffsScreen />} />
         <Route path={"/meta"} element={<MetaScreen />} />
 
         <Route path=":region">
+          <Route path="cutoffs" element={<CutoffsScreen />} />
           <Route path="meta" element={<MetaScreen />} />
           <Route path="activity" element={<ActivityScreen />}>
             <Route path=":bracket" element={<ActivityScreen />} />

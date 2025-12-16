@@ -1,74 +1,91 @@
 plugins {
-    id 'com.github.johnrengelman.shadow' version '8.1.1'
-    id 'java'
-    id 'idea'
+  id 'io.github.goooler.shadow' version '8.1.8'
+  id 'com.diffplug.spotless' version '8.1.0'
+  id 'java'
+  id 'idea'
 }
 
 repositories {
-    mavenCentral()
+  mavenCentral()
 }
 
 sourceSets {
-    main {
-        java {
-            srcDir 'src'
-        }
-        resources {
-            srcDir 'settings'
-        }
+  main {
+    java {
+      srcDir 'src'
     }
-    test {
-        java {
-            srcDir 'test'
-        }
+    resources {
+      srcDir 'settings'
     }
+  }
+  test {
+    java {
+      srcDir 'test'
+    }
+  }
 }
 
 dependencies {
-    // logging
-    implementation group: 'org.slf4j', name: 'slf4j-api', version: '2.0.4'
-    implementation group: 'ch.qos.logback', name: 'logback-classic', version: "1.4.6"
-    implementation 'org.jsoup:jsoup:1.15.4'
-    // vertx
-    implementation group: 'io.vertx', name: 'vertx-web-client', version: vertxVersion
-    implementation group: 'io.vertx', name: 'vertx-mongo-client', version: vertxVersion
-    implementation group: 'io.vertx', name: 'vertx-web', version: vertxVersion
-    implementation group: 'io.vertx', name: 'vertx-rx-java2', version: vertxVersion
-    //lucene
-    implementation group: 'org.apache.lucene', name: 'lucene-core', version: luceneVersion
-    implementation group: 'org.apache.lucene', name: 'lucene-queryparser', version: luceneVersion
-    implementation group: 'org.apache.lucene', name: 'lucene-misc', version: luceneVersion
-    implementation group: 'org.apache.lucene', name: 'lucene-analysis-common', version: luceneVersion
-    // common libs
-    implementation 'org.jsoup:jsoup:1.15.4'
-    implementation group: 'org.apache.commons', name: 'commons-collections4', version: '4.4'
-    implementation 'org.ocpsoft.prettytime:prettytime:5.0.6.Final'
-    implementation group: 'org.javatuples', name: 'javatuples', version: '1.2'
-    // metrics
-    implementation group : 'io.prometheus', name : 'prometheus-metrics-core', version : prometheusVersion
-    implementation group : 'io.prometheus', name : 'prometheus-metrics-instrumentation-jvm', version : prometheusVersion
-    implementation group : 'io.prometheus', name : 'prometheus-metrics-exporter-httpserver', version : prometheusVersion
-    // test
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.3'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.3'
+  // logging
+  implementation 'org.slf4j:slf4j-api:2.0.17'
+  implementation 'ch.qos.logback:logback-classic:1.5.22'
+  // config
+  implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.20.1'
+  // vertx
+  implementation "io.vertx:vertx-web-client:${vertxVersion}"
+  implementation "io.vertx:vertx-auth-oauth2:${vertxVersion}"
+  implementation "io.vertx:vertx-mongo-client:${vertxVersion}"
+  implementation "io.vertx:vertx-web:${vertxVersion}"
+  implementation "io.vertx:vertx-rx-java3:${vertxVersion}"
+  //lucene
+  implementation "org.apache.lucene:lucene-core:${luceneVersion}"
+  implementation "org.apache.lucene:lucene-queryparser:${luceneVersion}"
+  implementation "org.apache.lucene:lucene-misc:${luceneVersion}"
+  implementation "org.apache.lucene:lucene-analysis-common:${luceneVersion}"
+  // common libs
+  implementation 'org.jsoup:jsoup:1.21.2'
+  implementation 'org.apache.commons:commons-collections4:4.5.0'
+  implementation 'org.ocpsoft.prettytime:prettytime:5.0.9.Final'
+  implementation 'org.javatuples:javatuples:1.2'
+  // metrics
+  implementation "io.prometheus:prometheus-metrics-core:${prometheusVersion}"
+  implementation "io.prometheus:prometheus-metrics-instrumentation-jvm:${prometheusVersion}"
+  implementation "io.prometheus:prometheus-metrics-exporter-httpserver:${prometheusVersion}"
+  // test
+  testImplementation 'org.junit.jupiter:junit-jupiter-api:5.14.1'
+  testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.14.1'
+  testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.14.1'
 }
 
 jar {
-    manifest {
-        attributes 'Main-Class': 'io.github.sammers.pla.Main'
-    }
+  manifest {
+    attributes 'Main-Class': 'io.github.sammers.pla.Main'
+  }
 }
 
 test {
-    useJUnitPlatform {
-    }
+  useJUnitPlatform {
+  }
 }
 
 shadowJar {
-    archiveBaseName.set('wow-pla')
-    archiveClassifier.set('')
-    archiveVersion.set('')
-    mergeServiceFiles()
+  archiveBaseName.set('wow-pla')
+  archiveClassifier.set('')
+  archiveVersion.set('')
+  mergeServiceFiles()
 }
-sourceCompatibility = JavaVersion.VERSION_21
-targetCompatibility = JavaVersion.VERSION_21
+java {
+  toolchain {
+    languageVersion = JavaLanguageVersion.of(25)
+  }
+}
+
+spotless {
+  java {
+    target 'src/**/*.java', 'test/**/*.java'
+    eclipse().configFile('eclipse-formatter.xml')
+    removeUnusedImports()
+    trimTrailingWhitespace()
+    endWithNewline()
+  }
+}

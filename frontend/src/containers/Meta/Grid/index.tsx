@@ -12,6 +12,7 @@ import { getColumnGroup, specNameColumn } from "./columnGroup";
 import { REGION } from "@/constants/region";
 import { columnGroups, defaultFilters, metaFilter } from "@/constants/meta";
 import { getMeta } from "@/services/stats.service";
+import { getRegion } from "@/utils/urlparts";
 
 import type { Meta } from "@/types";
 import type {
@@ -64,7 +65,8 @@ function paramFromString(str: string) {
 const useBreakpoint = createBreakpoint({ S: 758, L: 900, XL: 1280, XXL: 1600 });
 
 const Grid = () => {
-  const { region = REGION.eu } = useParams();
+  const { region: regionFromUrl } = useParams();
+  const region = getRegion(regionFromUrl);
   const [data, setData] = useState<Meta | null>(null);
   const breakpoint = useBreakpoint();
   const { width } = useWindowSize();
@@ -165,7 +167,13 @@ const Grid = () => {
   }, [data, breakpoint]);
 
   return (
-    <div className="flex w-full justify-center bg-[#030303e6] pt-24 pb-11 min-h-screen">
+    <div className="relative flex w-full justify-center pt-24 pb-11 min-h-screen">
+      {/* Ambient background effects */}
+      <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+        <div className="absolute left-1/2 top-0 h-[600px] w-[800px] -translate-x-1/2 -translate-y-1/3 rounded-full bg-sky-500/8 blur-[150px]"></div>
+        <div className="absolute bottom-0 left-0 h-[450px] w-[550px] -translate-x-1/4 translate-y-1/4 rounded-full bg-blue-600/6 blur-[130px]"></div>
+        <div className="absolute bottom-1/3 right-0 h-[400px] w-[450px] translate-x-1/4 rounded-full bg-indigo-500/5 blur-[120px]"></div>
+      </div>
       <div className="w-full md:w-4/5">
         <Header />
         <Filters
@@ -173,7 +181,7 @@ const Grid = () => {
           onChange={handleFilterChange}
           values={filterValues}
         />
-        <div className="mx-2 my-2 px-4 py-4 rounded-2xl bg-[#2f384d4d]">
+        <div className="mx-2 my-2 px-4 py-4 rounded-2xl bg-slate-900/60 border border-slate-700/30 backdrop-blur-sm">
           <StripedDataGrid
             experimentalFeatures={{ columnGrouping: true }}
             columnGroupingModel={columnGroupModel}

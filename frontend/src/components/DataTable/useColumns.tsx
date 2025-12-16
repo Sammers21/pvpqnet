@@ -16,6 +16,7 @@ import { nickNameLenOnMobile } from "@/utils/common";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
+import GearIconCell from "@/components/GearIconCell";
 
 const getTableColumns = (
   activity: string,
@@ -46,10 +47,10 @@ const getTableColumns = (
       }
       var unsignRankDiff = Math.abs(rankDiff);
       return (
-        <div className="flex">
+        <div className="flex whitespace-nowrap">
           {isMobile && (
             <span
-              className="text-base font-light"
+              className="text-sm font-light"
               style={{ color: getRankDiffColor(rankDiff) }}
             >{`#${pos}`}</span>
           )}
@@ -100,7 +101,7 @@ const getTableColumns = (
           )}
 
           <img
-            className=" h-6 w-6 rounded border border-solid border-[#37415180]"
+            className="h-5 w-5 rounded border border-solid border-[#37415180] sm:h-6 sm:w-6"
             src={icons.specIcon}
             alt="spec icon"
           />
@@ -123,13 +124,16 @@ const getTableColumns = (
       }
 
       return (
-        <a
-          className="text-base no-underline"
-          href={url}
-          style={{ color: getClassNameColor(wowClass) }}
-        >
-          {name}
-        </a>
+        <div className="flex items-center justify-between w-full">
+          <a
+            className="text-sm no-underline sm:text-base"
+            href={url}
+            style={{ color: getClassNameColor(wowClass) }}
+          >
+            {name}
+          </a>
+          {!isMobile && <GearIconCell record={record} region={region} inline />}
+        </div>
       );
     },
   };
@@ -142,7 +146,10 @@ const getTableColumns = (
       const realm = record?.character?.realm || record?.realm;
 
       return (
-        <span className="text-base" style={{ color: getRealmColor(fraction) }}>
+        <span
+          className="text-sm whitespace-nowrap sm:text-base"
+          style={{ color: getRealmColor(fraction) }}
+        >
           {realm}
         </span>
       );
@@ -160,20 +167,22 @@ const getTableColumns = (
       const { wonColor, lossColor } = getWonAndLossColors(won, loss);
 
       return (
-        <div className="flex">
+        <div className="flex whitespace-nowrap">
           <span
-            className="text-base font-light mr-1"
+            className="text-sm font-light sm:text-base"
             style={{ color: wonColor }}
-          >{`${won} `}</span>
-          <span className="text-base font-light">{` / `}</span>
+          >{`${won}`}</span>
+          <span className="mx-1 text-sm font-light text-slate-600 sm:text-base">
+            /
+          </span>
           <span
-            className="text-base font-light ml-1"
+            className="text-sm font-light sm:text-base"
             style={{ color: lossColor }}
           >
             {loss}
           </span>
 
-          {winRate && (
+          {winRate && !isMobile && (
             <span className="text-[#4B5563] mt-0.5 ml-2 mr-2 font-light text-sm">
               {winRate}
             </span>
@@ -203,17 +212,17 @@ const getTableColumns = (
         />
       );
       return (
-        <div className="flex">
+        <div className="flex whitespace-nowrap">
           {!isMobile && ratingImg}
           <span
-            className="text-base font-light mr-2"
+            className="text-sm font-light sm:text-base sm:mr-2"
             style={{ color: ratingColor }}
           >
             {rating}
           </span>
           {Number.isInteger(ratingDiff) && (
             <span
-              className="text-base font-light"
+              className="text-sm font-light ml-1 sm:text-base sm:ml-0"
               style={{ color: getDiffColor(ratingDiff) }}
             >
               {getDiffCell(ratingDiff)}
@@ -235,10 +244,10 @@ const getTableColumns = (
       if (!record?.diff?.last_seen) return <></>;
       const split = record.diff.last_seen.split(" ");
       const content = isMobile
-        ? `${split[0]} ${split[1].charAt(0)}.`
+        ? `${split[0]}${split[1].charAt(0)}`
         : record.diff.last_seen;
 
-      return <span className="text-base">{content}</span>;
+      return <span className="whitespace-nowrap text-sm">{content}</span>;
     },
   };
 

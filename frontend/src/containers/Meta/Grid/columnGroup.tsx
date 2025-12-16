@@ -1,5 +1,5 @@
 import { LinearProgress, Tooltip } from "@mui/material";
-import { getClassNameColor, getSpecIcon } from "@/utils/table";
+import { getClassNameColor, getRankIconByFileName, getSpecIcon } from "@/utils/table";
 
 import type { MetaSpec, MetaSpecSizing, Meta } from "@/types";
 import type {
@@ -134,7 +134,7 @@ export function getColumnGroup(
             {rankIcons.map((icon) => (
               <img
                 className="h-9 w-9 mr-2"
-                src={require("../../../assets/ranks/" + icon)}
+                src={getRankIconByFileName(icon)}
                 alt="Rank icon"
               />
             ))}

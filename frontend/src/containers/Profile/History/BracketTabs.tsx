@@ -49,7 +49,7 @@ function BracketTab(characterClass, bracket, isMobile) {
     const imgClasses =
       (isMobile ? "h-7 w-7" : "h-7 w-7") +
       " " +
-      "ml-1 rounded border border-solid border-[#37415180]";
+      "ml-1 rounded border border-solid border-slate-600/50";
     icon = (
       <div className="flex items-center">
         <span className="text-base">{bracketType}</span>
@@ -82,9 +82,6 @@ const BracketTabs = ({
   onChange: (_evt: React.SyntheticEvent, value: any) => void;
   isMobile: boolean;
 }) => {
-  const more_than_one_bracket =
-    player.brackets.filter((b) => b.gaming_history?.history?.length > 0)
-      .length > 1;
   return (
     <Tabs
       className="!min-h-[38px]"
@@ -95,7 +92,7 @@ const BracketTabs = ({
       textColor="primary"
       indicatorColor="primary"
     >
-      {more_than_one_bracket && <Tab label="All" value="all" />}
+      <Tab label="All" value="all" />
       {player.brackets
         .filter((b) => b.gaming_history?.history?.length > 0)
         .map((bracket) => BracketTab(player.class, bracket, isMobile))}
